@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const rootDir = process.cwd();
@@ -41,10 +41,16 @@ function toTsString(value) {
   return JSON.stringify(value ?? '');
 }
 
-const env = parseEnv(readFileSync(envPath, 'utf8'));
+const fallbackApplicationName = 'TashiHome 1.0';
+const fallbackApiUrl = '/api';
 
-const applicationName = env.APPLICATION_NAME || 'TashiHome';
-const apiUrl = env.API_URL || '/api';
+let env = {};
+if (existsSync(envPath)) {
+  env = parseEnv(readFileSync(envPath, 'utf8'));
+}
+
+const applicationName = env.APPLICATION_NAME || fallbackApplicationName;
+const apiUrl = env.API_URL || fallbackApiUrl;
 
 const ts = (production) => `export const environment = {
   production: ${production},
@@ -55,4 +61,3 @@ const ts = (production) => `export const environment = {
 
 writeFileSync(devPath, ts(false));
 writeFileSync(prodPath, ts(true));
-
