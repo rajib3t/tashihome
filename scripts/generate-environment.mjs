@@ -1,63 +1,29 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { config as loadEnv } from 'dotenv';
 
-const rootDir = process.cwd();
+const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const envPath = resolve(rootDir, '.env');
-const devPath = resolve(rootDir, 'src/environments/environment.ts');
-const prodPath = resolve(rootDir, 'src/environments/environment.prod.ts');
+const browserEnvPath = resolve(rootDir, 'src/environments/environment.ts');
+const browserProdEnvPath = resolve(rootDir, 'src/environments/environment.prod.ts');
 
-function parseEnv(contents) {
-  const result = {};
+loadEnv({ path: envPath });
 
-  for (const line of contents.split(/\r?\n/)) {
-    const trimmed = line.trim();
+const applicationName = process.env.APPLICATION_NAME?.trim() || 'GrayviX';
+const quote = (value) => `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
 
-    if (!trimmed || trimmed.startsWith('#')) {
-      continue;
-    }
-
-    const equalsIndex = trimmed.indexOf('=');
-    if (equalsIndex === -1) {
-      continue;
-    }
-
-    const key = trimmed.slice(0, equalsIndex).trim();
-    let value = trimmed.slice(equalsIndex + 1).trim();
-
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-
-    result[key] = value;
-  }
-
-  return result;
-}
-
-function toTsString(value) {
-  return JSON.stringify(value ?? '');
-}
-
-const fallbackApplicationName = 'TashiHome 1.0';
-const fallbackApiUrl = '/api';
-
-let env = {};
-if (existsSync(envPath)) {
-  env = parseEnv(readFileSync(envPath, 'utf8'));
-}
-
-const applicationName = env.APPLICATION_NAME || fallbackApplicationName;
-const apiUrl = env.API_URL || fallbackApiUrl;
-
-const ts = (production) => `export const environment = {
+const renderEnvironment = (production, apiUrl) => `export const environment = {
   production: ${production},
-  apiUrl: ${toTsString(apiUrl)},
-  applicationName: ${toTsString(applicationName)},
+  apiUrl: ${quote(apiUrl)},
+  applicationName: ${quote(applicationName)},
 };
 `;
 
-writeFileSync(devPath, ts(false));
-writeFileSync(prodPath, ts(true));
+const devApiUrl = process.env.DEV_API_URL || '/api';
+const prodApiUrl = process.env.API_URL || 'https://api.tashihomes.in';
+
+writeFileSync(browserEnvPath, renderEnvironment(false, devApiUrl));
+writeFileSync(browserProdEnvPath, renderEnvironment(true, prodApiUrl));
+
+console.log(`Synced environment files from ${envPath}`);
