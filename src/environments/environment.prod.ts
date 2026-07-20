@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: "https://api.tashihomes.in/api",
+  apiUrl: "/api",
   applicationName: "TashiHome 1.0",
 };
