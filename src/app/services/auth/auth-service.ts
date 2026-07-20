@@ -44,7 +44,7 @@ export class AuthService {
                 this.#authUser.set(response.data.user)
                 this.setToken(response.data.token.token, data.rememberMe ?? false)
             }),
-            catchError(passthroughError)
+            catchError(this.apiService.passthroughError)
         )
     }
 

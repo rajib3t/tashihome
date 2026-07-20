@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
-import { Card } from '../../../../shared/components/common/card/card';
+import { Card } from '../../../../shared/components/ui/card/card';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UploadImage } from '../../../../shared/components/common/upload-image/upload-image';
 import { CommonModule } from '@angular/common';

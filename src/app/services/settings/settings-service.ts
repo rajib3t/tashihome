@@ -4,7 +4,7 @@ import { catchError, map, Observable, tap, throwError } from 'rxjs';
 import { ApiResponse } from '../api/api-response.model';
 import { SettingItem } from './setting.model';
 
-const passthroughError = (error: unknown) => throwError(() => error);
+
 
 const normalizeSettingsPayload = (value: unknown) => {
   if (!value) {
@@ -44,7 +44,7 @@ export class SettingsService {
         },
       }).pipe(
         map(response => response.data),
-        catchError(passthroughError)
+        catchError(this.apiService.passthroughError)
       );
     }
 
@@ -53,7 +53,7 @@ export class SettingsService {
       return this.apiService.protectedGet<any>('/settings/').pipe(
         map(response => response.data),
         tap(data => this.setSettingsData(data.data)),
-        catchError(passthroughError)
+       catchError(this.apiService.passthroughError)
       );
     }
 }

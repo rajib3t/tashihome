@@ -289,4 +289,6 @@ export class ApiService {
 
     return findMessage(error);
   }
+  
+  public passthroughError = (error: unknown) => throwError(() => error);
 }

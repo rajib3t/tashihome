@@ -8,6 +8,7 @@ import { adminGuard } from './guards/auth/role-guard';
 import { Admin } from './shared/layouts/authenticate/admin/admin';
 import { AdminDashboard } from './pages/authenticate/admin/admin-dashboard/admin-dashboard';
 import { Setting } from './pages/authenticate/admin/setting/setting';
+import { CountryManagement } from './pages/authenticate/admin/country-management/country-management';
 
 export const routes: Routes = [
     {
@@ -45,6 +46,11 @@ export const routes: Routes = [
                         path: 'setting',
                         component: Setting,
                         title: 'Application Setting',
+                    },
+                    {
+                        path: 'country-management',
+                        component: CountryManagement,
+                        title: 'Country Management',
                     }
                 ]
             }

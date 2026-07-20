@@ -1,0 +1,29 @@
+@if (meta && getTotalPages() > 1) {
+<div class="pagination-container">
+    <div class="pagination-info">
+        Showing {{ (meta.page - 1) * meta.size + 1 }} to {{ getShowingTo() }} of {{ meta.total }} entries
+    </div>
+    <div class="pagination-controls">
+        <button
+            (click)="changePage(meta.page - 1)"
+            [disabled]="meta.page === 1"
+            class="pagination-btn pagination-btn-prev">
+            Previous
+        </button>
+        @for (page of getPageNumbers(); track page) {
+        <button
+            (click)="changePage(page)"
+            [class.pagination-btn-active]="page === meta.page"
+            class="pagination-btn pagination-btn-page">
+            {{ page }}
+        </button>
+        }
+        <button
+            (click)="changePage(meta.page + 1)"
+            [disabled]="meta.page === getTotalPages()"
+            class="pagination-btn pagination-btn-next">
+            Next
+        </button>
+    </div>
+</div>
+}

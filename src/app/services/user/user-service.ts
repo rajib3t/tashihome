@@ -3,7 +3,7 @@ import { ApiService } from '../api/api-service';
 import { catchError, map, Observable , throwError} from 'rxjs';
 import { ApiResponse } from '../api/api-response.model';
 import { User } from './user.model';
-const passthroughError = (error: unknown) => throwError(() => error);
+
 @Service()
 export class UserService {
     public readonly apiService = inject(ApiService)
@@ -12,7 +12,7 @@ export class UserService {
     getUserProfile(): Observable<ApiResponse<User>> {
     return this.apiService.protectedGet<ApiResponse<User>>('/profile/').pipe(
       map(response => response.data),
-      catchError(passthroughError)
+      catchError(this.apiService.passthroughError)
     )
   }
 
