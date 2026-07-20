@@ -1,0 +1,261 @@
+<app-page-breadcrumb pageTitle="Application Setting"></app-page-breadcrumb>
+
+<app-card title="Application Setting" desc="Manage your application setting from here.">
+  <form [formGroup]="settingForm" (ngSubmit)="save()">
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <!-- Branding -->
+      <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+
+        <div class="mb-6 border-b border-gray-100 pb-4">
+          <h2 class="text-lg font-semibold text-gray-900">Branding</h2>
+          <p class="mt-1 text-sm text-gray-500">
+            Upload your app logo and favicon.
+          </p>
+        </div>
+
+        <div class="space-y-6">
+
+          <div class="upload-wrapper">
+            <app-upload-image
+            
+              [id]="'app_logo'"
+              [name]="'app_logo'"
+              [preview]="logoPreview()"
+              buttonText="Upload Logo"
+              emptyText="No Logo"
+              (previewChange)="logoPreview.set($event)"
+              (valueChange)="settingForm.controls.app_logo.setValue($event)">
+            </app-upload-image>
+          </div>
+          <div class="upload-wrapper">
+          <app-upload-image
+            
+            [id]="'white_logo'"
+            [name]="'white_logo'"
+            [preview]="whiteLogoPreview()"
+            buttonText="Upload White Logo"
+            emptyText="No White Logo"
+            (previewChange)="whiteLogoPreview.set($event)"
+            (valueChange)="settingForm.controls.white_logo.setValue($event)">
+          </app-upload-image>
+          </div>
+          <div class="upload-wrapper">
+          <app-upload-image
+            
+            [id]="'favicon'"
+            [name]="'favicon'"
+            [preview]="faviconPreview()"
+            buttonText="Upload Favicon"
+            emptyText="No Favicon"
+            (previewChange)="faviconPreview.set($event)"
+            (valueChange)="settingForm.controls.app_favicon.setValue($event)">
+          </app-upload-image>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- App Setting -->
+      <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md lg:col-span-2">
+
+        <div class="mb-8 flex flex-col gap-4 border-b border-gray-100 pb-4 md:flex-row md:items-center md:justify-between">
+
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900">
+              App Settings
+            </h2>
+            <p class="mt-1 text-sm text-gray-500">
+              Update application configuration and preferences.
+            </p>
+          </div>
+
+          <div class="flex gap-2">
+
+            <button
+              type="button"
+              (click)="reset()"
+              class="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+              Reset
+            </button> 
+
+          <button
+              type="submit"
+              [disabled]="isSubmitting()"
+              class="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+              {{ isSubmitting() ? 'Saving...' : 'Save Setting' }}
+            </button>
+
+          </div>
+
+        </div>
+
+        <div>
+
+          <h3 class="mb-4 text-base font-semibold text-gray-900">
+            General
+          </h3>
+
+          <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+            <!-- App Name -->
+            <div>
+              <label for="app_name" class="mb-2 block text-sm font-medium text-gray-700">
+                App Name
+              </label>
+              <input
+                id="app_name"
+                type="text"
+                formControlName="app_name"
+                placeholder="e.g. My Application"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                [class.border-red-400]="settingForm.controls.app_name.invalid && settingForm.controls.app_name.touched" />
+
+              <p
+                *ngIf="settingForm.controls.app_name.invalid && settingForm.controls.app_name.touched"
+                class="mt-1 text-sm text-red-500">
+                App Name is required.
+              </p>
+            </div>
+
+            <!-- Timezone -->
+            <div>
+              <label for="app_timezone" class="mb-2 block text-sm font-medium text-gray-700">
+                Timezone
+              </label>
+              <select
+                id="app_timezone"
+                formControlName="app_timezone"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                <option value="UTC">UTC</option>
+                <option value="Asia/Kolkata">India (IST)</option>
+                <option value="America/New_York">Eastern Time</option>
+              </select>
+            </div>
+
+            <!-- Date Format -->
+            <div>
+              <label for="app_date_format" class="mb-2 block text-sm font-medium text-gray-700">
+                Date Format
+              </label>
+              <select
+                id="app_date_format"
+                formControlName="app_date_format"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+              </select>
+            </div>
+
+            <!-- Time Format -->
+            <div>
+              <label for="app_time_format" class="mb-2 block text-sm font-medium text-gray-700">
+                Time Format
+              </label>
+              <select
+                id="app_time_format"
+                formControlName="app_time_format"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                <option value="12h">12 Hour (AM/PM)</option>
+                <option value="24h">24 Hour</option>
+              </select>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="mt-8">
+
+          <h3 class="mb-4 text-base font-semibold text-gray-900">
+            Coming Soon
+          </h3>
+
+          <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+            <!-- Enable Coming Soon -->
+            <div class="flex items-center gap-3">
+              <input
+                id="is_enabled_coming_soon"
+                type="checkbox"
+                formControlName="is_enabled_coming_soon"
+                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+              <label for="is_enabled_coming_soon" class="text-sm font-medium text-gray-700">
+                Enable Coming Soon Page
+              </label>
+            </div>
+            <div class="flex items-center gap-3">
+              <label for="launch_date" class="text-sm font-medium text-gray-700">
+                Launch Date
+              </label>
+              <input
+                id="launch_date"
+                type="date"
+                formControlName="launch_date"
+                placeholder="e.g. My Application"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                [class.border-red-400]="settingForm.controls.launch_date.invalid && settingForm.controls.launch_date.touched" />
+              
+            </div>
+            <!-- Coming Soon Message -->
+            <div class="md:col-span-2">
+              <label for="coming_soon_message" class="mb-2 block text-sm font-medium text-gray-700">
+                Coming Soon Message
+              </label>
+              <textarea
+                id="coming_soon_message"
+                formControlName="coming_soon_message"
+                rows="3"
+                placeholder="Enter the message to display on the coming soon page"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></textarea>
+            </div>
+
+            <!-- Coming Soon Background Image -->
+            <div class="md:col-span-2">
+              <label class="mb-2 block text-sm font-medium text-gray-700">
+                Background Image
+              </label>
+              <div class="upload-wrapper">
+                <app-upload-image
+                  [id]="'coming_background_image'"
+                  [name]="'coming_background_image'"
+                  [preview]="comingBackgroundImagePreview()"
+                  buttonText="Upload Background Image"
+                  emptyText="No Background Image"
+                  (previewChange)="comingBackgroundImagePreview.set($event)"
+                  (valueChange)="settingForm.controls.coming_background_image.setValue($event)">
+                </app-upload-image>
+              </div>
+            </div>
+
+            <!-- Coming Soon Video -->
+            <div class="md:col-span-2">
+              <label class="mb-2 block text-sm font-medium text-gray-700">
+                Coming Soon Video
+              </label>
+              <div class="upload-wrapper">
+                <app-upload-image
+                  [id]="'coming_soon_video'"
+                  [name]="'coming_soon_video'"
+                  [accept]="'video/*'"
+                  [preview]="comingSoonVideoPreview()"
+                  buttonText="Upload Video"
+                  emptyText="No Video"
+                  (previewChange)="comingSoonVideoPreview.set($event)"
+                  (valueChange)="settingForm.controls.coming_soon_video.setValue($event)">
+                </app-upload-image>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </form>
+</app-card>

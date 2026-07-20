@@ -1,0 +1,212 @@
+<p>coming-soon works!</p>
+<div class="relative min-h-screen overflow-hidden bg-primary text-primary-foreground">
+      <!-- signature-element styles: boarding-pass ticket + postcard chips, built on theme tokens -->
+      <style>
+        .ticket-stub {
+          position: relative;
+          background: color-mix(in oklch, var(--color-primary) 88%, black 12%);
+          border: 1px solid color-mix(in oklch, var(--color-primary-foreground) 18%, transparent);
+        }
+        .ticket-stub::before,
+        .ticket-stub::after {
+          content: '';
+          position: absolute;
+          width: 22px;
+          height: 22px;
+          border-radius: 9999px;
+          background: rgba(0, 0, 0, 0.28);
+          backdrop-filter: blur(6px);
+          border: 1px solid color-mix(in oklch, var(--color-primary-foreground) 18%, transparent);
+          top: 50%;
+          transform: translateY(-50%);
+        }
+        .ticket-stub::before { left: -11px; }
+        .ticket-stub::after { right: -11px; }
+        .ticket-divider {
+          border-left: 2px dashed color-mix(in oklch, var(--color-primary-foreground) 28%, transparent);
+        }
+        .stub-cell + .stub-cell {
+          border-left: 1px dashed color-mix(in oklch, var(--color-primary-foreground) 18%, transparent);
+          padding-left: 1rem;
+          margin-left: 0.25rem;
+        }
+        .postcard-chip {
+          position: relative;
+          border: 1px dashed var(--color-border);
+          transition: transform 200ms ease, border-color 200ms ease;
+        }
+        .postcard-chip:hover {
+          transform: rotate(-0.6deg) translateY(-2px);
+          border-color: color-mix(in oklch, var(--color-accent) 65%, transparent);
+        }
+        .stamp-badge {
+          transform: rotate(-9deg);
+        }
+      </style>
+ 
+      <video
+        *ngIf="media().video as videoUrl"
+        class="absolute inset-0 h-full w-full object-cover"
+        autoplay
+        muted
+        loop
+        playsinline
+        [poster]="media().image ?? '/home-bg.jpg'"
+      >
+        <source [src]="videoUrl" type="video/mp4" />
+      </video>
+      <img
+        *ngIf="!media().video && media().image as imageUrl"
+        [src]="imageUrl"
+        alt="Coming soon background"
+        class="absolute inset-0 h-full w-full object-cover"
+      />
+      <div
+        *ngIf="!media().video && !media().image"
+        class="absolute inset-0 bg-gradient-to-b from-primary via-primary to-secondary"
+      ></div>
+ 
+      <!-- brand-toned dusk overlay: primary teal deepening into secondary blue-teal -->
+      <div class="absolute inset-0 bg-primary/55"></div>
+      <div
+        class="absolute inset-0 bg-[radial-gradient(circle_at_top,color-mix(in_oklch,var(--color-accent)_18%,transparent),transparent_40%),linear-gradient(to_bottom,color-mix(in_oklch,var(--color-primary)_30%,transparent),color-mix(in_oklch,var(--color-secondary)_88%,transparent))]"
+      ></div>
+ 
+      <div class="relative z-10 flex min-h-screen items-center px-6 py-12">
+        <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div class="flex flex-col justify-center">
+            <div class="mb-8 flex items-center gap-4">
+              <div
+                class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-accent/50 bg-primary-foreground/12 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-md"
+              >
+                <img
+                  [src]="logo ?? '/logo.png'"
+                  alt="Homestay logo"
+                  class="h-14 w-14 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
+                />
+              </div>
+              <div class="leading-tight">
+                <p class="font-glitten text-2xl text-primary-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
+                  {{ name ?? 'Homestay' }}
+                </p>
+                <p class="font-mono text-xs uppercase tracking-[0.34em] text-accent">Coming soon</p>
+              </div>
+            </div>
+ 
+            <div
+              class="stamp-badge mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-accent/40 bg-primary/40 px-4 py-1.5 font-mono text-xs uppercase tracking-[0.22em] text-accent"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5" aria-hidden="true">
+                <path d="M12 3v4"></path>
+                <path d="M12 17v4"></path>
+                <path d="M4.93 4.93l2.83 2.83"></path>
+                <path d="M16.24 16.24l2.83 2.83"></path>
+                <path d="M3 12h4"></path>
+                <path d="M17 12h4"></path>
+                <path d="M4.93 19.07l2.83-2.83"></path>
+                <path d="M16.24 7.76l2.83-2.83"></path>
+                <circle cx="12" cy="12" r="3.5"></circle>
+              </svg>
+              {{ isLoading() ? 'Loading launch details' : 'Reserved for you' }}
+            </div>
+ 
+            <h1 class="font-valleki max-w-3xl text-5xl leading-[1.05] tracking-tight text-primary-foreground md:text-7xl">
+              Your next stay should feel unforgettable.
+            </h1>
+ 
+            <p class="mt-6 max-w-2xl text-lg leading-8 text-primary-foreground/75 md:text-xl">
+              We are building a calmer, faster way to discover beautiful homestays with
+              memorable views, thoughtful hosts, and easy booking.
+            </p>
+ 
+            <div class="mt-8 flex flex-wrap gap-3 text-sm text-primary-foreground/85">
+              <span class="inline-flex items-center gap-2 rounded-full border border-primary-foreground/15 bg-primary-foreground/5 px-4 py-2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-accent" aria-hidden="true">
+                  <path d="M12 21s-6-5.4-6-10a6 6 0 1 1 12 0c0 4.6-6 10-6 10Z"></path>
+                  <circle cx="12" cy="11" r="2.3"></circle>
+                </svg>
+                Curated destinations
+              </span>
+              <span class="inline-flex items-center gap-2 rounded-full border border-primary-foreground/15 bg-primary-foreground/5 px-4 py-2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-accent" aria-hidden="true">
+                  <path d="M12 3l7 4v5c0 4.2-2.8 7.8-7 9-4.2-1.2-7-4.8-7-9V7l7-4Z"></path>
+                  <path d="m9.5 12 1.8 1.8L15 8.8"></path>
+                </svg>
+                Trusted hosts
+              </span>
+              <span
+                *ngIf="media().launchDate as launchDate"
+                class="inline-flex items-center gap-2 rounded-full border border-accent/50 bg-accent/20 px-4 py-2 text-primary-foreground"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-accent" aria-hidden="true">
+                  <path d="M12 3 9.5 8l-5 .8 3.7 3.6-.9 5.2L12 0"></path>
+                  <path d="m14.5 8 2.5-5 2.5 5 5 .8-3.7 3.6.9 5.2-4.7-2.5-4.7 2.5.9-5.2-3.7-3.6 5-.8Z"></path>
+                </svg>
+                Launches on {{ launchDate }}
+              </span>
+            </div>
+ 
+            <!-- signature element: boarding-pass style countdown ticket -->
+            <div class="ticket-stub mt-10 flex max-w-2xl items-stretch rounded-xl px-6 py-5 shadow-2xl">
+              <div class="flex flex-1 flex-wrap items-center gap-1">
+                <div class="stub-cell flex min-w-[4.2rem] flex-col items-center">
+                  <div class="font-mono text-3xl font-semibold tabular-nums tracking-tight text-primary-foreground md:text-4xl">
+                    {{ countdown().days }}
+                  </div>
+                  <div class="mt-1 font-mono text-[10px] uppercase tracking-[0.32em] text-accent/90">Days</div>
+                </div>
+                <div class="stub-cell flex min-w-[4.2rem] flex-col items-center">
+                  <div class="font-mono text-3xl font-semibold tabular-nums tracking-tight text-primary-foreground md:text-4xl">
+                    {{ countdown().hours }}
+                  </div>
+                  <div class="mt-1 font-mono text-[10px] uppercase tracking-[0.32em] text-accent/90">Hours</div>
+                </div>
+                <div class="stub-cell flex min-w-[4.2rem] flex-col items-center">
+                  <div class="font-mono text-3xl font-semibold tabular-nums tracking-tight text-primary-foreground md:text-4xl">
+                    {{ countdown().minutes }}
+                  </div>
+                  <div class="mt-1 font-mono text-[10px] uppercase tracking-[0.32em] text-accent/90">Minutes</div>
+                </div>
+                <div class="stub-cell flex min-w-[4.2rem] flex-col items-center">
+                  <div class="font-mono text-3xl font-semibold tabular-nums tracking-tight text-primary-foreground md:text-4xl">
+                    {{ countdown().seconds }}
+                  </div>
+                  <div class="mt-1 font-mono text-[10px] uppercase tracking-[0.32em] text-accent/90">Seconds</div>
+                </div>
+              </div>
+              <div class="ticket-divider ml-5 hidden flex-col justify-center pl-5 sm:flex">
+                <p class="max-w-[9rem] text-xs leading-5 text-primary-foreground/60">
+                  {{ countdown().finished ? 'We are live now.' : 'Counting down to launch, straight from the backend.' }}
+                </p>
+              </div>
+            </div>
+          </div>
+ 
+          <div class="flex items-end lg:justify-end">
+            <div class="w-full max-w-md rounded-xl border border-border bg-card/90 p-6 text-card-foreground shadow-2xl backdrop-blur-xl md:p-8">
+              <p class="font-mono text-xs uppercase tracking-[0.3em] text-accent-foreground/70">What to expect</p>
+              <div class="mt-6 space-y-4">
+                <div class="postcard-chip rounded-lg bg-muted/40 p-4">
+                  <p class="font-valleki text-lg text-card-foreground">Stunning stays</p>
+                  <p class="mt-1 text-sm leading-6 text-muted-foreground">
+                    Handpicked homes and stays that feel personal, peaceful, and premium.
+                  </p>
+                </div>
+                <div class="postcard-chip rounded-lg bg-muted/40 p-4">
+                  <p class="font-valleki text-lg text-card-foreground">Simple booking</p>
+                  <p class="mt-1 text-sm leading-6 text-muted-foreground">
+                    Clear pricing, smooth checkout, and a booking flow that stays out of your way.
+                  </p>
+                </div>
+                <div class="postcard-chip rounded-lg bg-muted/40 p-4">
+                  <p class="font-valleki text-lg text-card-foreground">Early access</p>
+                  <p class="mt-1 text-sm leading-6 text-muted-foreground">
+                    Join the waitlist to be first in line when we launch.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

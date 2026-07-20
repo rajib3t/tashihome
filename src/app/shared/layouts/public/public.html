@@ -1,0 +1,10 @@
+<ng-container *ngIf="settingsData?.['is_enabled_coming_soon'] == 'true'; else normalLayout">
+  <app-coming-soon></app-coming-soon>
+</ng-container>
+
+<ng-template #normalLayout>
+  <app-public-header [menuItems]="menuItems"></app-public-header>
+  <main class="relative z-0 min-h-screen">
+    <router-outlet></router-outlet>
+  </main>
+</ng-template>

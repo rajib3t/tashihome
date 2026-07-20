@@ -1,0 +1,180 @@
+<aside
+  class="sidebar-root fixed flex flex-col top-0 left-0 h-screen px-5 z-50 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-gray-800 transition-[width] duration-300 ease-in-out motion-reduce:transition-none"
+  [class.w-[280px]]="isVisible$ | async"
+  [class.w-[80px]]="!(isVisible$ | async)"
+  [class.translate-x-0]="isMobileOpen$ | async"
+  [class.-translate-x-full]="!(isMobileOpen$ | async)"
+  [class.xl:translate-x-0]="true"
+  (mouseenter)="onSidebarMouseEnter()"
+  (mouseleave)="sidebarService.setHovered(false)"
+>
+  <div
+    class="py-6 flex items-center"
+    [class.justify-start]="isVisible$ | async"
+    [class.xl:justify-center]="!(isVisible$ | async)"
+  >
+    <a routerLink="/" aria-label="Go to dashboard home" class="flex items-center">
+      <app-logo
+        [size]="44"
+        tagline="your home, your way"
+        [glow]="true"
+        [withText]="(isVisible$ | async) ?? false"
+        [href]="null"
+      ></app-logo>
+    </a>
+  </div>
+
+  <div class="flex flex-col overflow-y-auto overflow-x-hidden duration-300 ease-linear no-scrollbar flex-1">
+    <nav class="mb-4" aria-label="Main navigation">
+      <div class="flex flex-col gap-3">
+        <div>
+          <h2
+            class="mb-3 text-xs font-semibold uppercase tracking-wider flex leading-5 text-gray-400"
+            [class.justify-start]="isVisible$ | async"
+            [class.xl:justify-center]="!(isVisible$ | async)"
+          >
+            @if (isVisible$ | async) {
+              {{ title }}
+            } @else {
+              <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                class="size-5" aria-hidden="true" focusable="false">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                  d="M5.99915 10.2451C6.96564 10.2451 7.74915 11.0286 7.74915 11.9951V12.0051C7.74915 12.9716 6.96564 13.7551 5.99915 13.7551C5.03265 13.7551 4.24915 12.9716 4.24915 12.0051V11.9951C4.24915 11.0286 5.03265 10.2451 5.99915 10.2451ZM17.9991 10.2451C18.9656 10.2451 19.7491 11.0286 19.7491 11.9951V12.0051C19.7491 12.9716 18.9656 13.7551 17.9991 13.7551C17.0326 13.7551 16.2491 12.9716 16.2491 12.0051V11.9951C16.2491 11.0286 17.0326 10.2451 17.9991 10.2451ZM13.7491 11.9951C13.7491 11.0286 12.9656 10.2451 11.9991 10.2451C11.0326 10.2451 10.2491 11.0286 10.2491 11.9951V12.0051C10.2491 12.9716 11.0326 13.7551 11.9991 13.7551C12.9656 13.7551 13.7491 12.9716 13.7491 12.0051V11.9951Z"
+                  fill="currentColor"></path>
+              </svg>
+            }
+          </h2>
+
+          <ul class="flex flex-col gap-1">
+            @for (nav of navItems; track nav.name) {
+              <li>
+                @if (nav.subItems) {
+                  <button
+                    type="button"
+                    (click)="toggleSubmenu('main', $index)"
+                    class="menu-item group cursor-pointer w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+                    [class.menu-item-active]="openSubmenu === 'main-' + $index"
+                    [class.menu-item-inactive]="openSubmenu !== 'main-' + $index"
+                    [class.xl:justify-start]="isVisible$ | async"
+                    [class.xl:justify-center]="!(isVisible$ | async)"
+                    [attr.aria-expanded]="openSubmenu === 'main-' + $index"
+                    [attr.aria-controls]="'main-' + $index"
+                    [attr.aria-label]="(isVisible$ | async) ? null : nav.name"
+                  >
+                    <span
+                      class="menu-item-icon-size"
+                      [class.menu-item-icon-active]="openSubmenu === 'main-' + $index"
+                      [class.menu-item-icon-inactive]="openSubmenu !== 'main-' + $index"
+                      [innerHTML]="nav.icon | safeHtml"
+                      aria-hidden="true"
+                    ></span>
+
+                    @if (isVisible$ | async) {
+                      <span class="menu-item-text">{{ nav.name }}</span>
+                    }
+
+                    @if (nav.new && (isVisible$ | async)) {
+                      <span
+                        class="ml-auto menu-dropdown-badge"
+                        [class.menu-dropdown-badge-active]="openSubmenu === 'main-' + $index"
+                        [class.menu-dropdown-badge-inactive]="openSubmenu !== 'main-' + $index"
+                      >
+                        new
+                      </span>
+                    }
+
+                    @if (isVisible$ | async) {
+                      <svg
+                        [class.rotate-180]="openSubmenu === 'main-' + $index"
+                        [class.text-brand-500]="openSubmenu === 'main-' + $index"
+                        width="1em" height="1em" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        class="ml-auto w-4 h-4 transition-transform duration-200 motion-reduce:transition-none"
+                        aria-hidden="true" focusable="false"
+                      >
+                        <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="currentColor" stroke-width="1.5"
+                          stroke-linecap="round" stroke-linejoin="round"></path>
+                      </svg>
+                    }
+                  </button>
+
+                  <div
+                    class="overflow-hidden transition-[height] duration-300 motion-reduce:transition-none"
+                    [id]="'main-' + $index"
+                    [style.height.px]="openSubmenu === 'main-' + $index ? (subMenuHeights['main-' + $index] || 0) : 0"
+                  >
+                    <ul class="mt-1 space-y-0.5 ml-8">
+                      @for (subItem of nav.subItems; track subItem.name) {
+                        <li>
+                          <a
+                            [routerLink]="subItem.path"
+                            routerLinkActive
+                            #rla="routerLinkActive"
+                            (click)="onSubmenuClick()"
+                            class="menu-dropdown-item focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+                            [class.menu-dropdown-item-active]="rla.isActive"
+                            [class.menu-dropdown-item-inactive]="!rla.isActive"
+                            [attr.aria-current]="rla.isActive ? 'page' : null"
+                          >
+                            {{ subItem.name }}
+                            <span class="flex items-center gap-1 ml-auto">
+                              @if (subItem.new) {
+                                <span
+                                  class="menu-dropdown-badge"
+                                  [class.menu-dropdown-badge-active]="rla.isActive"
+                                  [class.menu-dropdown-badge-inactive]="!rla.isActive"
+                                >
+                                  new
+                                </span>
+                              }
+                              @if (subItem.pro) {
+                                <span
+                                  class="menu-dropdown-badge-pro"
+                                  [class.menu-dropdown-badge-pro-active]="rla.isActive"
+                                  [class.menu-dropdown-badge-pro-inactive]="!rla.isActive"
+                                >
+                                  pro
+                                </span>
+                              }
+                            </span>
+                          </a>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                } @else if (nav.path) {
+                  <a
+                    [routerLink]="nav.path"
+                    routerLinkActive
+                    #rlaTop="routerLinkActive"
+                    class="menu-item group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+                    [class.menu-item-active]="rlaTop.isActive"
+                    [class.menu-item-inactive]="!rlaTop.isActive"
+                    [attr.aria-current]="rlaTop.isActive ? 'page' : null"
+                    [attr.aria-label]="(isVisible$ | async) ? null : nav.name"
+                  >
+                    <span
+                      class="menu-item-icon-size"
+                      [class.menu-item-icon-active]="rlaTop.isActive"
+                      [class.menu-item-icon-inactive]="!rlaTop.isActive"
+                      [innerHTML]="nav.icon | safeHtml"
+                      aria-hidden="true"
+                    ></span>
+                    @if (isVisible$ | async) {
+                      <span class="menu-item-text">{{ nav.name }}</span>
+                    }
+                  </a>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    @if (isVisible$ | async) {
+      <div class="mt-auto pt-4">
+        <!-- <app-sidebar-widget /> -->
+      </div>
+    }
+  </div>
+</aside>

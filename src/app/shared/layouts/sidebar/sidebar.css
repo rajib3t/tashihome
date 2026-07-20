@@ -1,0 +1,176 @@
+/* Sidebar Styles - Using theme colors from styles.css */
+.sidebar-root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Menu heading */
+h2 {
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--muted-foreground);
+  transition: all 0.3s ease;
+}
+
+/* Menu items */
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  color: var(--foreground);
+  text-decoration: none;
+  position: relative;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.menu-item:hover {
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+.menu-item-active {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+}
+
+.menu-item-inactive {
+  background-color: transparent;
+  color: var(--foreground);
+}
+
+/* Icon styling */
+.menu-item-icon-size {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.menu-item-icon-active {
+  color: var(--sidebar-primary);
+}
+
+.menu-item-icon-inactive {
+  color: var(--muted-foreground);
+}
+
+/* Menu item text */
+.menu-item-text {
+  flex: 1;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+/* Dropdown items */
+.menu-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  margin-left: 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.menu-dropdown-item:hover {
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+.menu-dropdown-item-active {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+  font-weight: 500;
+}
+
+.menu-dropdown-item-inactive {
+  background-color: transparent;
+  color: var(--muted-foreground);
+}
+
+/* Badges */
+.menu-dropdown-badge {
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.menu-dropdown-badge-active {
+  background-color: var(--sidebar-primary);
+  color: var(--sidebar-primary-foreground);
+}
+
+.menu-dropdown-badge-inactive {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.menu-dropdown-badge-pro {
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.menu-dropdown-badge-pro-active {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.menu-dropdown-badge-pro-inactive {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+/* Scrollbar styling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Dark mode support */
+.dark h2 {
+  color: var(--muted-foreground);
+}
+
+/* Responsive improvements */
+@media (max-width: 1280px) {
+  .menu-item {
+    padding: 0.625rem 0.875rem;
+  }
+
+  .menu-dropdown-item {
+    padding: 0.4375rem 0.875rem;
+  }
+}
+
+/* Focus states for accessibility */
+.menu-item:focus-visible,
+.menu-dropdown-item:focus-visible {
+  outline: 2px solid var(--sidebar-ring);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for all interactive elements */
+.menu-item,
+.menu-dropdown-item,
+.menu-item-icon-size,
+.menu-item-text {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}

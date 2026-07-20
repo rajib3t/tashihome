@@ -1,0 +1,56 @@
+@if (href) {
+    <a [routerLink]="['/']" [attr.aria-label]="applicationName() + ' home'">
+      <ng-container *ngTemplateOutlet="logoContent"></ng-container>
+    </a>
+    } @else {
+    <ng-container *ngTemplateOutlet="logoContent"></ng-container>
+    }
+    
+    <ng-template #logoContent>
+      <span
+        class="group inline-flex items-center gap-2.5"
+        [ngClass]="className"
+      >
+        <!-- Logo Mark -->
+        <span
+          class="relative inline-flex flex-shrink-0 items-center justify-center"
+        >
+          @if (glow) {
+          <span
+            class="absolute inset-0 -z-10 rounded-full bg-blue-500/40 blur-md animate-glow"
+            [style.width.px]="size"
+            [style.height.px]="size"
+            aria-hidden="true"
+          >
+          </span>
+          }
+    
+          <img
+            [src]="((theme$ | async) === 'dark'
+              ? (settingService.settingsData()['white_logo'] || settingService.settingsData()['app_logo'] || '/assets/images/logo.svg')
+              : (settingService.settingsData()['app_logo'] || '/assets/images/logo.svg'))"
+            [attr.alt]="applicationName() + ' Logo'"
+            [width]="size"
+            [height]="size"
+            class="drop-shadow-[0_0_12px_rgba(59,130,246,0.45)] transition-transform duration-300 group-hover:scale-110"
+          />
+        </span>
+    
+        <!-- Text -->
+        @if (withText) {
+        <span class="flex flex-col leading-none">
+          <span class="text-base font-bold tracking-tight text-gray-900 dark:text-white">
+            {{ applicationName() }}
+          </span>
+    
+          @if (tagline) {
+          <span
+            class="text-[10px] font-medium uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400/80"
+          >
+            {{ tagline }}
+          </span>
+          }
+        </span>
+        }
+      </span>
+    </ng-template>

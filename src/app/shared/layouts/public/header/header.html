@@ -1,0 +1,24 @@
+<header class="header-shell">
+  <div class="header-inner">
+    <a class="brand" routerLink="/" aria-label="Go to home page">Tashhome</a>
+
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-label="Toggle menu"
+      aria-expanded="{{ isMenuOpen }}"
+      (click)="toggleMenu()"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="nav-links" [class.open]="isMenuOpen">
+      @for (item of menuItems; track item.route) {
+        <a class="nav-link" [routerLink]="item.route" (click)="closeMenu()">{{ item.label }}</a>
+      }
+    </nav>
+  </div>
+</header>
+

@@ -1,0 +1,151 @@
+<div class="min-h-screen flex items-center justify-center bg-muted/20 p-6">
+    <div class="w-full max-w-md shadow-xl border rounded-3xl overflow-hidden bg-gradient-to-br from-background to-muted/20">
+
+        <!-- Header -->
+        <div class="text-center px-8 pt-10 pb-6">
+            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground text-2xl font-bold">
+                T
+            </div>
+
+            <h1 class="text-3xl font-bold">Welcome Back</h1>
+            <p class="mt-2 text-sm text-muted-foreground">
+                Sign in to your account
+            </p>
+        </div>
+
+        <!-- Form -->
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5 px-8 pb-8">
+
+            <div class="mb-5">
+          <label for="email" class="block font-mono text-[11px] uppercase tracking-widest text-slate-500 mb-2 dark:text-[#5b6b66]">user_email</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-4 flex items-center text-slate-400 pointer-events-none dark:text-[#4a5854]">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="M2 7l10 7 10-7"/>
+              </svg>
+            </span>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              formControlName="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              class="w-full rounded-md border border-slate-200 bg-white py-3 pl-11 pr-4
+                     font-mono text-sm text-slate-900 placeholder-slate-400
+                     outline-none ring-0
+                     transition duration-150
+                     focus:border-[#ff8a3d]/60 focus:ring-1 focus:ring-[#ff8a3d]/30
+                     hover:border-slate-300
+                     dark:border-[#232b2e] dark:bg-[#0e1315] dark:text-[#e8ecea] dark:placeholder-[#3f4a47] dark:hover:border-[#3a4643]"
+            />
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="mb-7">
+          <label for="password" class="block font-mono text-[11px] uppercase tracking-widest text-slate-500 mb-2 dark:text-[#5b6b66]">passphrase</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-4 flex items-center text-slate-400 pointer-events-none dark:text-[#4a5854]">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <rect x="5" y="11" width="14" height="10" rx="2"/>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+              </svg>
+            </span>
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              name="password"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              class="w-full rounded-md border border-slate-200 bg-white py-3 pl-11 pr-12
+                     font-mono text-sm text-slate-900 placeholder-slate-400
+                     outline-none ring-0
+                     transition duration-150
+                     focus:border-[#ff8a3d]/60 focus:ring-1 focus:ring-[#ff8a3d]/30
+                     hover:border-slate-300
+                     dark:border-[#232b2e] dark:bg-[#0e1315] dark:text-[#e8ecea] dark:placeholder-[#3f4a47] dark:hover:border-[#3a4643]"
+            />
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="absolute inset-y-0 right-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors dark:text-[#4a5854] dark:hover:text-[#9fb0ab]"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+            >
+              <svg *ngIf="!showPassword" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showPassword" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+            <!-- Remember -->
+            <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 text-sm">
+                    <input
+                        type="checkbox"
+                        name="rememberMe"
+                        formControlName="rememberMe"
+                        class="rounded border-gray-300"
+                    />
+                    Remember me
+                </label>
+            </div>
+
+            <!-- Button -->
+            <button
+                type="submit"
+                class="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground transition hover:opacity-90"
+            >
+                Sign In
+            </button>
+
+            <!-- Divider -->
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t"></div>
+                </div>
+
+                <div class="relative flex justify-center text-xs uppercase">
+                    <span class="bg-background px-3 text-muted-foreground">
+                        Or continue with
+                    </span>
+                </div>
+            </div>
+
+            <!-- Social -->
+            <div class="grid grid-cols-2 gap-4">
+                <button
+                    type="button"
+                    class="rounded-xl border py-3 hover:bg-muted transition"
+                >
+                    Google
+                </button>
+
+                <button
+                    type="button"
+                    class="rounded-xl border py-3 hover:bg-muted transition"
+                >
+                    GitHub
+                </button>
+            </div>
+
+            <!-- Register -->
+            <p class="text-center text-sm text-muted-foreground">
+                Don't have an account?
+                <a href="#" class="font-medium text-primary hover:underline">
+                    Create Account
+                </a>
+            </p>
+
+        </form>
+    </div>
+</div>
