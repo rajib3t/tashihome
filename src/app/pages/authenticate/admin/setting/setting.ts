@@ -184,7 +184,8 @@ for (const [key, value] of formData.entries()) {
         return throwError(() => error);
       })
     ).subscribe({
-      next: () => {
+      next: (response) => {
+        this.settingsService.setSettingsData(response);
         this.errorMessage.set('Settings saved successfully.');
       }
     });

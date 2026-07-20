@@ -35,8 +35,40 @@ export class SettingsService {
     settingsData = computed(() => this.#settingsData());
 
     setSettingsData(data: any) {
-      this.#settingsData.set(normalizeSettingsPayload(data));
+      const normalized = normalizeSettingsPayload(data);
+      this.#settingsData.set(normalized);
+      this.syncFavicon(normalized['app_favicon']);
     }
+
+    private syncFavicon(faviconUrl: string | null | undefined) {
+      if (typeof document === 'undefined') {
+        return;
+      }
+
+      const resolvedHref = faviconUrl?.trim()
+        ? this.resolveAssetUrl(faviconUrl.trim())
+        : '/favicon.ico';
+
+      let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+
+      link.type = 'image/x-icon';
+      link.href = resolvedHref;
+    }
+
+    private resolveAssetUrl(url: string) {
+      if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) {
+        return url;
+      }
+
+      return new URL(url, document.baseURI).toString();
+    }
+
     saveSettings(formData: FormData): Observable<ApiResponse<SettingItem[]>> {
       return this.apiService.protectedUpload<ApiResponse<SettingItem[]>>('settings/', formData, {
         headers: {
