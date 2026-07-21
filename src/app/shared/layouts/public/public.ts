@@ -5,6 +5,7 @@ import { SettingsService } from '../../../services/settings/settings-service';
 import { CommonModule } from '@angular/common';
 import { ComingSoon } from '../../components/coming-soon/coming-soon';
 import { catchError, of } from 'rxjs';
+import { Router } from '@angular/router';
 
 export function isSettingEnabled(value: unknown): boolean {
   if (typeof value === 'boolean') {
@@ -31,8 +32,15 @@ export function isSettingEnabled(value: unknown): boolean {
 })
 export class Public implements OnInit {
   public readonly settingService = inject(SettingsService);
+  public readonly router = inject(Router);
   public readonly settingsData = computed(() => this.settingService.settingsData());
-  public readonly isComingSoonEnabled = computed(() => isSettingEnabled(this.settingsData()?.['is_enabled_coming_soon']));
+  public readonly currentUrl = computed(() => this.router.url);
+  public readonly isComingSoonEnabled = computed(() => {
+    if (this.currentUrl() === '/login') {
+      return false;
+    }
+    return isSettingEnabled(this.settingsData()?.['is_enabled_coming_soon']);
+  });
   menuItems: { label: string; route: string }[] = [
     { label: 'Home', route: '/' },
     { label: 'Login', route: '/login' },
