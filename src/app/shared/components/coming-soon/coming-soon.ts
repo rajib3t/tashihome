@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { SettingsService } from '../../../services/settings/settings-service';
 import { CommonModule } from '@angular/common';
+import th from '@angular/common/locales/th';
 function formatLaunchDate(value: string | null | undefined): string | null {
   if (!value) return null;
  
@@ -61,10 +62,12 @@ function formatCountdown(target: Date | null): Countdown {
 })
 export class ComingSoon {
    private readonly settingService = inject(SettingsService);
- 
+
+
+
   // mirrors useAtomValue(appName) / useAtomValue(whiteLogo)
-  readonly name = this.settingService.settingsData()['app_name']?.trim() || 'TashiHome 1.0';
-  readonly logo = this.settingService.settingsData()['white_logo'] || null;
+   name = this.settingService.settingsData()['app_name']?.trim() || 'TashiHome 1.0';
+   logo = this.settingService.settingsData()['white_logo'] || null;
  
   // mirrors useComingSoonSetting()
   readonly isLoading = signal(true);
@@ -91,9 +94,23 @@ export class ComingSoon {
     this.now(); // depend on the ticking clock
     return formatCountdown(this.media().countdownTarget);
   });
+
+  logData() {
+    this.settingService.getPublicSettings().subscribe({
+      next: (res) => {
+        this.data.set(res);
+        console.log(res);
+        this.name = res.name;
+        this.logo = res.white_logo;
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
+  }
  
   ngOnInit(): void {
-    this.data.set(this.settingService.settingsData());
+    this.logData();
     this.isLoading.set(false);
     this.restartTimer();
   }
