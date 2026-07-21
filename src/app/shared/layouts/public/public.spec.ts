@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Public } from './public';
+import { isSettingEnabled, Public } from './public';
 
 describe('Public', () => {
   let component: Public;
@@ -18,5 +18,14 @@ describe('Public', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should parse the coming-soon flag from booleans and strings', () => {
+    expect(isSettingEnabled(true)).toBeTrue();
+    expect(isSettingEnabled('true')).toBeTrue();
+    expect(isSettingEnabled(' TRUE ')).toBeTrue();
+    expect(isSettingEnabled(false)).toBeFalse();
+    expect(isSettingEnabled('false')).toBeFalse();
+    expect(isSettingEnabled(null)).toBeFalse();
   });
 });

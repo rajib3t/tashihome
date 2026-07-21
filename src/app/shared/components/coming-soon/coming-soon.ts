@@ -93,11 +93,9 @@ export class ComingSoon {
   });
  
   ngOnInit(): void {
-    this.settingService.getSettings().subscribe((data) => {
-      this.data.set(data);
-      this.isLoading.set(false);
-      this.restartTimer();
-    });
+    this.data.set(this.settingService.settingsData());
+    this.isLoading.set(false);
+    this.restartTimer();
   }
  
   ngOnDestroy(): void {

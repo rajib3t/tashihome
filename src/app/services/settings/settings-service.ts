@@ -1,6 +1,6 @@
 import { computed, inject, Service, signal } from '@angular/core';
 import { ApiService } from '../api/api-service';
-import { catchError, map, Observable, tap, throwError } from 'rxjs';
+import { catchError, finalize, map, Observable, tap, throwError } from 'rxjs';
 import { ApiResponse } from '../api/api-response.model';
 import { SettingItem } from './setting.model';
 
@@ -32,6 +32,7 @@ export class SettingsService {
     public readonly apiService = inject(ApiService);
 
     #settingsData = signal<Record<string, string | null>>({});
+    #publicSettingsRequest: Observable<unknown> | null = null;
     settingsData = computed(() => this.#settingsData());
 
     setSettingsData(data: any) {
@@ -87,5 +88,29 @@ export class SettingsService {
         tap(data => this.setSettingsData(data.data)),
        catchError(this.apiService.passthroughError)
       );
+    }
+
+    loadPublicSettings(): Observable<any> {
+      if (this.#publicSettingsRequest) {
+        return this.#publicSettingsRequest;
+      }
+
+      this.#publicSettingsRequest = this.apiService.get<any>('/settings/').pipe(
+        map(response => response.data),
+        tap(data => this.setSettingsData(data?.data ?? data)),
+        catchError((error) => {
+          this.setSettingsData({});
+          return throwError(() => error);
+        }),
+        finalize(() => {
+          this.#publicSettingsRequest = null;
+        })
+      );
+
+      return this.#publicSettingsRequest;
+    }
+
+    getPublicSettings(): Observable<any> {
+      return this.loadPublicSettings();
     }
 }
