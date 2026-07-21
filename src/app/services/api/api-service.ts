@@ -3,6 +3,7 @@ import { environment } from '../../../environments/environment';
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { catchError, filter, map, Observable, throwError } from 'rxjs';
 import { ApiErrorPayload, ApiResponse, QueryFilter } from './api-response.model';
+import { REFRESH_ENDPOINT } from '../auth/auth-service';
 @Service()
 export class ApiService {
   readonly apiUrl = environment.apiUrl;
@@ -11,10 +12,23 @@ export class ApiService {
 
   private http = inject(HttpClient);
   constructor() {}
+  private getCookie(name: string): string | undefined {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    return document.cookie
+      .split('; ')
+      .find(row => row.startsWith(`${name}=`))
+      ?.split('=')
+      .slice(1)
+      .join('=');
+  }
+
   private makeRequest<T>(method: string, endpoint: string, body?: any, isProtected: boolean = false, options?: any): Observable<ApiResponse<T>> {
     const url = `${this.apiUrlWithVersion}${endpoint}`;
     
-    const headers = this.createHeaders(isProtected, body);
+    const headers = this.createHeaders(isProtected, body, method, endpoint);
     const requestOptions = {
       headers,
       observe: 'response' as 'response',
@@ -54,12 +68,18 @@ export class ApiService {
   }
 
 
-  private createHeaders(isProtected: boolean = false, body?: any): HttpHeaders {
+  private createHeaders(isProtected: boolean = false, body?: any, method?: string, endpoint?: string): HttpHeaders {
     // Let the interceptor handle all headers including Content-Type, Accept, etc.
     let headers = new HttpHeaders();
     
-    if (isProtected) {
+    const isRefreshTokenPost = !isProtected && method?.toLowerCase() === 'post' && endpoint === REFRESH_ENDPOINT;
+
+    if (isProtected || isRefreshTokenPost) {
       headers = headers.set('X-Is-Protected', 'true');
+      const csrfToken = this.getCookie('csrf_token');
+      if (csrfToken) {
+        headers = headers.set('X-CSRF-Token', csrfToken);
+      }
     }
     
     // Don't set Content-Type for FormData - let Angular auto-set with boundary
