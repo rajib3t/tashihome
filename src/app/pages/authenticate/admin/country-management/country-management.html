@@ -76,18 +76,19 @@
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Name</th>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Code</th>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
+<th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-950">
             @if (isLoading()) {
               <tr>
-                <td colspan="3" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
-                  Loading countries...
-                </td>
+                <td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+  Loading countries...
+</td>
               </tr>
             } @else if (countries().length === 0) {
               <tr>
-                <td colspan="3" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                <td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                   No countries found.
                 </td>
               </tr>
@@ -100,6 +101,24 @@
                     <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
                       {{ country.status }}
                     </span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        (click)="openEditModal(country)"
+                        class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        (click)="openDisableModal(country)"
+                        class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20"
+                      >
+                        Disable
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -135,48 +154,199 @@
         </div>
       }
 
-      <form [formGroup]="createCountryForm" (ngSubmit)="submitCreateForm()">
+        <form [formGroup]="createCountryForm" (ngSubmit)="submitCreateForm()" novalidate>
+  <div class="mb-4">
+    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
+    <input
+      id="name"
+      type="text"
+      formControlName="name"
+      [class.border-red-500]="nameControl.invalid && nameControl.touched"
+      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    />
+    @if (nameControl.invalid && nameControl.touched) {
+      <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+        @if (nameControl.errors?.['required']) {
+          Name is required.
+        } @else if (nameControl.errors?.['minlength']) {
+          Name must be at least {{ nameControl.errors?.['minlength'].requiredLength }} characters.
+        } @else if (nameControl.errors?.['maxlength']) {
+          Name must not exceed {{ nameControl.errors?.['maxlength'].requiredLength }} characters.
+        }
+      </p>
+    }
+  </div>
+
+  <div class="mb-4">
+    <label for="code" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Code</label>
+    <input
+      id="code"
+      type="text"
+      formControlName="code"
+      [class.border-red-500]="codeControl.invalid && codeControl.touched"
+      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    />
+    @if (codeControl.invalid && codeControl.touched) {
+      <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+        @if (codeControl.errors?.['required']) {
+          Code is required.
+        } @else if (codeControl.errors?.['pattern']) {
+          Code must contain letters only.
+        } @else if (codeControl.errors?.['minlength']) {
+          Code must be at least {{ codeControl.errors?.['minlength'].requiredLength }} characters.
+        } @else if (codeControl.errors?.['maxlength']) {
+          Code must not exceed {{ codeControl.errors?.['maxlength'].requiredLength }} characters.
+        }
+      </p>
+    }
+  </div>
+
+  <div class="flex justify-end space-x-3">
+    <button
+      type="button"
+      (click)="closeCreateModal()"
+      class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      [disabled]="isCreating() || createCountryForm.invalid"
+      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+    >
+      {{ isCreating() ? 'Creating...' : 'Create' }}
+    </button>
+  </div>
+</form>
+    </div>
+
+  </div>
+</app-modal>
+<!-- Edit Modal -->
+<app-modal
+  [isOpen]="isEditModalOpen()"
+  (close)="closeEditModal()"
+  className="max-w-[700px] m-4"
+>
+  <div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+
+    <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">Edit Country</h2>
+    </div>
+
+    <div class="px-6 py-4">
+      @if (editErrorMessage()) {
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+          {{ editErrorMessage() }}
+        </div>
+      }
+
+      <form [formGroup]="editCountryForm" (ngSubmit)="submitEditForm()" novalidate>
         <div class="mb-4">
-          <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
+          <label for="edit-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
           <input
-            id="name"
+            id="edit-name"
             type="text"
             formControlName="name"
-            required
+            [class.border-red-500]="editNameControl.invalid && editNameControl.touched"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
+          @if (editNameControl.invalid && editNameControl.touched) {
+            <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+              @if (editNameControl.errors?.['required']) {
+                Name is required.
+              } @else if (editNameControl.errors?.['minlength']) {
+                Name must be at least {{ editNameControl.errors?.['minlength'].requiredLength }} characters.
+              } @else if (editNameControl.errors?.['maxlength']) {
+                Name must not exceed {{ editNameControl.errors?.['maxlength'].requiredLength }} characters.
+              }
+            </p>
+          }
         </div>
 
         <div class="mb-4">
-          <label for="code" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Code</label>
+          <label for="edit-code" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Code</label>
           <input
-            id="code"
+            id="edit-code"
             type="text"
             formControlName="code"
-            required
+            [class.border-red-500]="editCodeControl.invalid && editCodeControl.touched"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
+          @if (editCodeControl.invalid && editCodeControl.touched) {
+            <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+              @if (editCodeControl.errors?.['required']) {
+                Code is required.
+              } @else if (editCodeControl.errors?.['pattern']) {
+                Code must contain letters only.
+              } @else if (editCodeControl.errors?.['minlength']) {
+                Code must be at least {{ editCodeControl.errors?.['minlength'].requiredLength }} characters.
+              } @else if (editCodeControl.errors?.['maxlength']) {
+                Code must not exceed {{ editCodeControl.errors?.['maxlength'].requiredLength }} characters.
+              }
+            </p>
+          }
         </div>
 
         <div class="flex justify-end space-x-3">
           <button
             type="button"
-            (click)="closeCreateModal()"
+            (click)="closeEditModal()"
             class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
           >
             Cancel
           </button>
           <button
             type="submit"
-            [disabled]="isCreating()"
+            [disabled]="isEditing() || editCountryForm.invalid"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
           >
-            {{ isCreating() ? 'Creating...' : 'Create' }}
+            {{ isEditing() ? 'Saving...' : 'Save Changes' }}
           </button>
         </div>
       </form>
     </div>
+  </div>
+</app-modal>
 
+<!-- Disable Confirmation Modal -->
+<app-modal
+  [isOpen]="isDisableModalOpen()"
+  (close)="closeDisableModal()"
+  className="max-w-[480px] m-4"
+>
+  <div class="relative w-full max-w-[480px] rounded-3xl bg-white p-6 dark:bg-gray-900">
+    <h2 class="text-lg font-bold text-gray-900 dark:text-white">Disable Country</h2>
+
+    <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+      Are you sure you want to disable
+      <span class="font-semibold text-gray-900 dark:text-white">{{ countryToDisable()?.name }}</span>?
+      This will set its status to inactive.
+    </p>
+
+    @if (disableErrorMessage()) {
+      <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+        {{ disableErrorMessage() }}
+      </div>
+    }
+
+    <div class="mt-6 flex justify-end space-x-3">
+      <button
+        type="button"
+        (click)="closeDisableModal()"
+        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        [disabled]="isDisabling()"
+        (click)="confirmDisable()"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+      >
+        {{ isDisabling() ? 'Disabling...' : 'Disable' }}
+      </button>
+    </div>
   </div>
 </app-modal>
   </app-card>

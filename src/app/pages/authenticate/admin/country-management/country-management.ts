@@ -30,14 +30,25 @@ export class CountryManagement {
   readonly isLoading = signal(false);
   readonly errorMessage = signal('');
   readonly currentPage = signal(1);
-  readonly pageSize = signal(10 );
+  readonly pageSize = signal(10);
   readonly totalItems = signal(0);
 
-
-     isCreateModalOpen = signal<boolean>(false);
-
+  isCreateModalOpen = signal<boolean>(false);
   isCreating = signal(false);
   createErrorMessage = signal<string | null>(null);
+
+  // --- Edit state ---
+  isEditModalOpen = signal<boolean>(false);
+  isEditing = signal(false);
+  editErrorMessage = signal<string | null>(null);
+  selectedCountry = signal<Country | null>(null);
+
+  // --- Disable state ---
+  isDisableModalOpen = signal<boolean>(false);
+  isDisabling = signal(false);
+  disableErrorMessage = signal<string | null>(null);
+  countryToDisable = signal<Country | null>(null);
+
   readonly searchForm = this.formBuilder.group({
     name: [''],
     code: [''],
@@ -61,7 +72,6 @@ export class CountryManagement {
     this.loadCountries();
   }
 
-
   onPageSizeChange(pageSize: number): void {
     this.pageSize.set(pageSize);
     this.currentPage.set(1);
@@ -69,7 +79,6 @@ export class CountryManagement {
   }
 
   private loadCountries(): void {
-
     const filters = this.searchForm.getRawValue();
     const search: CountrySearch = {
       name: filters.name?.trim() || undefined,
@@ -107,29 +116,191 @@ export class CountryManagement {
       });
   }
 
+  // ================= CREATE =================
+
   public readonly createCountryForm = this.formBuilder.group({
-    name: ['', Validators.required],
-    code: ['', Validators.required],
-    
+    name: [
+      '',
+      [Validators.required, Validators.minLength(2), Validators.maxLength(100)],
+    ],
+    code: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(3),
+        Validators.pattern(/^[A-Za-z]+$/),
+      ],
+    ],
   });
 
   openCreateModal() {
+    this.createCountryForm.reset({ name: '', code: '' });
+    this.createErrorMessage.set(null);
     this.isCreateModalOpen.set(true);
   }
 
-closeCreateModal() {
+  closeCreateModal() {
     this.isCreateModalOpen.set(false);
-}
-
-submitCreateForm() {
-    if (this.createCountryForm.invalid) {
-      return;
-    }
   }
 
-onPageChange(page: number) {
+  submitCreateForm() {
+    if (this.createCountryForm.invalid) {
+      this.createCountryForm.markAllAsTouched();
+      return;
+    }
+
+    const payload = this.createCountryForm.getRawValue();
+
+    this.isCreating.set(true);
+    this.createErrorMessage.set(null);
+
+    this.countryService.createCountry(payload as any)
+      .pipe(
+        finalize(() => this.isCreating.set(false)),
+        catchError((error) => {
+          this.createErrorMessage.set(
+            error?.error?.message || error?.message || 'Unable to create country.'
+          );
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        this.closeCreateModal();
+        this.loadCountries();
+      });
+  }
+
+  get nameControl() {
+    return this.createCountryForm.get('name')!;
+  }
+
+  get codeControl() {
+    return this.createCountryForm.get('code')!;
+  }
+
+  // ================= EDIT =================
+
+  public readonly editCountryForm = this.formBuilder.group({
+    name: [
+      '',
+      [Validators.required, Validators.minLength(2), Validators.maxLength(100)],
+    ],
+    code: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(3),
+        Validators.pattern(/^[A-Za-z]+$/),
+      ],
+    ],
+  });
+
+  get editNameControl() {
+    return this.editCountryForm.get('name')!;
+  }
+
+  get editCodeControl() {
+    return this.editCountryForm.get('code')!;
+  }
+
+  openEditModal(country: Country) {
+    this.selectedCountry.set(country);
+    this.editCountryForm.reset({
+      name: country.name,
+      code: country.code,
+    });
+    this.editErrorMessage.set(null);
+    this.isEditModalOpen.set(true);
+  }
+
+  closeEditModal() {
+    this.isEditModalOpen.set(false);
+    this.selectedCountry.set(null);
+  }
+
+  submitEditForm() {
+    if (this.editCountryForm.invalid) {
+      this.editCountryForm.markAllAsTouched();
+      return;
+    }
+
+    const country = this.selectedCountry();
+    if (!country) {
+      return;
+    }
+
+    const payload = this.editCountryForm.getRawValue();
+
+    this.isEditing.set(true);
+    this.editErrorMessage.set(null);
+
+    this.countryService.updateCountry(country.id, payload as any)
+      .pipe(
+        finalize(() => this.isEditing.set(false)),
+        catchError((error) => {
+          this.editErrorMessage.set(
+            error?.error?.message || error?.message || 'Unable to update country.'
+          );
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        this.closeEditModal();
+        this.loadCountries();
+      });
+  }
+
+  // ================= DISABLE =================
+
+  openDisableModal(country: Country) {
+    this.countryToDisable.set(country);
+    this.disableErrorMessage.set(null);
+    this.isDisableModalOpen.set(true);
+  }
+
+  closeDisableModal() {
+    this.isDisableModalOpen.set(false);
+    this.countryToDisable.set(null);
+  }
+
+  confirmDisable() {
+    const country = this.countryToDisable();
+    if (!country) {
+      return;
+    }
+
+    this.isDisabling.set(true);
+    this.disableErrorMessage.set(null);
+
+    this.countryService.updateCountry(country.id, { status: 'inactive' } as any)
+      .pipe(
+        finalize(() => this.isDisabling.set(false)),
+        catchError((error) => {
+          this.disableErrorMessage.set(
+            error?.error?.message || error?.message || 'Unable to disable country.'
+          );
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        this.closeDisableModal();
+        this.loadCountries();
+      });
+  }
+
+  onPageChange(page: number) {
     this.currentPage.set(page);
     this.loadCountries();
   }
-
 }
