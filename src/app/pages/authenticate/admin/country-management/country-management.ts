@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, finalize, of } from 'rxjs';
 import { Country, CountryQuery, CountrySearch } from '../../../../services/country/country-model';
 import { CountryService } from '../../../../services/country/country-service';
@@ -58,8 +58,18 @@ export class CountryManagement {
   readonly pageSizeOptions = [10, 20, 30];
 
   ngOnInit(): void {
-    this.loadCountries();
-  }
+  this.loadCountries();
+  this.setupCodeUppercase(this.createCountryForm);
+  this.setupCodeUppercase(this.editCountryForm);
+}
+
+private setupCodeUppercase(form: FormGroup): void {
+  form.get('code')?.valueChanges.subscribe((value) => {
+    if (value && value !== value.toUpperCase()) {
+      form.get('code')?.setValue(value.toUpperCase(), { emitEvent: false });
+    }
+  });
+}
 
   onSearch(): void {
     this.currentPage.set(1);
@@ -145,34 +155,35 @@ export class CountryManagement {
   }
 
   submitCreateForm() {
-    if (this.createCountryForm.invalid) {
-      this.createCountryForm.markAllAsTouched();
-      return;
-    }
-
-    const payload = this.createCountryForm.getRawValue();
-
-    this.isCreating.set(true);
-    this.createErrorMessage.set(null);
-
-    this.countryService.createCountry(payload as any)
-      .pipe(
-        finalize(() => this.isCreating.set(false)),
-        catchError((error) => {
-          this.createErrorMessage.set(
-            error?.error?.message || error?.message || 'Unable to create country.'
-          );
-          return of(null);
-        })
-      )
-      .subscribe((response) => {
-        if (!response) {
-          return;
-        }
-        this.closeCreateModal();
-        this.loadCountries();
-      });
+  if (this.createCountryForm.invalid) {
+    this.createCountryForm.markAllAsTouched();
+    return;
   }
+
+  const payload = this.createCountryForm.getRawValue();
+  payload.code = payload.code?.toUpperCase() ?? null;
+
+  this.isCreating.set(true);
+  this.createErrorMessage.set(null);
+
+  this.countryService.createCountry(payload as any)
+    .pipe(
+      finalize(() => this.isCreating.set(false)),
+      catchError((error) => {
+        this.createErrorMessage.set(
+          error?.error?.message || error?.message || 'Unable to create country.'
+        );
+        return of(null);
+      })
+    )
+    .subscribe((response) => {
+      if (!response) {
+        return;
+      }
+      this.closeCreateModal();
+      this.loadCountries();
+    });
+}
 
   get nameControl() {
     return this.createCountryForm.get('name')!;
@@ -224,40 +235,46 @@ export class CountryManagement {
   }
 
   submitEditForm() {
-    if (this.editCountryForm.invalid) {
-      this.editCountryForm.markAllAsTouched();
-      return;
-    }
-
-    const country = this.selectedCountry();
-    if (!country) {
-      return;
-    }
-
-    const payload = this.editCountryForm.getRawValue();
-
-    this.isEditing.set(true);
-    this.editErrorMessage.set(null);
-
-    this.countryService.updateCountry(country.id, payload as any)
-      .pipe(
-        finalize(() => this.isEditing.set(false)),
-        catchError((error) => {
-          this.editErrorMessage.set(
-            error?.error?.message || error?.message || 'Unable to update country.'
-          );
-          return of(null);
-        })
-      )
-      .subscribe((response) => {
-        if (!response) {
-          return;
-        }
-        this.closeEditModal();
-        this.loadCountries();
-      });
+  if (this.editCountryForm.invalid) {
+    this.editCountryForm.markAllAsTouched();
+    return;
   }
 
+  const country = this.selectedCountry();
+  if (!country) {
+    return;
+  }
+
+  
+  const payload = this.editCountryForm.getRawValue();
+  payload.code = payload.code?.toUpperCase() || null;
+
+  this.isEditing.set(true);
+  this.editErrorMessage.set(null);
+
+  this.countryService.updateCountry(country.id, payload as any)
+    .pipe(
+      finalize(() => this.isEditing.set(false)),
+      catchError((error) => {
+        this.editErrorMessage.set(
+          error?.error?.message || error?.message || 'Unable to update country.'
+        );
+        return of(null);
+      })
+    )
+    .subscribe((response) => {
+      if (!response) {
+        return;
+      }
+      this.closeEditModal();
+      this.loadCountries();
+    });
+}
+  onCodeInput(event: Event, form: FormGroup): void {
+  const input = event.target as HTMLInputElement;
+  const upper = input.value.toUpperCase();
+  form.get('code')?.setValue(upper, { emitEvent: false });
+}
   // ================= DISABLE =================
 
   openDisableModal(country: Country) {
