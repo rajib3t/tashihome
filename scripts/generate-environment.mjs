@@ -20,7 +20,7 @@ const renderEnvironment = (production, apiUrl) => `export const environment = {
 };
 `;
 
-const devApiUrl = process.env.DEV_API_URL || '/api';
+const devApiUrl = '/api';
 const prodApiUrl = process.env.API_URL || 'https://api.tashihomes.in';
 
 writeFileSync(browserEnvPath, renderEnvironment(false, devApiUrl));
