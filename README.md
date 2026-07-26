@@ -1,59 +1,49 @@
-# TashhomeApp
+# TashHome App
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.7.
+TashHome App is an Angular 22 web application for a homestay business with a public-facing experience and an authenticated admin area. The current implementation includes public pages, login, role-based admin routing, country management, settings, and shared UI components.
 
-## Development server
+## Overview
 
-To start a local development server, run:
+- Public site for visitors and authentication entry points
+- Admin dashboard protected by authentication and role-based guards
+- API-driven services for auth, settings, countries, and users
+- SSR-ready Angular setup with server-side rendering support
 
-```bash
-ng serve
-```
+## Tech stack
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Angular 22
+- TypeScript
+- RxJS
+- Angular Router
+- Tailwind CSS + DaisyUI
+- Vitest for unit tests
 
-## Code scaffolding
+## Getting started
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. Install dependencies
+   ```bash
+   bun install
+   ```
+2. Generate environment files if needed
+   ```bash
+   bun run sync:env
+   ```
+3. Start the development server
+   ```bash
+   bun run start
+   ```
+4. Open the app at http://localhost:4200/
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Useful commands
 
 ```bash
-ng test
+bun run build
+bun run test
+bun run sync:env
 ```
 
-## Running end-to-end tests
+## Project documentation
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- [structure.md](structure.md)
+- [phases.md](phases.md)
+- [security.md](security.md)
