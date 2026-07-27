@@ -43,11 +43,11 @@ export class CountryManagement {
   editErrorMessage = signal<string | null>(null);
   selectedCountry = signal<Country | null>(null);
 
-  // --- Disable state ---
-  isDisableModalOpen = signal<boolean>(false);
-  isDisabling = signal(false);
-  disableErrorMessage = signal<string | null>(null);
-  countryToDisable = signal<Country | null>(null);
+  // --- Status toggle state ---
+  isStatusModalOpen = signal<boolean>(false);
+  isUpdatingStatus = signal(false);
+  statusErrorMessage = signal<string | null>(null);
+  countryToToggleStatus = signal<Country | null>(null);
 
   readonly searchForm = this.formBuilder.group({
     name: [''],
@@ -277,32 +277,50 @@ private setupCodeUppercase(form: FormGroup): void {
 }
   // ================= DISABLE =================
 
-  openDisableModal(country: Country) {
-    this.countryToDisable.set(country);
-    this.disableErrorMessage.set(null);
-    this.isDisableModalOpen.set(true);
+  openStatusModal(country: Country) {
+    this.countryToToggleStatus.set(country);
+    this.statusErrorMessage.set(null);
+    this.isStatusModalOpen.set(true);
   }
 
-  closeDisableModal() {
-    this.isDisableModalOpen.set(false);
-    this.countryToDisable.set(null);
+  getStatusLabel(status: string): string {
+    return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown';
   }
 
-  confirmDisable() {
-    const country = this.countryToDisable();
+  isInactive(country: Country | null): boolean {
+    return country?.status === 'inactive';
+  }
+
+  getDisableActionLabel(country: Country | null): string {
+    return this.isInactive(country) ? 'Enable' : 'Disable';
+  }
+
+  getStatusAction(country: Country | null): 'active' | 'inactive' {
+    return this.isInactive(country) ? 'active' : 'inactive';
+  }
+
+  closeStatusModal() {
+    this.isStatusModalOpen.set(false);
+    this.countryToToggleStatus.set(null);
+  }
+
+  confirmStatusToggle() {
+    const country = this.countryToToggleStatus();
     if (!country) {
       return;
     }
 
-    this.isDisabling.set(true);
-    this.disableErrorMessage.set(null);
+    const nextStatus = this.getStatusAction(country);
 
-    this.countryService.updateCountry(country.id, { status: 'inactive' } as any)
+    this.isUpdatingStatus.set(true);
+    this.statusErrorMessage.set(null);
+
+    this.countryService.statusUpdate(country.id, nextStatus)
       .pipe(
-        finalize(() => this.isDisabling.set(false)),
+        finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {
-          this.disableErrorMessage.set(
-            error?.error?.message || error?.message || 'Unable to disable country.'
+          this.statusErrorMessage.set(
+            error?.error?.message || error?.message || `Unable to ${nextStatus === 'active' ? 'enable' : 'disable'} country.`
           );
           return of(null);
         })
@@ -311,7 +329,7 @@ private setupCodeUppercase(form: FormGroup): void {
         if (!response) {
           return;
         }
-        this.closeDisableModal();
+        this.closeStatusModal();
         this.loadCountries();
       });
   }

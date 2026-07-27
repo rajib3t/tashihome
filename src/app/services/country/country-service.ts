@@ -52,9 +52,17 @@ export class CountryService {
         );
     }
 
-    updateCountry(id: string, country: Partial<Country>): Observable<Country> {
-        return this.apiService.protectedPut<Country>(`/countries/${id}/`, country).pipe(
-            map(response => response.data)
+    updateCountry(id: string, country: Partial<CountryRequest>): Observable<ApiResponse<Country>> {
+        return this.apiService.protectedPut<ApiResponse<Country>>(`/countries/${id}`, country).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        );
+    }
+
+    statusUpdate(id: string, status: string): Observable<ApiResponse<Country>> {
+        return this.apiService.protectedPatch<ApiResponse<Country>>(`/countries/${id}/${status}`, { status }).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
         );
     }
 
