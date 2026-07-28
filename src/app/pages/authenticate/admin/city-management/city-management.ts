@@ -40,6 +40,7 @@ export class CityManagement {
   readonly totalItems = signal(0);
   // City Image Preview
   readonly cityImagePreview = signal('')
+  readonly editCityImagePreview = signal('')
   // Countries List
   readonly countries = signal<Country[]>([]);
   // --- Status toggle state ---
@@ -48,6 +49,11 @@ export class CityManagement {
   statusErrorMessage = signal<string | null>(null);
   cityToToggleStatus = signal<City | null>(null);
 
+  // --- Edit state ---
+  isEditModalOpen = signal<boolean>(false);
+  isEditing = signal(false);
+  editErrorMessage = signal<string | null>(null);
+  selectedCity = signal<City | null>(null);
   ngOnInit(): void {
     this.loadCountries();
     this.loadCities();
@@ -57,6 +63,13 @@ export class CityManagement {
   isCreateModalOpen = signal<boolean>(false);
   isCreating = signal(false);
   createErrorMessage = signal<string | null>(null);
+
+  public readonly editCityForm = this.formBuilder.group({
+    name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+    countryId: ['', [Validators.required]],
+    city_image: [null as File | string | null],
+    status: ['', [Validators.required]],
+  });
 
     readonly searchForm = this.formBuilder.group({
       name: [''],
@@ -198,6 +211,22 @@ export class CityManagement {
     return this.createCityForm.get('city_image')!;
   }
 
+  get editNameControl() {
+    return this.editCityForm.get('name')!;
+  }
+
+  get editCountryIdControl() {
+    return this.editCityForm.get('countryId')!;
+  }
+
+  get editCityImageControl() {
+    return this.editCityForm.get('city_image')!;
+  }
+
+  get editStatusControl() {
+    return this.editCityForm.get('status')!;
+  }
+
 
    getSerialNumber(index: number): number {
     const currentPage = this.currentPage() || 1;
@@ -223,12 +252,99 @@ export class CityManagement {
   }
 
   openEditModal(city: City) {
-    console.log(city);
+    this.selectedCity.set(city);
+    this.editCityImagePreview.set(city.image_url || '');
+    this.editCityForm.reset({
+      name: city.name,
+      countryId: city.country?.id || '',
+      city_image: city.image_url || null,
+    });
+    this.editErrorMessage.set(null);
+    this.isEditModalOpen.set(true);
+  }
+
+  closeEditModal() {
+    this.isEditModalOpen.set(false);
+    this.selectedCity.set(null);
+  }
+
+  submitEditForm() {
+    if (this.editCityForm.invalid) {
+      this.editCityForm.markAllAsTouched();
+      return;
+    }
+
+    const city = this.selectedCity();
+    if (!city) {
+      return;
+    }
+
+    const formValue = this.editCityForm.getRawValue();
+    const payload = new FormData();
+    payload.append('name', formValue.name || '');
+    payload.append('country_id', formValue.countryId || '');
+
+    if (formValue.city_image && typeof formValue.city_image !== 'string') {
+      payload.append('image_url', formValue.city_image);
+    }
+
+    this.isEditing.set(true);
+    this.editErrorMessage.set(null);
+
+    this.cityService.updateCity(city.id, payload as any)
+      .pipe(
+        finalize(() => this.isEditing.set(false)),
+        catchError((error) => {
+          this.editErrorMessage.set(error?.error?.message || error?.message || 'Unable to update city.');
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        this.closeEditModal();
+        this.loadCities();
+      });
   }
 
   openStatusModal(city: City) {
     this.cityToToggleStatus.set(city);
     this.statusErrorMessage.set(null);
     this.isStatusModalOpen.set(true);
+  }
+
+  closeStatusModal() {
+    this.isStatusModalOpen.set(false);
+    this.cityToToggleStatus.set(null);
+  }
+
+  confirmStatusToggle() {
+    const city = this.cityToToggleStatus();
+    if (!city) {
+      return;
+    }
+
+    const nextStatus = this.getStatusAction(city);
+    this.isUpdatingStatus.set(true);
+    this.statusErrorMessage.set(null);
+
+    this.cityService.statusUpdate(city.id, nextStatus)
+      .pipe(
+        finalize(() => this.isUpdatingStatus.set(false)),
+        catchError((error) => {
+          this.statusErrorMessage.set(
+            error?.error?.message || error?.message || `Unable to ${nextStatus === 'active' ? 'enable' : 'disable'} city.`
+          );
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        this.closeStatusModal();
+        this.loadCities();
+      });
   }
 }

@@ -1,7 +1,10 @@
 import { Country } from "../country/country-model";
 
 export interface CityRequest {
-
+  name?: string;
+  country_id?: string;
+  image_url?: string | File | null;
+  status?: string;
 }
 
 export interface City {

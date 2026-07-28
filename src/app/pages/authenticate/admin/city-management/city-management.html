@@ -96,7 +96,16 @@
                         @for (city of cities(); track city.id; let i = $index) {
                         <tr>
                             <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ getSerialNumber(i) }}</td>
-                            <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ city.name }}</td>
+                            <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                                <div class="flex items-center gap-2">
+                                    <img
+                                        [src]="city.image_url"
+                                        [alt]="city.name"
+                                        class="h-8 w-8 rounded-full object-cover"
+                                    />
+                                    {{ city.name }}
+                                </div>
+                            </td>
                             <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ city.country?.name }}</td>
                             <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
                                 <span
@@ -232,5 +241,125 @@
             </div>
         </div>
 
+    </app-modal>
+    <app-modal [isOpen]="isEditModalOpen()" (close)="closeEditModal()" className="max-w-[700px] m-4">
+        <div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+            <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Edit City</h2>
+            </div>
+
+            <div class="px-6 py-4">
+                @if (editErrorMessage()) {
+                <div
+                    class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+                    {{ editErrorMessage() }}
+                </div>
+                }
+
+                <form [formGroup]="editCityForm" (ngSubmit)="submitEditForm()" novalidate>
+                    <div class="mb-4">
+                        <label for="edit-name" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                        <input
+                            id="edit-name"
+                            type="text"
+                            formControlName="name"
+                            [class.border-red-500]="editNameControl.invalid && editNameControl.touched"
+                            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        />
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="edit-countryId" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
+                        <select
+                            id="edit-countryId"
+                            formControlName="countryId"
+                            [class.border-red-500]="editCountryIdControl.invalid && editCountryIdControl.touched"
+                            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        >
+                            <option value="">Select Country</option>
+                            @for (country of countries(); track country.id) {
+                            <option [value]="country.id">{{ country.name }}</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="edit-cityImage" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">City Image</label>
+                        <app-upload-image
+                            [id]="'edit-cityImage'"
+                            [name]="'editCityImage'"
+                            [preview]="editCityImagePreview()"
+                            buttonText="Upload New Image"
+                            emptyText="No City Image"
+                            (previewChange)="editCityImagePreview.set($event)"
+                            (valueChange)="editCityForm.controls.city_image.setValue($event)"
+                        >
+                        </app-upload-image>
+                    </div>
+
+                    
+
+                    <div class="flex items-center justify-end gap-3">
+                        <button
+                            type="button"
+                            (click)="closeEditModal()"
+                            class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            [disabled]="isEditing() || editCityForm.invalid"
+                            class="inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {{ isEditing() ? 'Saving...' : 'Save Changes' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </app-modal>
+
+    <app-modal [isOpen]="isStatusModalOpen()" (close)="closeStatusModal()" className="max-w-[480px] m-4">
+        <div class="relative w-full max-w-[480px] rounded-3xl bg-white p-6 dark:bg-gray-900">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                {{ isInactive(cityToToggleStatus()) ? 'Enable City' : 'Disable City' }}
+            </h2>
+
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+                Are you sure you want to
+                {{ isInactive(cityToToggleStatus()) ? 'enable' : 'disable' }}
+                <span class="font-semibold text-gray-900 dark:text-white">{{ cityToToggleStatus()?.name }}</span>?
+                {{ isInactive(cityToToggleStatus()) ? 'This will set its status to active.' : 'This will set its status to inactive.' }}
+            </p>
+
+            @if (statusErrorMessage()) {
+            <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+                {{ statusErrorMessage() }}
+            </div>
+            }
+
+            <div class="mt-6 flex justify-end gap-3">
+                <button
+                    type="button"
+                    (click)="closeStatusModal()"
+                    class="rounded-lg bg-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    [disabled]="isUpdatingStatus()"
+                    (click)="confirmStatusToggle()"
+                    [class.bg-red-600]="!isInactive(cityToToggleStatus())"
+                    [class.hover:bg-red-700]="!isInactive(cityToToggleStatus())"
+                    [class.bg-emerald-600]="isInactive(cityToToggleStatus())"
+                    [class.hover:bg-emerald-700]="isInactive(cityToToggleStatus())"
+                    class="rounded-lg px-4 py-2 text-white transition-colors disabled:opacity-50"
+                >
+                    {{ isUpdatingStatus() ? (isInactive(cityToToggleStatus()) ? 'Enabling...' : 'Disabling...') : (isInactive(cityToToggleStatus()) ? 'Enable' : 'Disable') }}
+                </button>
+            </div>
+        </div>
     </app-modal>
 </div>

@@ -2,7 +2,7 @@ import { inject, Service } from '@angular/core';
 import { ApiService } from '../api/api-service';
 import { map, Observable, catchError } from 'rxjs';
 import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
-import { CityQuery } from './city-model';
+import { CityQuery, CityRequest } from './city-model';
 import { City } from './city-model';
 
 @Service()
@@ -50,6 +50,20 @@ export class CityService {
         }
 
         return this.apiService.protectedGet<PaginatedResponse<City>>('/cities/', { params: queryParams }).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        )
+    }
+
+    public updateCity(id: string, city: Partial<CityRequest>): Observable<ApiResponse<City>> {
+        return this.apiService.protectedPut<ApiResponse<City>>(`/cities/${id}`, city).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        )
+    }
+
+    public statusUpdate(id: string, status: string): Observable<ApiResponse<City>> {
+        return this.apiService.protectedPatch<ApiResponse<City>>(`/cities/${id}/${status}`, { status }).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         )
