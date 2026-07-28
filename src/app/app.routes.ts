@@ -9,6 +9,7 @@ import { Admin } from './shared/layouts/authenticate/admin/admin';
 import { AdminDashboard } from './pages/authenticate/admin/admin-dashboard/admin-dashboard';
 import { Setting } from './pages/authenticate/admin/setting/setting';
 import { CountryManagement } from './pages/authenticate/admin/country-management/country-management';
+import { CityManagement } from './pages/authenticate/admin/city-management/city-management';
 
 export const routes: Routes = [
     {
@@ -51,6 +52,11 @@ export const routes: Routes = [
                         path: 'country-management',
                         component: CountryManagement,
                         title: 'Country Management',
+                    },
+                    {
+                        path: 'city-management',
+                        component: CityManagement,
+                        title: 'City Management',
                     }
                 ]
             }

@@ -1,0 +1,57 @@
+import { inject, Service } from '@angular/core';
+import { ApiService } from '../api/api-service';
+import { map, Observable, catchError } from 'rxjs';
+import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
+import { CityQuery } from './city-model';
+import { City } from './city-model';
+
+@Service()
+export class CityService {
+    public apiService = inject(ApiService)
+
+
+
+    public createCity(city: FormData): Observable<ApiResponse<City>> {
+        return this.apiService.protectedPost<ApiResponse<any>>('/cities/', city).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        )
+    }
+
+    public getCities(params: CityQuery): Observable<PaginatedResponse<City>> {
+        const search = params.search ?? {};
+        const queryParams: Record<string, string | number> = {
+            page: params.page ?? 1,
+            size: params.size ?? 10,
+        };
+
+        const name = search.name?.trim();
+        const country_id = search.country_id?.trim();
+        const status = search.status?.trim();
+
+        if (name) {
+            queryParams['name'] = name;
+        }
+
+        if (country_id) {
+            queryParams['country_id'] = country_id;
+        }
+
+        if (status) {
+            queryParams['status'] = status;
+        }
+
+        if (params.sortBy?.trim()) {
+            queryParams['sortBy'] = params.sortBy.trim();
+        }
+
+        if (params.sortOrder) {
+            queryParams['sortOrder'] = params.sortOrder;
+        }
+
+        return this.apiService.protectedGet<PaginatedResponse<City>>('/cities/', { params: queryParams }).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        )
+    }
+}

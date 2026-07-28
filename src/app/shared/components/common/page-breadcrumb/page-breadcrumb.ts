@@ -8,4 +8,5 @@ import { RouterModule } from '@angular/router';
 })
 export class PageBreadcrumb {
   @Input() pageTitle = '';
+  @Input() homelink = '/admin';
 }
