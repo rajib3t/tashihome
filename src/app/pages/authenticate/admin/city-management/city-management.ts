@@ -38,7 +38,7 @@ export class CityManagement {
   readonly isLoading = signal(false);
   readonly errorMessage = signal('');
   readonly currentPage = signal(1);
-  readonly pageSize = signal(10);
+  readonly pageSize = signal(1);
   readonly totalItems = signal(0);
   // City Image Preview
   readonly cityImagePreview = signal('')
@@ -81,6 +81,12 @@ export class CityManagement {
 
     readonly pageSizeOptions = [10, 20, 30];
     onSearch(): void {
+    this.currentPage.set(1);
+    this.loadCities();
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.pageSize.set(pageSize);
     this.currentPage.set(1);
     this.loadCities();
   }

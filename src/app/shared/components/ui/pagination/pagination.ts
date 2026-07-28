@@ -15,7 +15,9 @@ export interface PaginationMeta {
 })
 export class Pagination {
   @Input() meta!: PaginationMeta;
+  @Input() pageSizeOptions: number[] = [10, 20, 30];
   @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getTotalPages(): number {
     if (!this.meta || !this.meta.total || !this.meta.size) return 1;
@@ -39,5 +41,11 @@ export class Pagination {
   changePage(page: number) {
     if (page < 1 || page > this.getTotalPages()) return;
     this.pageChange.emit(page);
+  }
+
+  changePageSize(value: string | number) {
+    const pageSize = Number(value);
+    if (!pageSize || pageSize === this.meta?.size) return;
+    this.pageSizeChange.emit(pageSize);
   }
 }

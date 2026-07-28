@@ -1,5 +1,19 @@
 @if (meta && getTotalPages() > 1) {
 <div class="pagination-container">
+    <div class="pagination-size">
+        <label class="pagination-size-label" for="page-size-select">Rows per page</label>
+        <select
+            id="page-size-select"
+            class="pagination-size-select"
+            [value]="meta.size"
+            (change)="changePageSize($any($event.target).value)"
+            aria-label="Rows per page"
+        >
+            @for (size of pageSizeOptions; track size) {
+                <option [value]="size">{{ size }}</option>
+            }
+        </select>
+    </div>
     <div class="pagination-info">
         Showing {{ (meta.page - 1) * meta.size + 1 }} to {{ getShowingTo() }} of {{ meta.total }} entries
     </div>

@@ -154,6 +154,8 @@
         <app-pagination
             [meta]="meta"
             (pageChange)="onPageChange($event)"
+            [pageSizeOptions]="pageSizeOptions"
+            (pageSizeChange)="onPageSizeChange($event)"
         ></app-pagination>
     </div>
 
