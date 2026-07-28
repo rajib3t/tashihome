@@ -1,17 +1,12 @@
-/* Sidebar Styles - Using theme colors from styles.css */
 .sidebar-root {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  overscroll-behavior: contain;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.03), 0 24px 48px rgb(0 0 0 / 0.08);
 }
 
-/* Menu heading */
-h2 {
-  font-weight: 600;
-  letter-spacing: 0.1em;
+.sidebar-root h2 {
   color: var(--muted-foreground);
-  transition: all 0.3s ease;
 }
 
-/* Menu items */
 .menu-item {
   display: flex;
   align-items: center;
@@ -24,6 +19,8 @@ h2 {
   position: relative;
   font-size: 0.875rem;
   font-weight: 500;
+  width: 100%;
+  min-height: 2.75rem;
 }
 
 .menu-item:hover {
@@ -41,12 +38,14 @@ h2 {
   color: var(--foreground);
 }
 
-/* Icon styling */
 .menu-item-icon-size {
   width: 1.25rem;
   height: 1.25rem;
   flex-shrink: 0;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .menu-item-icon-active {
@@ -57,14 +56,13 @@ h2 {
   color: var(--muted-foreground);
 }
 
-/* Menu item text */
 .menu-item-text {
   flex: 1;
   font-weight: 500;
   transition: opacity 0.2s ease;
+  min-width: 0;
 }
 
-/* Dropdown items */
 .menu-dropdown-item {
   display: flex;
   align-items: center;
@@ -95,7 +93,6 @@ h2 {
   color: var(--muted-foreground);
 }
 
-/* Badges */
 .menu-dropdown-badge {
   font-size: 0.625rem;
   font-weight: 600;
@@ -134,7 +131,6 @@ h2 {
   color: var(--muted-foreground);
 }
 
-/* Scrollbar styling */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -144,12 +140,10 @@ h2 {
   scrollbar-width: none;
 }
 
-/* Dark mode support */
-.dark h2 {
+.dark .sidebar-root h2 {
   color: var(--muted-foreground);
 }
 
-/* Responsive improvements */
 @media (max-width: 1280px) {
   .menu-item {
     padding: 0.625rem 0.875rem;
@@ -160,17 +154,21 @@ h2 {
   }
 }
 
-/* Focus states for accessibility */
 .menu-item:focus-visible,
 .menu-dropdown-item:focus-visible {
   outline: 2px solid var(--sidebar-ring);
   outline-offset: 2px;
 }
 
-/* Smooth transitions for all interactive elements */
 .menu-item,
 .menu-dropdown-item,
 .menu-item-icon-size,
 .menu-item-text {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 1279px) {
+  .sidebar-root {
+    width: 280px;
+  }
 }

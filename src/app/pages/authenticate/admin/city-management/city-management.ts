@@ -10,6 +10,7 @@ import { UploadImage } from '../../../../shared/components/common/upload-image/u
 import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { City, CitySearch } from '../../../../services/city/city-model';
 import { catchError, finalize, of } from 'rxjs';
+import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 
 @Component({
   selector: 'app-city-management',
@@ -18,7 +19,8 @@ import { catchError, finalize, of } from 'rxjs';
     Card,
     Modal,
     ReactiveFormsModule,
-    UploadImage
+    UploadImage,
+    Pagination
   ],
   templateUrl: './city-management.html',
   styleUrl: './city-management.css',
@@ -346,5 +348,10 @@ export class CityManagement {
         this.closeStatusModal();
         this.loadCities();
       });
+  }
+
+  onPageChange(page: number) {
+    this.currentPage.set(page);
+    this.loadCities();
   }
 }

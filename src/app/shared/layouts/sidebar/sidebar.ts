@@ -1,8 +1,8 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, inject, Input, PLATFORM_ID, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { SidebarService } from '../../../services/sidebar/sidebar-service';
-import { combineLatest, map, Subscription } from 'rxjs';
+import { combineLatest, map, Subscription, take, shareReplay } from 'rxjs';
 import { Logo } from '../../components/common/logo/logo';
 import { SafeHtmlPipePipe } from '../../../pipes/safe-html-pipe/safe-html-pipe';
 
@@ -13,6 +13,7 @@ export type NavItem = {
   new?: boolean;
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
+
 @Component({
   selector: 'app-sidebar',
   imports: [
@@ -24,26 +25,35 @@ export type NavItem = {
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
-export class Sidebar {
+export class Sidebar implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   @Input() public navItems: NavItem[] = [];
-  @Input() public title: string = 'Menu'
+  @Input() public title: string = 'Menu';
+
   openSubmenu: string | null | number = null;
   subMenuHeights: { [key: string]: number } = {};
-  @ViewChildren('subMenu') subMenuRefs!: QueryList<ElementRef>;
+
   public sidebarService = inject(SidebarService);
   readonly isExpanded$ = this.sidebarService.isExpanded$;
   readonly isMobileOpen$ = this.sidebarService.isMobileOpen$;
   readonly isHovered$ = this.sidebarService.isHovered$;
 
-  private subscription: Subscription = new Subscription();
+  // Single shared source of truth — computed once, replayed to every subscriber
+  // (async pipe / @let in the template, and the internal subscription below)
+  // instead of building the same combineLatest twice.
+  readonly isVisible$ = combineLatest([this.isExpanded$, this.isMobileOpen$, this.isHovered$]).pipe(
+    map(([expanded, mobile, hovered]) => expanded || mobile || hovered),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
 
+  private subscription: Subscription = new Subscription();
+  private savedSubMenuHeights: { [key: string]: number } = {};
+  private savedOpenSubmenu: string | null | number = null;
 
   private router = inject(Router);
-  constructor(private cdr: ChangeDetectorRef) { }
+  constructor(private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() {
-    // Subscribe to router events
+  ngOnInit(): void {
     this.subscription.add(
       this.router.events.subscribe(event => {
         if (event instanceof NavigationEnd) {
@@ -52,30 +62,29 @@ export class Sidebar {
       })
     );
 
-    // Subscribe to combined observables to close submenus when all are false
+    // Close open submenus (and remember their heights) when the sidebar
+    // collapses entirely; restore them if it re-expands.
     this.subscription.add(
-      combineLatest([this.isExpanded$, this.isMobileOpen$, this.isHovered$]).subscribe(
-        ([isExpanded, isMobileOpen, isHovered]) => {
-          if (!isExpanded && !isMobileOpen && !isHovered) {
-            // this.openSubmenu = null;
-            // this.savedSubMenuHeights = { ...this.subMenuHeights };
-            // this.subMenuHeights = {};
-            this.cdr.detectChanges();
-          } else {
-            // Restore saved heights when reopening
-            // this.subMenuHeights = { ...this.savedSubMenuHeights };
-            // this.cdr.detectChanges();
-          }
+      this.isVisible$.subscribe(isVisible => {
+        if (!isVisible) {
+          this.savedSubMenuHeights = { ...this.subMenuHeights };
+          this.savedOpenSubmenu = this.openSubmenu;
+          this.openSubmenu = null;
+          this.subMenuHeights = {};
+        } else if (Object.keys(this.savedSubMenuHeights).length) {
+          this.subMenuHeights = { ...this.savedSubMenuHeights };
+          this.savedSubMenuHeights = {};
+          this.openSubmenu = this.savedOpenSubmenu;
+          this.savedOpenSubmenu = null;
         }
-      )
+        this.cdr.detectChanges();
+      })
     );
 
-    // Initial load
     this.setActiveMenuFromRoute(this.router.url);
   }
 
-  ngOnDestroy() {
-    // Clean up subscriptions
+  ngOnDestroy(): void {
     this.subscription.unsubscribe();
   }
 
@@ -108,11 +117,19 @@ export class Sidebar {
   }
 
   onSidebarMouseEnter() {
-    this.isExpanded$.subscribe(expanded => {
+    this.isExpanded$.pipe(take(1)).subscribe(expanded => {
       if (!expanded) {
         this.sidebarService.setHovered(true);
       }
-    }).unsubscribe();
+    });
+  }
+
+  onSubmenuClick() {
+    this.isMobileOpen$.pipe(take(1)).subscribe(isMobile => {
+      if (isMobile) {
+        this.sidebarService.setMobileOpen(false);
+      }
+    });
   }
 
   private setActiveMenuFromRoute(currentUrl: string) {
@@ -143,17 +160,4 @@ export class Sidebar {
       });
     });
   }
-
-  onSubmenuClick() {
-    console.log('click submenu');
-    this.isMobileOpen$.subscribe(isMobile => {
-      if (isMobile) {
-        this.sidebarService.setMobileOpen(false);
-      }
-    }).unsubscribe();
-  }
-
-   isVisible$ = combineLatest([this.isExpanded$, this.isMobileOpen$, this.isHovered$]).pipe(
-  map(([expanded, mobile, hovered]) => expanded || mobile || hovered)
-);
 }
