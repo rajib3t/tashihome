@@ -30,7 +30,7 @@ export class CountryManagement {
   readonly isLoading = signal(false);
   readonly errorMessage = signal('');
   readonly currentPage = signal(1);
-  readonly pageSize = signal(10);
+  readonly pageSize = signal(3);
   readonly totalItems = signal(0);
 
   isCreateModalOpen = signal<boolean>(false);
@@ -337,5 +337,11 @@ private setupCodeUppercase(form: FormGroup): void {
   onPageChange(page: number) {
     this.currentPage.set(page);
     this.loadCountries();
+  }
+
+  getSerialNumber(index: number): number {
+    const currentPage = this.currentPage() || 1;
+    const itemsPerPage = this.meta?.size || 2;
+    return (currentPage - 1) * itemsPerPage + index + 1;
   }
 }
