@@ -49,10 +49,6 @@ const extractAccessToken = (response: any): string | null => {
 };
 
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: HttpHandlerFn) => {
-  const apiUrl = environment.apiUrl;
-  const apiVersion = 'v1';
-  const apiUrlWithVersion = `${apiUrl}/${apiVersion}`;
-  
   // Inject HttpClient directly to avoid circular dependency with ApiService
   const authService = inject(AuthService);
 

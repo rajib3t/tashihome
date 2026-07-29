@@ -8,7 +8,7 @@ import { REFRESH_ENDPOINT } from '../auth/auth-service';
 export class ApiService {
   readonly apiUrl = environment.apiUrl;
   readonly apiVersion = 'v1';
-  readonly apiUrlWithVersion = `${this.apiUrl}/${this.apiVersion}`;
+  readonly apiBaseUrl = this.buildApiBaseUrl(this.apiUrl, this.apiVersion);
 
   private http = inject(HttpClient);
   constructor() {}
@@ -25,8 +25,16 @@ export class ApiService {
       .join('=');
   }
 
+  private buildApiBaseUrl(apiUrl: string, apiVersion: string): string {
+    const normalizedApiUrl = apiUrl.replace(/\/$/, '');
+    const hasApiPrefix = /\/api$/i.test(normalizedApiUrl);
+    const baseUrl = hasApiPrefix ? normalizedApiUrl : `${normalizedApiUrl}/api`;
+
+    return `${baseUrl}/${apiVersion}`;
+  }
+
   private makeRequest<T>(method: string, endpoint: string, body?: any, isProtected: boolean = false, options?: any): Observable<ApiResponse<T>> {
-    const url = `${this.apiUrlWithVersion}${endpoint}`;
+    const url = `${this.apiBaseUrl}${endpoint}`;
     
     const headers = this.createHeaders(isProtected, body, method, endpoint);
     const requestOptions = {
@@ -200,7 +208,7 @@ export class ApiService {
   }
 
   public protectedUpload<T>(endpoint: string, formData: FormData, options?: any): Observable<ApiResponse<T>> {
-    const url = `${this.apiUrl}/${this.apiVersion}/${endpoint}`;
+    const url = `${this.apiBaseUrl}/${endpoint.replace(/^\/+/, '')}`;
     const headers = this.createHeaders(true, formData);
     
     // Merge headers from options with our headers, ensuring FormData headers take precedence

@@ -10,7 +10,7 @@ const browserProdEnvPath = resolve(rootDir, 'src/environments/environment.prod.t
 
 loadEnv({ path: envPath });
 
-const applicationName = process.env.APPLICATION_NAME?.trim() || 'GrayviX';
+const applicationName = process.env.APPLICATION_NAME?.trim() || 'TashiHomes';
 const quote = (value) => `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
 
 const renderEnvironment = (production, apiUrl) => `export const environment = {
