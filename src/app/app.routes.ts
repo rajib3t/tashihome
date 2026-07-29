@@ -10,6 +10,7 @@ import { AdminDashboard } from './pages/authenticate/admin/admin-dashboard/admin
 import { Setting } from './pages/authenticate/admin/setting/setting';
 import { CountryManagement } from './pages/authenticate/admin/country-management/country-management';
 import { CityManagement } from './pages/authenticate/admin/city-management/city-management';
+import { LocationManagement } from './pages/authenticate/admin/location-management/location-management';
 
 export const routes: Routes = [
     {
@@ -57,6 +58,11 @@ export const routes: Routes = [
                         path: 'city-management',
                         component: CityManagement,
                         title: 'City Management',
+                    },
+                    {
+                        path: 'location-management',
+                        component: LocationManagement,
+                        title: 'Location Management',
                     }
                 ]
             }

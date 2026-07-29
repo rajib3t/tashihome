@@ -30,7 +30,7 @@ export class CountryManagement {
   readonly isLoading = signal(false);
   readonly errorMessage = signal('');
   readonly currentPage = signal(1);
-  readonly pageSize = signal(3);
+  readonly pageSize = signal(10);
   readonly totalItems = signal(0);
 
   isCreateModalOpen = signal<boolean>(false);

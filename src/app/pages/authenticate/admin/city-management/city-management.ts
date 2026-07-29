@@ -38,7 +38,7 @@ export class CityManagement {
   readonly isLoading = signal(false);
   readonly errorMessage = signal('');
   readonly currentPage = signal(1);
-  readonly pageSize = signal(1);
+  readonly pageSize = signal(10);
   readonly totalItems = signal(0);
   // City Image Preview
   readonly cityImagePreview = signal('')

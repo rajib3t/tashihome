@@ -59,6 +59,10 @@ export class Admin {
           {
             name:'Cities',
             path:'/admin/city-management'
+          },
+          {
+            name:'Locations',
+            path:'/admin/location-management'
           }
         ]
       },

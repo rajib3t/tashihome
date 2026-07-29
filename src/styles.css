@@ -45,16 +45,16 @@ code {
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.25 0.02 200);
 
-  /* ✅ PRIMARY (Teal #2F6F73) */
-  --primary: oklch(0.52 0.09 190);
+  /* ✅ PRIMARY (Teal #126A7A) */
+  --primary: oklch(0.4838 0.08 213.71);
   --primary-foreground: oklch(0.98 0.01 190);
 
-  /* ✅ SECONDARY (Blue Teal #4792A2) */
-  --secondary: oklch(0.62 0.08 210);
+  /* ✅ SECONDARY (Blue Teal #479FB5) */
+  --secondary: oklch(0.6577 0.0895 216.78);
   --secondary-foreground: oklch(0.98 0.01 190);
 
-  /* ✅ TERTIARY (Orange #EB9C3B) */
-  --accent: oklch(0.75 0.14 65);
+  /* ✅ TERTIARY (Orange #FAA52D) */
+  --accent: oklch(0.7881 0.1584 69.51);
   --accent-foreground: oklch(0.25 0.02 200);
 
   --muted: oklch(0.92 0.02 190);

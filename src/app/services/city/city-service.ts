@@ -12,7 +12,7 @@ export class CityService {
 
 
     public createCity(city: FormData): Observable<ApiResponse<City>> {
-        return this.apiService.protectedPost<ApiResponse<any>>('/cities/', city).pipe(
+        return this.apiService.protectedPost<ApiResponse<City>>('/cities/', city).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         )
