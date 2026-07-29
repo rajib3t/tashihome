@@ -80,13 +80,13 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
-                        @if (isLoading()) {
+                    @if (isLoading()) {
                         <tr>
                             <td colspan="5" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                                 Loading cities...
                             </td>
                         </tr>
-                        } @else if (cities().length === 0) {
+                    } @else if (cities().length === 0) {
                         <tr>
                             <td colspan="5" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                             No cities found.

@@ -12,3 +12,18 @@ export interface LocationResponse {
     id: string;
     
 }
+
+
+export interface LocationSearch{
+    name?: string;
+    city_id?: string;
+    status?: string;
+}
+
+export interface LocationQuery {
+  page?: number;
+  size?: number;
+  search?: LocationSearch;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}

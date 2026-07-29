@@ -8,6 +8,149 @@
                 <span>+ Create Location</span>
             </button>
         </div>
+        <form [formGroup]="searchForm" class="grid gap-4 lg:grid-cols-4" (ngSubmit)="onSearch()">
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <span class="mb-2 block">Name</span>
+        <input
+          type="text"
+          formControlName="name"
+          placeholder="Search by name"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        />
+      </label>
+
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <span class="mb-2 block">City</span>
+        <select
+          formControlName="city_id"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        >
+          <option value="">All Cities</option>
+          @for (city of cities(); track city.id) {
+            <option [value]="city.id">{{ city.name }}, {{ city.country?.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <span class="mb-2 block">Status</span>
+        <select
+          formControlName="status"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        >
+          <option value="">All status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          
+        </select>
+      </label>
+
+      <div class="flex items-end gap-2">
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+        >
+          Search
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200"
+          (click)="onReset()"
+        >
+          Reset
+        </button>
+      </div>
+    </form>
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+                    <thead class="bg-slate-50 dark:bg-slate-900/80">
+                        <tr>
+                            <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">SL</th>
+                            <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Name</th>
+                            <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">City</th>
+                            <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Country</th>
+                            <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
+                            <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                        @if (isLoading()) {
+                        <tr>
+                            <td colspan="6" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                                Loading locations...
+                            </td>
+                        </tr>
+                        } @else if (locations().length === 0) {
+                            <tr>
+                                <td colspan="6" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                                No locations found.
+                                </td>
+                            </tr>
+                        } @else {
+                            @for (location of locations(); track location.id; let i = $index) {
+                        <tr>
+                            <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ getSerialNumber(i) }}</td>
+                            <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                                <div class="flex items-center gap-2">
+                                    
+                                    {{ location.name }}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ location.city?.name }}</td>
+                            <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ location.city?.country?.name }}</td>
+                            <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                                <span
+                                    [class.bg-emerald-50]="location.status !== 'inactive'"
+                                    [class.text-emerald-700]="location.status !== 'inactive'"
+                                    [class.dark:bg-emerald-500/15]="location.status !== 'inactive'"
+                                    [class.dark:text-emerald-300]="location.status !== 'inactive'"
+                                    [class.bg-rose-50]="location.status === 'inactive'"
+                                    [class.text-rose-700]="location.status === 'inactive'"
+                                    [class.dark:bg-rose-500/15]="location.status === 'inactive'"
+                                    [class.dark:text-rose-300]="location.status === 'inactive'"
+                                    class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                                    >
+                                    {{ getStatusLabel(location.status) }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                                <div class="flex items-center gap-2">
+                                    <button
+                                            type="button"
+                                            (click)="openEditModal(location)"
+                                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
+                                        >
+                                            Edit
+                                        </button>
+                                    <button
+                                        type="button"
+                                        (click)="openStatusModal(location)"
+                                        [class.border-red-200]="location.status !== 'inactive'"
+                                        [class.text-red-600]="location.status !== 'inactive'"
+                                        [class.hover:bg-red-50]="location.status !== 'inactive'"
+                                        [class.dark:border-red-900/50]="location.status !== 'inactive'"
+                                        [class.dark:text-red-400]="location.status !== 'inactive'"
+                                        [class.dark:hover:bg-red-900/20]="location.status !== 'inactive'"
+                                        [class.border-emerald-200]="location.status === 'inactive'"
+                                        [class.text-emerald-600]="location.status === 'inactive'"
+                                        [class.hover:bg-emerald-50]="location.status === 'inactive'"
+                                        [class.dark:border-emerald-900/50]="location.status === 'inactive'"
+                                        [class.dark:text-emerald-400]="location.status === 'inactive'"
+                                        [class.dark:hover:bg-emerald-900/20]="location.status === 'inactive'"
+                                        class="rounded-lg border px-3 py-1.5 text-xs font-medium transition"
+                                    >
+                                    {{ getDisableActionLabel(location) }}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </app-card>
 
     <app-modal [isOpen]="isCreateModalOpen()" (close)="closeCreateModal()" className="max-w-[700px] m-4">
