@@ -16,6 +16,20 @@ export class LocationService {
             )
         }
 
+    public updateLocation(id: string, location: Partial<LocationRequest>): Observable<ApiResponse<LocationResponse>> {
+            return this.apiService.protectedPut<ApiResponse<LocationResponse>>(`/locations/${id}`, location).pipe(
+                map(response => response.data),
+                catchError(this.apiService.passthroughError)
+            )
+        }
+
+    public statusUpdate(id: string, status: string): Observable<ApiResponse<LocationResponse>> {
+            return this.apiService.protectedPatch<ApiResponse<LocationResponse>>(`/locations/${id}/${status}`, { status }).pipe(
+                map(response => response.data),
+                catchError(this.apiService.passthroughError)
+            )
+        }
+
     
     public getLocations(params:LocationQuery ): Observable<PaginatedResponse<LocationResponse>> {
             const search = params.search ?? {};
@@ -55,4 +69,3 @@ export class LocationService {
         }
    
 }
-
