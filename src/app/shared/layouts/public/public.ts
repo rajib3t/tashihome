@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import {  HeaderPublic } from './header/header';
 import { RouterOutlet } from '@angular/router';
 import { SettingsService } from '../../../services/settings/settings-service';
@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { ComingSoon } from '../../components/coming-soon/coming-soon';
 import { catchError, of } from 'rxjs';
 import { Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 
 export function isSettingEnabled(value: unknown): boolean {
   if (typeof value === 'boolean') {
@@ -33,6 +34,7 @@ export function isSettingEnabled(value: unknown): boolean {
 export class Public implements OnInit {
   public readonly settingService = inject(SettingsService);
   public readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
   public readonly settingsData = computed(() => this.settingService.settingsData());
   public readonly currentUrl = computed(() => this.router.url);
   public readonly isComingSoonEnabled = computed(() => {
@@ -47,6 +49,10 @@ export class Public implements OnInit {
   ];
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     this.settingService.getPublicSettings().pipe(
       catchError(() => of(null))
     ).subscribe();

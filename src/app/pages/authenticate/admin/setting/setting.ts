@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, PLATFORM_ID } from '@angular/core';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
 import { Card } from '../../../../shared/components/ui/card/card';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { SettingsService } from '../../../../services/settings/settings-service';
 import { catchError, finalize } from 'rxjs';
 import { throwError } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-setting',
@@ -23,6 +24,7 @@ import { throwError } from 'rxjs';
 export class Setting {
   private formBuilder = inject(FormBuilder);
   private settingsService = inject(SettingsService);
+  private platformId = inject(PLATFORM_ID);
 
 
   public errorMessage = signal('');
@@ -50,6 +52,10 @@ export class Setting {
 
 
   ngOnInit() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     this.settingsService.getSettings().subscribe({
       next: (response) => {
         const arrayPayload = Array.isArray(response) ? response : response?.data;

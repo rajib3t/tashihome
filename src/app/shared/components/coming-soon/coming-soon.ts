@@ -1,6 +1,6 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, PLATFORM_ID } from '@angular/core';
 import { SettingsService } from '../../../services/settings/settings-service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 function formatLaunchDate(value: string | null | undefined): string | null {
   if (!value) return null;
  
@@ -61,6 +61,7 @@ function formatCountdown(target: Date | null): Countdown {
 })
 export class ComingSoon {
    private readonly settingService = inject(SettingsService);
+   private readonly platformId = inject(PLATFORM_ID);
 
 
 
@@ -100,7 +101,9 @@ export class ComingSoon {
     
     this.data.set(this.settingService.settingsData());
     this.isLoading.set(false);
-    this.restartTimer();
+    if (isPlatformBrowser(this.platformId)) {
+      this.restartTimer();
+    }
   }
  
   ngOnDestroy(): void {
