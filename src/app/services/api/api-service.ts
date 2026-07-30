@@ -25,6 +25,23 @@ export class ApiService {
       .join('=');
   }
 
+  private getCsrfToken(): string | undefined {
+    const cookieNames = ['csrf_token', 'CSRF-TOKEN', 'XSRF-TOKEN', 'csrfToken'];
+
+    for (const name of cookieNames) {
+      const token = this.getCookie(name);
+      if (token) {
+        try {
+          return decodeURIComponent(token);
+        } catch {
+          return token;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
   private buildApiBaseUrl(apiUrl: string, apiVersion: string): string {
     const normalizedApiUrl = apiUrl.replace(/\/$/, '');
     const hasApiPrefix = /\/api$/i.test(normalizedApiUrl);
@@ -84,9 +101,12 @@ export class ApiService {
 
     if (isProtected || isRefreshTokenPost) {
       headers = headers.set('X-Is-Protected', 'true');
-      const csrfToken = this.getCookie('csrf_token');
+      const csrfToken = this.getCsrfToken();
       if (csrfToken) {
         headers = headers.set('X-CSRF-Token', csrfToken);
+        headers = headers.set('X-XSRF-TOKEN', csrfToken);
+      } else {
+        console.warn('CSRF token cookie was not readable in this runtime. Protected request will be sent without CSRF header.');
       }
     }
     
