@@ -76,8 +76,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
 
   // Set basic headers for all requests, preserving existing ones
   let headers = req.headers
-    .set('Accept', 'application/json')
-    .delete('X-Is-Protected'); // Remove marker header before forwarding
+    .set('Accept', 'application/json');
 
   // Only set Content-Type to application/json if not FormData
   if (!(req.body instanceof FormData)) {

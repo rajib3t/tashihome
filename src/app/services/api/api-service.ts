@@ -31,6 +31,8 @@ export class ApiService {
     for (const name of cookieNames) {
       const token = this.getCookie(name);
       if (token) {
+        console.log(`CSRF token found in cookie: ${name}`);
+        console.log(`Raw CSRF token value: ${token}`);
         try {
           return decodeURIComponent(token);
         } catch {
@@ -38,6 +40,8 @@ export class ApiService {
         }
       }
     }
+
+    console.warn('CSRF token cookie not found. Please ensure the server sets a CSRF token cookie.');
 
     return undefined;
   }
