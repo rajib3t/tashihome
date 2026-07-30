@@ -51,5 +51,19 @@ export class FacilityService {
             catchError(this.apiService.passthroughError)
         )
     }
+
+    public update(id: string, data: FormData): Observable<ApiResponse<Facility>> {
+        return this.apiService.protectedPut<ApiResponse<Facility>>(`/facilities/${id}`, data).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        )
+    }
+
+    public statusUpdate(id: string, status: string): Observable<ApiResponse<Facility>> {
+        return this.apiService.protectedPatch<ApiResponse<Facility>>(`/facilities/${id}/${status}`, { status }).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        )
+    }
     
 }
