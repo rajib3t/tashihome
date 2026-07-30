@@ -151,6 +151,12 @@
                 </table>
             </div>
         </div>
+        <app-pagination
+            [meta]="meta"
+            (pageChange)="onPageChange($event)"
+            [pageSizeOptions]="pageSizeOptions"
+            (pageSizeChange)="onPageSizeChange($event)"
+        ></app-pagination>
     </app-card>
 
     <app-modal [isOpen]="isCreateModalOpen()" (close)="closeCreateModal()" className="max-w-[700px] m-4">

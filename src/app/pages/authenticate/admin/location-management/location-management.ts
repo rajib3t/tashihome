@@ -9,6 +9,7 @@ import { City } from '../../../../services/city/city-model';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { catchError, finalize, of } from 'rxjs';
+import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 
 @Component({
   selector: 'app-location-management',
@@ -16,7 +17,8 @@ import { catchError, finalize, of } from 'rxjs';
     PageBreadcrumb,
     Card,
     ReactiveFormsModule,
-    Modal
+    Modal,
+    Pagination
   ],
   templateUrl: './location-management.html',
   styleUrl: './location-management.css',
@@ -311,5 +313,10 @@ openEditModal(location: LocationResponse) {
         this.closeEditModal();
         this.loadLocations();
       });
+  }
+
+  onPageChange(page: number) {
+    this.currentPage.set(page);
+    this.loadLocations();
   }
 }

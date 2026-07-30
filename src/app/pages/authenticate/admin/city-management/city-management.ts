@@ -184,7 +184,7 @@ export class CityManagement {
         this.isCreating.set(false);
         this.closeCreateModal();
         // Refresh the list
-        // this.loadCountries();
+        this.loadCountries();
       },
       error: (err) => {
         this.isCreating.set(false);
