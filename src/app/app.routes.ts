@@ -13,6 +13,7 @@ import { CityManagement } from './pages/authenticate/admin/city-management/city-
 import { LocationManagement } from './pages/authenticate/admin/location-management/location-management';
 import { FacilityManagement } from './pages/authenticate/admin/facility-management/facility-management';
 import { AmenityManagement } from './pages/authenticate/admin/amenity-management/amenity-management';
+import { RoomTypeManagement } from './pages/authenticate/admin/room-type-management/room-type-management';
 
 export const routes: Routes = [
     {
@@ -75,6 +76,11 @@ export const routes: Routes = [
                         path:'amenity-management',
                         component:AmenityManagement,
                         title:'Amenity Management'
+                    },
+                    {
+                        path:'room-type-management',
+                        component:RoomTypeManagement,
+                        title:'Room Type Management'
                     }
                 ]
             }

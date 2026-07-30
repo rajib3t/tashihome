@@ -77,6 +77,10 @@ export class Admin {
           {
             name:'Amenities',
             path:'/admin/amenity-management'
+          },
+          {
+            name:'Room Types',
+            path:'/admin/room-type-management'
           }
         ]
       }
