@@ -1,11 +1,10 @@
-import { Component, computed, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import {  HeaderPublic } from './header/header';
-import { RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { SettingsService } from '../../../services/settings/settings-service';
 import { CommonModule } from '@angular/common';
 import { ComingSoon } from '../../components/coming-soon/coming-soon';
 import { catchError, of } from 'rxjs';
-import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 
 export function isSettingEnabled(value: unknown): boolean {
@@ -36,13 +35,14 @@ export class Public implements OnInit {
   public readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   public readonly settingsData = computed(() => this.settingService.settingsData());
-  public readonly currentUrl = computed(() => this.router.url);
+  public readonly currentUrl = signal(this.router.url);
   public readonly isComingSoonEnabled = computed(() => {
     if (this.currentUrl() === '/login') {
       return false;
     }
     return isSettingEnabled(this.settingsData()?.['is_enabled_coming_soon']);
   });
+  private routerSubscription: { unsubscribe: () => void } | null = null;
   menuItems: { label: string; route: string }[] = [
     { label: 'Home', route: '/' },
     { label: 'Login', route: '/login' },
@@ -53,8 +53,18 @@ export class Public implements OnInit {
       return;
     }
 
+    this.routerSubscription = this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.currentUrl.set(event.urlAfterRedirects);
+      }
+    });
+
     this.settingService.getPublicSettings().pipe(
       catchError(() => of(null))
     ).subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.routerSubscription?.unsubscribe();
   }
 }
