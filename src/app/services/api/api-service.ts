@@ -31,8 +31,7 @@ export class ApiService {
     for (const name of cookieNames) {
       const token = this.getCookie(name);
       if (token) {
-        console.log(`CSRF token found in cookie: ${name}`);
-        console.log(`Raw CSRF token value: ${token}`);
+        
         try {
           return decodeURIComponent(token);
         } catch {
@@ -106,6 +105,7 @@ export class ApiService {
     if (isProtected || isRefreshTokenPost) {
       headers = headers.set('X-Is-Protected', 'true');
       const csrfToken = this.getCsrfToken();
+      
       if (csrfToken) {
         headers = headers.set('X-CSRF-Token', csrfToken);
         headers = headers.set('X-XSRF-TOKEN', csrfToken);

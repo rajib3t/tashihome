@@ -35,7 +35,7 @@ export class Header {
 
   constructor(public sidebarService: SidebarService) {
     this.isMobileOpen$ = this.sidebarService.isMobileOpen$;
-    console.log(this.authUser())
+    
   }
   handleToggle() {
     if (window.innerWidth >= 1280) {

@@ -24,7 +24,7 @@ export class UserDropdown {
   isOpen = false;
 
   ngOnInit() {
-    console.log('authUser in ngOnInit:', this.authUser());
+    
   }
 
   toggleDropdown() {
