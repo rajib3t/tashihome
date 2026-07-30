@@ -130,4 +130,16 @@ export class AuthService {
     public  getCookie(name : string) {
         return document.cookie.split("; ").find(row => row.startsWith(name + "="))?.split("=")[1];
     }
+
+
+    public logout(): Observable<ApiResponse<any>> {
+        return this.apiService.protectedPost<ApiResponse<any>>('/auth/logout', {}).pipe(
+            map(response => response.data),
+            tap(() => {
+                this.#authUser.set(null);
+                this.removeToken();
+            }),
+            catchError(this.apiService.passthroughError)
+        );
+    }
 }
