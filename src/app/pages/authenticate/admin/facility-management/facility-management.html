@@ -278,8 +278,15 @@
         <button type="button" (click)="closeStatusModal()" class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
           Cancel
         </button>
-        <button type="button" (click)="confirmStatusToggle()" [disabled]="isUpdatingStatus()" class="inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
-          {{ isUpdatingStatus() ? 'Updating...' : 'Confirm' }}
+        <button type="button" (click)="confirmStatusToggle()"
+         [disabled]="isUpdatingStatus()"
+                    (click)="confirmStatusToggle()"
+                    [class.bg-red-600]="!isInactive(facilityToToggleStatus())"
+                    [class.hover:bg-red-700]="!isInactive(facilityToToggleStatus())"
+                    [class.bg-emerald-600]="isInactive(facilityToToggleStatus())"
+                    [class.hover:bg-emerald-700]="isInactive(facilityToToggleStatus())"
+                    class="rounded-lg px-4 py-2 text-white transition-colors disabled:opacity-50">
+          {{ isUpdatingStatus() ? (isInactive(facilityToToggleStatus()) ? 'Enabling...' : 'Disabling...') : (isInactive(facilityToToggleStatus()) ? 'Enable' : 'Disable')}}
         </button>
       </div>
     </div>

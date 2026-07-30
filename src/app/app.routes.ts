@@ -12,6 +12,7 @@ import { CountryManagement } from './pages/authenticate/admin/country-management
 import { CityManagement } from './pages/authenticate/admin/city-management/city-management';
 import { LocationManagement } from './pages/authenticate/admin/location-management/location-management';
 import { FacilityManagement } from './pages/authenticate/admin/facility-management/facility-management';
+import { AmenityManagement } from './pages/authenticate/admin/amenity-management/amenity-management';
 
 export const routes: Routes = [
     {
@@ -69,6 +70,11 @@ export const routes: Routes = [
                         path:'facility-management',
                         component:FacilityManagement,
                         title:'Facility Management'
+                    },
+                    {
+                        path:'amenity-management',
+                        component:AmenityManagement,
+                        title:'Amenity Management'
                     }
                 ]
             }

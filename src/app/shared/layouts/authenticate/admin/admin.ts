@@ -73,6 +73,10 @@ export class Admin {
           {
             name:'Facilities',
             path:'/admin/facility-management'
+          },
+          {
+            name:'Amenities',
+            path:'/admin/amenity-management'
           }
         ]
       }
