@@ -70,7 +70,6 @@ export class CityManagement {
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
     countryId: ['', [Validators.required]],
     city_image: [null as File | string | null],
-    status: ['', [Validators.required]],
   });
 
     readonly searchForm = this.formBuilder.group({
@@ -229,10 +228,6 @@ export class CityManagement {
 
   get editCityImageControl() {
     return this.editCityForm.get('city_image')!;
-  }
-
-  get editStatusControl() {
-    return this.editCityForm.get('status')!;
   }
 
 
