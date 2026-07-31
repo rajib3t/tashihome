@@ -5,7 +5,7 @@
     <div class="mb-4 flex justify-end">
       <button
        
-        class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+        class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
        (click)="openCreateModal()"
       >
         <span>+ Create Country</span>
@@ -48,13 +48,13 @@
       <div class="flex items-end gap-2">
         <button
           type="submit"
-          class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+          class="cursor-pointer inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
         >
           Search
         </button>
         <button
           type="button"
-          class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200"
+          class="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200"
           (click)="onReset()"
         >
           Reset
@@ -119,7 +119,7 @@
                       <button
                         type="button"
                         (click)="openEditModal(country)"
-                        class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
+                        class="cursor-pointer rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
                       >
                         Edit
                       </button>
@@ -138,7 +138,7 @@
                         [class.dark:border-emerald-900/50]="country.status === 'inactive'"
                         [class.dark:text-emerald-400]="country.status === 'inactive'"
                         [class.dark:hover:bg-emerald-900/20]="country.status === 'inactive'"
-                        class="rounded-lg border px-3 py-1.5 text-xs font-medium transition"
+                        class="cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition"
                       >
                         {{ getDisableActionLabel(country) }}
                       </button>
@@ -232,14 +232,14 @@
     <button
       type="button"
       (click)="closeCreateModal()"
-      class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+      class="cursor-pointer px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
     >
       Cancel
     </button>
     <button
       type="submit"
       [disabled]="isCreating() || createCountryForm.invalid"
-      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+      class="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
     >
       {{ isCreating() ? 'Creating...' : 'Create' }}
     </button>
@@ -320,14 +320,14 @@
           <button
             type="button"
             (click)="closeEditModal()"
-            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            class="cursor-pointer px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
           >
             Cancel
           </button>
           <button
             type="submit"
             [disabled]="isEditing() || editCountryForm.invalid"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            class="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
           >
             {{ isEditing() ? 'Saving...' : 'Save Changes' }}
           </button>
@@ -365,7 +365,7 @@
       <button
         type="button"
         (click)="closeStatusModal()"
-        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+        class="cursor-pointer px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
       >
         Cancel
       </button>
@@ -377,7 +377,7 @@
         [class.hover:bg-red-700]="!isInactive(countryToToggleStatus())"
         [class.bg-emerald-600]="isInactive(countryToToggleStatus())"
         [class.hover:bg-emerald-700]="isInactive(countryToToggleStatus())"
-        class="px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50"
+        class="cursor-pointer px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50"
       >
         {{ isUpdatingStatus() ? (isInactive(countryToToggleStatus()) ? 'Enabling...' : 'Disabling...') : (isInactive(countryToToggleStatus()) ? 'Enable' : 'Disable') }}
       </button>

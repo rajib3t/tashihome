@@ -4,7 +4,7 @@
     <app-card title="City List" desc="Manage cities using a search form and paginated results.">
         <div class="mb-4 flex justify-end">
             <button
-                class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+                class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
                 (click)="openCreateModal()">
                 <span>+ Create City</span>
             </button>
@@ -49,13 +49,13 @@
       <div class="flex items-end gap-2">
         <button
           type="submit"
-          class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+          class="cursor-pointer inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
         >
           Search
         </button>
         <button
           type="button"
-          class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200"
+          class="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200"
           (click)="onReset()"
         >
           Reset
@@ -127,7 +127,7 @@
                                     <button
                                             type="button"
                                             (click)="openEditModal(city)"
-                                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
+                                            class="cursor-pointer rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
                                         >
                                             Edit
                                         </button>
@@ -146,7 +146,7 @@
                                         [class.dark:border-emerald-900/50]="city.status === 'inactive'"
                                         [class.dark:text-emerald-400]="city.status === 'inactive'"
                                         [class.dark:hover:bg-emerald-900/20]="city.status === 'inactive'"
-                                        class="rounded-lg border px-3 py-1.5 text-xs font-medium transition"
+                                        class="cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition"
                                     >
                                     {{ getDisableActionLabel(city) }}
                                     </button>
@@ -237,11 +237,11 @@
 
                     <div class="flex items-center justify-end gap-3">
                         <button type="button" (click)="closeCreateModal()"
-                            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            class="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Cancel
                         </button>
                         <button type="submit" [disabled]="isCreating() || createCityForm.invalid"
-                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
                             {{ isCreating() ? 'Creating...' : 'Create' }}
                         </button>
                     </div>
@@ -311,14 +311,14 @@
                         <button
                             type="button"
                             (click)="closeEditModal()"
-                            class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                            class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             [disabled]="isEditing() || editCityForm.invalid"
-                            class="inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                            class="cursor-pointer inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white "
                         >
                             {{ isEditing() ? 'Saving...' : 'Save Changes' }}
                         </button>
@@ -351,7 +351,7 @@
                 <button
                     type="button"
                     (click)="closeStatusModal()"
-                    class="rounded-lg bg-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                    class="cursor-pointer rounded-lg bg-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 >
                     Cancel
                 </button>
@@ -363,7 +363,7 @@
                     [class.hover:bg-red-700]="!isInactive(cityToToggleStatus())"
                     [class.bg-emerald-600]="isInactive(cityToToggleStatus())"
                     [class.hover:bg-emerald-700]="isInactive(cityToToggleStatus())"
-                    class="rounded-lg px-4 py-2 text-white transition-colors disabled:opacity-50"
+                    class="cursor-pointer rounded-lg px-4 py-2 text-white transition-colors disabled:opacity-50"
                 >
                     {{ isUpdatingStatus() ? (isInactive(cityToToggleStatus()) ? 'Enabling...' : 'Disabling...') : (isInactive(cityToToggleStatus()) ? 'Enable' : 'Disable') }}
                 </button>

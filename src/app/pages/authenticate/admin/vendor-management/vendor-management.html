@@ -1,0 +1,19 @@
+<app-page-breadcrumb pageTitle="Vendor Management" homelink="/admin"></app-page-breadcrumb>
+<div class="space-y-6">
+    <app-card title="Vendor List" desc="Manage vendors using a search form and paginated results.">
+        <div class="mb-4 flex justify-end">
+            <button
+                class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90 cursor-pointer"
+                (click)="openCreateModal()">
+                <span>+ Create Vendor</span>
+            </button>
+        </div>
+    </app-card>
+</div>
+<app-modal [isOpen]="isCreateModalOpen()" (close)="closeCreateModal()" className="max-w-175 m-4">
+    <div class="no-scrollbar relative w-full max-w-175 overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+            <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Add Vendor</h2>
+            </div>
+    </div>
+</app-modal>

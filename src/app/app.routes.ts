@@ -14,6 +14,7 @@ import { LocationManagement } from './pages/authenticate/admin/location-manageme
 import { FacilityManagement } from './pages/authenticate/admin/facility-management/facility-management';
 import { AmenityManagement } from './pages/authenticate/admin/amenity-management/amenity-management';
 import { RoomTypeManagement } from './pages/authenticate/admin/room-type-management/room-type-management';
+import { VendorManagement } from './pages/authenticate/admin/vendor-management/vendor-management';
 
 export const routes: Routes = [
     {
@@ -81,6 +82,11 @@ export const routes: Routes = [
                         path:'room-type-management',
                         component:RoomTypeManagement,
                         title:'Room Type Management'
+                    },
+                    {
+                        path:'vendor-management',
+                        component:VendorManagement,
+                        title:'Vendor Management'
                     }
                 ]
             }
