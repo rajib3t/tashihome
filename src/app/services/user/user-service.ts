@@ -55,40 +55,41 @@ export class UserService {
 
   public getVendors(params: VendorQuery): Observable<PaginatedResponse<User>> {
     const search = params.search ?? {};
-            const queryParams: Record<string, string | number> = {
-                page: params.page ?? 1,
-                size: params.size ?? 10,
-            };
-    
-            const name = search.name?.trim();
-            const email = search.email?.trim();
-            const phone = search.phone?.trim();
-            const status = search.status?.trim();
-    
-            if (name) {
-                queryParams['name'] = name;
-            }
-    
-            if (email) {
-                queryParams['email'] = email;
-            }
-    
-            if (phone) {
-                queryParams['phone'] = phone;
-            }
-    
-            if (status) {
-                queryParams['status'] = status;
-            }
-    
-            if (params.sortBy?.trim()) {
-                queryParams['sortBy'] = params.sortBy.trim();
-            }
-    
-            if (params.sortOrder) {
-                queryParams['sortOrder'] = params.sortOrder;
-            }
-    return this.apiService.protectedGet<PaginatedResponse<User>>('/vendors/', queryParams).pipe(
+    const queryParams: Record<string, string | number> = {
+      page: params.page ?? 1,
+      size: params.size ?? 10,
+    };
+
+    const name = search.name?.trim();
+    const email = search.email?.trim();
+    const phone = search.phone?.trim();
+    const status = search.status?.trim();
+
+    if (name) {
+      queryParams['full_name'] = name;
+    }
+
+    if (email) {
+      queryParams['email'] = email;
+    }
+
+    if (phone) {
+      queryParams['phone'] = phone;
+    }
+
+    if (status) {
+      queryParams['status'] = status;
+    }
+
+    if (params.sortBy?.trim()) {
+      queryParams['sortBy'] = params.sortBy.trim();
+    }
+
+    if (params.sortOrder) {
+      queryParams['sortOrder'] = params.sortOrder;
+    }
+
+    return this.apiService.protectedGet<PaginatedResponse<User>>('/vendors/', { params: queryParams }).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );

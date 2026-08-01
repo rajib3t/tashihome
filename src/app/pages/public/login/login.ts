@@ -50,7 +50,7 @@ export class Login {
     this.authService.login(payload).subscribe({
       next: (response) => {
         if (response.status === 'success' || response.status === 200) {
-          console.log('Login successful:', response.data);
+          
           const userRole = response.data.user.role?.toLowerCase();
           if (userRole === 'admin') {
             this.router.navigate(['/admin']);

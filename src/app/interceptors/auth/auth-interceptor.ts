@@ -103,7 +103,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
     try {
       const isTokenExpired = jwtHelper.isTokenExpired(token);
       if (isTokenExpired) {
-        console.log('AuthInterceptor: Token expired; attempting refresh before request');
+        
         return authService.refreshToken().pipe(
           switchMap((response) => {
             const newAccessToken = extractAccessToken(response);

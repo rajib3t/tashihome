@@ -9,6 +9,7 @@ import { RequestVendor, User, VendorQuery, VendorSearch } from '../../../../serv
 import { catchError, finalize, of } from 'rxjs';
 import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
+import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-vendor-management',
   imports: [
@@ -17,7 +18,8 @@ import { Pagination } from '../../../../shared/components/ui/pagination/paginati
     Card,
     Modal,
     ReactiveFormsModule ,
-    Pagination
+    Pagination,
+    RouterModule
   ],
   templateUrl: './vendor-management.html',
   styleUrl: './vendor-management.css',
