@@ -27,3 +27,5 @@ export interface LocationQuery {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+

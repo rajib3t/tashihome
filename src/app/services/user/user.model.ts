@@ -1,3 +1,4 @@
+import { LocationSearch } from "../location/location-model";
 
 export interface User {
     id: string;
@@ -10,3 +11,26 @@ export interface User {
 }
 
 export type UserRole = 'user' | 'admin' | 'vendor';
+
+
+export interface RequestVendor {
+    full_name: string;
+    email: string;
+    phone: string;
+}
+
+
+export interface VendorSearch{
+    name?: string;
+    email?: string;
+    phone?: string;
+    status?: string;
+}
+
+export interface VendorQuery {
+  page?: number;
+  size?: number;
+  search?: VendorSearch;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}

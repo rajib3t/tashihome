@@ -1,8 +1,8 @@
 import { inject, Service } from '@angular/core';
 import { ApiService } from '../api/api-service';
 import { catchError, map, Observable , throwError} from 'rxjs';
-import { ApiResponse } from '../api/api-response.model';
-import { User } from './user.model';
+import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
+import { RequestVendor, User, VendorQuery } from './user.model';
 
 @Service()
 export class UserService {
@@ -43,5 +43,54 @@ export class UserService {
       default:
         return 'Guest';
     }
+  }
+
+
+  createVendor(vendorData: RequestVendor): Observable<ApiResponse<User>> {
+    return this.apiService.protectedPost<ApiResponse<User>>('/vendors/', vendorData).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public getVendors(params: VendorQuery): Observable<PaginatedResponse<User>> {
+    const search = params.search ?? {};
+            const queryParams: Record<string, string | number> = {
+                page: params.page ?? 1,
+                size: params.size ?? 10,
+            };
+    
+            const name = search.name?.trim();
+            const email = search.email?.trim();
+            const phone = search.phone?.trim();
+            const status = search.status?.trim();
+    
+            if (name) {
+                queryParams['name'] = name;
+            }
+    
+            if (email) {
+                queryParams['email'] = email;
+            }
+    
+            if (phone) {
+                queryParams['phone'] = phone;
+            }
+    
+            if (status) {
+                queryParams['status'] = status;
+            }
+    
+            if (params.sortBy?.trim()) {
+                queryParams['sortBy'] = params.sortBy.trim();
+            }
+    
+            if (params.sortOrder) {
+                queryParams['sortOrder'] = params.sortOrder;
+            }
+    return this.apiService.protectedGet<PaginatedResponse<User>>('/vendors/', queryParams).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
   }
 }
