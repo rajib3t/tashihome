@@ -1,0 +1,55 @@
+.avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  user-select: none;
+  border-radius: 6px;
+
+  &.rounded {
+    border-radius: 50%;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .avatar-text {
+    color: #fff;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .status-dot {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    background: var(--color-primary);
+    border-radius: 50%;
+    border: 2px solid #fff;
+    z-index: 2;
+  }
+.upload-btn {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    z-index: 10;
+
+    /* background: #2563eb; */
+    color: white;
+}
+
+  .upload-btn:hover {
+    transform: scale(1.1);
+  }
+}

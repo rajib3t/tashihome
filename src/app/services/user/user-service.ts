@@ -2,7 +2,7 @@ import { inject, Service } from '@angular/core';
 import { ApiService } from '../api/api-service';
 import { catchError, map, Observable , throwError} from 'rxjs';
 import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
-import { RequestVendor, User, VendorQuery } from './user.model';
+import { RequestVendor, User, VendorDetail, VendorQuery, VendorUpdateRequest } from './user.model';
 
 @Service()
 export class UserService {
@@ -53,6 +53,22 @@ export class UserService {
     );
   }
 
+  updateVendor(vendorId: string, vendorData: VendorUpdateRequest | FormData): Observable<ApiResponse<User>> {
+    const endpoint = `/vendors/${vendorId}/`;
+
+    if (vendorData instanceof FormData) {
+      return this.apiService.protectedUpload<ApiResponse<User>>(endpoint, vendorData).pipe(
+        map(response => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    }
+
+    return this.apiService.protectedPut<ApiResponse<User>>(endpoint, vendorData).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
   public getVendors(params: VendorQuery): Observable<PaginatedResponse<User>> {
     const search = params.search ?? {};
     const queryParams: Record<string, string | number> = {
@@ -94,4 +110,24 @@ export class UserService {
       catchError(this.apiService.passthroughError)
     );
   }
+
+
+  public getVendorById(vendorId: string): Observable<ApiResponse<VendorDetail>> {
+    return this.apiService.protectedGet<ApiResponse<VendorDetail>>(`/vendors/${vendorId}`).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public updateImage(vendorId: string, imageFile: File): Observable<ApiResponse<VendorDetail>> {
+    const formData = new FormData();
+    formData.append('profile_image', imageFile);
+
+    return this.apiService.protectedUpload<ApiResponse<VendorDetail>>(`/vendors/${vendorId}/profile-image`, formData).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  
 }

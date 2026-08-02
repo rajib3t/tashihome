@@ -6,9 +6,15 @@
     { label: 'Edit Vendor' }
   ]">
 </app-page-breadcrumb>
-
 <div class="space-y-6">
-    <app-card title="Edit Vendor" desc="Manage Specific vendors edit and update">
+  <app-card title="Edit Vendor" desc="Manage and update vendor profile information.">
+        @if (vendor(); as vendor) {
+            <app-meta-card 
+              [user]="vendor" 
+              [editForm]="vendorForm" 
+              (avatarUpload)="uploadAvatar($event)"
+            ></app-meta-card>
 
+        }
     </app-card>
 </div>
