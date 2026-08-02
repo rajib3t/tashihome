@@ -254,6 +254,29 @@ export class ApiService {
     );
   }
 
+  public protectedUploadPatch<T>(endpoint: string, formData: FormData, options?: any): Observable<ApiResponse<T>> {
+    const url = `${this.apiBaseUrl}/${endpoint.replace(/^\/+/, '')}`;
+    const headers = this.createHeaders(true, formData);
+    
+    // Merge headers from options with our headers, ensuring FormData headers take precedence
+    const mergedHeaders = options?.headers 
+      ? headers.set('Accept', options.headers['Accept'] || options.headers.get?.('Accept') || 'application/json')
+      : headers;
+    
+    const requestOptions = {
+      headers: mergedHeaders,
+      observe: 'response' as 'response',
+      withCredentials: true,
+      ...(options ? { ...options, headers: mergedHeaders } : {})
+    };
+
+    return this.http.patch<T>(url, formData, requestOptions).pipe(
+      filter((event): event is HttpResponse<T> => event.type === HttpEventType.Response),
+      map(response => this.handleResponse<T>(response)),
+      catchError(this.handleError)
+    );
+  }
+
   public protectedPut<T>(endpoint: string, data: any, options?: any): Observable<ApiResponse<T>> {
     return this.makeRequest<T>('PUT', endpoint, data, true, options);
   }

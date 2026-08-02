@@ -123,7 +123,7 @@ export class UserService {
     const formData = new FormData();
     formData.append('profile_image', imageFile);
 
-    return this.apiService.protectedUpload<ApiResponse<VendorDetail>>(`/vendors/${vendorId}/profile-image`, formData).pipe(
+    return this.apiService.protectedUploadPatch<ApiResponse<VendorDetail>>(`/vendors/${vendorId}/profile-image`, formData).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );

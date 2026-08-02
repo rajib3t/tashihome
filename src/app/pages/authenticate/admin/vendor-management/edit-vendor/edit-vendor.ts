@@ -135,20 +135,26 @@ export class EditVendor {
 
   
   uploadAvatar(file: File) {
+    if (!file || !this.vendorId()) {
+      this.imageUploadError.set('Unable to upload avatar: vendor not found.');
+      return;
+    }
+
     this.isImageUploading.set(true);
     this.imageUploadError.set(null);
+    this.successMessage.set(null);
 
     this.userService.updateImage(this.vendorId(), file).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: (response) => {
-        const updatedVendor = response;
-        this.#vendor.set(updatedVendor.data);
+        const updatedVendor = response?.data
+        this.#vendor.set(updatedVendor ?? null);
         this.successMessage.set('Profile image updated successfully.');
         this.isImageUploading.set(false);
       },
-      error: () => {
-        this.imageUploadError.set('Failed to update profile image.');
+      error: (error) => {
+        this.imageUploadError.set(error?.error?.message || error?.message || 'Failed to update profile image.');
         this.isImageUploading.set(false);
       },
     });
