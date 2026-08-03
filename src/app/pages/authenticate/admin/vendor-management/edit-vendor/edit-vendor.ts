@@ -10,6 +10,7 @@ import { UserService } from '../../../../../services/user/user-service';
 import { RequestVendor, VendorDetail } from '../../../../../services/user/user.model';
 import { MetaCard } from '../../../../../shared/components/users/admin/meta-card/meta-card';
 import { CompanyCard } from '../../../../../shared/components/users/admin/company-card/company-card';
+import { InfoCard } from '../../../../../shared/components/users/admin/info-card/info-card';
 
 interface VendorFormValue {
   full_name: string;
@@ -39,7 +40,8 @@ interface VendorFormValue {
     RouterModule,
     // UploadImage,
     MetaCard,
-    CompanyCard
+    CompanyCard,
+    InfoCard
   ],
   templateUrl: './edit-vendor.html',
   styleUrl: './edit-vendor.css',
@@ -51,7 +53,8 @@ export class EditVendor {
   private readonly userService = inject(UserService);
   private readonly router = inject(Router);
   @ViewChild(MetaCard) private readonly metaCard?: MetaCard;
-
+  @ViewChild(CompanyCard) private readonly companyCard?: CompanyCard;
+  @ViewChild(InfoCard) private readonly infoCard?: InfoCard;
   #vendor = signal<VendorDetail | null>(null);
   vendor = computed(() => this.#vendor());
   readonly vendorId = signal('');
@@ -69,14 +72,14 @@ export class EditVendor {
     email: ['', [Validators.required, Validators.email]],
     phone: ['', Validators.required],
     company: this.formBuilder.group({
-      name: ['', ],
-      email: ['', [ Validators.email]],
+      name: [''],
+      email: ['', [Validators.email]],
       phone: [''],
       address: this.formBuilder.group({
         address_line1: [''],
         address_line2: [''],
-        postal_code: ['', ],
-        country: ['', ],
+        postal_code: [''],
+        country: [''],
       }),
     }),
     image: [null], // For file upload
@@ -110,7 +113,21 @@ export class EditVendor {
         this.#vendor.set(vendor);
 
         if (vendor) {
-          this.vendorForm.patchValue({
+          this.updateFromData(vendor);
+          this.vendorImagePreview.set(vendor.is_profile_image_url ? vendor.is_profile_image_url : '');
+        }
+
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.errorMessage.set('Unable to load vendor details.');
+      },
+    });
+  }
+
+  updateFromData(vendor: VendorDetail) {
+    this.vendorForm.patchValue({
             full_name: vendor.full_name,
             email: vendor.email,
             phone: vendor.phone,
@@ -126,18 +143,8 @@ export class EditVendor {
               },
             },
           });
-        }
-
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.isLoading.set(false);
-        this.errorMessage.set('Unable to load vendor details.');
-      },
-    });
+        
   }
-
-  
   uploadAvatar(file: File) {
     if (!file || !this.vendorId()) {
       this.imageUploadError.set('Unable to upload avatar: vendor not found.');
@@ -223,6 +230,10 @@ export class EditVendor {
         this.successMessage.set('Vendor updated successfully.');
         this.isUpdating.set(false);
         this.metaCard?.showModal.set(false);
+        this.companyCard?.showEditForm.set(false);
+        this.infoCard?.showModal.set(false);
+         this.updateFromData(updatedVendor);
+          this.vendorImagePreview.set(updatedVendor.is_profile_image_url ? updatedVendor.is_profile_image_url : '');
       },
       error: (error) => {
         const err = this.userService.apiService.extractApiErrorMessage(error);

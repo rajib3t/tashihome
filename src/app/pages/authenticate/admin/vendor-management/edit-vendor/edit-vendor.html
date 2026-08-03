@@ -23,6 +23,17 @@
         }
 
         @if (vendor(); as vendor) {
+            <app-info-card 
+              [user]="vendor" 
+              [editForm]="vendorForm" 
+              [isUpdating]="isUpdating()"
+              [errorMessage]="errorMessage()"
+              [isSubmitting]="isUpdating()"
+              (save)="updateVendor($event)"
+            ></app-info-card>
+        }
+
+        @if (vendor(); as vendor) {
             <app-company-card 
               [user]="vendor" 
               [editForm]="vendorForm" 

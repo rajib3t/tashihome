@@ -17,7 +17,7 @@
       <button
         type="button"
         (click)="onEdit()"
-        class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+        class="cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
       >
         <svg
           class="h-4 w-4 fill-current"
@@ -106,4 +106,136 @@
       </p>
     </div>
   </div>
+
+  <app-modal [isOpen]="showEditForm()" (close)="onClose()" className="max-w-[700px] m-4">
+    <div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+      <div class="px-2 pr-14">
+        <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+          Edit Company Information
+        </h4>
+        <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+          Update company details to keep the vendor profile current.
+        </p>
+      </div>
+
+      <form [formGroup]="companyEditForm" (ngSubmit)="onSave()" class="flex flex-col" novalidate>
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div class="md:col-span-2">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Company Name <span class="text-error-500">*</span></label>
+            <input
+              type="text"
+              formControlName="name"
+              [class]="isInvalid('name')
+                ? 'h-11 w-full rounded-lg border border-error-500 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-error-500 focus:outline-none focus:ring-3 focus:ring-error-500/10 dark:border-error-500 dark:bg-gray-900 dark:text-white/90'
+                : 'h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90'"
+              placeholder="Company name"
+              [attr.aria-invalid]="isInvalid('name')"
+            />
+            @if (isInvalid('name')) {
+              <p class="mt-1.5 text-sm text-error-500" role="alert">{{ getErrorMessage('name') }}</p>
+            }
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Company Email <span class="text-error-500">*</span></label>
+            <input
+              type="email"
+              formControlName="email"
+              [class]="isInvalid('email')
+                ? 'h-11 w-full rounded-lg border border-error-500 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-error-500 focus:outline-none focus:ring-3 focus:ring-error-500/10 dark:border-error-500 dark:bg-gray-900 dark:text-white/90'
+                : 'h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90'"
+              placeholder="company@example.com"
+              [attr.aria-invalid]="isInvalid('email')"
+            />
+            @if (isInvalid('email')) {
+              <p class="mt-1.5 text-sm text-error-500" role="alert">{{ getErrorMessage('email') }}</p>
+            }
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Company Phone <span class="text-error-500">*</span></label>
+            <input
+              type="text"
+              formControlName="phone"
+              [class]="isInvalid('phone')
+                ? 'h-11 w-full rounded-lg border border-error-500 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-error-500 focus:outline-none focus:ring-3 focus:ring-error-500/10 dark:border-error-500 dark:bg-gray-900 dark:text-white/90'
+                : 'h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90'"
+              placeholder="+1 234 567 890"
+              [attr.aria-invalid]="isInvalid('phone')"
+            />
+            @if (isInvalid('phone')) {
+              <p class="mt-1.5 text-sm text-error-500" role="alert">{{ getErrorMessage('phone') }}</p>
+            }
+          </div>
+
+          <div class="md:col-span-2" formGroupName="address">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Address Line 1 <span class="text-error-500">*</span></label>
+            <input
+              type="text"
+              formControlName="address_line1"
+              [class]="isInvalid('address.address_line1')
+                ? 'h-11 w-full rounded-lg border border-error-500 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-error-500 focus:outline-none focus:ring-3 focus:ring-error-500/10 dark:border-error-500 dark:bg-gray-900 dark:text-white/90'
+                : 'h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90'"
+              placeholder="Street address"
+              [attr.aria-invalid]="isInvalid('address.address_line1')"
+            />
+            @if (isInvalid('address.address_line1')) {
+              <p class="mt-1.5 text-sm text-error-500" role="alert">{{ getErrorMessage('address.address_line1') }}</p>
+            }
+          </div>
+
+          <div class="md:col-span-2" formGroupName="address">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Address Line 2</label>
+            <input
+              type="text"
+              formControlName="address_line2"
+              class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+              placeholder="Apartment, suite, etc."
+            />
+          </div>
+
+          <div formGroupName="address">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Postal Code <span class="text-error-500">*</span></label>
+            <input
+              type="text"
+              formControlName="postal_code"
+              [class]="isInvalid('address.postal_code')
+                ? 'h-11 w-full rounded-lg border border-error-500 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-error-500 focus:outline-none focus:ring-3 focus:ring-error-500/10 dark:border-error-500 dark:bg-gray-900 dark:text-white/90'
+                : 'h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90'"
+              placeholder="Postal code"
+              [attr.aria-invalid]="isInvalid('address.postal_code')"
+            />
+            @if (isInvalid('address.postal_code')) {
+              <p class="mt-1.5 text-sm text-error-500" role="alert">{{ getErrorMessage('address.postal_code') }}</p>
+            }
+          </div>
+
+          <div formGroupName="address">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Country <span class="text-error-500">*</span></label>
+            <input
+              type="text"
+              formControlName="country"
+              [class]="isInvalid('address.country')
+                ? 'h-11 w-full rounded-lg border border-error-500 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-error-500 focus:outline-none focus:ring-3 focus:ring-error-500/10 dark:border-error-500 dark:bg-gray-900 dark:text-white/90'
+                : 'h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90'"
+              placeholder="Country"
+              [attr.aria-invalid]="isInvalid('address.country')"
+            />
+            @if (isInvalid('address.country')) {
+              <p class="mt-1.5 text-sm text-error-500" role="alert">{{ getErrorMessage('address.country') }}</p>
+            }
+          </div>
+        </div>
+
+        <div class="mt-6 flex items-center justify-end gap-3">
+          <button type="button" (click)="onClose()" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+            Cancel
+          </button>
+          <button type="submit" [disabled]="isSubmitting" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50">
+            {{ isSubmitting ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </app-modal>
 </div>
