@@ -53,21 +53,7 @@ export class UserService {
     );
   }
 
-  updateVendor(vendorId: string, vendorData: VendorUpdateRequest | FormData): Observable<ApiResponse<User>> {
-    const endpoint = `/vendors/${vendorId}/`;
-
-    if (vendorData instanceof FormData) {
-      return this.apiService.protectedUpload<ApiResponse<User>>(endpoint, vendorData).pipe(
-        map(response => response.data),
-        catchError(this.apiService.passthroughError)
-      );
-    }
-
-    return this.apiService.protectedPut<ApiResponse<User>>(endpoint, vendorData).pipe(
-      map(response => response.data),
-      catchError(this.apiService.passthroughError)
-    );
-  }
+  
 
   public getVendors(params: VendorQuery): Observable<PaginatedResponse<User>> {
     const search = params.search ?? {};
@@ -124,6 +110,16 @@ export class UserService {
     formData.append('profile_image', imageFile);
 
     return this.apiService.protectedUploadPatch<ApiResponse<VendorDetail>>(`/vendors/${vendorId}/profile-image`, formData).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public updateVendor(
+    vendorId : string,
+    vendorDetail : Partial<RequestVendor>,
+  ): Observable<ApiResponse<VendorDetail>> {
+    return this.apiService.protectedPut<ApiResponse<VendorDetail>>(`/vendors/${vendorId}`, vendorDetail).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );

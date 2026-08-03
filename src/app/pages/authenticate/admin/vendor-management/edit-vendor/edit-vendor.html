@@ -12,9 +12,25 @@
             <app-meta-card 
               [user]="vendor" 
               [editForm]="vendorForm" 
+              [isUpdating]="isUpdating()"
+              [errorMessage]="errorMessage()"
+              [isSubmitting]="isUpdating()"
               (avatarUpload)="uploadAvatar($event)"
+              (save)="updateVendor($event)"
+              [uploadErrorMessage]="imageUploadError()"
             ></app-meta-card>
 
+        }
+
+        @if (vendor(); as vendor) {
+            <app-company-card 
+              [user]="vendor" 
+              [editForm]="vendorForm" 
+              [isUpdating]="isUpdating()"
+              [errorMessage]="errorMessage()"
+              [isSubmitting]="isUpdating()"
+              (save)="updateVendor($event)"
+            ></app-company-card>
         }
     </app-card>
 </div>

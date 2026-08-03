@@ -9,7 +9,8 @@ import { RequestVendor, User, VendorQuery, VendorSearch } from '../../../../serv
 import { catchError, finalize, of } from 'rxjs';
 import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { Avatar } from '../../../../shared/components/users/avatar/avatar';
 @Component({
   selector: 'app-vendor-management',
   imports: [
@@ -19,13 +20,14 @@ import { RouterModule } from '@angular/router';
     Modal,
     ReactiveFormsModule ,
     Pagination,
-    RouterModule
+    RouterModule,
+    Avatar
   ],
   templateUrl: './vendor-management.html',
   styleUrl: './vendor-management.css',
 })
 export class VendorManagement {
-
+  private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);
 
   private readonly userService = inject(UserService);
@@ -154,10 +156,12 @@ export class VendorManagement {
       };
       // Simulate an API call to create the vendor
       this.userService.createVendor(payload).subscribe({
-        next: () => {
+        next: (res) => {
           this.isCreating.set(false);
           this.closeCreateModal();
           this.createVendorForm.reset();
+          this.loadVendors();
+          this.router.navigate(['/admin/vendor-management/' + res.data.id + '/edit']);
         },
         error: () => {
           this.isCreating.set(false);

@@ -103,7 +103,23 @@
                             @for (user of users(); track user.id; let i = $index) {
                                 <tr>
                                     <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ getSerialNumber(i) }}</td>
-                                    <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ user.full_name }}</td>
+                                    <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                                        <a routerLink="/admin/vendor-management/{{ user.id }}/edit" 
+                                            class="flex items-center gap-3 cursor-pointer  font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200">
+                                        <div class="flex items-center gap-3">
+                                         <app-avatar
+                                            [name]="user?.full_name || 'User'"
+                                            [size]="50"
+                                            [rounded]="true"
+                                            [src]="user?.is_profile_image_url"
+                                            
+                                            
+                                            backgroundColor="bg-primary">
+                                        </app-avatar>
+                                        {{ user.full_name }}
+                                        </div>
+                                        </a>
+                                    </td>
                                     <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ user.email }}</td>
                                     <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ user.phone }}</td>
                                     <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
