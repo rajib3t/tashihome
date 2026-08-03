@@ -5,7 +5,7 @@ import { Card } from '../../../../shared/components/ui/card/card';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService } from '../../../../services/user/user-service';
-import { RequestVendor, User, VendorQuery, VendorSearch } from '../../../../services/user/user.model';
+import { RequestVendor, User, VendorDetail, VendorQuery, VendorSearch } from '../../../../services/user/user.model';
 import { catchError, finalize, of } from 'rxjs';
 import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
@@ -37,6 +37,10 @@ export class VendorManagement {
   isCreating = signal(false);
   createErrorMessage = signal<string | null>(null);
 
+   isStatusModalOpen = signal<boolean>(false);
+    isUpdatingStatus = signal(false);
+    statusErrorMessage = signal<string | null>(null);
+    vendorToToggleStatus = signal<VendorDetail | null>(null);
 
   // Cities List State
     readonly users = signal<User[]>([]);
@@ -184,4 +188,62 @@ export class VendorManagement {
     return this.createVendorForm.get('phone')!;
   }
 
+
+  openStatusModal(vendor: VendorDetail) {
+      this.vendorToToggleStatus.set(vendor);
+      this.statusErrorMessage.set(null);
+      this.isStatusModalOpen.set(true);
+    }
+  
+    closeStatusModal() {
+      this.isStatusModalOpen.set(false);
+      this.vendorToToggleStatus.set(null);
+    }
+
+
+    getStatusLabel(status: string): string {
+        return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown';
+      }
+    
+      isInactive(vendor: VendorDetail | null): boolean {
+        return vendor?.status === 'inactive';
+      }
+    
+      getDisableActionLabel(vendor: VendorDetail | null): string {
+        return this.isInactive(vendor) ? 'Enable' : 'Disable';
+      }
+    
+      getStatusAction(vendor: VendorDetail | null): 'active' | 'inactive' {
+        return this.isInactive(vendor) ? 'active' : 'inactive';
+      }
+
+
+      confirmStatusToggle() {
+    const vendor = this.vendorToToggleStatus();
+    if (!vendor) {
+      return;
+    }
+
+    const nextStatus = this.getStatusAction(vendor);
+    this.isUpdatingStatus.set(true);
+    this.statusErrorMessage.set(null);
+
+    this.userService.statusUpdateVendor(vendor.id, nextStatus)
+      .pipe(
+        finalize(() => this.isUpdatingStatus.set(false)),
+        catchError((error) => {
+          this.statusErrorMessage.set(
+            error?.error?.message || error?.message || `Unable to ${nextStatus === 'active' ? 'enable' : 'disable'} vendor.`
+          );
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        this.closeStatusModal();
+        this.loadVendors();
+      });
+  }
 }

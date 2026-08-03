@@ -125,5 +125,10 @@ export class UserService {
     );
   }
 
-  
+  public statusUpdateVendor(id: string, status: string): Observable<ApiResponse<VendorDetail>> {
+      return this.apiService.protectedPatch<ApiResponse<VendorDetail>>(`/vendors/change/${id}/${status}`, { status }).pipe(
+          map(response => response.data),
+          catchError(this.apiService.passthroughError)
+      )
+  }
 }
