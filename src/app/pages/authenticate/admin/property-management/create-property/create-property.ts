@@ -48,6 +48,18 @@ export class CreateProperty implements OnInit {
       return name.includes(term) || email.includes(term) || phone.includes(term);
     }).slice(0, 20);
   });
+  readonly citySearchTerm = signal('');
+  readonly isCityDropdownOpen = signal(false);
+  readonly selectedCityLabel = signal('');
+  readonly filteredCities = computed(() => {
+    const term = this.citySearchTerm().trim().toLowerCase();
+
+    if (!term) {
+      return this.cities().slice(0, 20);
+    }
+
+    return this.cities().filter((city) => city.name?.toLowerCase().includes(term)).slice(0, 20);
+  });
   readonly cities = signal<City[]>([]);
   readonly locations = signal<LocationResponse[]>([]);
   readonly loadingLocations = signal(false);
@@ -117,6 +129,39 @@ export class CreateProperty implements OnInit {
     this.vendorSearchTerm.set('');
     this.selectedVendorLabel.set('');
     this.isVendorDropdownOpen.set(false);
+  }
+
+  onCitySearchChange(term: string): void {
+    this.citySearchTerm.set(term);
+    this.isCityDropdownOpen.set(true);
+    this.propertyForm.get('city_id')?.setValue('');
+    this.selectedCityLabel.set('');
+  }
+
+  openCityDropdown(): void {
+    this.isCityDropdownOpen.set(true);
+  }
+
+  selectCity(city: City): void {
+    this.propertyForm.get('city_id')?.setValue(city.id);
+    this.citySearchTerm.set(city.name);
+    this.selectedCityLabel.set(city.name);
+    this.isCityDropdownOpen.set(false);
+    this.loadLocations(city.id);
+  }
+
+  clearCitySelection(): void {
+    this.propertyForm.get('city_id')?.setValue('');
+    this.citySearchTerm.set('');
+    this.selectedCityLabel.set('');
+    this.isCityDropdownOpen.set(false);
+    this.locations.set([]);
+  }
+
+  onCityInputBlur(): void {
+    if (!this.propertyForm.get('city_id')?.value) {
+      this.propertyForm.get('city_id')?.markAsTouched();
+    }
   }
 
   private loadVendors(): void {
