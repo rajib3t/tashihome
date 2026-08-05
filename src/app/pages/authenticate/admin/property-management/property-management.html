@@ -1,0 +1,85 @@
+<app-page-breadcrumb pageTitle="Property Management" homelink="/admin"></app-page-breadcrumb>
+
+<div class="space-y-6">
+  <app-card title="Property List" desc="Manage your property listings and open the dedicated create or edit forms.">
+    <div class="mb-4 flex justify-end">
+      <button
+        type="button"
+        class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+        (click)="navigateToCreate()"
+      >
+        <span>+ Create Property</span>
+      </button>
+    </div>
+
+    <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div class="w-full max-w-md">
+        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+          <span class="mb-2 block">Search</span>
+          <input
+            type="text"
+            [value]="searchTerm()"
+            (input)="searchTerm.set($any($event.target).value); onSearch()"
+            placeholder="Search by title or city"
+            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          />
+        </label>
+      </div>
+    </div>
+
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+          <thead class="bg-slate-50 dark:bg-slate-900/80">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Property</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Type</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Location</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Price</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+            @if (filteredProperties().length === 0) {
+              <tr>
+                <td colspan="6" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">No properties found.</td>
+              </tr>
+            } @else {
+              @for (property of filteredProperties(); track property.id) {
+                <tr>
+                  <td class="px-4 py-3">
+                    <div>
+                      <p class="font-semibold text-slate-800 dark:text-slate-100">{{ property.title }}</p>
+                      <p class="text-xs text-slate-500 dark:text-slate-400">{{ property.guests }} guests · {{ property.bedrooms }} beds</p>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ property.type }}</td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                    <p>{{ property.city }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ property.address }}</p>
+                  </td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ formatCurrency(property.price) }}</td>
+                  <td class="px-4 py-3">
+                    <span [class]="getStatusClass(property.status)" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold">
+                      {{ statusLabel(property.status) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <button
+                      type="button"
+                      class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
+                      (click)="navigateToEdit(property)"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </app-card>
+</div>

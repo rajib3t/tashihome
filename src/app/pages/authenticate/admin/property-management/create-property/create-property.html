@@ -1,0 +1,89 @@
+<div class="space-y-6 p-4 md:p-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-semibold text-slate-800 dark:text-slate-100">Create Property</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Add a new property using the API payload fields.</p>
+    </div>
+    <button
+      type="button"
+      class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
+      (click)="cancel()"
+    >
+      Back to list
+    </button>
+  </div>
+
+  <app-card title="Property Details" desc="Fill in the request fields and save the record.">
+    <form [formGroup]="propertyForm" (ngSubmit)="submitPropertyForm()" class="space-y-5">
+      <label class="block space-y-2">
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Vendor</span>
+        <select formControlName="vendor_id" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+          <option value="">Select vendor</option>
+          @for (vendor of vendors(); track vendor.id) {
+            <option [value]="vendor.id">{{ vendor.full_name }} - {{ vendor.email }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="block space-y-2">
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Name</span>
+        <input formControlName="name" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+      </label>
+
+      <div class="grid gap-5 md:grid-cols-2">
+        <label class="block space-y-2">
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-200">City</span>
+          <select formControlName="city_id" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+            <option value="">Select city</option>
+            @for (city of cities(); track city.id) {
+              <option [value]="city.id">{{ city.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="block space-y-2">
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Location</span>
+          <select
+            formControlName="location_id"
+            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary disabled:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800"
+            [disabled]="!propertyForm.get('city_id')?.value || loadingLocations()"
+          >
+            <option value="">
+              {{ loadingLocations() ? 'Loading locations...' : 'Select location' }}
+            </option>
+            @for (location of locations(); track location.id) {
+              <option [value]="location.id">{{ location.name }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <label class="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-700">
+        <input type="checkbox" formControlName="is_featured" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Featured property</span>
+      </label>
+
+      <label class="block space-y-2">
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Description</span>
+        <textarea
+          formControlName="description"
+          rows="5"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        ></textarea>
+      </label>
+
+      <div class="flex items-center justify-end gap-3 border-t border-slate-200 pt-6 dark:border-slate-700">
+        <button
+          type="button"
+          class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:text-slate-200"
+          (click)="cancel()"
+        >
+          Cancel
+        </button>
+        <button type="submit" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90">
+          Save Property
+        </button>
+      </div>
+    </form>
+  </app-card>
+</div>

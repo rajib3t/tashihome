@@ -13,6 +13,8 @@ export class UploadImage {
 
   preview = input<string>('');
 
+  multiple = input(false);
+
   accept = input('image/*');
 
   alt = input('Image Preview');
@@ -26,6 +28,7 @@ export class UploadImage {
   valueChange = output<File>();
 
   previewChange = output<string>();
+  previewListChange = output<string[]>();
 
   apiBaseUrl = 'https://api.example.com';
 
@@ -111,7 +114,24 @@ export class UploadImage {
 
     if (!input.files?.length) return;
 
-    const file = input.files[0];
+    const files = Array.from(input.files);
+
+    if (this.multiple()) {
+      const readers = files.map((file) => new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      }));
+
+      Promise.all(readers).then((previews) => {
+        this.previewListChange.emit(previews);
+      });
+
+      input.value = '';
+      return;
+    }
+
+    const file = files[0];
 
     const reader = new FileReader();
 

@@ -1,0 +1,194 @@
+<div class="space-y-6 p-4 md:p-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-semibold text-slate-800 dark:text-slate-100">Edit Property</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Update the selected listing details.</p>
+    </div>
+    <button
+      type="button"
+      class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
+      (click)="cancel()"
+    >
+      Back to list
+    </button>
+  </div>
+
+  <app-card title="Property Details" desc="Follow the steps to edit the listing.">
+    <div class="mb-6 flex flex-wrap gap-2">
+      @for (step of wizardSteps; track step; let i = $index) {
+        <div class="flex items-center gap-2">
+          <span
+            class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
+            [class]="i === currentStep ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'"
+          >
+            {{ i + 1 }}
+          </span>
+          <span class="text-sm text-slate-600 dark:text-slate-300">{{ step }}</span>
+        </div>
+      }
+    </div>
+
+    <form [formGroup]="propertyForm" (ngSubmit)="submitPropertyForm()" class="space-y-6">
+      @if (currentStep === 0) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property title</span>
+            <input formControlName="title" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+            @if (propertyForm.get('title')?.touched && propertyForm.get('title')?.invalid) {
+              <small class="text-xs text-red-500">Title is required and must be at least 3 characters.</small>
+            }
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property type</span>
+            <select formControlName="type" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+              <option value="Apartment">Apartment</option>
+              <option value="Villa">Villa</option>
+              <option value="House">House</option>
+              <option value="Studio">Studio</option>
+            </select>
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Publish status</span>
+            <select formControlName="status" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+
+          <label class="space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Description</span>
+            <textarea formControlName="description" rows="4" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"></textarea>
+            @if (propertyForm.get('description')?.touched && propertyForm.get('description')?.invalid) {
+              <small class="text-xs text-red-500">Description is required and must be at least 20 characters.</small>
+            }
+          </label>
+        </div>
+      }
+
+      @if (currentStep === 1) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">City</span>
+            <input formControlName="city" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Address</span>
+            <input formControlName="address" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Bedrooms</span>
+            <input type="number" min="1" formControlName="bedrooms" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Bathrooms</span>
+            <input type="number" min="1" formControlName="bathrooms" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Guests</span>
+            <input type="number" min="1" formControlName="guests" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Area (sq ft)</span>
+            <input type="number" min="1" formControlName="area" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+          </label>
+        </div>
+      }
+
+      @if (currentStep === 2) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Price</span>
+            <input type="number" min="1" formControlName="price" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Security deposit</span>
+            <input type="number" min="0" formControlName="deposit" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+          </label>
+        </div>
+      }
+
+      @if (currentStep === 3) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <div class="space-y-3 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Gallery images</span>
+            <app-upload-image
+              [id]="'gallery-upload-edit'"
+              [name]="'gallery-upload-edit'"
+              [preview]="galleryPreviews().length ? galleryPreviews()[galleryPreviews().length - 1] : ''"
+              [multiple]="true"
+              buttonText="Upload gallery images"
+              emptyText="No gallery images selected"
+              (previewListChange)="addGalleryImages($event)"
+            ></app-upload-image>
+
+            @if (galleryPreviews().length) {
+              <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                @for (image of galleryPreviews(); track image; let i = $index) {
+                  <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                    <img [src]="image" [alt]="'Gallery image ' + (i + 1)" class="h-28 w-full object-cover" />
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Feature image</span>
+            <app-upload-image
+              [id]="'feature-image-edit'"
+              [name]="'feature-image-edit'"
+              [preview]="featureImagePreview()"
+              buttonText="Upload feature image"
+              emptyText="No feature image selected"
+              (previewChange)="handleImageSelection('featureImage', $event)"
+            ></app-upload-image>
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Cover image</span>
+            <app-upload-image
+              [id]="'cover-image-edit'"
+              [name]="'cover-image-edit'"
+              [preview]="coverImagePreview()"
+              buttonText="Upload cover image"
+              emptyText="No cover image selected"
+              (previewChange)="handleImageSelection('coverImage', $event)"
+            ></app-upload-image>
+          </label>
+        </div>
+      }
+
+      <div class="flex items-center justify-between border-t border-slate-200 pt-6 dark:border-slate-700">
+        <button
+          type="button"
+          class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:text-slate-200"
+          (click)="previousStep()"
+          [disabled]="currentStep === 0"
+        >
+          Previous
+        </button>
+
+        <div class="flex gap-3">
+          @if (currentStep < wizardSteps.length - 1) {
+            <button type="button" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90" (click)="nextStep()">
+              Next
+            </button>
+          } @else {
+            <button type="submit" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90">
+              Save Changes
+            </button>
+          }
+        </div>
+      </div>
+    </form>
+  </app-card>
+</div>
