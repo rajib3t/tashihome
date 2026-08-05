@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PropertyRequest } from '../../../../../services/property/property.model';
@@ -30,6 +30,24 @@ export class CreateProperty implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly vendors = signal<User[]>([]);
+  readonly vendorSearchTerm = signal('');
+  readonly isVendorDropdownOpen = signal(false);
+  readonly selectedVendorLabel = signal('');
+  readonly filteredVendors = computed(() => {
+    const term = this.vendorSearchTerm().trim().toLowerCase();
+
+    if (!term) {
+      return this.vendors().slice(0, 20);
+    }
+
+    return this.vendors().filter((vendor) => {
+      const name = vendor.full_name?.toLowerCase() ?? '';
+      const email = vendor.email?.toLowerCase() ?? '';
+      const phone = vendor.phone?.toLowerCase() ?? '';
+
+      return name.includes(term) || email.includes(term) || phone.includes(term);
+    }).slice(0, 20);
+  });
   readonly cities = signal<City[]>([]);
   readonly locations = signal<LocationResponse[]>([]);
   readonly loadingLocations = signal(false);
@@ -74,6 +92,31 @@ export class CreateProperty implements OnInit {
 
   cancel(): void {
     this.router.navigate(['/admin/property-management']);
+  }
+
+  onVendorSearchChange(term: string): void {
+    this.vendorSearchTerm.set(term);
+    this.isVendorDropdownOpen.set(true);
+    this.propertyForm.get('vendor_id')?.setValue('');
+    this.selectedVendorLabel.set('');
+  }
+
+  openVendorDropdown(): void {
+    this.isVendorDropdownOpen.set(true);
+  }
+
+  selectVendor(vendor: User): void {
+    this.propertyForm.get('vendor_id')?.setValue(vendor.id);
+    this.vendorSearchTerm.set(vendor.full_name);
+    this.selectedVendorLabel.set(`${vendor.full_name} - ${vendor.email}`);
+    this.isVendorDropdownOpen.set(false);
+  }
+
+  clearVendorSelection(): void {
+    this.propertyForm.get('vendor_id')?.setValue('');
+    this.vendorSearchTerm.set('');
+    this.selectedVendorLabel.set('');
+    this.isVendorDropdownOpen.set(false);
   }
 
   private loadVendors(): void {
