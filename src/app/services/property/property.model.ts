@@ -4,11 +4,22 @@
 export interface PropertyRequest {
   vendor_id: string;
   name: string;
-  location_id: string;
+  type: 'Apartment' | 'Villa' | 'House' | 'Studio';
   city_id: string;
-  is_featured: boolean;
+  location_id: string;
   description: string;
-
+  price: number;
+  deposit: number;
+  is_featured: boolean;
+  status: 'draft' | 'active' | 'inactive';
+  galleryImages: string[];
+  featureImage: string;
+  coverImage: string;
+  documents: string[];
+  amenity_ids: string[];
+  facility_ids: string[];
+  room_type_ids: string[];
+  food_option_ids: string[];
 }
 
 export type PropertyDTO = PropertyRequest;
@@ -30,8 +41,12 @@ export interface PropertyItem {
   galleryImages: string[];
   featureImage: string;
   coverImage: string;
+  documents?: string[];
+  amenity_ids?: string[];
+  facility_ids?: string[];
+  room_type_ids?: string[];
+  food_option_ids?: string[];
 }
-
 
 export interface PropertyFormValue {
   title: string;

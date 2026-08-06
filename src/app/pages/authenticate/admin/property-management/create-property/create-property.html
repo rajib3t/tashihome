@@ -2,7 +2,7 @@
   <div class="flex items-center justify-between">
     <div>
       <h2 class="text-2xl font-semibold text-slate-800 dark:text-slate-100">Create Property</h2>
-      <p class="text-sm text-slate-500 dark:text-slate-400">Add a new property using the API payload fields.</p>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Add a new listing through the step-by-step wizard.</p>
     </div>
     <button
       type="button"
@@ -13,162 +13,408 @@
     </button>
   </div>
 
-  <app-card title="Property Details" desc="Fill in the request fields and save the record.">
-    <form [formGroup]="propertyForm" (ngSubmit)="submitPropertyForm()" class="space-y-5">
-      <label class="block space-y-2">
-        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Vendor</span>
-        <div class="relative">
-          <input
-            type="text"
-            [value]="vendorSearchTerm()"
-            (input)="onVendorSearchChange($any($event.target).value)"
-            (focus)="openVendorDropdown()"
-            placeholder="Search vendor by name, email, or phone"
-            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-24 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          />
-          <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
-            @if (selectedVendorLabel()) {
-              <button
-                type="button"
-                class="pointer-events-auto rounded-full border border-slate-200 px-2 py-1 font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300"
-                (click)="clearVendorSelection()"
-              >
-                Clear
-              </button>
-            } @else {
-              <span>Autocomplete</span>
-            }
-          </div>
-
-          @if (isVendorDropdownOpen() && filteredVendors().length) {
-            <div class="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
-              @for (vendor of filteredVendors(); track vendor.id) {
-              <button
-                  type="button"
-                  class="flex w-full flex-col gap-0.5 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
-                  (mousedown)="selectVendor(vendor)"
-                >
-                  <span class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ vendor.full_name }}</span>
-                  <span class="text-xs text-slate-500 dark:text-slate-400">
-                    {{ vendor.email }}
-                    @if (vendor.phone) {
-                      <span> • {{ vendor.phone }}</span>
-                    }
-                  </span>
-                </button>
-              }
-            </div>
-          } @else if (isVendorDropdownOpen() && vendorSearchTerm().trim()) {
-            <div class="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-              No vendors match your search.
-            </div>
-          }
+  <app-card title="Property Details" desc="Complete each step then publish the property.">
+    <div class="mb-6 flex flex-wrap gap-2">
+      @for (step of wizardSteps; track step; let i = $index) {
+        <div class="flex items-center gap-2">
+          <span
+            class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
+            [class]="i === currentStep ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'"
+          >
+            {{ i + 1 }}
+          </span>
+          <span class="text-sm text-slate-600 dark:text-slate-300">{{ step }}</span>
         </div>
-        <input type="hidden" formControlName="vendor_id" />
-        @if (propertyForm.get('vendor_id')?.invalid && propertyForm.get('vendor_id')?.touched) {
-          <p class="text-xs text-red-500">Vendor is required.</p>
-        }
-      </label>
+      }
+    </div>
 
-      <label class="block space-y-2">
-        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Name</span>
-        <input formControlName="name" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
-      </label>
-
-      <div class="grid gap-5 md:grid-cols-2">
-        <label class="block space-y-2">
-          <span class="text-sm font-medium text-slate-700 dark:text-slate-200">City</span>
-          <div class="relative">
-            <input
-              type="text"
-              [value]="citySearchTerm()"
-              (input)="onCitySearchChange($any($event.target).value)"
-              (focus)="openCityDropdown()"
-              (blur)="onCityInputBlur()"
-              placeholder="Search city"
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-24 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            />
-            <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
-              @if (selectedCityLabel()) {
-                <button
-                  type="button"
-                  class="pointer-events-auto rounded-full border border-slate-200 px-2 py-1 font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300"
-                  (click)="clearCitySelection()"
-                >
-                  Clear
-                </button>
-              } @else {
-                <span>Autocomplete</span>
-              }
-            </div>
-
-            @if (isCityDropdownOpen() && filteredCities().length) {
-              <div class="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
-                @for (city of filteredCities(); track city.id) {
+    <form [formGroup]="propertyForm" (ngSubmit)="submitPropertyForm()" class="space-y-6">
+      <!-- STEP 0: Property Details (amenities/facilities/room types/food removed) -->
+      @if (currentStep === 0) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Vendor</span>
+            <div class="relative">
+              <input
+                type="text"
+                [value]="vendorSearchTerm()"
+                (input)="onVendorSearchChange($any($event.target).value)"
+                (focus)="openVendorDropdown()"
+                placeholder="Search vendor by name, email, or phone"
+                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-24 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              />
+              <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                @if (selectedVendorLabel()) {
                   <button
                     type="button"
-                    class="w-full border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
-                    (mousedown)="selectCity(city)"
+                    class="pointer-events-auto rounded-full border border-slate-200 px-2 py-1 font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300"
+                    (click)="clearVendorSelection()"
                   >
-                    <span class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ city.name }}</span>
+                    Clear
                   </button>
+                } @else {
+                  <span>Autocomplete</span>
                 }
               </div>
-            } @else if (isCityDropdownOpen() && citySearchTerm().trim()) {
-              <div class="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-                No cities match your search.
+
+              @if (isVendorDropdownOpen() && filteredVendors().length) {
+                <div class="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                  @for (vendor of filteredVendors(); track vendor.id) {
+                    <button
+                      type="button"
+                      class="flex w-full flex-col gap-0.5 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
+                      (mousedown)="selectVendor(vendor)"
+                    >
+                      <span class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ vendor.full_name }}</span>
+                      <span class="text-xs text-slate-500 dark:text-slate-400">
+                        {{ vendor.email }}
+                        @if (vendor.phone) {
+                          <span> • {{ vendor.phone }}</span>
+                        }
+                      </span>
+                    </button>
+                  }
+                </div>
+              } @else if (isVendorDropdownOpen() && vendorSearchTerm().trim()) {
+                <div class="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                  No vendors match your search.
+                </div>
+              }
+            </div>
+            <input type="hidden" formControlName="vendor_id" />
+            @if (propertyForm.get('vendor_id')?.invalid && propertyForm.get('vendor_id')?.touched) {
+              <p class="text-xs text-red-500">Vendor is required.</p>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property name</span>
+            <input formControlName="name" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+            @if (propertyForm.get('name')?.touched && propertyForm.get('name')?.invalid) {
+              <small class="text-xs text-red-500">Name is required and must be at least 3 characters.</small>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property type</span>
+            <select formControlName="type" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+              <option value="Apartment">Apartment</option>
+              <option value="Villa">Villa</option>
+              <option value="House">House</option>
+              <option value="Studio">Studio</option>
+            </select>
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">City</span>
+            <div class="relative">
+              <input
+                type="text"
+                [value]="citySearchTerm()"
+                (input)="onCitySearchChange($any($event.target).value)"
+                (focus)="openCityDropdown()"
+                (blur)="onCityInputBlur()"
+                placeholder="Search city"
+                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-24 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              />
+              <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                @if (selectedCityLabel()) {
+                  <button
+                    type="button"
+                    class="pointer-events-auto rounded-full border border-slate-200 px-2 py-1 font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300"
+                    (click)="clearCitySelection()"
+                  >
+                    Clear
+                  </button>
+                } @else {
+                  <span>Autocomplete</span>
+                }
+              </div>
+
+              @if (isCityDropdownOpen() && filteredCities().length) {
+                <div class="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                  @for (city of filteredCities(); track city.id) {
+                    <button
+                      type="button"
+                      class="w-full border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
+                      (mousedown)="selectCity(city)"
+                    >
+                      <span class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ city.name }}</span>
+                    </button>
+                  }
+                </div>
+              } @else if (isCityDropdownOpen() && citySearchTerm().trim()) {
+                <div class="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                  No cities match your search.
+                </div>
+              }
+            </div>
+            <input type="hidden" formControlName="city_id" />
+            @if (propertyForm.get('city_id')?.invalid && propertyForm.get('city_id')?.touched) {
+              <p class="text-xs text-red-500">City is required.</p>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Location</span>
+            <select
+              formControlName="location_id"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary disabled:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800"
+              [disabled]="!propertyForm.get('city_id')?.value || loadingLocations()"
+            >
+              <option value="">
+                {{ loadingLocations() ? 'Loading locations...' : 'Select location' }}
+              </option>
+              @for (location of locations(); track location.id) {
+                <option [value]="location.id">{{ location.name }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Description</span>
+            <textarea
+              formControlName="description"
+              rows="5"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            ></textarea>
+            @if (propertyForm.get('description')?.touched && propertyForm.get('description')?.invalid) {
+              <small class="text-xs text-red-500">Description is required and must be at least 20 characters.</small>
+            }
+          </label>
+        </div>
+      }
+
+      <!-- STEP 1 (NEW): Amenities, Facilities, Room Types, Food Options -->
+      @if (currentStep === 1) {
+        <div class="space-y-6">
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Amenities</span>
+            @if (amenities().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (amenity of amenities(); track amenity.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelectionChecked('amenity_ids', amenity.id)"
+                      (change)="toggleSelection('amenity_ids', amenity.id)"
+                      class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                    />
+                    {{ amenity.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No amenities loaded yet.</p>
+            }
+          </div>
+
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Facilities</span>
+            @if (facilities().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (facility of facilities(); track facility.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelectionChecked('facility_ids', facility.id)"
+                      (change)="toggleSelection('facility_ids', facility.id)"
+                      class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                    />
+                    {{ facility.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No facilities loaded yet.</p>
+            }
+          </div>
+
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Room types</span>
+            @if (roomTypes().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (roomType of roomTypes(); track roomType.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelectionChecked('room_type_ids', roomType.id)"
+                      (change)="toggleSelection('room_type_ids', roomType.id)"
+                      class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                    />
+                    {{ roomType.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No room types loaded yet.</p>
+            }
+          </div>
+
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Food options</span>
+            <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              @for (foodOption of foodOptions(); track foodOption.id) {
+                <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                  <input
+                    type="checkbox"
+                    [checked]="isSelectionChecked('food_option_ids', foodOption.id)"
+                    (change)="toggleSelection('food_option_ids', foodOption.id)"
+                    class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                  />
+                  {{ foodOption.name }}
+                </label>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- STEP 2 (was 1): Pricing -->
+      @if (currentStep === 2) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Price</span>
+            <input
+              type="number"
+              min="1"
+              formControlName="price"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+            @if (propertyForm.get('price')?.touched && propertyForm.get('price')?.invalid) {
+              <small class="text-xs text-red-500">Price is required and must be greater than zero.</small>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Security deposit</span>
+            <input
+              type="number"
+              min="0"
+              formControlName="deposit"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+            @if (propertyForm.get('deposit')?.touched && propertyForm.get('deposit')?.invalid) {
+              <small class="text-xs text-red-500">Deposit is required and may not be negative.</small>
+            }
+          </label>
+        </div>
+      }
+
+      <!-- STEP 3 (was 2): Media -->
+      @if (currentStep === 3) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <div class="space-y-3 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Gallery images</span>
+            <app-upload-image
+              [id]="'gallery-upload-create'"
+              [name]="'gallery-upload-create'"
+              [multiple]="true"
+              [buttonText]="'Upload gallery images'"
+              [emptyText]="'No gallery images selected'"
+              (previewListChange)="addGalleryImages($event)"
+            ></app-upload-image>
+
+            @if (galleryPreviews().length) {
+              <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                @for (image of galleryPreviews(); track image; let i = $index) {
+                  <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                    <img [src]="image" [alt]="'Gallery image ' + (i + 1)" class="h-28 w-full object-cover" />
+                  </div>
+                }
               </div>
             }
           </div>
 
-          <input type="hidden" formControlName="city_id" />
-          @if (propertyForm.get('city_id')?.invalid && propertyForm.get('city_id')?.touched) {
-            <p class="text-xs text-red-500">City is required.</p>
-          }
-        </label>
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Feature image</span>
+            <app-upload-image
+              [id]="'feature-image-create'"
+              [name]="'feature-image-create'"
+              [preview]="featureImagePreview()"
+              [buttonText]="'Upload feature image'"
+              [emptyText]="'No feature image selected'"
+              (previewChange)="handleImageSelection('featureImage', $event)"
+            ></app-upload-image>
+          </label>
 
-        <label class="block space-y-2">
-          <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Location</span>
-          <select
-            formControlName="location_id"
-            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary disabled:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800"
-            [disabled]="!propertyForm.get('city_id')?.value || loadingLocations()"
-          >
-            <option value="">
-              {{ loadingLocations() ? 'Loading locations...' : 'Select location' }}
-            </option>
-            @for (location of locations(); track location.id) {
-              <option [value]="location.id">{{ location.name }}</option>
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Cover image</span>
+            <app-upload-image
+              [id]="'cover-image-create'"
+              [name]="'cover-image-create'"
+              [preview]="coverImagePreview()"
+              [buttonText]="'Upload cover image'"
+              [emptyText]="'No cover image selected'"
+              (previewChange)="handleImageSelection('coverImage', $event)"
+            ></app-upload-image>
+          </label>
+
+          <label class="space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Documents</span>
+            <app-upload-image
+              [id]="'documents-upload-create'"
+              [name]="'documents-upload-create'"
+              [multiple]="true"
+              [accept]="'image/*,.pdf,.doc,.docx'"
+              [buttonText]="'Upload documents'"
+              [emptyText]="'No documents selected'"
+              (previewListChange)="addDocuments($event)"
+            ></app-upload-image>
+
+            @if (documentPreviews().length) {
+              <ul class="space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                @for (document of documentPreviews(); track document; let i = $index) {
+                  <li>
+                    <a [href]="document" target="_blank" rel="noopener noreferrer" class="text-primary underline">Document {{ i + 1 }}</a>
+                  </li>
+                }
+              </ul>
             }
-          </select>
-        </label>
-      </div>
+          </label>
+        </div>
+      }
 
-      <label class="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-700">
-        <input type="checkbox" formControlName="is_featured" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
-        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Featured property</span>
-      </label>
+      <!-- STEP 4 (was 3): Settings -->
+      @if (currentStep === 4) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-700 md:col-span-2">
+            <input type="checkbox" formControlName="is_featured" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Featured property</span>
+          </label>
 
-      <label class="block space-y-2">
-        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Description</span>
-        <textarea
-          formControlName="description"
-          rows="5"
-          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-        ></textarea>
-      </label>
+          <label class="space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Publish status</span>
+            <select formControlName="status" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+        </div>
+      }
 
-      <div class="flex items-center justify-end gap-3 border-t border-slate-200 pt-6 dark:border-slate-700">
+      <div class="flex items-center justify-between border-t border-slate-200 pt-6 dark:border-slate-700">
         <button
           type="button"
           class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:text-slate-200"
-          (click)="cancel()"
+          (click)="previousStep()"
+          [disabled]="currentStep === 0"
         >
-          Cancel
+          Previous
         </button>
-        <button type="submit" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90">
-          Save Property
-        </button>
+
+        <div class="flex gap-3">
+          @if (currentStep < wizardSteps.length - 1) {
+            <button type="button" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90" (click)="nextStep()">
+              Next
+            </button>
+          } @else {
+            <button type="submit" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90">
+              Create Property
+            </button>
+          }
+        </div>
       </div>
     </form>
   </app-card>
