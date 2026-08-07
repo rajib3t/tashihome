@@ -20,6 +20,7 @@ import { LocationResponse } from '../../../../../services/location/location-mode
 import { Amenity } from '../../../../../services/amenity/amenity-model';
 import { Facility } from '../../../../../services/facility/facility-model';
 import { RoomType } from '../../../../../services/room-type/room-type-model';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-create-property',
@@ -105,6 +106,8 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     facility_ids: this.formBuilder.control<string[]>([]),
     room_type_ids: this.formBuilder.control<string[]>([]),
     food_option_ids: this.formBuilder.control<string[]>([]),
+    lat: [null as number | null],
+    lon: [null as number | null],
   });
   foodOptions = signal([
   { id: 'breakfast', name: 'Breakfast' },
@@ -118,6 +121,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     this.loadAmenities();
     this.loadFacilities();
     this.loadRoomTypes();
+    this.loadGoogleMapsScript();
 
     this.propertyForm.get('city_id')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -217,6 +221,59 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     if (!this.propertyForm.get('city_id')?.value) {
       this.propertyForm.get('city_id')?.markAsTouched();
     }
+  }
+
+  loadGoogleMapsScript(): void {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    if (window.google && window.google.maps) {
+      this.initGoogleAutocomplete();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src =
+      `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&loading=async&libraries=places`;
+    script.async = true;
+    script.onload = () => {
+      this.initGoogleAutocomplete();
+    };
+    document.head.appendChild(script);
+  }
+
+  async initGoogleAutocomplete(): Promise<void> {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    await customElements.whenDefined('gmp-place-autocomplete');
+
+    const container = document.getElementById('google-location-container');
+    if (!container) return;
+
+    const placeAutocomplete =
+      new google.maps.places.PlaceAutocompleteElement();
+
+    container.innerHTML = '';
+    container.appendChild(placeAutocomplete);
+
+    placeAutocomplete.addEventListener(
+      'gmp-placeselect',
+      async (event: any) => {
+        const place = event.place;
+
+        await place.fetchFields({
+          fields: ['location', 'formattedAddress'],
+        });
+
+        this.propertyForm.patchValue({
+          lat: place.location?.lat(),
+          lon: place.location?.lng(),
+        });
+      }
+    );
   }
 
   addGalleryImages(previews: string[]): void {

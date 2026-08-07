@@ -172,6 +172,33 @@
           </label>
 
           <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Google Location Autocomplete</span>
+            <div id="google-location-container"></div>
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Latitude</span>
+            <input
+              formControlName="lat"
+              type="number"
+              step="any"
+              placeholder="Latitude will be auto-filled"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Longitude</span>
+            <input
+              formControlName="lon"
+              type="number"
+              step="any"
+              placeholder="Longitude will be auto-filled"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <label class="block space-y-2 md:col-span-2">
             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Description</span>
             <textarea
               formControlName="description"
