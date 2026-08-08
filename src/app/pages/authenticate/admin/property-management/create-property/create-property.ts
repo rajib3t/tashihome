@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, NgZone, OnInit, AfterViewChecked, signal, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
@@ -28,7 +28,7 @@ import { environment } from '../../../../../../environments/environment';
   imports: [CommonModule, ReactiveFormsModule, Card, UploadImage],
   templateUrl: './create-property.html',
 })
-export class CreateProperty implements OnInit {
+export class CreateProperty implements OnInit, AfterViewChecked {
   private readonly formBuilder = inject(FormBuilder);
   private readonly propertyService = inject(PropertyService);
   private readonly userService = inject(UserService);
@@ -39,6 +39,7 @@ export class CreateProperty implements OnInit {
   private readonly roomTypeService = inject(RoomTypeService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly ngZone = inject(NgZone);
 
 wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media', 'Settings'];  currentStep = 0;
 
@@ -87,6 +88,12 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   readonly coverImagePreview = signal('');
   readonly documentPreviews = signal<string[]>([]);
 
+  private autocompleteInitialized = false;
+  private autocompleteElement?: HTMLInputElement;
+  private autocompleteInstance?: any;
+  private googleMapsLoaded = false;
+  @ViewChild('googleLocationInput', { static: false }) googleLocationInput!: ElementRef<HTMLInputElement>;
+
   readonly propertyForm = this.formBuilder.group({
     vendor_id: ['', Validators.required],
     name: ['', [Validators.required, Validators.minLength(3)]],
@@ -115,6 +122,10 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   { id: 'tiffin', name: 'Tiffin' },
   { id: 'dinner', name: 'Dinner' },
 ]);
+  ngAfterViewChecked(): void {
+    this.tryInitGoogleAutocomplete();
+  }
+
   ngOnInit(): void {
     this.loadVendors();
     this.loadCities();
@@ -227,53 +238,94 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     if (typeof document === 'undefined') {
       return;
     }
-
-    if (window.google && window.google.maps) {
-      this.initGoogleAutocomplete();
+    if (!environment.googleMapsApiKey) {
+      console.error(
+        'Google Maps API key not configured. Set GOOGLE_MAPS_API_KEY in .env or provide it via your build pipeline. See scripts/generate-environment.mjs for details.'
+      );
       return;
     }
 
+    if (window.google && window.google.maps && window.google.maps.places) {
+      this.googleMapsLoaded = true;
+      this.tryInitGoogleAutocomplete();
+      return;
+    }
+
+    const win = window as Window & { gm_authFailure?: () => void };
+    win.gm_authFailure = () => {
+      console.error('Google Maps authentication failed: invalid API key or key restrictions.');
+    };
+
     const script = document.createElement('script');
-    script.src =
-      `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&loading=async&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&libraries=places`;
     script.async = true;
+    script.defer = true;
     script.onload = () => {
-      this.initGoogleAutocomplete();
+      if (!window.google || !window.google.maps || !window.google.maps.places) {
+        console.error('Google Maps API script loaded but maps library is unavailable.');
+        return;
+      }
+      this.googleMapsLoaded = true;
+      this.tryInitGoogleAutocomplete();
+    };
+    script.onerror = () => {
+      console.error('Failed to load the Google Maps API script. Check network access and API key.');
     };
     document.head.appendChild(script);
   }
 
-  async initGoogleAutocomplete(): Promise<void> {
+  private tryInitGoogleAutocomplete(): void {
     if (typeof document === 'undefined') {
       return;
     }
 
-    await customElements.whenDefined('gmp-place-autocomplete');
+    const locationInput = this.googleLocationInput?.nativeElement;
+    if (!locationInput) {
+      return;
+    }
 
-    const container = document.getElementById('google-location-container');
-    if (!container) return;
+    if (!window.google || !window.google.maps || !window.google.maps.places) {
+      return;
+    }
 
-    const placeAutocomplete =
-      new google.maps.places.PlaceAutocompleteElement();
+    if (this.autocompleteInitialized && this.autocompleteElement === locationInput) {
+      return;
+    }
 
-    container.innerHTML = '';
-    container.appendChild(placeAutocomplete);
+    this.initGoogleAutocomplete(locationInput);
+  }
 
-    placeAutocomplete.addEventListener(
-      'gmp-placeselect',
-      async (event: any) => {
-        const place = event.place;
+  private initGoogleAutocomplete(locationInput: HTMLInputElement): void {
+    if (this.autocompleteInitialized && this.autocompleteElement === locationInput) {
+      return;
+    }
 
-        await place.fetchFields({
-          fields: ['location', 'formattedAddress'],
+    if (!window.google || !window.google.maps || !window.google.maps.places) {
+      console.error('Google Maps API not loaded');
+      return;
+    }
+
+    const autocomplete = new window.google.maps.places.Autocomplete(locationInput, {
+      types: ['geocode'],
+      fields: ['geometry'],
+    });
+
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      if (place.geometry?.location) {
+        const lat = place.geometry.location.lat();
+        const lon = place.geometry.location.lng();
+        this.ngZone.run(() => {
+          this.propertyForm.patchValue({ lat, lon });
         });
-
-        this.propertyForm.patchValue({
-          lat: place.location?.lat(),
-          lon: place.location?.lng(),
-        });
+      } else {
+        console.error('No geometry or location in place data', place);
       }
-    );
+    });
+
+    this.autocompleteInstance = autocomplete;
+    this.autocompleteElement = locationInput;
+    this.autocompleteInitialized = true;
   }
 
   addGalleryImages(previews: string[]): void {
