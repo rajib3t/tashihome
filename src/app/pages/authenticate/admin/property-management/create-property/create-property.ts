@@ -92,6 +92,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   private autocompleteElement?: HTMLInputElement;
   private autocompleteInstance?: any;
   private googleMapsLoaded = false;
+  private selectedCityForAutocomplete: string | null = null;
   @ViewChild('googleLocationInput', { static: false }) googleLocationInput!: ElementRef<HTMLInputElement>;
 
   readonly propertyForm = this.formBuilder.group({
@@ -218,6 +219,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     this.selectedCityLabel.set(city.name);
     this.isCityDropdownOpen.set(false);
     this.loadLocations(city.id);
+    this.setAutocompleteCityRestriction(city.name, city.country?.name);
   }
 
   clearCitySelection(): void {
@@ -226,6 +228,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     this.selectedCityLabel.set('');
     this.isCityDropdownOpen.set(false);
     this.locations.set([]);
+    this.clearAutocompleteCityRestriction();
   }
 
   onCityInputBlur(): void {
@@ -326,6 +329,49 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     this.autocompleteInstance = autocomplete;
     this.autocompleteElement = locationInput;
     this.autocompleteInitialized = true;
+
+    if (this.selectedCityForAutocomplete) {
+      this.applyCityBoundsToAutocomplete(this.selectedCityForAutocomplete);
+    }
+  }
+
+  private setAutocompleteCityRestriction(cityName: string, countryName?: string): void {
+    this.selectedCityForAutocomplete = countryName ? `${cityName}, ${countryName}` : cityName;
+    if (this.autocompleteInstance) {
+      this.applyCityBoundsToAutocomplete(this.selectedCityForAutocomplete);
+    }
+  }
+
+  private clearAutocompleteCityRestriction(): void {
+    this.selectedCityForAutocomplete = null;
+    if (this.autocompleteInstance?.setBounds) {
+      this.autocompleteInstance.setBounds(undefined);
+      if (this.autocompleteInstance.setStrictBounds) {
+        this.autocompleteInstance.setStrictBounds(false);
+      }
+    }
+  }
+
+  private applyCityBoundsToAutocomplete(address: string): void {
+    if (!window.google || !window.google.maps) {
+      return;
+    }
+
+    const geocoder = new (window.google.maps as any).Geocoder();
+    geocoder.geocode({ address }, (results: any, status: string) => {
+      if (status !== 'OK' || !results?.length) {
+        console.warn('City geocode failed for autocomplete bounds:', address, status);
+        return;
+      }
+
+      const viewport = results[0].geometry?.viewport;
+      if (viewport && this.autocompleteInstance?.setBounds) {
+        this.autocompleteInstance.setBounds(viewport);
+        if (this.autocompleteInstance.setStrictBounds) {
+          this.autocompleteInstance.setStrictBounds(true);
+        }
+      }
+    });
   }
 
   addGalleryImages(previews: string[]): void {
