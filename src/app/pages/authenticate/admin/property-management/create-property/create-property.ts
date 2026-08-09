@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { PropertyRequest } from '../../../../../services/property/property.model';
+import { CreatePropertyRequest, PROPERTY_TYPES, PropertyRequest, PropertyUpdateRequest,  PROPERTY_TYPES_LABELS} from '../../../../../services/property/property.model';
 import { PropertyService } from '../../../../../services/property/property-service';
 import { Card } from '../../../../../shared/components/ui/card/card';
 import { UploadImage } from '../../../../../shared/components/common/upload-image/upload-image';
@@ -87,23 +87,26 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   readonly featureImagePreview = signal('');
   readonly coverImagePreview = signal('');
   readonly documentPreviews = signal<string[]>([]);
+  readonly isSaving = signal(false);
 
   private autocompleteInitialized = false;
   private autocompleteElement?: HTMLInputElement;
   private autocompleteInstance?: any;
   private googleMapsLoaded = false;
   private selectedCityForAutocomplete: string | null = null;
+  private createdPropertyId: number | null = null;
   @ViewChild('googleLocationInput', { static: false }) googleLocationInput!: ElementRef<HTMLInputElement>;
 
   readonly propertyForm = this.formBuilder.group({
     vendor_id: ['', Validators.required],
     name: ['', [Validators.required, Validators.minLength(3)]],
-    type: ['Apartment' as PropertyRequest['type'], Validators.required],
+    type: ['hotel' as CreatePropertyRequest['type'], Validators.required],
     city_id: ['', Validators.required],
     location_id: ['', Validators.required],
+    address: ['', [Validators.required, Validators.minLength(5)]],
     description: ['', [Validators.required, Validators.minLength(20)]],
-    price: [0, [Validators.required, Validators.min(1)]],
-    deposit: [0, [Validators.required, Validators.min(0)]],
+    price_per_night: [0, [Validators.required, Validators.min(1)]],
+    sale_price: [0, [Validators.required, Validators.min(0)]],
     is_featured: [false],
     status: ['draft' as PropertyRequest['status'], Validators.required],
     galleryImages: this.formBuilder.control<string[]>([]),
@@ -148,12 +151,28 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   }
 
   nextStep(): void {
+    void this.saveCurrentStepAndAdvance();
+  }
+
+  private saveCurrentStepAndAdvance(): void {
     if (!this.isCurrentStepValid()) {
       this.propertyForm.markAllAsTouched();
       return;
     }
 
-    this.currentStep = Math.min(this.currentStep + 1, this.wizardSteps.length - 1);
+    if (this.currentStep === 0) {
+      this.createPropertyDraft();
+      return;
+    }
+
+    if (this.currentStep === 3) {
+      this.uploadMediaAndAdvance();
+      return;
+    }
+
+    this.updatePropertyDraft(() => {
+      this.currentStep = Math.min(this.currentStep + 1, this.wizardSteps.length - 1);
+    });
   }
 
   previousStep(): void {
@@ -161,14 +180,17 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   }
 
   submitPropertyForm(): void {
-    if (this.propertyForm.invalid) {
+    if (!this.createdPropertyId) {
       this.propertyForm.markAllAsTouched();
       return;
     }
 
-    const payload = this.propertyForm.getRawValue() as PropertyRequest;
+    if (!this.isCurrentStepValid()) {
+      this.propertyForm.markAllAsTouched();
+      return;
+    }
 
-    this.propertyService.createProperty(payload).subscribe(() => {
+    this.updatePropertyDraft(() => {
       this.router.navigate(['/admin/property-management']);
     });
   }
@@ -439,10 +461,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     }
 
     if (this.currentStep === 1) {
-      return !!(
-        this.propertyForm.get('price')?.valid &&
-        this.propertyForm.get('deposit')?.valid
-      );
+      return !!(this.propertyForm.get('price_per_night')?.valid && this.propertyForm.get('sale_price')?.valid);
     }
 
     if (this.currentStep === 2) {
@@ -452,6 +471,159 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     return !!(
       this.propertyForm.get('status')?.valid
     );
+  }
+
+  private createPropertyDraft(): void {
+    this.isSaving.set(true);
+
+    const payload = this.buildCreatePayload();
+
+    this.propertyService.createProperty(payload).subscribe({
+      next: (property) => {
+        this.createdPropertyId = property.data.id;
+        this.isSaving.set(false);
+        this.currentStep = 1;
+      },
+      error: () => {
+        this.isSaving.set(false);
+      },
+    });
+  }
+
+  private updatePropertyDraft(onSuccess?: () => void): void {
+    const propertyId = this.createdPropertyId;
+    if (!propertyId) {
+      return;
+    }
+
+    this.isSaving.set(true);
+
+    const payload = this.buildUpdatePayload();
+    this.propertyService.updateProperty(propertyId, payload).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        onSuccess?.();
+      },
+      error: () => {
+        this.isSaving.set(false);
+      },
+    });
+  }
+
+  private uploadMediaAndAdvance(): void {
+    const propertyId = this.createdPropertyId;
+    if (!propertyId) {
+      return;
+    }
+
+    this.isSaving.set(true);
+
+    const formData = this.buildMediaFormData();
+    this.propertyService.uploadPropertyMedia(propertyId, formData).subscribe({
+      next: (response) => {
+        const media = response.data?.galleryImages ?? [];
+        if (media.length) {
+          this.galleryPreviews.set(media);
+        }
+        if (response.data?.featureImage) {
+          this.featureImagePreview.set(response.data.featureImage);
+        }
+        if (response.data?.coverImage) {
+          this.coverImagePreview.set(response.data.coverImage);
+        }
+        if (response.data?.documents) {
+          this.documentPreviews.set(response.data.documents);
+        }
+        this.isSaving.set(false);
+        this.currentStep = 4;
+      },
+      error: () => {
+        this.isSaving.set(false);
+      },
+    });
+  }
+
+  private buildCreatePayload(): CreatePropertyRequest {
+    const raw = this.propertyForm.getRawValue();
+    return {
+      vendor_id: String(raw.vendor_id ?? ''),
+      name: String(raw.name ?? '').trim(),
+      type: this.normalizePropertyType(raw.type),
+      vendor: this.getVendorLabel(String(raw.vendor_id ?? '')),
+      city: this.getCityLabel(String(raw.city_id ?? '')),
+      location: this.getLocationLabel(String(raw.location_id ?? '')),
+      address: String(raw.address ?? '').trim(),
+      latitude: Number(raw.lat ?? 0) || 0,
+      longitude: Number(raw.lon ?? 0) || 0,
+      city_id: String(raw.city_id ?? ''),
+      location_id: String(raw.location_id ?? ''),
+      description: String(raw.description ?? '').trim(),
+    };
+  }
+
+  private buildUpdatePayload(): PropertyUpdateRequest {
+    const raw = this.propertyForm.getRawValue();
+    return {
+      vendor_id: String(raw.vendor_id ?? ''),
+      name: String(raw.name ?? '').trim(),
+      type: this.normalizePropertyType(raw.type),
+      city_id: String(raw.city_id ?? ''),
+      location_id: String(raw.location_id ?? ''),
+      description: String(raw.description ?? '').trim(),
+      price: Number(raw.price_per_night ?? 0),
+      price_per_night: Number(raw.price_per_night ?? 0),
+      sale_price: Number(raw.sale_price ?? 0),
+      is_featured: Boolean(raw.is_featured),
+      status: this.normalizePropertyStatus(raw.status),
+      amenity_ids: [...(raw.amenity_ids ?? [])],
+      facility_ids: [...(raw.facility_ids ?? [])],
+      room_type_ids: [...(raw.room_type_ids ?? [])],
+      food_option_ids: [...(raw.food_option_ids ?? [])],
+      lat: raw.lat,
+      lon: raw.lon,
+    };
+  }
+
+  private buildMediaFormData(): FormData {
+    const formData = new FormData();
+
+    this.galleryPreviews().forEach((image, index) => formData.append(`galleryImages[${index}]`, image));
+
+    if (this.featureImagePreview()) {
+      formData.append('featureImage', this.featureImagePreview());
+    }
+
+    if (this.coverImagePreview()) {
+      formData.append('coverImage', this.coverImagePreview());
+    }
+
+    this.documentPreviews().forEach((document, index) => formData.append(`documents[${index}]`, document));
+
+    return formData;
+  }
+
+  private normalizePropertyType(value: unknown): PropertyRequest['type'] {
+    const safeValue = String(value ?? 'hotel');
+    return (PROPERTY_TYPES as readonly string[]).includes(safeValue) ? (safeValue as PropertyRequest['type']) : 'hotel';
+  }
+
+  private normalizePropertyStatus(value: unknown): PropertyRequest['status'] {
+    const safeValue = String(value ?? 'draft');
+    return (['draft', 'active', 'inactive'] as const).includes(safeValue as PropertyRequest['status'])
+      ? (safeValue as PropertyRequest['status'])
+      : 'draft';
+  }
+
+  private getVendorLabel(vendorId: string): string {
+    return this.vendors().find((vendor) => vendor.id === vendorId)?.full_name ?? '';
+  }
+
+  private getCityLabel(cityId: string): string {
+    return this.cities().find((city) => city.id === cityId)?.name ?? '';
+  }
+
+  private getLocationLabel(locationId: string): string {
+    return this.locations().find((location) => location.id === locationId)?.name ?? '';
   }
 
   private loadVendors(): void {

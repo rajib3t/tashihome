@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { PropertyDTO, PropertyItem, PropertyQuery } from './property.model';
+import { PropertyDTO, PropertyItem, PropertyQuery, PropertyMediaUploadResponse, PropertyUpdateRequest, CreatePropertyRequest } from './property.model';
 import { ApiResponse } from '../api/api-response.model';
 import { inject } from '@angular/core';
 import { ApiService } from '../api/api-service';
@@ -14,7 +14,7 @@ export class PropertyService {
     {
       id: 1,
       title: 'Harbor View Residence',
-      type: 'Apartment',
+      type: 'apartment',
       city: 'Dhaka',
       address: 'Dhanmondi 27, Road 10',
       bedrooms: 2,
@@ -32,7 +32,7 @@ export class PropertyService {
     {
       id: 2,
       title: 'Lakewood Family Villa',
-      type: 'Villa',
+      type: 'villa',
       city: 'Chattogram',
       address: 'Agrabad, Lake Side Lane',
       bedrooms: 4,
@@ -50,7 +50,7 @@ export class PropertyService {
     {
       id: 3,
       title: 'City Nest Studio',
-      type: 'Studio',
+      type: 'hotel',
       city: 'Sylhet',
       address: 'Zindabazar, Block B',
       bedrooms: 1,
@@ -92,18 +92,31 @@ export class PropertyService {
     });
   }
 
-  createProperty(property: PropertyDTO): Observable<ApiResponse<PropertyItem>> {
+  createProperty(property: CreatePropertyRequest): Observable<ApiResponse<PropertyItem>> {
     return this.apiService.protectedPost<ApiResponse<PropertyItem>>('/properties/', property).pipe(
       map((response) => response.data),
       catchError(this.apiService.passthroughError)
     );
   }
 
-  updateProperty(property: PropertyItem): Observable<PropertyItem> {
-    const index = this.properties.findIndex((item) => item.id === property.id);
+  updateProperty(id: number, property: PropertyUpdateRequest): Observable<ApiResponse<PropertyItem>> {
+    const index = this.properties.findIndex((item) => item.id === id);
     if (index >= 0) {
-      this.properties[index] = property;
+      this.properties[index] = {
+        ...this.properties[index],
+        ...property,
+      };
     }
-    return of(property);
+    return this.apiService.protectedPut<ApiResponse<PropertyItem>>(`/properties/${id}`, property).pipe(
+      map((response) => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  uploadPropertyMedia(id: number, formData: FormData): Observable<ApiResponse<PropertyMediaUploadResponse>> {
+    return this.apiService.protectedUpload<ApiResponse<PropertyMediaUploadResponse>>(`/properties/${id}/media`, formData).pipe(
+      map((response) => response.data),
+      catchError(this.apiService.passthroughError)
+    );
   }
 }

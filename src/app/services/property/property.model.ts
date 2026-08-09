@@ -1,15 +1,57 @@
 
 
 
+export const PROPERTY_TYPES = [
+  'hotel',
+  'apartment',
+  'villa',
+  'resort',
+  'hostel',
+  'guest_house',
+  'bed_and_breakfast',
+  'cottage',
+  'cabin',
+  'lodge',
+  'motel',
+  'pension',
+  'chalet',
+  'farm_stay',
+  'houseboat',
+  'home_stay',
+] as const;
+
+export const PROPERTY_TYPES_LABELS: Record<string, string> = {
+  hotel: 'Hotel',
+  apartment: 'Apartment',
+  villa: 'Villa',
+  resort: 'Resort',
+  hostel: 'Hostel',
+  guest_house: 'Guest House',
+  bed_and_breakfast: 'Bed and Breakfast',
+  cottage: 'Cottage',
+  cabin: 'Cabin',
+  lodge: 'Lodge',
+  motel: 'Motel',
+  pension: 'Pension',
+  chalet: 'Chalet',
+  farm_stay: 'Farm Stay',
+  houseboat: 'Houseboat',
+  home_stay: 'Home Stay',
+};
+
+export type PropertyType = (typeof PROPERTY_TYPES)[number];
+
 export interface PropertyRequest {
   vendor_id: string;
   name: string;
-  type: 'Apartment' | 'Villa' | 'House' | 'Studio';
+  type: PropertyType;
   city_id: string;
   location_id: string;
   description: string;
   price: number;
-  deposit: number;
+  sale_price?: number;
+  price_per_night?: number;
+  deposit?: number;
   is_featured: boolean;
   status: 'draft' | 'active' | 'inactive';
   galleryImages: string[];
@@ -20,14 +62,40 @@ export interface PropertyRequest {
   facility_ids: string[];
   room_type_ids: string[];
   food_option_ids: string[];
+  lat?: number | null;
+  lon?: number | null;
+}
+
+export interface CreatePropertyRequest {
+  name: string;
+  vendor: string;
+  type: PropertyType;
+  city: string;
+  location: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  vendor_id: string;
+  location_id: string;
+  city_id: string;
+  description: string;
 }
 
 export type PropertyDTO = PropertyRequest;
 
+export interface PropertyUpdateRequest extends Partial<PropertyRequest> {}
+
+export interface PropertyMediaUploadResponse {
+  galleryImages?: string[];
+  featureImage?: string;
+  coverImage?: string;
+  documents?: string[];
+}
+
 export interface PropertyItem {
   id: number;
   title: string;
-  type: 'Apartment' | 'Villa' | 'House' | 'Studio';
+  type: PropertyType;
   city: string;
   address: string;
   bedrooms: number;
@@ -35,7 +103,9 @@ export interface PropertyItem {
   guests: number;
   area: number;
   price: number;
-  deposit: number;
+  sale_price?: number;
+  price_per_night?: number;
+  deposit?: number;
   status: 'draft' | 'active' | 'inactive';
   description: string;
   galleryImages: string[];
@@ -48,6 +118,8 @@ export interface PropertyItem {
   food_option_ids?: string[];
 }
 
+
+
 export interface PropertyFormValue {
   title: string;
   type: PropertyItem['type'];
@@ -58,7 +130,8 @@ export interface PropertyFormValue {
   guests: number;
   area: number;
   price: number;
-  deposit: number;
+  sale_price: number;
+  price_per_night: number;
   status: PropertyItem['status'];
   description: string;
   galleryImages: string;

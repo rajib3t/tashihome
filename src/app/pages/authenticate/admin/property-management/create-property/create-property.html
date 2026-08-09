@@ -98,10 +98,22 @@
           <label class="block space-y-2">
             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property type</span>
             <select formControlName="type" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
-              <option value="Apartment">Apartment</option>
-              <option value="Villa">Villa</option>
-              <option value="House">House</option>
-              <option value="Studio">Studio</option>
+              <option value="hotel">Hotel</option>
+              <option value="apartment">Apartment</option>
+              <option value="villa">Villa</option>
+              <option value="resort">Resort</option>
+              <option value="hostel">Hostel</option>
+              <option value="guest_house">Guest House</option>
+              <option value="bed_and_breakfast">Bed and Breakfast</option>
+              <option value="cottage">Cottage</option>
+              <option value="cabin">Cabin</option>
+              <option value="lodge">Lodge</option>
+              <option value="motel">Motel</option>
+              <option value="pension">Pension</option>
+              <option value="chalet">Chalet</option>
+              <option value="farm_stay">Farm Stay</option>
+              <option value="houseboat">Houseboat</option>
+              <option value="home_stay">Home Stay</option>
             </select>
           </label>
 
@@ -169,6 +181,19 @@
                 <option [value]="location.id">{{ location.name }}</option>
               }
             </select>
+          </label>
+
+          <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Address</span>
+            <input
+              formControlName="address"
+              type="text"
+              placeholder="Enter property address"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+            @if (propertyForm.get('address')?.touched && propertyForm.get('address')?.invalid) {
+              <small class="text-xs text-red-500">Address is required.</small>
+            }
           </label>
 
           <label class="block space-y-2 md:col-span-2">
@@ -306,28 +331,28 @@
       @if (currentStep === 2) {
         <div class="grid gap-5 md:grid-cols-2">
           <label class="block space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Price</span>
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Price per night</span>
             <input
               type="number"
               min="1"
-              formControlName="price"
+              formControlName="price_per_night"
               class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             />
-            @if (propertyForm.get('price')?.touched && propertyForm.get('price')?.invalid) {
-              <small class="text-xs text-red-500">Price is required and must be greater than zero.</small>
+            @if (propertyForm.get('price_per_night')?.touched && propertyForm.get('price_per_night')?.invalid) {
+              <small class="text-xs text-red-500">Price per night is required and must be greater than zero.</small>
             }
           </label>
 
           <label class="block space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Security deposit</span>
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Sale price</span>
             <input
               type="number"
               min="0"
-              formControlName="deposit"
+              formControlName="sale_price"
               class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             />
-            @if (propertyForm.get('deposit')?.touched && propertyForm.get('deposit')?.invalid) {
-              <small class="text-xs text-red-500">Deposit is required and may not be negative.</small>
+            @if (propertyForm.get('sale_price')?.touched && propertyForm.get('sale_price')?.invalid) {
+              <small class="text-xs text-red-500">Sale price is required and may not be negative.</small>
             }
           </label>
         </div>
@@ -438,12 +463,12 @@
 
         <div class="flex gap-3">
           @if (currentStep < wizardSteps.length - 1) {
-            <button type="button" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90" (click)="nextStep()">
-              Next
+            <button type="button" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60" (click)="nextStep()" [disabled]="isSaving()">
+              {{ isSaving() ? 'Saving...' : 'Next' }}
             </button>
           } @else {
-            <button type="submit" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90">
-              Create Property
+            <button type="submit" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60" [disabled]="isSaving()">
+              {{ isSaving() ? 'Saving...' : 'Create Property' }}
             </button>
           }
         </div>

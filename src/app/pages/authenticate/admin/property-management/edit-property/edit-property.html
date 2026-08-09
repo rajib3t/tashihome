@@ -42,10 +42,22 @@
           <label class="space-y-2">
             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property type</span>
             <select formControlName="type" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
-              <option value="Apartment">Apartment</option>
-              <option value="Villa">Villa</option>
-              <option value="House">House</option>
-              <option value="Studio">Studio</option>
+              <option value="hotel">Hotel</option>
+              <option value="apartment">Apartment</option>
+              <option value="villa">Villa</option>
+              <option value="resort">Resort</option>
+              <option value="hostel">Hostel</option>
+              <option value="guest_house">Guest House</option>
+              <option value="bed_and_breakfast">Bed and Breakfast</option>
+              <option value="cottage">Cottage</option>
+              <option value="cabin">Cabin</option>
+              <option value="lodge">Lodge</option>
+              <option value="motel">Motel</option>
+              <option value="pension">Pension</option>
+              <option value="chalet">Chalet</option>
+              <option value="farm_stay">Farm Stay</option>
+              <option value="houseboat">Houseboat</option>
+              <option value="home_stay">Home Stay</option>
             </select>
           </label>
 
@@ -69,49 +81,67 @@
       }
 
       @if (currentStep === 1) {
-        <div class="grid gap-5 md:grid-cols-2">
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">City</span>
-            <input formControlName="city" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
-          </label>
+        <div class="space-y-6">
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Amenities</span>
+            @if (amenities().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (amenity of amenities(); track amenity.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input type="checkbox" [checked]="isSelectionChecked('amenity_ids', amenity.id)" (change)="toggleSelection('amenity_ids', amenity.id)" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                    {{ amenity.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No amenities loaded yet.</p>
+            }
+          </div>
 
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Address</span>
-            <input formControlName="address" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
-          </label>
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Facilities</span>
+            @if (facilities().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (facility of facilities(); track facility.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input type="checkbox" [checked]="isSelectionChecked('facility_ids', facility.id)" (change)="toggleSelection('facility_ids', facility.id)" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                    {{ facility.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No facilities loaded yet.</p>
+            }
+          </div>
 
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Bedrooms</span>
-            <input type="number" min="1" formControlName="bedrooms" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
-          </label>
-
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Bathrooms</span>
-            <input type="number" min="1" formControlName="bathrooms" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
-          </label>
-
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Guests</span>
-            <input type="number" min="1" formControlName="guests" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
-          </label>
-
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Area (sq ft)</span>
-            <input type="number" min="1" formControlName="area" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
-          </label>
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Room types</span>
+            @if (roomTypes().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (roomType of roomTypes(); track roomType.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input type="checkbox" [checked]="isSelectionChecked('room_type_ids', roomType.id)" (change)="toggleSelection('room_type_ids', roomType.id)" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                    {{ roomType.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No room types loaded yet.</p>
+            }
+          </div>
         </div>
       }
 
       @if (currentStep === 2) {
         <div class="grid gap-5 md:grid-cols-2">
           <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Price</span>
-            <input type="number" min="1" formControlName="price" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Price per night</span>
+            <input type="number" min="1" formControlName="price_per_night" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
           </label>
 
           <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Security deposit</span>
-            <input type="number" min="0" formControlName="deposit" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Sale price</span>
+            <input type="number" min="0" formControlName="sale_price" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
           </label>
         </div>
       }
@@ -123,10 +153,9 @@
             <app-upload-image
               [id]="'gallery-upload-edit'"
               [name]="'gallery-upload-edit'"
-              [preview]="galleryPreviews().length ? galleryPreviews()[galleryPreviews().length - 1] : ''"
               [multiple]="true"
-              buttonText="Upload gallery images"
-              emptyText="No gallery images selected"
+              [buttonText]="'Upload gallery images'"
+              [emptyText]="'No gallery images selected'"
               (previewListChange)="addGalleryImages($event)"
             ></app-upload-image>
 
@@ -147,8 +176,8 @@
               [id]="'feature-image-edit'"
               [name]="'feature-image-edit'"
               [preview]="featureImagePreview()"
-              buttonText="Upload feature image"
-              emptyText="No feature image selected"
+              [buttonText]="'Upload feature image'"
+              [emptyText]="'No feature image selected'"
               (previewChange)="handleImageSelection('featureImage', $event)"
             ></app-upload-image>
           </label>
@@ -159,10 +188,23 @@
               [id]="'cover-image-edit'"
               [name]="'cover-image-edit'"
               [preview]="coverImagePreview()"
-              buttonText="Upload cover image"
-              emptyText="No cover image selected"
+              [buttonText]="'Upload cover image'"
+              [emptyText]="'No cover image selected'"
               (previewChange)="handleImageSelection('coverImage', $event)"
             ></app-upload-image>
+          </label>
+        </div>
+      }
+
+      @if (currentStep === 4) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Publish status</span>
+            <select formControlName="status" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
           </label>
         </div>
       }
