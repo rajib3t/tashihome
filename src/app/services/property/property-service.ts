@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { PropertyDTO, PropertyItem, PropertyQuery, PropertyMediaUploadResponse, PropertyUpdateRequest, CreatePropertyRequest } from './property.model';
-import { ApiResponse } from '../api/api-response.model';
+import { PropertyDTO, PropertyItem, PropertyQuery, PropertyMediaUploadResponse, PropertyUpdateRequest, CreatePropertyRequest, PropertyData } from './property.model';
+import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
 import { inject } from '@angular/core';
 import { ApiService } from '../api/api-service';
 import { catchError, map } from 'rxjs';
@@ -67,53 +67,28 @@ export class PropertyService {
     },
   ];
 
-  getProperties(query?: PropertyQuery): Observable<{ data: PropertyItem[]; meta: { total: number; page: number; size: number } }> {
-    const page = query?.page ?? 1;
-    const size = query?.size ?? 10;
-    const search = query?.search ?? {};
-
-    const filtered = this.properties.filter((property) => {
-      const titleMatch = !search.title || property.title.toLowerCase().includes(search.title.toLowerCase());
-      const cityMatch = !search.city || property.city.toLowerCase().includes(search.city.toLowerCase());
-      const statusMatch = !search.status || property.status === search.status;
-      return titleMatch && cityMatch && statusMatch;
-    });
-
-    const start = (page - 1) * size;
-    const data = filtered.slice(start, start + size);
-
-    return of({
-      data,
-      meta: {
-        total: filtered.length,
-        page,
-        size,
-      },
-    });
+  getProperties(query?: PropertyQuery): Observable<PaginatedResponse<PropertyData>> {
+    return this.apiService.protectedGet<PaginatedResponse<PropertyData>>('/properties', { params: query }).pipe(
+      map((response) => response.data),
+      catchError(this.apiService.passthroughError)
+    );
   }
 
-  createProperty(property: CreatePropertyRequest): Observable<ApiResponse<PropertyItem>> {
-    return this.apiService.protectedPost<ApiResponse<PropertyItem>>('/properties/', property).pipe(
+  createProperty(property: CreatePropertyRequest): Observable<ApiResponse<PropertyData>> {
+    return this.apiService.protectedPost<ApiResponse<PropertyData>>('/properties/', property).pipe(
       map((response) => response.data),
       catchError(this.apiService.passthroughError)
     );
   }
 
   updateProperty(id: number, property: PropertyUpdateRequest): Observable<ApiResponse<PropertyItem>> {
-    const index = this.properties.findIndex((item) => item.id === id);
-    if (index >= 0) {
-      this.properties[index] = {
-        ...this.properties[index],
-        ...property,
-      };
-    }
     return this.apiService.protectedPut<ApiResponse<PropertyItem>>(`/properties/${id}`, property).pipe(
       map((response) => response.data),
       catchError(this.apiService.passthroughError)
     );
   }
 
-  uploadPropertyMedia(id: number, formData: FormData): Observable<ApiResponse<PropertyMediaUploadResponse>> {
+  uploadPropertyMedia(id: string | number, formData: FormData): Observable<ApiResponse<PropertyMediaUploadResponse>> {
     return this.apiService.protectedUpload<ApiResponse<PropertyMediaUploadResponse>>(`/properties/${id}/media`, formData).pipe(
       map((response) => response.data),
       catchError(this.apiService.passthroughError)

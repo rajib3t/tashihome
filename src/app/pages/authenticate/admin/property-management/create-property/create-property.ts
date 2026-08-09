@@ -94,7 +94,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   private autocompleteInstance?: any;
   private googleMapsLoaded = false;
   private selectedCityForAutocomplete: string | null = null;
-  private createdPropertyId: number | null = null;
+  private createdPropertyId: string | null = null;
   @ViewChild('googleLocationInput', { static: false }) googleLocationInput!: ElementRef<HTMLInputElement>;
 
   readonly propertyForm = this.formBuilder.group({
@@ -480,7 +480,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
 
     this.propertyService.createProperty(payload).subscribe({
       next: (property) => {
-        this.createdPropertyId = property.data.id;
+        this.createdPropertyId = property.data?.id ?? null;
         this.isSaving.set(false);
         this.currentStep = 1;
       },
@@ -499,15 +499,15 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     this.isSaving.set(true);
 
     const payload = this.buildUpdatePayload();
-    this.propertyService.updateProperty(propertyId, payload).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        onSuccess?.();
-      },
-      error: () => {
-        this.isSaving.set(false);
-      },
-    });
+    // this.propertyService.updateProperty(propertyId as number, payload).subscribe({
+    //   next: () => {
+    //     this.isSaving.set(false);
+    //     onSuccess?.();
+    //   },
+    //   error: () => {
+    //     this.isSaving.set(false);
+    //   },
+    // });
   }
 
   private uploadMediaAndAdvance(): void {

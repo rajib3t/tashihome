@@ -150,3 +150,39 @@ export interface PropertyQuery {
 }
 
 export type PropertySearch = PropertyQuery['search'];
+
+
+
+export interface PropertyData {
+  vendor: Vendor;
+  location: Location;
+  city: City;
+  room_type: RoomType | null;
+  name: string;
+  slug: string;
+  description: string;
+  status: string;
+  id: string;
+}
+
+export interface Vendor {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
+export interface Location {
+  id: string;
+  name: string;
+}
+
+export interface City {
+  id: string;
+  name: string;
+}
+
+export interface RoomType {
+  id: string;
+  name: string;
+  capacity: number;
+}

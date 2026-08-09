@@ -31,7 +31,7 @@ export class EditProperty {
 
   readonly wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media', 'Settings'];
   currentStep = 0;
-  private propertyId = 0;
+  private propertyId: number | null = null;
   readonly amenities = signal<Amenity[]>([]);
   readonly facilities = signal<Facility[]>([]);
   readonly roomTypes = signal<RoomType[]>([]);
@@ -67,8 +67,9 @@ export class EditProperty {
     this.loadRoomTypes();
 
     this.route.paramMap.subscribe((params) => {
-      const id = Number(params.get('id'));
-      if (!Number.isFinite(id)) {
+      const idParam = params.get('id');
+      const id = idParam ? Number(idParam) : NaN;
+      if (!idParam || Number.isNaN(id)) {
         this.router.navigate(['/admin/property-management']);
         return;
       }
@@ -79,39 +80,39 @@ export class EditProperty {
   }
 
   private loadProperty(id: number): void {
-    this.propertyService.getProperties({ page: 1, size: 100 }).subscribe((response) => {
-      const property = response.data.find((item) => item.id === id);
-      if (!property) {
-        this.router.navigate(['/admin/property-management']);
-        return;
-      }
+    // this.propertyService.getProperties({ page: 1, size: 100 }).subscribe((response) => {
+    //   const property = response.data.find((item) => item.id === id);
+    //   if (!property) {
+    //     this.router.navigate(['/admin/property-management']);
+    //     return;
+    //   }
 
-      this.galleryPreviews.set(property.galleryImages);
-      this.featureImagePreview.set(property.featureImage);
-      this.coverImagePreview.set(property.coverImage);
+    //   this.galleryPreviews.set(property.galleryImages);
+    //   this.featureImagePreview.set(property.featureImage);
+    //   this.coverImagePreview.set(property.coverImage);
 
-      this.propertyForm.reset({
-        title: property.title,
-        type: property.type,
-        city: property.city,
-        address: property.address,
-        bedrooms: property.bedrooms,
-        bathrooms: property.bathrooms,
-        guests: property.guests,
-        area: property.area,
-        price_per_night: property.price_per_night ?? property.price,
-        sale_price: property.sale_price ?? property.deposit ?? 0,
-        status: property.status,
-        description: property.description,
-        galleryImages: property.galleryImages,
-        featureImage: property.featureImage,
-        coverImage: property.coverImage,
-        amenity_ids: property.amenity_ids ?? [],
-        facility_ids: property.facility_ids ?? [],
-        room_type_ids: property.room_type_ids ?? [],
-        food_option_ids: property.food_option_ids ?? [],
-      });
-    });
+    //   this.propertyForm.reset({
+    //     title: property.title,
+    //     type: property.type,
+    //     city: property.city,
+    //     address: property.address,
+    //     bedrooms: property.bedrooms,
+    //     bathrooms: property.bathrooms,
+    //     guests: property.guests,
+    //     area: property.area,
+    //     price_per_night: property.price_per_night ?? property.price,
+    //     sale_price: property.sale_price ?? property.deposit ?? 0,
+    //     status: property.status,
+    //     description: property.description,
+    //     galleryImages: property.galleryImages,
+    //     featureImage: property.featureImage,
+    //     coverImage: property.coverImage,
+    //     amenity_ids: property.amenity_ids ?? [],
+    //     facility_ids: property.facility_ids ?? [],
+    //     room_type_ids: property.room_type_ids ?? [],
+    //     food_option_ids: property.food_option_ids ?? [],
+    //   });
+    // });
   }
 
   nextStep(): void {
@@ -133,9 +134,15 @@ export class EditProperty {
       return;
     }
 
+    const propertyId = this.propertyId;
+    if (propertyId === null) {
+      this.router.navigate(['/admin/property-management']);
+      return;
+    }
+
     const payload = this.propertyForm.getRawValue();
     const payloadProperty: PropertyItem = {
-      id: this.propertyId,
+      id: propertyId,
       title: this.normalizeString(payload.title),
       type: this.normalizeType(payload.type),
       city: this.normalizeString(payload.city),
@@ -158,7 +165,7 @@ export class EditProperty {
       food_option_ids: [...(payload.food_option_ids ?? [])],
     };
 
-    this.propertyService.updateProperty(this.propertyId, payloadProperty).subscribe(() => {
+    this.propertyService.updateProperty(this.propertyId as number, payloadProperty).subscribe(() => {
       this.router.navigate(['/admin/property-management']);
     });
   }
