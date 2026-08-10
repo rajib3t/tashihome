@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { take } from 'rxjs';
 import { AmenityService } from '../../../../../services/amenity/amenity-service';
 import { FacilityService } from '../../../../../services/facility/facility-service';
-import { PROPERTY_TYPES, PropertyItem } from '../../../../../services/property/property.model';
+import { CreatePropertyRequest, PROPERTY_TYPES, PropertyItem, PropertyRequest } from '../../../../../services/property/property.model';
 import { PropertyService } from '../../../../../services/property/property-service';
 import { RoomTypeService } from '../../../../../services/room-type/room-type-service';
 import { Amenity } from '../../../../../services/amenity/amenity-model';
@@ -31,7 +31,7 @@ export class EditProperty {
 
   readonly wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media', 'Settings'];
   currentStep = 0;
-  private propertyId: number | null = null;
+  private propertyId: string | null = null;
   readonly amenities = signal<Amenity[]>([]);
   readonly facilities = signal<Facility[]>([]);
   readonly roomTypes = signal<RoomType[]>([]);
@@ -40,25 +40,27 @@ export class EditProperty {
   readonly coverImagePreview = signal('');
 
   readonly propertyForm = this.formBuilder.group({
-    title: ['', [Validators.required, Validators.minLength(3)]],
-    type: ['hotel' as PropertyItem['type'], Validators.required],
-    city: ['', Validators.required],
-    address: ['', [Validators.required, Validators.minLength(5)]],
-    bedrooms: [1, [Validators.required, Validators.min(1)]],
-    bathrooms: [1, [Validators.required, Validators.min(1)]],
-    guests: [1, [Validators.required, Validators.min(1)]],
-    area: [750, [Validators.required, Validators.min(1)]],
-    price_per_night: [150000, [Validators.required, Validators.min(1)]],
-    sale_price: [50000, [Validators.required, Validators.min(0)]],
-    status: ['draft' as PropertyItem['status'], Validators.required],
-    description: ['', [Validators.required, Validators.minLength(20)]],
-    galleryImages: this.formBuilder.control<string[]>([]),
-    featureImage: [''],
-    coverImage: [''],
-    amenity_ids: this.formBuilder.control<string[]>([]),
-    facility_ids: this.formBuilder.control<string[]>([]),
-    room_type_ids: this.formBuilder.control<string[]>([]),
-    food_option_ids: this.formBuilder.control<string[]>([]),
+      vendor_id: ['', Validators.required],
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      type: ['home_stay' as CreatePropertyRequest['type'], Validators.required],
+      city_id: ['', Validators.required],
+      location_id: ['', Validators.required],
+      address: ['', [Validators.required, Validators.minLength(5)]],
+      description: ['', [Validators.required, Validators.minLength(20)]],
+      price_per_night: [0, [Validators.required, Validators.min(1)]],
+      sale_price: [0, [Validators.required, Validators.min(0)]],
+      is_featured: [false],
+      status: ['draft' as PropertyRequest['status'], Validators.required],
+      galleryImages: this.formBuilder.control<string[]>([]),
+      featureImage: [''],
+      coverImage: [''],
+      documents: this.formBuilder.control<string[]>([]),
+      amenity_ids: this.formBuilder.control<string[]>([]),
+      facility_ids: this.formBuilder.control<string[]>([]),
+      room_type_ids: this.formBuilder.control<string[]>([]),
+      food_option_ids: this.formBuilder.control<string[]>([]),
+      lat: [null as number | null],
+      lon: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -68,51 +70,33 @@ export class EditProperty {
 
     this.route.paramMap.subscribe((params) => {
       const idParam = params.get('id');
-      const id = idParam ? Number(idParam) : NaN;
-      if (!idParam || Number.isNaN(id)) {
+      if (!idParam) {
         this.router.navigate(['/admin/property-management']);
         return;
       }
-
-      this.propertyId = id;
-      this.loadProperty(id);
+      this.loadProperty(idParam);
     });
   }
 
-  private loadProperty(id: number): void {
-    // this.propertyService.getProperties({ page: 1, size: 100 }).subscribe((response) => {
-    //   const property = response.data.find((item) => item.id === id);
-    //   if (!property) {
-    //     this.router.navigate(['/admin/property-management']);
-    //     return;
-    //   }
-
-    //   this.galleryPreviews.set(property.galleryImages);
-    //   this.featureImagePreview.set(property.featureImage);
-    //   this.coverImagePreview.set(property.coverImage);
-
-    //   this.propertyForm.reset({
-    //     title: property.title,
-    //     type: property.type,
-    //     city: property.city,
-    //     address: property.address,
-    //     bedrooms: property.bedrooms,
-    //     bathrooms: property.bathrooms,
-    //     guests: property.guests,
-    //     area: property.area,
-    //     price_per_night: property.price_per_night ?? property.price,
-    //     sale_price: property.sale_price ?? property.deposit ?? 0,
-    //     status: property.status,
-    //     description: property.description,
-    //     galleryImages: property.galleryImages,
-    //     featureImage: property.featureImage,
-    //     coverImage: property.coverImage,
-    //     amenity_ids: property.amenity_ids ?? [],
-    //     facility_ids: property.facility_ids ?? [],
-    //     room_type_ids: property.room_type_ids ?? [],
-    //     food_option_ids: property.food_option_ids ?? [],
-    //   });
-    // });
+  private loadProperty(id: string): void {
+    this.propertyService.getPropertyById(id).subscribe({
+      next: (response) => {
+        const property = response.data;
+        this.propertyId = property.id;
+        this.propertyForm.patchValue({
+          vendor_id: property.vendor.id,
+          name: property.name,
+          type: property.type,
+          city_id: property.city.id,
+          location_id: property.location.id,
+          
+          price_per_night: property.price_per_night ?? 0,
+          sale_price: property.sale_price ?? 0,
+          description: property.description,
+       
+        });
+      }
+    });
   }
 
   nextStep(): void {
@@ -129,45 +113,45 @@ export class EditProperty {
   }
 
   submitPropertyForm(): void {
-    if (!this.isCurrentStepValid()) {
-      this.propertyForm.markAllAsTouched();
-      return;
-    }
+    // if (!this.isCurrentStepValid()) {
+    //   this.propertyForm.markAllAsTouched();
+    //   return;
+    // }
 
-    const propertyId = this.propertyId;
-    if (propertyId === null) {
-      this.router.navigate(['/admin/property-management']);
-      return;
-    }
+    // const propertyId = this.propertyId;
+    // if (propertyId === null) {
+    //   this.router.navigate(['/admin/property-management']);
+    //   return;
+    // }
 
-    const payload = this.propertyForm.getRawValue();
-    const payloadProperty: PropertyItem = {
-      id: propertyId,
-      title: this.normalizeString(payload.title),
-      type: this.normalizeType(payload.type),
-      city: this.normalizeString(payload.city),
-      address: this.normalizeString(payload.address),
-      bedrooms: this.normalizeNumber(payload.bedrooms, 1),
-      bathrooms: this.normalizeNumber(payload.bathrooms, 1),
-      guests: this.normalizeNumber(payload.guests, 1),
-      area: this.normalizeNumber(payload.area, 0),
-      price: this.normalizeNumber(payload.price_per_night, 0),
-      price_per_night: this.normalizeNumber(payload.price_per_night, 0),
-      sale_price: this.normalizeNumber(payload.sale_price, 0),
-      status: this.normalizeStatus(payload.status),
-      description: this.normalizeString(payload.description),
-      galleryImages: this.normalizeGalleryImages(payload.galleryImages),
-      featureImage: this.normalizeString(payload.featureImage),
-      coverImage: this.normalizeString(payload.coverImage),
-      amenity_ids: [...(payload.amenity_ids ?? [])],
-      facility_ids: [...(payload.facility_ids ?? [])],
-      room_type_ids: [...(payload.room_type_ids ?? [])],
-      food_option_ids: [...(payload.food_option_ids ?? [])],
-    };
+    // const payload = this.propertyForm.getRawValue();
+    // const payloadProperty: PropertyItem = {
+    //   id: propertyId,
+    //   title: this.normalizeString(payload.title),
+    //   type: this.normalizeType(payload.type),
+    //   city: this.normalizeString(payload.city),
+    //   address: this.normalizeString(payload.address),
+    //   bedrooms: this.normalizeNumber(payload.bedrooms, 1),
+    //   bathrooms: this.normalizeNumber(payload.bathrooms, 1),
+    //   guests: this.normalizeNumber(payload.guests, 1),
+    //   area: this.normalizeNumber(payload.area, 0),
+    //   price: this.normalizeNumber(payload.price_per_night, 0),
+    //   price_per_night: this.normalizeNumber(payload.price_per_night, 0),
+    //   sale_price: this.normalizeNumber(payload.sale_price, 0),
+    //   status: this.normalizeStatus(payload.status),
+    //   description: this.normalizeString(payload.description),
+    //   galleryImages: this.normalizeGalleryImages(payload.galleryImages),
+    //   featureImage: this.normalizeString(payload.featureImage),
+    //   coverImage: this.normalizeString(payload.coverImage),
+    //   amenity_ids: [...(payload.amenity_ids ?? [])],
+    //   facility_ids: [...(payload.facility_ids ?? [])],
+    //   room_type_ids: [...(payload.room_type_ids ?? [])],
+    //   food_option_ids: [...(payload.food_option_ids ?? [])],
+    // };
 
-    this.propertyService.updateProperty(this.propertyId as number, payloadProperty).subscribe(() => {
-      this.router.navigate(['/admin/property-management']);
-    });
+    // this.propertyService.updateProperty(this.propertyId as string, payloadProperty).subscribe(() => {
+    //   this.router.navigate(['/admin/property-management']);
+    // });
   }
 
   cancel(): void {

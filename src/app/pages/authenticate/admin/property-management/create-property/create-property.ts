@@ -95,12 +95,13 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   private googleMapsLoaded = false;
   private selectedCityForAutocomplete: string | null = null;
   private createdPropertyId: string | null = null;
+  public readonly PROPERTY_TYPES_LABELS = PROPERTY_TYPES_LABELS;
   @ViewChild('googleLocationInput', { static: false }) googleLocationInput!: ElementRef<HTMLInputElement>;
 
   readonly propertyForm = this.formBuilder.group({
     vendor_id: ['', Validators.required],
     name: ['', [Validators.required, Validators.minLength(3)]],
-    type: ['hotel' as CreatePropertyRequest['type'], Validators.required],
+    type: ['home_stay' as CreatePropertyRequest['type'], Validators.required],
     city_id: ['', Validators.required],
     location_id: ['', Validators.required],
     address: ['', [Validators.required, Validators.minLength(5)]],

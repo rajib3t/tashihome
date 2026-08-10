@@ -160,6 +160,9 @@ export interface PropertyData {
   room_type: RoomType | null;
   name: string;
   slug: string;
+  type: PropertyType;
+  sale_price?: number;
+  price_per_night?: number;
   description: string;
   status: string;
   id: string;

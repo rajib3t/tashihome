@@ -98,22 +98,9 @@
           <label class="block space-y-2">
             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property type</span>
             <select formControlName="type" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
-              <option value="hotel">Hotel</option>
-              <option value="apartment">Apartment</option>
-              <option value="villa">Villa</option>
-              <option value="resort">Resort</option>
-              <option value="hostel">Hostel</option>
-              <option value="guest_house">Guest House</option>
-              <option value="bed_and_breakfast">Bed and Breakfast</option>
-              <option value="cottage">Cottage</option>
-              <option value="cabin">Cabin</option>
-              <option value="lodge">Lodge</option>
-              <option value="motel">Motel</option>
-              <option value="pension">Pension</option>
-              <option value="chalet">Chalet</option>
-              <option value="farm_stay">Farm Stay</option>
-              <option value="houseboat">Houseboat</option>
-              <option value="home_stay">Home Stay</option>
+              @for (type of PROPERTY_TYPES_LABELS | keyvalue; track type.key) {
+                <option [value]="type.key">{{ type.value }}</option>
+              }
             </select>
           </label>
 

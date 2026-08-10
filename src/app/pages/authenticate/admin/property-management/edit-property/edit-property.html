@@ -33,9 +33,9 @@
         <div class="grid gap-5 md:grid-cols-2">
           <label class="space-y-2 md:col-span-2">
             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property title</span>
-            <input formControlName="title" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
-            @if (propertyForm.get('title')?.touched && propertyForm.get('title')?.invalid) {
-              <small class="text-xs text-red-500">Title is required and must be at least 3 characters.</small>
+            <input formControlName="name" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+            @if (propertyForm.get('name')?.touched && propertyForm.get('name')?.invalid) {
+              <small class="text-xs text-red-500">Name is required and must be at least 3 characters.</small>
             }
           </label>
 

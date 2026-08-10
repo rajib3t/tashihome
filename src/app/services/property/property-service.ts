@@ -10,62 +10,7 @@ import { catchError, map } from 'rxjs';
 export class PropertyService {
 
   public readonly apiService: ApiService = inject(ApiService);
-  private readonly properties: PropertyItem[] = [
-    {
-      id: 1,
-      title: 'Harbor View Residence',
-      type: 'apartment',
-      city: 'Dhaka',
-      address: 'Dhanmondi 27, Road 10',
-      bedrooms: 2,
-      bathrooms: 2,
-      guests: 4,
-      area: 980,
-      price: 180000,
-      deposit: 60000,
-      status: 'active',
-      description: 'Bright apartment with balcony, smart home features, and a fully equipped kitchen.',
-      galleryImages: ['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688'],
-      featureImage: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688',
-      coverImage: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688',
-    },
-    {
-      id: 2,
-      title: 'Lakewood Family Villa',
-      type: 'villa',
-      city: 'Chattogram',
-      address: 'Agrabad, Lake Side Lane',
-      bedrooms: 4,
-      bathrooms: 3,
-      guests: 6,
-      area: 2100,
-      price: 420000,
-      deposit: 120000,
-      status: 'draft',
-      description: 'A spacious family villa with private garden, parking bay, and a relaxing lounge.',
-      galleryImages: ['https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd'],
-      featureImage: 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd',
-      coverImage: 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd',
-    },
-    {
-      id: 3,
-      title: 'City Nest Studio',
-      type: 'hotel',
-      city: 'Sylhet',
-      address: 'Zindabazar, Block B',
-      bedrooms: 1,
-      bathrooms: 1,
-      guests: 2,
-      area: 550,
-      price: 120000,
-      deposit: 35000,
-      status: 'inactive',
-      description: 'Compact and cozy studio for short stays, close to shops, restaurants, and transit.',
-      galleryImages: ['https://images.unsplash.com/photo-1494526585095-c41746248156'],
-      featureImage: 'https://images.unsplash.com/photo-1494526585095-c41746248156',
-      coverImage: 'https://images.unsplash.com/photo-1494526585095-c41746248156',
-    },
-  ];
+  
 
   getProperties(query?: PropertyQuery): Observable<PaginatedResponse<PropertyData>> {
     return this.apiService.protectedGet<PaginatedResponse<PropertyData>>('/properties', { params: query }).pipe(
@@ -74,6 +19,9 @@ export class PropertyService {
     );
   }
 
+
+
+
   createProperty(property: CreatePropertyRequest): Observable<ApiResponse<PropertyData>> {
     return this.apiService.protectedPost<ApiResponse<PropertyData>>('/properties/', property).pipe(
       map((response) => response.data),
@@ -81,6 +29,12 @@ export class PropertyService {
     );
   }
 
+  getPropertyById(id: string): Observable<ApiResponse<PropertyData>> {
+    return this.apiService.protectedGet<ApiResponse<PropertyData>>(`/properties/${id}`).pipe(
+      map((response) => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
   updateProperty(id: number, property: PropertyUpdateRequest): Observable<ApiResponse<PropertyItem>> {
     return this.apiService.protectedPut<ApiResponse<PropertyItem>>(`/properties/${id}`, property).pipe(
       map((response) => response.data),
