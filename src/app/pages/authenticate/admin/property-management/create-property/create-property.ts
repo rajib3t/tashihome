@@ -152,6 +152,9 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   }
 
   nextStep(): void {
+    if (this.isSaving()) {
+      return;
+    }
     void this.saveCurrentStepAndAdvance();
   }
 
@@ -462,16 +465,14 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     }
 
     if (this.currentStep === 1) {
-      return !!(this.propertyForm.get('price_per_night')?.valid && this.propertyForm.get('sale_price')?.valid);
-    }
-
-    if (this.currentStep === 2) {
       return true;
     }
 
-    return !!(
-      this.propertyForm.get('status')?.valid
-    );
+    if (this.currentStep === 2) {
+      return !!(this.propertyForm.get('price_per_night')?.valid && this.propertyForm.get('sale_price')?.valid);
+    }
+
+    return !!this.propertyForm.get('status')?.valid;
   }
 
   private createPropertyDraft(): void {
@@ -483,7 +484,9 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
       next: (property) => {
         this.createdPropertyId = property.data?.id ?? null;
         this.isSaving.set(false);
-        this.currentStep = 1;
+        if (this.createdPropertyId) {
+          this.currentStep = 1;
+        }
       },
       error: () => {
         this.isSaving.set(false);
@@ -500,15 +503,15 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     this.isSaving.set(true);
 
     const payload = this.buildUpdatePayload();
-    // this.propertyService.updateProperty(propertyId as number, payload).subscribe({
-    //   next: () => {
-    //     this.isSaving.set(false);
-    //     onSuccess?.();
-    //   },
-    //   error: () => {
-    //     this.isSaving.set(false);
-    //   },
-    // });
+    this.propertyService.updateProperty(propertyId, payload).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        onSuccess?.();
+      },
+      error: () => {
+        this.isSaving.set(false);
+      },
+    });
   }
 
   private uploadMediaAndAdvance(): void {
@@ -536,7 +539,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
           this.documentPreviews.set(response.data.documents);
         }
         this.isSaving.set(false);
-        this.currentStep = 4;
+        this.currentStep = Math.min(this.currentStep + 1, this.wizardSteps.length - 1);
       },
       error: () => {
         this.isSaving.set(false);

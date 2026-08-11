@@ -35,14 +35,14 @@ export class PropertyService {
       catchError(this.apiService.passthroughError)
     );
   }
-  updateProperty(id: number, property: PropertyUpdateRequest): Observable<ApiResponse<PropertyItem>> {
+  updateProperty(id: string, property: PropertyUpdateRequest): Observable<ApiResponse<PropertyItem>> {
     return this.apiService.protectedPut<ApiResponse<PropertyItem>>(`/properties/${id}`, property).pipe(
       map((response) => response.data),
       catchError(this.apiService.passthroughError)
     );
   }
 
-  uploadPropertyMedia(id: string | number, formData: FormData): Observable<ApiResponse<PropertyMediaUploadResponse>> {
+  uploadPropertyMedia(id: string, formData: FormData): Observable<ApiResponse<PropertyMediaUploadResponse>> {
     return this.apiService.protectedUpload<ApiResponse<PropertyMediaUploadResponse>>(`/properties/${id}/media`, formData).pipe(
       map((response) => response.data),
       catchError(this.apiService.passthroughError)

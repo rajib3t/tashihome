@@ -93,7 +93,7 @@ export interface PropertyMediaUploadResponse {
 }
 
 export interface PropertyItem {
-  id: number;
+  id: string;
   title: string;
   type: PropertyType;
   city: string;
