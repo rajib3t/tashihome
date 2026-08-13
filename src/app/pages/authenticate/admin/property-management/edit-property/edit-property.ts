@@ -108,6 +108,7 @@ export class EditProperty implements AfterViewChecked {
   private googleMapsLoaded = false;
   private selectedCityForAutocomplete: string | null = null;
   private propertyId: string | null = null;
+  private pendingStepBeforeSave: number | null = null;
 
   @ViewChild('googleLocationInput', { static: false }) googleLocationInput!: ElementRef<HTMLInputElement>;
 
@@ -183,14 +184,25 @@ export class EditProperty implements AfterViewChecked {
       return;
     }
 
+    if (this.isSaving()) {
+      return;
+    }
+
+    const nextStep = Math.min(this.currentStep + 1, this.wizardSteps.length - 1);
+    this.pendingStepBeforeSave = this.currentStep;
+    this.currentStep = nextStep;
     this.isSaving.set(true);
     this.propertyService.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.currentStep = Math.min(this.currentStep + 1, this.wizardSteps.length - 1);
+        this.pendingStepBeforeSave = null;
       },
       error: () => {
         this.isSaving.set(false);
+        if (this.pendingStepBeforeSave !== null) {
+          this.currentStep = this.pendingStepBeforeSave;
+          this.pendingStepBeforeSave = null;
+        }
       },
     });
   }
@@ -214,10 +226,12 @@ export class EditProperty implements AfterViewChecked {
     this.propertyService.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
       next: () => {
         this.isSaving.set(false);
+        this.pendingStepBeforeSave = null;
         this.router.navigate(['/admin/property-management']);
       },
       error: () => {
         this.isSaving.set(false);
+        this.pendingStepBeforeSave = null;
       },
     });
   }
