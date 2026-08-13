@@ -291,12 +291,33 @@
         <div class="grid gap-5 md:grid-cols-2">
           <label class="space-y-2">
             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Price per night</span>
-            <input type="number" min="1" formControlName="price_per_night" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+            <input
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              [value]="getFormattedCurrency('price_per_night')"
+              (input)="formatCurrencyInput('price_per_night', $event)"
+              (blur)="formatCurrencyOnBlur('price_per_night', $event)"
+              placeholder="₹0"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
           </label>
 
           <label class="space-y-2">
             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Sale price</span>
-            <input type="number" min="0" formControlName="sale_price" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+            <input
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              [value]="getFormattedCurrency('sale_price')"
+              (input)="formatCurrencyInput('sale_price', $event)"
+              (blur)="formatCurrencyOnBlur('sale_price', $event)"
+              placeholder="₹0"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+            @if (propertyForm.get('sale_price')?.touched && isSalePriceLessThanNightlyPrice()) {
+              <small class="text-xs text-red-500">Sale price must be less than price per night.</small>
+            }
           </label>
         </div>
       }

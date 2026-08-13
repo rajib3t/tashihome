@@ -101,6 +101,11 @@ export class EditProperty implements AfterViewChecked {
   readonly coverImagePreview = signal('');
   readonly documentPreviews = signal<string[]>([]);
   readonly isSaving = signal(false);
+  private readonly currencyFormatter = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  });
 
   private autocompleteInitialized = false;
   private autocompleteElement?: HTMLInputElement;
@@ -429,6 +434,39 @@ export class EditProperty implements AfterViewChecked {
     this.coverImagePreview.set(preview);
   }
 
+  formatCurrencyInput(controlName: 'price_per_night' | 'sale_price', event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (!input) {
+      return;
+    }
+
+    const digitsOnly = input.value.replace(/[^\d]/g, '');
+    const value = digitsOnly ? Number(digitsOnly) : 0;
+    this.propertyForm.get(controlName)?.setValue(value);
+    input.value = digitsOnly ? this.currencyFormatter.format(value) : '';
+  }
+
+  formatCurrencyOnBlur(controlName: 'price_per_night' | 'sale_price', event: FocusEvent): void {
+    const input = event.target as HTMLInputElement | null;
+    const value = Number(this.propertyForm.get(controlName)?.value ?? 0);
+    if (!input || !value) {
+      return;
+    }
+
+    input.value = this.currencyFormatter.format(value);
+  }
+
+  getFormattedCurrency(controlName: 'price_per_night' | 'sale_price'): string {
+    const value = Number(this.propertyForm.get(controlName)?.value ?? 0);
+    return value > 0 ? this.currencyFormatter.format(value) : '';
+  }
+
+  isSalePriceLessThanNightlyPrice(): boolean {
+    const pricePerNight = Number(this.propertyForm.get('price_per_night')?.value ?? 0);
+    const salePrice = Number(this.propertyForm.get('sale_price')?.value ?? 0);
+    return salePrice >= pricePerNight;
+  }
+
   toggleSelection(controlName: 'amenity_ids' | 'facility_ids' | 'room_type_ids' | 'food_option_ids', id: string): void {
     const control = this.propertyForm.get(controlName);
     if (!control) {
@@ -465,10 +503,20 @@ export class EditProperty implements AfterViewChecked {
     }
 
     if (this.currentStep === 2) {
-      return !!(this.propertyForm.get('price_per_night')?.valid && this.propertyForm.get('sale_price')?.valid);
+      return !!(
+        this.propertyForm.get('price_per_night')?.valid &&
+        this.propertyForm.get('sale_price')?.valid &&
+        this.isSalePriceValid()
+      );
     }
 
     return !!this.propertyForm.get('status')?.valid;
+  }
+
+  private isSalePriceValid(): boolean {
+    const pricePerNight = Number(this.propertyForm.get('price_per_night')?.value ?? 0);
+    const salePrice = Number(this.propertyForm.get('sale_price')?.value ?? 0);
+    return salePrice < pricePerNight;
   }
 
   private loadProperty(id: string): void {

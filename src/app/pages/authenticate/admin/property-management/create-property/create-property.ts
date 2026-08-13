@@ -462,10 +462,20 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     }
 
     if (this.currentStep === 2) {
-      return !!(this.propertyForm.get('price_per_night')?.valid && this.propertyForm.get('sale_price')?.valid);
+      return !!(
+        this.propertyForm.get('price_per_night')?.valid &&
+        this.propertyForm.get('sale_price')?.valid &&
+        this.isSalePriceValid()
+      );
     }
 
     return !!this.propertyForm.get('status')?.valid;
+  }
+
+  private isSalePriceValid(): boolean {
+    const pricePerNight = Number(this.propertyForm.get('price_per_night')?.value ?? 0);
+    const salePrice = Number(this.propertyForm.get('sale_price')?.value ?? 0);
+    return salePrice < pricePerNight;
   }
 
   private createPropertyDraft(continueToEdit: boolean): void {
