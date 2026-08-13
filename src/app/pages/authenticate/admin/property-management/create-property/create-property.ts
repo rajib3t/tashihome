@@ -313,16 +313,31 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
 
     const autocomplete = new window.google.maps.places.Autocomplete(locationInput, {
       types: ['geocode'],
-      fields: ['geometry'],
+      fields: ['geometry', 'formatted_address'],
     });
 
     autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
+      type GooglePlaceResult = {
+        geometry?: {
+          location?: {
+            lat(): number;
+            lng(): number;
+          };
+        };
+        formatted_address?: string;
+      };
+
+      const place = autocomplete.getPlace() as GooglePlaceResult;
       if (place.geometry?.location) {
         const lat = place.geometry.location.lat();
         const lon = place.geometry.location.lng();
         this.ngZone.run(() => {
-          this.propertyForm.patchValue({ lat, lon });
+          this.propertyForm.patchValue({
+            address: place.formatted_address ?? locationInput.value.trim(),
+            lat,
+            lon,
+          });
+          this.propertyForm.get('address')?.markAsTouched();
         });
       } else {
         console.error('No geometry or location in place data', place);
@@ -437,6 +452,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
         this.propertyForm.get('type')?.valid &&
         this.propertyForm.get('city_id')?.valid &&
         this.propertyForm.get('location_id')?.valid &&
+        this.propertyForm.get('address')?.valid &&
         this.propertyForm.get('description')?.valid
       );
     }

@@ -340,16 +340,28 @@ export class EditProperty implements AfterViewChecked {
 
     const autocomplete = new window.google.maps.places.Autocomplete(locationInput, {
       types: ['geocode'],
-      fields: ['geometry'],
+      fields: ['geometry', 'formatted_address'],
     });
 
     autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
+      type GooglePlaceResult = {
+        geometry?: {
+          location?: {
+            lat(): number;
+            lng(): number;
+          };
+        };
+        formatted_address?: string;
+      };
+
+      const place = autocomplete.getPlace() as GooglePlaceResult;
       if (place.geometry?.location) {
         this.propertyForm.patchValue({
+          address: place.formatted_address ?? locationInput.value.trim(),
           lat: place.geometry.location.lat(),
           lon: place.geometry.location.lng(),
         });
+        this.propertyForm.get('address')?.markAsTouched();
       }
     });
 
@@ -447,6 +459,7 @@ export class EditProperty implements AfterViewChecked {
         this.propertyForm.get('type')?.valid &&
         this.propertyForm.get('city_id')?.valid &&
         this.propertyForm.get('location_id')?.valid &&
+        this.propertyForm.get('address')?.valid &&
         this.propertyForm.get('description')?.valid
       );
     }
@@ -481,6 +494,7 @@ export class EditProperty implements AfterViewChecked {
       type: property.type,
       city_id: property.city.id,
       location_id: property.location.id,
+      address: property.address ?? '',
       description: property.description,
       price_per_night: property.price_per_night ?? 0,
       sale_price: property.sale_price ?? 0,

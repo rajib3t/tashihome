@@ -170,26 +170,17 @@
           </label>
 
           <label class="block space-y-2 md:col-span-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Address</span>
-            <input
-              formControlName="address"
-              type="text"
-              placeholder="Enter property address"
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            />
-            @if (propertyForm.get('address')?.touched && propertyForm.get('address')?.invalid) {
-              <small class="text-xs text-red-500">Address is required.</small>
-            }
-          </label>
-
-          <label class="block space-y-2 md:col-span-2">
             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Google Location Autocomplete</span>
             <input
               #googleLocationInput
+              formControlName="address"
               type="text"
-              placeholder="Search for location using Google autocomplete"
+              placeholder="Search and select a location"
               class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             />
+            @if (propertyForm.get('address')?.touched && propertyForm.get('address')?.invalid) {
+              <small class="text-xs text-red-500">Please choose a location from Google autocomplete.</small>
+            }
           </label>
 
           <label class="block space-y-2">
