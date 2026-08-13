@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CreatePropertyRequest, PROPERTY_TYPES, PropertyRequest, PropertyUpdateRequest,  PROPERTY_TYPES_LABELS} from '../../../../../services/property/property.model';
+import { CreatePropertyRequest, PROPERTY_TYPES, PropertyRequest, PROPERTY_TYPES_LABELS } from '../../../../../services/property/property.model';
 import { PropertyService } from '../../../../../services/property/property-service';
 import { Card } from '../../../../../shared/components/ui/card/card';
 import { UploadImage } from '../../../../../shared/components/common/upload-image/upload-image';
@@ -25,7 +25,7 @@ import { environment } from '../../../../../../environments/environment';
 @Component({
   selector: 'app-create-property',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Card, UploadImage],
+  imports: [CommonModule, ReactiveFormsModule, Card],
   templateUrl: './create-property.html',
 })
 export class CreateProperty implements OnInit, AfterViewChecked {
@@ -151,52 +151,29 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
       });
   }
 
-  nextStep(): void {
+  saveAndReturnToList(): void {
     if (this.isSaving()) {
       return;
     }
-    void this.saveCurrentStepAndAdvance();
+
+    void this.saveFirstStep(false);
   }
 
-  private saveCurrentStepAndAdvance(): void {
+  saveAndContinue(): void {
+    if (this.isSaving()) {
+      return;
+    }
+
+    void this.saveFirstStep(true);
+  }
+
+  private saveFirstStep(continueToEdit: boolean): void {
     if (!this.isCurrentStepValid()) {
       this.propertyForm.markAllAsTouched();
       return;
     }
 
-    if (this.currentStep === 0) {
-      this.createPropertyDraft();
-      return;
-    }
-
-    if (this.currentStep === 3) {
-      this.uploadMediaAndAdvance();
-      return;
-    }
-
-    this.updatePropertyDraft(() => {
-      this.currentStep = Math.min(this.currentStep + 1, this.wizardSteps.length - 1);
-    });
-  }
-
-  previousStep(): void {
-    this.currentStep = Math.max(this.currentStep - 1, 0);
-  }
-
-  submitPropertyForm(): void {
-    if (!this.createdPropertyId) {
-      this.propertyForm.markAllAsTouched();
-      return;
-    }
-
-    if (!this.isCurrentStepValid()) {
-      this.propertyForm.markAllAsTouched();
-      return;
-    }
-
-    this.updatePropertyDraft(() => {
-      this.router.navigate(['/admin/property-management']);
-    });
+    this.createPropertyDraft(continueToEdit);
   }
 
   cancel(): void {
@@ -475,7 +452,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     return !!this.propertyForm.get('status')?.valid;
   }
 
-  private createPropertyDraft(): void {
+  private createPropertyDraft(continueToEdit: boolean): void {
     this.isSaving.set(true);
 
     const payload = this.buildCreatePayload();
@@ -484,62 +461,18 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
       next: (property) => {
         this.createdPropertyId = property.data?.id ?? null;
         this.isSaving.set(false);
-        if (this.createdPropertyId) {
-          this.currentStep = 1;
+        if (!this.createdPropertyId) {
+          return;
         }
-      },
-      error: () => {
-        this.isSaving.set(false);
-      },
-    });
-  }
 
-  private updatePropertyDraft(onSuccess?: () => void): void {
-    const propertyId = this.createdPropertyId;
-    if (!propertyId) {
-      return;
-    }
-
-    this.isSaving.set(true);
-
-    const payload = this.buildUpdatePayload();
-    this.propertyService.updateProperty(propertyId, payload).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        onSuccess?.();
-      },
-      error: () => {
-        this.isSaving.set(false);
-      },
-    });
-  }
-
-  private uploadMediaAndAdvance(): void {
-    const propertyId = this.createdPropertyId;
-    if (!propertyId) {
-      return;
-    }
-
-    this.isSaving.set(true);
-
-    const formData = this.buildMediaFormData();
-    this.propertyService.uploadPropertyMedia(propertyId, formData).subscribe({
-      next: (response) => {
-        const media = response.data?.galleryImages ?? [];
-        if (media.length) {
-          this.galleryPreviews.set(media);
+        if (continueToEdit) {
+          this.router.navigate([`/admin/property-management/${this.createdPropertyId}/edit`], {
+            queryParams: { step: 1 },
+          });
+          return;
         }
-        if (response.data?.featureImage) {
-          this.featureImagePreview.set(response.data.featureImage);
-        }
-        if (response.data?.coverImage) {
-          this.coverImagePreview.set(response.data.coverImage);
-        }
-        if (response.data?.documents) {
-          this.documentPreviews.set(response.data.documents);
-        }
-        this.isSaving.set(false);
-        this.currentStep = Math.min(this.currentStep + 1, this.wizardSteps.length - 1);
+
+        this.router.navigate(['/admin/property-management']);
       },
       error: () => {
         this.isSaving.set(false);
@@ -565,57 +498,9 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     };
   }
 
-  private buildUpdatePayload(): PropertyUpdateRequest {
-    const raw = this.propertyForm.getRawValue();
-    return {
-      vendor_id: String(raw.vendor_id ?? ''),
-      name: String(raw.name ?? '').trim(),
-      type: this.normalizePropertyType(raw.type),
-      city_id: String(raw.city_id ?? ''),
-      location_id: String(raw.location_id ?? ''),
-      description: String(raw.description ?? '').trim(),
-      price: Number(raw.price_per_night ?? 0),
-      price_per_night: Number(raw.price_per_night ?? 0),
-      sale_price: Number(raw.sale_price ?? 0),
-      is_featured: Boolean(raw.is_featured),
-      status: this.normalizePropertyStatus(raw.status),
-      amenity_ids: [...(raw.amenity_ids ?? [])],
-      facility_ids: [...(raw.facility_ids ?? [])],
-      room_type_ids: [...(raw.room_type_ids ?? [])],
-      food_option_ids: [...(raw.food_option_ids ?? [])],
-      lat: raw.lat,
-      lon: raw.lon,
-    };
-  }
-
-  private buildMediaFormData(): FormData {
-    const formData = new FormData();
-
-    this.galleryPreviews().forEach((image, index) => formData.append(`galleryImages[${index}]`, image));
-
-    if (this.featureImagePreview()) {
-      formData.append('featureImage', this.featureImagePreview());
-    }
-
-    if (this.coverImagePreview()) {
-      formData.append('coverImage', this.coverImagePreview());
-    }
-
-    this.documentPreviews().forEach((document, index) => formData.append(`documents[${index}]`, document));
-
-    return formData;
-  }
-
   private normalizePropertyType(value: unknown): PropertyRequest['type'] {
     const safeValue = String(value ?? 'hotel');
     return (PROPERTY_TYPES as readonly string[]).includes(safeValue) ? (safeValue as PropertyRequest['type']) : 'hotel';
-  }
-
-  private normalizePropertyStatus(value: unknown): PropertyRequest['status'] {
-    const safeValue = String(value ?? 'draft');
-    return (['draft', 'active', 'inactive'] as const).includes(safeValue as PropertyRequest['status'])
-      ? (safeValue as PropertyRequest['status'])
-      : 'draft';
   }
 
   private getVendorLabel(vendorId: string): string {

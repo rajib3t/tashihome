@@ -31,48 +31,196 @@
     <form [formGroup]="propertyForm" (ngSubmit)="submitPropertyForm()" class="space-y-6">
       @if (currentStep === 0) {
         <div class="grid gap-5 md:grid-cols-2">
-          <label class="space-y-2 md:col-span-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property title</span>
+          <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Vendor</span>
+            <div class="relative">
+              <input
+                type="text"
+                [value]="vendorSearchTerm()"
+                (input)="onVendorSearchChange($any($event.target).value)"
+                (focus)="openVendorDropdown()"
+                placeholder="Search vendor by name, email, or phone"
+                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-24 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              />
+              <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                @if (selectedVendorLabel()) {
+                  <button
+                    type="button"
+                    class="pointer-events-auto rounded-full border border-slate-200 px-2 py-1 font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300"
+                    (click)="clearVendorSelection()"
+                  >
+                    Clear
+                  </button>
+                } @else {
+                  <span>Autocomplete</span>
+                }
+              </div>
+
+              @if (isVendorDropdownOpen() && filteredVendors().length) {
+                <div class="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                  @for (vendor of filteredVendors(); track vendor.id) {
+                    <button
+                      type="button"
+                      class="flex w-full flex-col gap-0.5 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
+                      (mousedown)="selectVendor(vendor)"
+                    >
+                      <span class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ vendor.full_name }}</span>
+                      <span class="text-xs text-slate-500 dark:text-slate-400">
+                        {{ vendor.email }}
+                        @if (vendor.phone) {
+                          <span> • {{ vendor.phone }}</span>
+                        }
+                      </span>
+                    </button>
+                  }
+                </div>
+              } @else if (isVendorDropdownOpen() && vendorSearchTerm().trim()) {
+                <div class="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                  No vendors match your search.
+                </div>
+              }
+            </div>
+            <input type="hidden" formControlName="vendor_id" />
+            @if (propertyForm.get('vendor_id')?.invalid && propertyForm.get('vendor_id')?.touched) {
+              <p class="text-xs text-red-500">Vendor is required.</p>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property name</span>
             <input formControlName="name" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
             @if (propertyForm.get('name')?.touched && propertyForm.get('name')?.invalid) {
               <small class="text-xs text-red-500">Name is required and must be at least 3 characters.</small>
             }
           </label>
 
-          <label class="space-y-2">
+          <label class="block space-y-2">
             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property type</span>
             <select formControlName="type" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
-              <option value="hotel">Hotel</option>
-              <option value="apartment">Apartment</option>
-              <option value="villa">Villa</option>
-              <option value="resort">Resort</option>
-              <option value="hostel">Hostel</option>
-              <option value="guest_house">Guest House</option>
-              <option value="bed_and_breakfast">Bed and Breakfast</option>
-              <option value="cottage">Cottage</option>
-              <option value="cabin">Cabin</option>
-              <option value="lodge">Lodge</option>
-              <option value="motel">Motel</option>
-              <option value="pension">Pension</option>
-              <option value="chalet">Chalet</option>
-              <option value="farm_stay">Farm Stay</option>
-              <option value="houseboat">Houseboat</option>
-              <option value="home_stay">Home Stay</option>
+              @for (type of PROPERTY_TYPES_LABELS | keyvalue; track type.key) {
+                <option [value]="type.key">{{ type.value }}</option>
+              }
             </select>
           </label>
 
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Publish status</span>
-            <select formControlName="status" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
-              <option value="draft">Draft</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">City</span>
+            <div class="relative">
+              <input
+                type="text"
+                [value]="citySearchTerm()"
+                (input)="onCitySearchChange($any($event.target).value)"
+                (focus)="openCityDropdown()"
+                (blur)="onCityInputBlur()"
+                placeholder="Search city"
+                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-24 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              />
+              <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                @if (selectedCityLabel()) {
+                  <button
+                    type="button"
+                    class="pointer-events-auto rounded-full border border-slate-200 px-2 py-1 font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300"
+                    (click)="clearCitySelection()"
+                  >
+                    Clear
+                  </button>
+                } @else {
+                  <span>Autocomplete</span>
+                }
+              </div>
+
+              @if (isCityDropdownOpen() && filteredCities().length) {
+                <div class="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                  @for (city of filteredCities(); track city.id) {
+                    <button
+                      type="button"
+                      class="w-full border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
+                      (mousedown)="selectCity(city)"
+                    >
+                      <span class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ city.name }}</span>
+                    </button>
+                  }
+                </div>
+              } @else if (isCityDropdownOpen() && citySearchTerm().trim()) {
+                <div class="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                  No cities match your search.
+                </div>
+              }
+            </div>
+            <input type="hidden" formControlName="city_id" />
+            @if (propertyForm.get('city_id')?.invalid && propertyForm.get('city_id')?.touched) {
+              <p class="text-xs text-red-500">City is required.</p>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Location</span>
+            <select
+              formControlName="location_id"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary disabled:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800"
+              [disabled]="!propertyForm.get('city_id')?.value || loadingLocations()"
+            >
+              <option value="">
+                {{ loadingLocations() ? 'Loading locations...' : 'Select location' }}
+              </option>
+              @for (location of locations(); track location.id) {
+                <option [value]="location.id">{{ location.name }}</option>
+              }
             </select>
           </label>
 
-          <label class="space-y-2 md:col-span-2">
+          <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Address</span>
+            <input
+              formControlName="address"
+              type="text"
+              placeholder="Enter property address"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+            @if (propertyForm.get('address')?.touched && propertyForm.get('address')?.invalid) {
+              <small class="text-xs text-red-500">Address is required.</small>
+            }
+          </label>
+
+          <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Google Location Autocomplete</span>
+            <input
+              #googleLocationInput
+              type="text"
+              placeholder="Search for location using Google autocomplete"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Latitude</span>
+            <input
+              formControlName="lat"
+              type="number"
+              step="any"
+              placeholder="Latitude will be auto-filled"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Longitude</span>
+            <input
+              formControlName="lon"
+              type="number"
+              step="any"
+              placeholder="Longitude will be auto-filled"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <label class="block space-y-2 md:col-span-2">
             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Description</span>
-            <textarea formControlName="description" rows="4" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"></textarea>
+            <textarea
+              formControlName="description"
+              rows="5"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            ></textarea>
             @if (propertyForm.get('description')?.touched && propertyForm.get('description')?.invalid) {
               <small class="text-xs text-red-500">Description is required and must be at least 20 characters.</small>
             }
@@ -127,6 +275,22 @@
               </div>
             } @else {
               <p class="text-sm text-slate-500 dark:text-slate-400">No room types loaded yet.</p>
+            }
+          </div>
+
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Food options</span>
+            @if (foodOptions().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (foodOption of foodOptions(); track foodOption.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input type="checkbox" [checked]="isSelectionChecked('food_option_ids', foodOption.id)" (change)="toggleSelection('food_option_ids', foodOption.id)" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                    {{ foodOption.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No food options loaded yet.</p>
             }
           </div>
         </div>

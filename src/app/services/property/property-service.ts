@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { PropertyDTO, PropertyItem, PropertyQuery, PropertyMediaUploadResponse, PropertyUpdateRequest, CreatePropertyRequest, PropertyData } from './property.model';
+import { PropertyDTO, PropertyQuery, PropertyMediaUploadResponse, PropertyUpdateRequest, CreatePropertyRequest, PropertyData } from './property.model';
 import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
 import { inject } from '@angular/core';
 import { ApiService } from '../api/api-service';
@@ -35,8 +35,8 @@ export class PropertyService {
       catchError(this.apiService.passthroughError)
     );
   }
-  updateProperty(id: string, property: PropertyUpdateRequest): Observable<ApiResponse<PropertyItem>> {
-    return this.apiService.protectedPut<ApiResponse<PropertyItem>>(`/properties/${id}`, property).pipe(
+  updateProperty(id: string, property: PropertyUpdateRequest): Observable<ApiResponse<PropertyData>> {
+    return this.apiService.protectedPut<ApiResponse<PropertyData>>(`/properties/${id}`, property).pipe(
       map((response) => response.data),
       catchError(this.apiService.passthroughError)
     );

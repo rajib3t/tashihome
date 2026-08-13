@@ -90,6 +90,12 @@ export class EditProperty implements AfterViewChecked {
   readonly amenities = signal<Amenity[]>([]);
   readonly facilities = signal<Facility[]>([]);
   readonly roomTypes = signal<RoomType[]>([]);
+  readonly foodOptions = signal([
+    { id: 'breakfast', name: 'Breakfast' },
+    { id: 'lunch', name: 'Lunch' },
+    { id: 'tiffin', name: 'Tiffin' },
+    { id: 'dinner', name: 'Dinner' },
+  ]);
   readonly galleryPreviews = signal<string[]>([]);
   readonly featureImagePreview = signal('');
   readonly coverImagePreview = signal('');
@@ -157,6 +163,13 @@ export class EditProperty implements AfterViewChecked {
         return;
       }
       this.loadProperty(idParam);
+    });
+
+    this.route.queryParamMap.subscribe((params) => {
+      const stepParam = Number(params.get('step'));
+      if (!Number.isNaN(stepParam)) {
+        this.currentStep = Math.max(0, Math.min(stepParam, this.wizardSteps.length - 1));
+      }
     });
   }
 
@@ -443,6 +456,11 @@ export class EditProperty implements AfterViewChecked {
   }
 
   private patchPropertyForm(property: PropertyData): void {
+    const amenityIds = property.property_amenities.map((item) => item.amenity.id);
+    const facilityIds = property.property_facilities.map((item) => item.facility.id);
+    const roomTypeIds = property.property_room_types.map((item) => item.room_type.id);
+    const foodOptionIds = property.property_food_options.filter((item) => item.is_included).map((item) => item.name);
+
     this.propertyForm.patchValue({
       vendor_id: property.vendor.id,
       name: property.name,
@@ -453,6 +471,12 @@ export class EditProperty implements AfterViewChecked {
       price_per_night: property.price_per_night ?? 0,
       sale_price: property.sale_price ?? 0,
       status: this.normalizePropertyStatus(property.status),
+      amenity_ids: amenityIds,
+      facility_ids: facilityIds,
+      room_type_ids: roomTypeIds,
+      food_option_ids: foodOptionIds,
+      lat: property.latitude ?? null,
+      lon: property.longitude ?? null,
     });
 
     this.selectedVendorLabel.set(`${property.vendor.full_name} - ${property.vendor.email}`);

@@ -154,18 +154,26 @@ export type PropertySearch = PropertyQuery['search'];
 
 
 export interface PropertyData {
+  id: string;
+  name: string;
+  slug: string;
+  type: PropertyType;
+  status: string;
+  currency?: string;
+  sale_price?: number;
+  price_per_night?: number;
+  sale_per_night?: number;
+  latitude?: number;
+  longitude?: number;
+  description: string;
   vendor: Vendor;
   location: Location;
   city: City;
   room_type: RoomType | null;
-  name: string;
-  slug: string;
-  type: PropertyType;
-  sale_price?: number;
-  price_per_night?: number;
-  description: string;
-  status: string;
-  id: string;
+  property_room_types: PropertyRoomType[];
+  property_amenities: PropertyAmenity[];
+  property_facilities: PropertyFacility[];
+  property_food_options: PropertyFoodOption[];
 }
 
 export interface Vendor {
@@ -188,4 +196,37 @@ export interface RoomType {
   id: string;
   name: string;
   capacity: number;
+}
+
+export interface PropertyAmenity {
+  id: string;
+  amenity: Amenity;
+}
+
+export interface PropertyFacility {
+  id: string;
+  facility: Facility;
+}
+
+export interface PropertyFoodOption {
+  id: string;
+  name: string;
+  is_included: boolean;
+}
+
+export interface PropertyRoomType {
+  id: string;
+  room_type: RoomType;
+}
+
+export interface Amenity {
+  id: string;
+  name: string;
+  icon_url?: string;
+}
+
+export interface Facility {
+  id: string;
+  name: string;
+  icon_url?: string;
 }
