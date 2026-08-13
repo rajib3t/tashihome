@@ -523,6 +523,7 @@ export class EditProperty implements AfterViewChecked {
       type: this.normalizePropertyType(raw.type),
       city_id: String(raw.city_id ?? ''),
       location_id: String(raw.location_id ?? ''),
+      address: String(raw.address ?? '').trim(),
       description: String(raw.description ?? '').trim(),
       price: Number(raw.price_per_night ?? 0),
       price_per_night: Number(raw.price_per_night ?? 0),

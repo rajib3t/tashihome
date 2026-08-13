@@ -47,6 +47,7 @@ export interface PropertyRequest {
   type: PropertyType;
   city_id: string;
   location_id: string;
+  address: string;
   description: string;
   price: number;
   sale_price?: number;
