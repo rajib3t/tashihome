@@ -48,4 +48,11 @@ export class PropertyService {
       catchError(this.apiService.passthroughError)
     );
   }
+
+  deletePropertyAsset(propertyId: string, assetId: string): Observable<ApiResponse<void>> {
+    return this.apiService.protectedDelete<void>(`/properties/${propertyId}/assets/${assetId}`).pipe(
+      catchError(this.apiService.passthroughError)
+    );
+  }
 }
+

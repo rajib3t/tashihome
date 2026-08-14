@@ -154,6 +154,18 @@ export type PropertySearch = PropertyQuery['search'];
 
 
 
+export interface PropertyAsset {
+  id: string;
+  property_id?: string | null;
+  asset_type?: string;
+  use_for?: 'gallery' | 'feature' | 'cover' | string;
+  file_url: string;
+  title?: string;
+  is_primary?: boolean;
+  sort_order?: number;
+  status?: string;
+}
+
 export interface PropertyData {
   id: string;
   name: string;
@@ -176,6 +188,10 @@ export interface PropertyData {
   property_amenities: PropertyAmenity[];
   property_facilities: PropertyFacility[];
   property_food_options: PropertyFoodOption[];
+  property_assets?: PropertyAsset[];
+  gallery_images?: PropertyAsset[];
+  feature_image?: PropertyAsset | null;
+  cover_image?: PropertyAsset | null;
 }
 
 export interface Vendor {
@@ -232,3 +248,4 @@ export interface Facility {
   name: string;
   icon_url?: string;
 }
+

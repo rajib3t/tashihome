@@ -16,6 +16,7 @@ import {
   CreatePropertyRequest,
   PROPERTY_TYPES,
   PROPERTY_TYPES_LABELS,
+  PropertyAsset,
   PropertyData,
   PropertyRequest,
   PropertyUpdateRequest,
@@ -97,6 +98,7 @@ export class EditProperty implements AfterViewChecked {
     { id: 'dinner', name: 'Dinner' },
   ]);
   readonly galleryPreviews = signal<string[]>([]);
+  readonly existingGalleryAssets = signal<PropertyAsset[]>([]);
   readonly featureImagePreview = signal('');
   readonly coverImagePreview = signal('');
   readonly galleryFiles = signal<File[]>([]);
@@ -438,6 +440,44 @@ export class EditProperty implements AfterViewChecked {
     this.galleryFiles.update((list) => [...list, ...files]);
   }
 
+  removeGalleryImage(index: number): void {
+    const list = this.galleryPreviews();
+    if (index < 0 || index >= list.length) {
+      return;
+    }
+
+    const previewToRemove = list[index];
+
+    // Check if image is an existing asset on backend
+    const existingAssets = this.existingGalleryAssets();
+    const existingIndex = existingAssets.findIndex((asset) => asset.file_url === previewToRemove);
+
+    if (existingIndex >= 0) {
+      const asset = existingAssets[existingIndex];
+      this.existingGalleryAssets.update((arr) => arr.filter((_, i) => i !== existingIndex));
+
+      if (this.propertyId && asset.id) {
+        this.propertyService.deletePropertyAsset(this.propertyId, asset.id).subscribe({
+          error: (err) => console.error('Failed to delete gallery asset from server:', err),
+        });
+      }
+    } else {
+      // If it's a newly added file before upload, remove from galleryFiles list
+      const newlyAddedPreviews = list.filter(
+        (p) => !existingAssets.some((a) => a.file_url === p)
+      );
+      const newFileIndex = newlyAddedPreviews.indexOf(previewToRemove);
+      if (newFileIndex >= 0) {
+        this.galleryFiles.update((files) => files.filter((_, i) => i !== newFileIndex));
+      }
+    }
+
+    // Update gallery previews & form control
+    const updatedPreviews = list.filter((_, i) => i !== index);
+    this.galleryPreviews.set(updatedPreviews);
+    this.propertyForm.get('galleryImages')?.setValue(updatedPreviews);
+  }
+
   handleFeatureImageFile(file: File): void {
     this.featureImageFile.set(file);
   }
@@ -553,21 +593,21 @@ export class EditProperty implements AfterViewChecked {
   }
 
   private patchPropertyForm(property: PropertyData): void {
-    const amenityIds = property.property_amenities.map((item) => item.amenity.id);
-    const facilityIds = property.property_facilities.map((item) => item.facility.id);
-    const roomTypeIds = property.property_room_types.map((item) => item.room_type.id);
-    const foodOptionIds = property.property_food_options.filter((item) => item.is_included).map((item) => item.name);
+    const amenityIds = property.property_amenities?.map((item) => item.amenity.id) ?? [];
+    const facilityIds = property.property_facilities?.map((item) => item.facility.id) ?? [];
+    const roomTypeIds = property.property_room_types?.map((item) => item.room_type.id) ?? [];
+    const foodOptionIds = property.property_food_options?.filter((item) => item.is_included).map((item) => item.name) ?? [];
 
     this.propertyForm.patchValue({
-      vendor_id: property.vendor.id,
-      name: property.name,
+      vendor_id: property.vendor?.id ?? '',
+      name: property.name ?? '',
       type: property.type,
-      city_id: property.city.id,
-      location_id: property.location.id,
+      city_id: property.city?.id ?? '',
+      location_id: property.location?.id ?? '',
       address: property.address ?? '',
-      description: property.description,
+      description: property.description ?? '',
       price_per_night: property.price_per_night ?? 0,
-      sale_price: property.sale_price ?? 0,
+      sale_price: property.sale_price ?? property.sale_per_night ?? 0,
       status: this.normalizePropertyStatus(property.status),
       amenity_ids: amenityIds,
       facility_ids: facilityIds,
@@ -577,33 +617,81 @@ export class EditProperty implements AfterViewChecked {
       lon: property.longitude ?? null,
     });
 
-    // Set existing gallery images if available
-    const galleryImages = (property as any).galleryImages as string[] | undefined;
-    if (galleryImages && galleryImages.length > 0) {
-      this.galleryPreviews.set(galleryImages);
-      this.propertyForm.get('galleryImages')?.setValue(galleryImages);
+    // Extract gallery image URLs from gallery_images, property_assets, or legacy galleryImages
+    const galleryUrls: string[] = [];
+    const galleryAssets: PropertyAsset[] = [];
+    if (property.gallery_images && Array.isArray(property.gallery_images) && property.gallery_images.length > 0) {
+      for (const item of property.gallery_images) {
+        if (typeof item === 'string') {
+          galleryUrls.push(item);
+        } else if (item && typeof item === 'object' && item.file_url) {
+          galleryUrls.push(item.file_url);
+          galleryAssets.push(item);
+        }
+      }
+    } else if ((property as any).galleryImages && Array.isArray((property as any).galleryImages)) {
+      galleryUrls.push(...(property as any).galleryImages);
+    } else if (property.property_assets && Array.isArray(property.property_assets)) {
+      for (const asset of property.property_assets) {
+        if (asset.use_for === 'gallery' && asset.file_url) {
+          galleryUrls.push(asset.file_url);
+          galleryAssets.push(asset);
+        }
+      }
     }
 
-    // Set existing feature image if available
-    const featureImage = (property as any).featureImage as string | undefined;
-    if (featureImage) {
-      this.featureImagePreview.set(featureImage);
-      this.propertyForm.get('featureImage')?.setValue(featureImage);
+    this.existingGalleryAssets.set(galleryAssets);
+
+    if (galleryUrls.length > 0) {
+      this.galleryPreviews.set(galleryUrls);
+      this.propertyForm.get('galleryImages')?.setValue(galleryUrls);
     }
 
-    // Set existing cover image if available
-    const coverImage = (property as any).coverImage as string | undefined;
-    if (coverImage) {
-      this.coverImagePreview.set(coverImage);
-      this.propertyForm.get('coverImage')?.setValue(coverImage);
+    // Extract feature image URL from feature_image, property_assets, or legacy featureImage
+    let featureUrl = '';
+    if (property.feature_image) {
+      featureUrl = typeof property.feature_image === 'string' ? property.feature_image : (property.feature_image.file_url ?? '');
+    } else if ((property as any).featureImage) {
+      featureUrl = String((property as any).featureImage);
+    } else if (property.property_assets && Array.isArray(property.property_assets)) {
+      const asset = property.property_assets.find((a) => a.use_for === 'feature');
+      if (asset?.file_url) {
+        featureUrl = asset.file_url;
+      }
     }
 
-    this.selectedVendorLabel.set(`${property.vendor.full_name} - ${property.vendor.email}`);
-    this.vendorSearchTerm.set(property.vendor.full_name);
-    this.selectedCityLabel.set(property.city.name);
-    this.citySearchTerm.set(property.city.name);
+    if (featureUrl) {
+      this.featureImagePreview.set(featureUrl);
+      this.propertyForm.get('featureImage')?.setValue(featureUrl);
+    }
 
-    this.loadLocations(property.city.id);
+    // Extract cover image URL from cover_image, property_assets, or legacy coverImage
+    let coverUrl = '';
+    if (property.cover_image) {
+      coverUrl = typeof property.cover_image === 'string' ? property.cover_image : (property.cover_image.file_url ?? '');
+    } else if ((property as any).coverImage) {
+      coverUrl = String((property as any).coverImage);
+    } else if (property.property_assets && Array.isArray(property.property_assets)) {
+      const asset = property.property_assets.find((a) => a.use_for === 'cover');
+      if (asset?.file_url) {
+        coverUrl = asset.file_url;
+      }
+    }
+
+    if (coverUrl) {
+      this.coverImagePreview.set(coverUrl);
+      this.propertyForm.get('coverImage')?.setValue(coverUrl);
+    }
+
+    if (property.vendor) {
+      this.selectedVendorLabel.set(`${property.vendor.full_name} - ${property.vendor.email}`);
+      this.vendorSearchTerm.set(property.vendor.full_name);
+    }
+    if (property.city) {
+      this.selectedCityLabel.set(property.city.name);
+      this.citySearchTerm.set(property.city.name);
+      this.loadLocations(property.city.id);
+    }
   }
 
   private buildUpdatePayload(): PropertyUpdateRequest {
