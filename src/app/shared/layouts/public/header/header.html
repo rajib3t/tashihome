@@ -1,24 +1,55 @@
-<header class="header-shell">
-  <div class="header-inner">
-    <a class="brand" routerLink="/" aria-label="Go to home page">Tashhome</a>
+<!-- ============ NAV ============ -->
+<header
+  id="site-nav"
+  class="fixed top-0 inset-x-0 z-50 transition-all duration-300"
+  [ngClass]="{
+    'nav-blur bg-[#f5f1e6]/90 shadow-sm border-b border-ink/5': isScrolled,
+    'bg-transparent': !isScrolled
+  }"
+>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+    <a routerLink="/" class="flex items-center gap-2.5 group">
+      <app-logo [size]="40" [glow]="false" [withText]="true" [href]="null" [variant]="isScrolled ? 'dark' : 'white'">
+      </app-logo>
+    </a>
 
-    <button
-      class="menu-toggle"
-      type="button"
-      aria-label="Toggle menu"
-      aria-expanded="{{ isMenuOpen }}"
-      (click)="toggleMenu()"
-    >
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-
-    <nav class="nav-links" [class.open]="isMenuOpen">
-      @for (item of menuItems; track item.route) {
-        <a class="nav-link" [routerLink]="item.route" (click)="closeMenu()">{{ item.label }}</a>
-      }
+    <nav class="hidden md:flex items-center gap-9 text-sm font-medium transition-colors" [ngClass]="isScrolled ? 'text-ink' : 'text-cloud'">
+      <a href="#stays" class="hover:text-ochre transition-colors">Stays</a>
+      <a href="#experiences" class="hover:text-ochre transition-colors">Experiences</a>
+      <a href="#hosts" class="hover:text-ochre transition-colors">Hosts</a>
+      <a href="#how" class="hover:text-ochre transition-colors">How it works</a>
     </nav>
+
+    <div class="flex items-center gap-3">
+      <a
+        href="#stays"
+        class="btn-anim hidden sm:inline-block bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+      >
+        Browse stays
+      </a>
+      <button
+        id="menu-btn"
+        (click)="toggleMenu()"
+        class="md:hidden w-10 h-10 grid place-items-center rounded-full border border-current/30 transition-colors"
+        [ngClass]="isScrolled ? 'text-ink' : 'text-cloud'"
+        aria-label="Open menu"
+        [attr.aria-expanded]="isMenuOpen"
+      >
+        <svg id="menu-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M1 4H17M1 9H17M1 14H17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- mobile menu -->
+  <div *ngIf="isMenuOpen" id="mobile-menu" class="md:hidden bg-pine text-cloud px-6 pb-6 pt-2 space-y-4 shadow-xl border-t border-cloud/10">
+    <a href="#stays" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Stays</a>
+    <a href="#experiences" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Experiences</a>
+    <a href="#hosts" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Hosts</a>
+    <a href="#how" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">How it works</a>
+    <a href="#stays" (click)="closeMenu()" class="inline-block bg-ochre text-cloud text-sm font-semibold px-5 py-2.5 rounded-full">
+      Browse stays
+    </a>
   </div>
 </header>
-

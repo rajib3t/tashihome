@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Soft glow background for emblem -->
+  <circle cx="50" cy="50" r="46" fill="#F3FAFB" fill-opacity="0.1" stroke="#F3FAFB" stroke-opacity="0.2" stroke-width="1.5"/>
+  <!-- Sun / Ochre Accent -->
+  <circle cx="68" cy="34" r="12" fill="#FAA52D" />
+  <!-- Back Mountain Peak -->
+  <path d="M42 36L78 80H26L42 36Z" fill="#F3FAFB" fill-opacity="0.45" />
+  <!-- Front Mountain Peak -->
+  <path d="M30 46L56 80H12L30 46Z" fill="#F3FAFB" />
+  <!-- Prayer flag / ridge highlight -->
+  <path d="M42 36L48 44L44 48L52 56" stroke="#FAA52D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Base Ground Line -->
+  <path d="M10 80H90" stroke="#F3FAFB" stroke-width="2" stroke-linecap="round" stroke-opacity="0.6"/>
+</svg>
