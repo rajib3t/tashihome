@@ -99,6 +99,9 @@ export class EditProperty implements AfterViewChecked {
   readonly galleryPreviews = signal<string[]>([]);
   readonly featureImagePreview = signal('');
   readonly coverImagePreview = signal('');
+  readonly galleryFiles = signal<File[]>([]);
+  readonly featureImageFile = signal<File | null>(null);
+  readonly coverImageFile = signal<File | null>(null);
   readonly documentPreviews = signal<string[]>([]);
   readonly isSaving = signal(false);
   private readonly currencyFormatter = new Intl.NumberFormat('en-IN', {
@@ -199,6 +202,11 @@ export class EditProperty implements AfterViewChecked {
     this.isSaving.set(true);
     this.propertyService.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
       next: () => {
+        if (this.pendingStepBeforeSave === 3) {
+          this.uploadPropertyMediaAndContinue();
+          return;
+        }
+
         this.isSaving.set(false);
         this.pendingStepBeforeSave = null;
       },
@@ -230,9 +238,7 @@ export class EditProperty implements AfterViewChecked {
     this.isSaving.set(true);
     this.propertyService.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
       next: () => {
-        this.isSaving.set(false);
-        this.pendingStepBeforeSave = null;
-        this.router.navigate(['/admin/property-management']);
+        this.uploadPropertyMediaAndContinue(true);
       },
       error: () => {
         this.isSaving.set(false);
@@ -424,13 +430,29 @@ export class EditProperty implements AfterViewChecked {
     this.propertyForm.get('galleryImages')?.setValue(this.galleryPreviews());
   }
 
-  handleImageSelection(controlName: 'featureImage' | 'coverImage', preview: string): void {
-    this.propertyForm.get(controlName)?.setValue(preview);
-    if (controlName === 'featureImage') {
-      this.featureImagePreview.set(preview);
+  addGalleryFiles(files: File[]): void {
+    if (!files.length) {
       return;
     }
 
+    this.galleryFiles.update((list) => [...list, ...files]);
+  }
+
+  handleFeatureImageFile(file: File): void {
+    this.featureImageFile.set(file);
+  }
+
+  handleFeatureImagePreview(preview: string): void {
+    this.propertyForm.get('featureImage')?.setValue(preview);
+    this.featureImagePreview.set(preview);
+  }
+
+  handleCoverImageFile(file: File): void {
+    this.coverImageFile.set(file);
+  }
+
+  handleCoverImagePreview(preview: string): void {
+    this.propertyForm.get('coverImage')?.setValue(preview);
     this.coverImagePreview.set(preview);
   }
 
@@ -555,6 +577,27 @@ export class EditProperty implements AfterViewChecked {
       lon: property.longitude ?? null,
     });
 
+    // Set existing gallery images if available
+    const galleryImages = (property as any).galleryImages as string[] | undefined;
+    if (galleryImages && galleryImages.length > 0) {
+      this.galleryPreviews.set(galleryImages);
+      this.propertyForm.get('galleryImages')?.setValue(galleryImages);
+    }
+
+    // Set existing feature image if available
+    const featureImage = (property as any).featureImage as string | undefined;
+    if (featureImage) {
+      this.featureImagePreview.set(featureImage);
+      this.propertyForm.get('featureImage')?.setValue(featureImage);
+    }
+
+    // Set existing cover image if available
+    const coverImage = (property as any).coverImage as string | undefined;
+    if (coverImage) {
+      this.coverImagePreview.set(coverImage);
+      this.propertyForm.get('coverImage')?.setValue(coverImage);
+    }
+
     this.selectedVendorLabel.set(`${property.vendor.full_name} - ${property.vendor.email}`);
     this.vendorSearchTerm.set(property.vendor.full_name);
     this.selectedCityLabel.set(property.city.name);
@@ -585,6 +628,60 @@ export class EditProperty implements AfterViewChecked {
       lat: raw.lat,
       lon: raw.lon,
     };
+  }
+
+  private uploadPropertyMediaAndContinue(navigateAfterUpload = false): void {
+    if (!this.propertyId) {
+      this.isSaving.set(false);
+      this.pendingStepBeforeSave = null;
+      if (navigateAfterUpload) {
+        this.router.navigate(['/admin/property-management']);
+      }
+      return;
+    }
+
+    const formData = new FormData();
+    let hasMedia = false;
+
+    for (const file of this.galleryFiles()) {
+      formData.append('gallery_images', file);
+      hasMedia = true;
+    }
+
+    const featureImage = this.featureImageFile();
+    if (featureImage) {
+      formData.append('feature_image', featureImage);
+      hasMedia = true;
+    }
+
+    const coverImage = this.coverImageFile();
+    if (coverImage) {
+      formData.append('cover_image', coverImage);
+      hasMedia = true;
+    }
+
+    if (!hasMedia) {
+      this.isSaving.set(false);
+      this.pendingStepBeforeSave = null;
+      if (navigateAfterUpload) {
+        this.router.navigate(['/admin/property-management']);
+      }
+      return;
+    }
+
+    this.propertyService.uploadPropertyMedia(this.propertyId, formData).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.pendingStepBeforeSave = null;
+        if (navigateAfterUpload) {
+          this.router.navigate(['/admin/property-management']);
+        }
+      },
+      error: () => {
+        this.isSaving.set(false);
+        this.pendingStepBeforeSave = null;
+      },
+    });
   }
 
   private normalizePropertyType(value: unknown): PropertyRequest['type'] {

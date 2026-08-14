@@ -332,6 +332,7 @@
               [multiple]="true"
               [buttonText]="'Upload gallery images'"
               [emptyText]="'No gallery images selected'"
+              (valueListChange)="addGalleryFiles($event)"
               (previewListChange)="addGalleryImages($event)"
             ></app-upload-image>
 
@@ -354,7 +355,8 @@
               [preview]="featureImagePreview()"
               [buttonText]="'Upload feature image'"
               [emptyText]="'No feature image selected'"
-              (previewChange)="handleImageSelection('featureImage', $event)"
+              (valueChange)="handleFeatureImageFile($event)"
+              (previewChange)="handleFeatureImagePreview($event)"
             ></app-upload-image>
           </label>
 
@@ -366,7 +368,8 @@
               [preview]="coverImagePreview()"
               [buttonText]="'Upload cover image'"
               [emptyText]="'No cover image selected'"
-              (previewChange)="handleImageSelection('coverImage', $event)"
+              (valueChange)="handleCoverImageFile($event)"
+              (previewChange)="handleCoverImagePreview($event)"
             ></app-upload-image>
           </label>
         </div>

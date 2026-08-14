@@ -26,6 +26,7 @@ export class UploadImage {
   disabled = input(false);
 
   valueChange = output<File>();
+  valueListChange = output<File[]>();
 
   previewChange = output<string>();
   previewListChange = output<string[]>();
@@ -125,6 +126,7 @@ export class UploadImage {
 
       Promise.all(readers).then((previews) => {
         this.previewListChange.emit(previews);
+        this.valueListChange.emit(files);
       });
 
       input.value = '';

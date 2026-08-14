@@ -29,6 +29,13 @@ export class PropertyService {
     );
   }
 
+  uploadPropertyMedia(id: string, formData: FormData): Observable<ApiResponse<PropertyMediaUploadResponse>> {
+    return this.apiService.protectedUpload<ApiResponse<PropertyMediaUploadResponse>>(`/properties/${id}/media`, formData).pipe(
+      map((response) => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
   getPropertyById(id: string): Observable<ApiResponse<PropertyData>> {
     return this.apiService.protectedGet<ApiResponse<PropertyData>>(`/properties/${id}`).pipe(
       map((response) => response.data),
@@ -37,13 +44,6 @@ export class PropertyService {
   }
   updateProperty(id: string, property: PropertyUpdateRequest): Observable<ApiResponse<PropertyData>> {
     return this.apiService.protectedPut<ApiResponse<PropertyData>>(`/properties/${id}`, property).pipe(
-      map((response) => response.data),
-      catchError(this.apiService.passthroughError)
-    );
-  }
-
-  uploadPropertyMedia(id: string, formData: FormData): Observable<ApiResponse<PropertyMediaUploadResponse>> {
-    return this.apiService.protectedUpload<ApiResponse<PropertyMediaUploadResponse>>(`/properties/${id}/media`, formData).pipe(
       map((response) => response.data),
       catchError(this.apiService.passthroughError)
     );
