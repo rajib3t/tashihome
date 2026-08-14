@@ -608,6 +608,7 @@ export class EditProperty implements AfterViewChecked {
       description: property.description ?? '',
       price_per_night: property.price_per_night ?? 0,
       sale_price: property.sale_price ?? property.sale_per_night ?? 0,
+      is_featured: property.is_featured ?? false,
       status: this.normalizePropertyStatus(property.status),
       amenity_ids: amenityIds,
       facility_ids: facilityIds,

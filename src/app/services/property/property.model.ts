@@ -176,6 +176,7 @@ export interface PropertyData {
   sale_price?: number;
   price_per_night?: number;
   sale_per_night?: number;
+  is_featured?: boolean;
   address?: string;
   latitude?: number;
   longitude?: number;
