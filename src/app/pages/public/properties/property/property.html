@@ -7,32 +7,11 @@
     [alt]="propertyData()?.name || 'Property cover image'"
     class="absolute inset-0 w-full h-full object-cover object-center" />
   } @else {
-  <svg viewBox="0 0 1400 800" preserveAspectRatio="xMidYMax slice" class="absolute inset-0 w-full h-full"
-    xmlns="http://www.w3.org/2000/svg">
-    <rect width="1400" height="800" fill="#0C4550" />
-    <defs>
-      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#0F5461" />
-        <stop offset="1" stop-color="#347E92" />
-      </linearGradient>
-    </defs>
-    <rect width="1400" height="520" fill="url(#skyGrad)" />
-    <circle cx="1180" cy="140" r="70" fill="#FAA52D" opacity="0.9" />
-    <path d="M0 420 Q200 340 400 410 T800 400 T1200 415 T1400 400 V800H0Z" fill="#2C3927" opacity="0.55" />
-    <path d="M0 470 Q220 400 460 460 T900 450 T1400 460 V800H0Z" fill="#264533" opacity="0.75" />
-    <path d="M0 560 Q150 520 300 555 T600 550 T900 560 T1200 550 T1400 560 V800H0Z" fill="#3E4E37" />
-    <path d="M0 620 Q150 585 300 615 T600 610 T900 618 T1200 610 T1400 618 V800H0Z" fill="#55694A" />
-    <path d="M0 690 Q150 655 300 685 T600 680 T900 688 T1200 680 T1400 688 V800H0Z" fill="#6E8248" />
-    <g transform="translate(210,470)">
-      <rect x="0" y="60" width="150" height="90" fill="#1B2A2C" opacity="0.88" />
-      <path d="M-15 60L75 -20L165 60Z" fill="#0C4550" />
-      <rect x="60" y="20" width="18" height="34" fill="#0C4550" />
-      <rect x="20" y="95" width="26" height="26" fill="#FAA52D" opacity="0.85" />
-      <rect x="100" y="95" width="26" height="26" fill="#FAA52D" opacity="0.85" />
-    </g>
-    <ellipse cx="1000" cy="600" rx="260" ry="46" fill="#F3FAFB" opacity="0.10" />
-    <ellipse cx="300" cy="640" rx="300" ry="50" fill="#F3FAFB" opacity="0.08" />
-  </svg>
+  <div class="absolute inset-0 bg-gradient-to-br from-pine2 via-pine to-[#132d33]">
+    <div
+      class="absolute inset-0 opacity-20 bg-[radial-gradient(#FAA52D_1px,transparent_1px)] [background-size:24px_24px]">
+    </div>
+  </div>
   }
 
   <div
@@ -82,65 +61,249 @@
   </div>
 </section>
 
-<!-- ============ GALLERY ============ -->
+<!-- ============ GALLERY (Luxury Bento Grid & Interactive Lightbox) ============ -->
 <section class="relative -mt-8 md:-mt-10 z-10">
   <div class="max-w-7xl mx-auto px-6 lg:px-10">
     @if (galleryImages().length > 0) {
 
-    <!-- Hero image -->
-    <div class="reveal rounded-3xl overflow-hidden shadow-xl shadow-pine/10 h-[320px] md:h-[500px]">
-      <div class="tile-wrap relative w-full h-full overflow-hidden">
-        <img [src]="propertyData()?.feature_image?.file_url"
-          [alt]="galleryImages()[0].title || propertyData()?.name || 'Property image'"
-          class="tile absolute inset-0 w-full h-full object-cover object-center" />
-        @if (galleryImages()[0].title) {
-        <span
-          class="absolute bottom-3 left-3 bg-ink/60 text-cloud text-[11px] font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">
-          {{ galleryImages()[0].title }}
-        </span>
-        }
-      </div>
-    </div>
+    <div
+      class="reveal relative rounded-3xl overflow-hidden shadow-2xl shadow-pine/15 border border-white/30 bg-cloud2/40">
 
-    <!-- All remaining images -->
-    @if (galleryImages().length > 1) {
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-2.5 mt-2 md:mt-2.5">
-      @for (image of galleryImages().slice(1); track image.file_url) {
-      <div class="tile-wrap reveal relative overflow-hidden rounded-2xl h-[160px] md:h-[200px]">
-        <img [src]="image.file_url" [alt]="image.title || propertyData()?.name || 'Property image'"
-          class="tile absolute inset-0 w-full h-full object-cover object-center" />
-        @if (image.title) {
-        <span
-          class="absolute bottom-2 left-2 bg-ink/60 text-cloud text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">
-          {{ image.title }}
-        </span>
+      <!-- Layout for 5+ images (Classic Luxury Bento Grid) -->
+      @if (galleryImages().length >= 5) {
+      <div
+        class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-2 md:gap-3 h-[360px] sm:h-[440px] md:h-[500px] lg:h-[540px]">
+        <!-- Hero large image (left, 2 cols, 2 rows) -->
+        <div (click)="openLightbox(0)"
+          class="md:col-span-2 md:row-span-2 relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
+          <img [src]="galleryImages()[0].file_url"
+            [alt]="galleryImages()[0].title || propertyData()?.name || 'Property showcase photo'"
+            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          </div>
+          @if (galleryImages()[0].title) {
+          <span
+            class="absolute bottom-3 left-3 bg-ink/75 text-cloud text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-md shadow-sm">
+            {{ galleryImages()[0].title }}
+          </span>
+          }
+        </div>
+
+        <!-- Tile 1 -->
+        <div (click)="openLightbox(1)"
+          class="hidden md:block relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
+          <img [src]="galleryImages()[1].file_url"
+            [alt]="galleryImages()[1].title || propertyData()?.name || 'Property photo'"
+            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+          @if (galleryImages()[1].title) {
+          <span
+            class="absolute bottom-2.5 left-2.5 bg-ink/75 text-cloud text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-md">
+            {{ galleryImages()[1].title }}
+          </span>
+          }
+        </div>
+
+        <!-- Tile 2 -->
+        <div (click)="openLightbox(2)"
+          class="hidden md:block relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
+          <img [src]="galleryImages()[2].file_url"
+            [alt]="galleryImages()[2].title || propertyData()?.name || 'Property photo'"
+            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+          @if (galleryImages()[2].title) {
+          <span
+            class="absolute bottom-2.5 left-2.5 bg-ink/75 text-cloud text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-md">
+            {{ galleryImages()[2].title }}
+          </span>
+          }
+        </div>
+
+        <!-- Tile 3 -->
+        <div (click)="openLightbox(3)"
+          class="hidden md:block relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
+          <img [src]="galleryImages()[3].file_url"
+            [alt]="galleryImages()[3].title || propertyData()?.name || 'Property photo'"
+            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+          @if (galleryImages()[3].title) {
+          <span
+            class="absolute bottom-2.5 left-2.5 bg-ink/75 text-cloud text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-md">
+            {{ galleryImages()[3].title }}
+          </span>
+          }
+        </div>
+
+        <!-- Tile 4 (5th image or +X more overlay) -->
+        <div (click)="openLightbox(4)"
+          class="hidden md:block relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
+          <img [src]="galleryImages()[4].file_url"
+            [alt]="galleryImages()[4].title || propertyData()?.name || 'Property photo'"
+            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+          @if (galleryImages().length > 5) {
+          <div
+            class="absolute inset-0 bg-ink/65 group-hover:bg-ink/55 backdrop-blur-[2px] flex flex-col items-center justify-center text-cloud transition-colors duration-300">
+            <svg class="w-6 h-6 mb-1 text-ochre" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect width="18" height="18" x="3" y="3" rx="2" stroke-width="2" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9h18M9 21V9" />
+            </svg>
+            <span class="text-sm font-semibold tracking-wide">+{{ galleryImages().length - 4 }} photos</span>
+            <span class="text-[11px] text-cloud/75 font-medium mt-0.5">View all</span>
+          </div>
+          } @else {
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+          @if (galleryImages()[4].title) {
+          <span
+            class="absolute bottom-2.5 left-2.5 bg-ink/75 text-cloud text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-md">
+            {{ galleryImages()[4].title }}
+          </span>
+          }
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Layout for 4 images -->
+      @else if (galleryImages().length === 4) {
+      <div class="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-2 md:gap-3 h-[360px] sm:h-[440px] md:h-[500px]">
+        <div (click)="openLightbox(0)"
+          class="md:col-span-2 md:row-span-2 relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
+          <img [src]="galleryImages()[0].file_url"
+            [alt]="galleryImages()[0].title || propertyData()?.name || 'Property photo'"
+            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          </div>
+          @if (galleryImages()[0].title) {
+          <span
+            class="absolute bottom-3 left-3 bg-ink/75 text-cloud text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-md">{{
+            galleryImages()[0].title }}</span>
+          }
+        </div>
+        @for (img of galleryImages().slice(1); track img.file_url; let i = $index) {
+        <div (click)="openLightbox(i + 1)"
+          class="hidden md:block relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
+          <img [src]="img.file_url" [alt]="img.title || propertyData()?.name || 'Property photo'"
+            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+          @if (img.title) {
+          <span
+            class="absolute bottom-2.5 left-2.5 bg-ink/75 text-cloud text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-md">{{
+            img.title }}</span>
+          }
+        </div>
         }
       </div>
       }
+
+      <!-- Layout for 3 images -->
+      @else if (galleryImages().length === 3) {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3 h-[360px] sm:h-[440px] md:h-[480px]">
+        <div (click)="openLightbox(0)"
+          class="md:col-span-2 relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
+          <img [src]="galleryImages()[0].file_url"
+            [alt]="galleryImages()[0].title || propertyData()?.name || 'Property photo'"
+            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          </div>
+          @if (galleryImages()[0].title) {
+          <span
+            class="absolute bottom-3 left-3 bg-ink/75 text-cloud text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-md">{{
+            galleryImages()[0].title }}</span>
+          }
+        </div>
+        <div class="grid grid-rows-2 gap-2 md:gap-3 hidden md:grid">
+          @for (img of galleryImages().slice(1); track img.file_url; let i = $index) {
+          <div (click)="openLightbox(i + 1)"
+            class="relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
+            <img [src]="img.file_url" [alt]="img.title || propertyData()?.name || 'Property photo'"
+              class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+            @if (img.title) {
+            <span
+              class="absolute bottom-2.5 left-2.5 bg-ink/75 text-cloud text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-md">{{
+              img.title }}</span>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Layout for 2 images -->
+      @else if (galleryImages().length === 2) {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 h-[340px] sm:h-[420px] md:h-[460px]">
+        @for (img of galleryImages(); track img.file_url; let i = $index) {
+        <div (click)="openLightbox(i)" class="relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
+          <img [src]="img.file_url" [alt]="img.title || propertyData()?.name || 'Property photo'"
+            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+          @if (img.title) {
+          <span
+            class="absolute bottom-3 left-3 bg-ink/75 text-cloud text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-md">{{
+            img.title }}</span>
+          }
+        </div>
+        }
+      </div>
+      }
+
+      <!-- Layout for 1 image -->
+      @else {
+      <div (click)="openLightbox(0)"
+        class="relative group cursor-pointer overflow-hidden rounded-2xl h-[340px] sm:h-[420px] md:h-[480px] bg-pine/5">
+        <img [src]="galleryImages()[0].file_url"
+          [alt]="galleryImages()[0].title || propertyData()?.name || 'Property photo'"
+          class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        </div>
+        @if (galleryImages()[0].title) {
+        <span
+          class="absolute bottom-3 left-3 bg-ink/75 text-cloud text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-md">{{
+          galleryImages()[0].title }}</span>
+        }
+      </div>
+      }
+
+      <!-- Floating "Show all photos" pill button -->
+      <button type="button" (click)="openLightbox(0)"
+        class="absolute bottom-4 right-4 md:bottom-5 md:right-5 z-20 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/90 hover:bg-white text-ink text-xs md:text-sm font-semibold shadow-lg shadow-pine/15 backdrop-blur-md border border-white/60 hover:border-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer">
+        <svg class="w-4 h-4 text-pine" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <rect width="18" height="18" x="3" y="3" rx="2" stroke-width="2" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9h18M9 21V9" />
+        </svg>
+        <span>Show all {{ galleryImages().length }} photos</span>
+      </button>
+
     </div>
-    }
 
     } @else {
-    <div class="rounded-3xl overflow-hidden shadow-xl shadow-pine/10 h-[300px] md:h-[460px] reveal">
-      <svg viewBox="0 0 1200 460" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
-        <rect width="1200" height="460" fill="#2E4A3E" />
-        <linearGradient id="galGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#347E92" />
-          <stop offset="1" stop-color="#0C4550" />
-        </linearGradient>
-        <rect width="1200" height="460" fill="url(#galGrad)" />
-        <path d="M0 280 Q200 220 400 275 T800 265 T1200 275 V460H0Z" fill="#2C3927" opacity="0.6" />
-        <path d="M0 340 Q200 295 400 335 T800 325 T1200 338 V460H0Z" fill="#3E4E37" />
-        <g transform="translate(480,200)">
-          <rect x="0" y="60" width="200" height="130" fill="#1B2A2C" opacity="0.9" />
-          <path d="M-20 60L100 -30L220 60Z" fill="#0F5461" />
-        </g>
-      </svg>
+    <!-- Graceful Luxury Placeholder (When no photos yet) -->
+    <div
+      class="reveal rounded-3xl overflow-hidden shadow-xl shadow-pine/10 border border-ink/8 bg-gradient-to-br from-pine/90 via-pine to-pine2 p-8 md:p-14 text-cloud flex flex-col md:flex-row items-center justify-between gap-8">
+      <div class="max-w-xl text-center md:text-left">
+        <span class="stamp inline-block text-ochre text-[10px] font-semibold px-3 py-1 mb-3">GALLERY UPDATE IN
+          PROGRESS</span>
+        <h3 class="font-display text-2xl md:text-3xl text-cloud">Curated Visual Journey</h3>
+        <p class="text-sm text-cloud/70 mt-2 leading-relaxed">
+          High-resolution photographs of rooms, viewpoints, and surroundings for {{ propertyData()?.name || 'this stay'
+          }} are currently being curated by the host. Contact host directly for real-time video tours and room previews.
+        </p>
+      </div>
+      <div
+        class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 grid place-items-center shrink-0">
+        <svg class="w-10 h-10 text-ochre/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
+            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
     </div>
     }
   </div>
 </section>
-
 
 <!-- ============ MAIN CONTENT + BOOKING SIDEBAR ============ -->
 <section class="max-w-7xl mx-auto px-6 lg:px-10 pt-14 pb-20">
@@ -158,8 +321,11 @@
           </p>
         </div>
         <div class="w-14 h-14 rounded-full bg-cloud2 grid place-items-center shrink-0">
-          @if(propertyData()?.vendor?.is_profile_image_url != null && propertyData()?.vendor?.is_profile_image_url != '') {
-          <img [src]="propertyData()?.vendor?.is_profile_image_url" [alt]="propertyData()?.vendor?.full_name || 'Host profile image'" class="w-12 h-12 rounded-full object-cover" />
+          @if(propertyData()?.vendor?.is_profile_image_url != null && propertyData()?.vendor?.is_profile_image_url !=
+          '') {
+          <img [src]="propertyData()?.vendor?.is_profile_image_url"
+            [alt]="propertyData()?.vendor?.full_name || 'Host profile image'"
+            class="w-12 h-12 rounded-full object-cover" />
           } @else {
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
             <path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" stroke="#0C4550" stroke-width="1.6" />
@@ -411,3 +577,98 @@
     </div>
   </div>
 </section> -->
+
+<!-- ============ LIGHTBOX MODAL (Full Screen & Stacking Root) ============ -->
+@if (isLightboxOpen() && galleryImages().length > 0) {
+<div class="fixed inset-0 bg-black/95 backdrop-blur-2xl flex flex-col justify-between select-none"
+  style="z-index: 99999999 !important;"
+  (click)="closeLightbox()">
+
+  <!-- Lightbox Header Bar (Above everything with distinct high-contrast bar) -->
+  <div
+    class="relative z-50 flex items-center justify-between px-4 sm:px-8 h-16 sm:h-20 bg-black/90 backdrop-blur-xl border-b border-white/15 text-white shrink-0 shadow-2xl"
+    (click)="$event.stopPropagation()">
+
+    <!-- Back Button (Left) -->
+    <button type="button" (click)="closeLightbox()"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer border border-white/20 shadow-md"
+      title="Back to property details">
+      <svg class="w-4 h-4 text-ochre" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      <span>Back</span>
+    </button>
+
+    <!-- Center Info -->
+    <div class="flex items-center gap-2 sm:gap-3 text-center truncate px-2">
+      <span
+        class="bg-white/15 text-xs font-semibold px-3 py-1 rounded-full text-white backdrop-blur-md shrink-0 border border-white/10">
+        {{ activePhotoIndex() + 1 }} / {{ galleryImages().length }}
+      </span>
+      <span class="text-xs sm:text-sm font-medium text-white/90 hidden md:inline-block truncate max-w-sm lg:max-w-md">
+        {{ galleryImages()[activePhotoIndex()]?.title || propertyData()?.name || 'Property photo' }}
+      </span>
+    </div>
+
+    <!-- Close Button (Right) -->
+    <button type="button" (click)="closeLightbox()"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 hover:bg-red-500/30 hover:border-red-400/40 active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer border border-white/20 shadow-md"
+      title="Close gallery (Esc)">
+      <span>Close</span>
+      <kbd
+        class="hidden sm:inline-block text-[10px] px-1.5 py-0.5 rounded bg-white/20 text-white/90 font-mono">ESC</kbd>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Lightbox Center Viewer -->
+  <div class="relative flex-1 flex items-center justify-center px-4 sm:px-12 py-4 overflow-hidden"
+    (click)="$event.stopPropagation()">
+
+    <!-- Prev button -->
+    <button type="button" (click)="prevPhoto()"
+      class="absolute left-4 sm:left-8 z-20 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/15 hover:bg-white/30 active:scale-95 text-white grid place-items-center backdrop-blur-md border border-white/20 transition-all cursor-pointer shadow-lg"
+      title="Previous photo (Left arrow)">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    <!-- Main Image Display -->
+    <div class="relative max-h-[70vh] sm:max-h-[75vh] max-w-5xl flex items-center justify-center">
+      <img [src]="galleryImages()[activePhotoIndex()]?.file_url"
+        [alt]="galleryImages()[activePhotoIndex()]?.title || propertyData()?.name || 'Property photo'"
+        class="max-h-[70vh] sm:max-h-[75vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl transition-all duration-300" />
+    </div>
+
+    <!-- Next button -->
+    <button type="button" (click)="nextPhoto()"
+      class="absolute right-4 sm:right-8 z-20 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/15 hover:bg-white/30 active:scale-95 text-white grid place-items-center backdrop-blur-md border border-white/20 transition-all cursor-pointer shadow-lg"
+      title="Next photo (Right arrow)">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Lightbox Footer Filmstrip -->
+  <div class="px-4 py-3 bg-black/80 border-t border-white/15 overflow-x-auto shrink-0 z-30"
+    (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-center gap-2 max-w-4xl mx-auto min-w-max">
+      @for (img of galleryImages(); track img.file_url; let i = $index) {
+      <button type="button" (click)="selectPhoto(i)"
+        class="w-14 h-10 sm:w-18 sm:h-12 rounded-lg overflow-hidden border-2 transition-all cursor-pointer shrink-0"
+        [class.border-ochre]="activePhotoIndex() === i" [class.ring-2]="activePhotoIndex() === i"
+        [class.ring-ochre]="activePhotoIndex() === i" [class.scale-105]="activePhotoIndex() === i"
+        [class.opacity-100]="activePhotoIndex() === i" [class.border-transparent]="activePhotoIndex() !== i"
+        [class.opacity-40]="activePhotoIndex() !== i" [class.hover:opacity-80]="activePhotoIndex() !== i">
+        <img [src]="img.file_url" [alt]="img.title || 'Thumbnail'" class="w-full h-full object-cover" />
+      </button>
+      }
+    </div>
+  </div>
+
+</div>
+}

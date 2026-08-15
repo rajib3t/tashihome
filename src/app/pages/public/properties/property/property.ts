@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, ElementRef, inject, PLATFORM_ID, signal, HostListener } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,7 +20,25 @@ export class Property {
   public propertyService = inject(PropertyService);
   public propertyData = signal<Partial<PropertyData> | null>(null);
   public galleryImages = signal<PropertyAsset[]>([]);
+  
+  // Lightbox State
+  public isLightboxOpen = signal<boolean>(false);
+  public activePhotoIndex = signal<number>(0);
+
   private revealObserver?: IntersectionObserver;
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent): void {
+    if (!this.isLightboxOpen()) return;
+
+    if (event.key === 'Escape') {
+      this.closeLightbox();
+    } else if (event.key === 'ArrowRight') {
+      this.nextPhoto();
+    } else if (event.key === 'ArrowLeft') {
+      this.prevPhoto();
+    }
+  }
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
@@ -48,6 +66,46 @@ export class Property {
 
   ngOnDestroy(): void {
     this.revealObserver?.disconnect();
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = '';
+    }
+  }
+
+  public openLightbox(index: number = 0): void {
+    if (!this.galleryImages().length) return;
+    const safeIndex = Math.max(0, Math.min(index, this.galleryImages().length - 1));
+    this.activePhotoIndex.set(safeIndex);
+    this.isLightboxOpen.set(true);
+
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  public closeLightbox(): void {
+    this.isLightboxOpen.set(false);
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = '';
+    }
+  }
+
+  public nextPhoto(): void {
+    const total = this.galleryImages().length;
+    if (total === 0) return;
+    this.activePhotoIndex.update((i) => (i + 1) % total);
+  }
+
+  public prevPhoto(): void {
+    const total = this.galleryImages().length;
+    if (total === 0) return;
+    this.activePhotoIndex.update((i) => (i - 1 + total) % total);
+  }
+
+  public selectPhoto(index: number): void {
+    const total = this.galleryImages().length;
+    if (index >= 0 && index < total) {
+      this.activePhotoIndex.set(index);
+    }
   }
 
   private initRevealObserver(): void {
