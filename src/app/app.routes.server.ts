@@ -5,7 +5,14 @@ export const serverRoutes: ServerRoute[] = [
     path: 'login',
     renderMode: RenderMode.Client
   },
-  
+  {
+    path: 'admin/**',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'property/:slug',
+    renderMode: RenderMode.Client
+  },
   {
     path: '**',
     renderMode: RenderMode.Prerender

@@ -1,14 +1,14 @@
 import { Component, ElementRef, inject, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DecimalPipe } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PropertyService } from '../../../../services/property/property-service';
 import { PropertyAsset, PropertyData } from '../../../../services/property/property.model';
 
 
 @Component({
   selector: 'app-property',
-  imports: [DecimalPipe, RouterLink],
+  imports: [DecimalPipe],
   templateUrl: './property.html',
   styleUrl: './property.css',
 })
@@ -88,4 +88,3 @@ export class Property {
     return [...unique.values()];
   }
 }
-

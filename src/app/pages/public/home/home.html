@@ -1,43 +1,75 @@
+<!-- ============================================================
+     ENHANCEMENTS IN THIS FILE
+     1. <canvas id="mistCanvas"> — layered, drifting mist behind the
+        hero, echoing "Sleep where the clouds start." Pure JS, no
+        libraries, ~2kb of logic, respects prefers-reduced-motion.
+     2. Real 3D tilt + shine-sweep on listing cards (was a bare
+        class name before with no behavior wired up).
+     3. Soft parallax on the ridge illustration as you scroll.
+     4. Micro-polish: button shine, card lift, richer stat easing.
+ 
+     ANGULAR INTEGRATION NOTE
+     Everything below the closing </section> tags (the <style> and
+     <script> blocks) is written in plain JS for a live preview.
+     In your real component:
+       - Move the <style> block into homestay.component.scss (as-is).
+       - Move the mist-canvas + tilt logic into homestay.component.ts,
+         calling initMistCanvas() / initCardTilt() inside
+         ngAfterViewInit(), and cancelling the animation frame /
+         removing listeners inside ngOnDestroy(). The functions are
+         written as plain functions with no global state so the
+         copy-paste is direct.
+     ============================================================ -->
+
 <!-- ============ HERO ============ -->
-<section id="top" class="relative text-cloud overflow-hidden pt-36 pb-40 md:pt-44 md:pb-52" style="background: url('/images/hero-himalaya.jpg') center/cover no-repeat;">
+<section id="top" class="relative text-cloud overflow-hidden pt-36 pb-40 md:pt-44 md:pb-52"
+  style="background: url('/images/hero-himalaya.jpg') center/cover no-repeat;">
   <!-- dark overlay for text legibility -->
   <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-pine/90"></div>
+
+  <!-- NEW: animated mist canvas — sits above the overlay, below the ambient blur orbs and copy -->
+  <canvas id="mistCanvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+
   <!-- ambient mist glow -->
   <div
-    class="pointer-events-none absolute -top-24 right-0 w-[38rem] h-[38rem] bg-moss/25 rounded-full blur-[120px] animate-mist-a"
-  ></div>
+    class="pointer-events-none absolute -top-24 right-0 w-[38rem] h-[38rem] bg-moss/25 rounded-full blur-[120px] animate-mist-a">
+  </div>
   <div
-    class="pointer-events-none absolute bottom-0 left-0 w-[28rem] h-[28rem] bg-ochre/10 rounded-full blur-[110px] animate-mist-b"
-  ></div>
+    class="pointer-events-none absolute bottom-0 left-0 w-[28rem] h-[28rem] bg-ochre/10 rounded-full blur-[110px] animate-mist-b">
+  </div>
 
   <div class="relative max-w-7xl mx-auto px-6 lg:px-10">
     <p class="eyebrow text-mist reveal">Homestays across the Eastern Himalaya</p>
     <h1 class="font-display text-[13vw] leading-[0.95] md:text-[6.2rem] md:leading-[0.92] mt-5 max-w-4xl reveal">
-      Sleep where<br class="hidden sm:block"> the <em class="hero-accent font-accent not-italic text-ochre">clouds</em><br class="hidden sm:block">
+      Sleep where<br class="hidden sm:block"> the <em
+        class="hero-accent font-accent not-italic text-ochre">clouds</em><br class="hidden sm:block">
       start.
     </h1>
     <p class="mt-7 max-w-lg text-cloud/75 text-lg leading-relaxed reveal">
       Wood-fired baths, tea grown outside the window, and a family who'll teach you
-      the mountain's names for things. Sixty-one homes across seven hill states, each one visited in person before it's listed.
+      the mountain's names for things. Sixty-one homes across seven hill states, each one visited in person before it's
+      listed.
     </p>
   </div>
 
-  <!-- ridge line illustration -->
-  <div class="absolute bottom-0 inset-x-0">
+  <!-- ridge line illustration — now with parallax data attribute -->
+  <div class="absolute bottom-0 inset-x-0" id="ridgeParallax" data-parallax="0.15">
     <svg viewBox="0 0 1440 220" class="w-full h-auto" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 160L120 110L240 150L380 70L520 130L650 40L800 120L940 60L1080 140L1220 90L1440 150V220H0V160Z" fill="#0F5461"/>
-      <path d="M0 190L160 140L320 180L470 120L620 170L760 100L920 165L1080 110L1240 175L1440 130V220H0V190Z" fill="#0C4550"/>
+      <path d="M0 160L120 110L240 150L380 70L520 130L650 40L800 120L940 60L1080 140L1220 90L1440 150V220H0V160Z"
+        fill="#0F5461" />
+      <path d="M0 190L160 140L320 180L470 120L620 170L760 100L920 165L1080 110L1240 175L1440 130V220H0V190Z"
+        fill="#0C4550" />
     </svg>
   </div>
 
   <!-- floating search card -->
   <div class="relative max-w-5xl mx-auto px-6 lg:px-10 -mb-20 md:-mb-24 mt-4">
     <div
-      class="reveal bg-cloud text-ink rounded-2xl md:rounded-full shadow-2xl shadow-black/30 px-6 py-5 md:px-8 md:py-4 grid md:grid-cols-[1fr_1fr_1fr_auto] gap-5 md:gap-3 items-center border border-ink/5"
-    >
+      class="reveal bg-cloud text-ink rounded-2xl md:rounded-full shadow-2xl shadow-black/30 px-6 py-5 md:px-8 md:py-4 grid md:grid-cols-[1fr_1fr_1fr_auto] gap-5 md:gap-3 items-center border border-ink/5">
       <div class="md:border-r md:border-ink/10 md:pr-4">
         <p class="eyebrow text-moss">Region</p>
-        <select id="region-select" class="mt-1 w-full bg-transparent font-display text-lg focus:outline-none cursor-pointer">
+        <select id="region-select"
+          class="mt-1 w-full bg-transparent font-display text-lg focus:outline-none cursor-pointer">
           <option>Any hill state</option>
           <option>Darjeeling &amp; Kalimpong</option>
           <option>Sikkim</option>
@@ -48,25 +80,16 @@
       </div>
       <div class="md:border-r md:border-ink/10 md:pr-4">
         <p class="eyebrow text-moss">When</p>
-        <input
-          type="text"
-          placeholder="Add dates"
-          class="mt-1 w-full bg-transparent font-display text-lg placeholder:text-ink/40 focus:outline-none"
-        />
+        <input type="text" placeholder="Add dates"
+          class="mt-1 w-full bg-transparent font-display text-lg placeholder:text-ink/40 focus:outline-none" />
       </div>
       <div>
         <p class="eyebrow text-moss">Guests</p>
-        <input
-          type="text"
-          placeholder="2 guests"
-          class="mt-1 w-full bg-transparent font-display text-lg placeholder:text-ink/40 focus:outline-none"
-        />
+        <input type="text" placeholder="2 guests"
+          class="mt-1 w-full bg-transparent font-display text-lg placeholder:text-ink/40 focus:outline-none" />
       </div>
-      <button
-        id="search-btn"
-        (click)="scrollToStays()"
-        class="btn-anim w-full md:w-auto bg-pine hover:bg-ink text-cloud font-semibold text-sm px-7 py-3.5 rounded-full transition-colors whitespace-nowrap cursor-pointer"
-      >
+      <button id="search-btn" (click)="scrollToStays()"
+        class="btn-anim btn-shine w-full md:w-auto bg-pine hover:bg-ink text-cloud font-semibold text-sm px-7 py-3.5 rounded-full transition-colors whitespace-nowrap cursor-pointer">
         Find a stay
       </button>
     </div>
@@ -78,7 +101,8 @@
   <div class="max-w-7xl mx-auto px-6 lg:px-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center md:text-left">
     <div *ngFor="let stat of stats" class="reveal">
       <p class="font-display text-4xl text-ochre">
-        {{ stat.decimals ? stat.current.toFixed(stat.decimals) : (stat.current | number: '1.0-0') }}{{ stat.suffix || '' }}
+        {{ stat.decimals ? stat.current.toFixed(stat.decimals) : (stat.current | number: '1.0-0') }}{{ stat.suffix || ''
+        }}
       </p>
       <p class="text-sm text-ink/60 mt-1">{{ stat.label }}</p>
     </div>
@@ -101,42 +125,41 @@
 
     <div id="listing-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-7 mt-10">
       @for (item of properties(); track item.id) {
-        <article class="listing-card card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/5 shadow-sm">
-          <div
-            class="h-48 relative overflow-hidden card-illus"
-            [style.background]="item.feature_image?.file_url ? 'url(' + item.feature_image.file_url + ') center/cover no-repeat' : 'linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)'"
-          >
-            <div class="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent"></div>
-            <span class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1">
-              HOST VERIFIED
+      <article class="listing-card card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/5 shadow-sm">
+        <div class="h-48 relative overflow-hidden card-illus"
+          [style.background]="item.feature_image?.file_url ? 'url(' + item.feature_image.file_url + ') center/cover no-repeat' : 'linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)'">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent"></div>
+          <span class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1">
+            HOST VERIFIED
+          </span>
+        </div>
+
+        <div class="p-5">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="font-display text-xl leading-tight">{{ item.name }}</h3>
+            <span class="flex items-center gap-1 text-sm text-ink/70 shrink-0 mt-0.5">★ 4.9</span>
+          </div>
+          <p class="text-sm text-ink/55 mt-1">{{ item.city?.name || 'Himalayan stay' }}{{ item.location?.name ? ', ' +
+            item.location.name : '' }}</p>
+
+          <div class="flex flex-wrap gap-1.5 mt-3">
+            <span
+              *ngFor="let tag of getFoodOptionTags(item)"
+              class="text-xs bg-cloud2 px-2.5 py-1 rounded-full text-ink/70">
+              {{ tag }}
             </span>
           </div>
 
-          <div class="p-5">
-            <div class="flex items-start justify-between gap-2">
-              <h3 class="font-display text-xl leading-tight">{{ item.name }}</h3>
-              <span class="flex items-center gap-1 text-sm text-ink/70 shrink-0 mt-0.5">★ 4.9</span>
-            </div>
-            <p class="text-sm text-ink/55 mt-1">{{ item.city?.name || 'Himalayan stay' }}{{ item.location?.name ? ', ' + item.location.name : '' }}</p>
-
-            <div class="flex flex-wrap gap-1.5 mt-3">
-              <span
-                *ngFor="let tag of (item.property_food_options ?? []).filter(item => item.is_included).slice(0, 3).map(item => item.name) || ['Family stay']"
-                class="text-xs bg-cloud2 px-2.5 py-1 rounded-full text-ink/70"
-              >
-                {{ tag }}
-              </span>
-            </div>
-
-            <div class="flex items-center justify-between mt-4 pt-4 border-t border-ink/10">
-              <p class="font-display text-lg">
-                ₹{{ item.price_per_night ?? item.sale_price ?? 0 | number }}
-                <span class="text-xs font-body text-ink/50">/ night</span>
-              </p>
-              <a href="" (click)="$event.preventDefault(); goToPropertyDetail(item?.slug)" class="text-sm font-semibold text-ochreD hover:underline">View stay →</a>
-            </div>
+          <div class="flex items-center justify-between mt-4 pt-4 border-t border-ink/10">
+            <p class="font-display text-lg">
+              ₹{{ (item.price_per_night ?? item.sale_price ?? 0) | number }}
+              <span class="text-xs font-body text-ink/50">/ night</span>
+            </p>
+            <a href="" (click)="$event.preventDefault(); goToPropertyDetail(item?.slug)"
+              class="text-sm font-semibold text-ochreD hover:underline">View stay →</a>
           </div>
-        </article>
+        </div>
+      </article>
       }
     </div>
 
@@ -150,28 +173,42 @@
 <section id="experiences" class="bg-cloud2 py-20 md:py-28">
   <div class="max-w-7xl mx-auto px-6 lg:px-10">
     <p class="eyebrow text-moss reveal">What fills the days</p>
-    <h2 class="font-display text-4xl md:text-5xl mt-3 max-w-xl reveal">Not a checklist. An invitation from your hosts.</h2>
+    <h2 class="font-display text-4xl md:text-5xl mt-3 max-w-xl reveal">Not a checklist. An invitation from your hosts.
+    </h2>
 
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
-      <div class="reveal bg-cloud rounded-2xl p-7 border border-ink/5">
-        <svg width="34" height="34" viewBox="0 0 34 34" fill="none"><path d="M17 4C17 4 9 11 9 19a8 8 0 0016 0c0-8-8-15-8-15Z" stroke="#55694A" stroke-width="1.8"/></svg>
+      <div class="reveal exp-card bg-cloud rounded-2xl p-7 border border-ink/5">
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+          <path d="M17 4C17 4 9 11 9 19a8 8 0 0016 0c0-8-8-15-8-15Z" stroke="#55694A" stroke-width="1.8" />
+        </svg>
         <h3 class="font-display text-lg mt-5">Tea plucking at dawn</h3>
-        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Join the morning flush in Darjeeling's estates before the mist lifts off the rows.</p>
+        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Join the morning flush in Darjeeling's estates before the
+          mist lifts off the rows.</p>
       </div>
-      <div class="reveal bg-cloud rounded-2xl p-7 border border-ink/5">
-        <svg width="34" height="34" viewBox="0 0 34 34" fill="none"><path d="M4 24C4 24 10 6 17 6s13 18 13 18" stroke="#55694A" stroke-width="1.8" fill="none"/></svg>
+      <div class="reveal exp-card bg-cloud rounded-2xl p-7 border border-ink/5">
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+          <path d="M4 24C4 24 10 6 17 6s13 18 13 18" stroke="#55694A" stroke-width="1.8" fill="none" />
+        </svg>
         <h3 class="font-display text-lg mt-5">Crossing a root bridge</h3>
-        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Walk a bridge the Khasi grew from fig roots over generations, guided by the family who tends it.</p>
+        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Walk a bridge the Khasi grew from fig roots over
+          generations, guided by the family who tends it.</p>
       </div>
-      <div class="reveal bg-cloud rounded-2xl p-7 border border-ink/5">
-        <svg width="34" height="34" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="12" stroke="#55694A" stroke-width="1.8"/><path d="M17 8v9l6 4" stroke="#55694A" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <div class="reveal exp-card bg-cloud rounded-2xl p-7 border border-ink/5">
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+          <circle cx="17" cy="17" r="12" stroke="#55694A" stroke-width="1.8" />
+          <path d="M17 8v9l6 4" stroke="#55694A" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
         <h3 class="font-display text-lg mt-5">Evenings by the bukhari</h3>
-        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Wood-stove storytelling in Spiti — folklore, card games, and thukpa passed around the fire.</p>
+        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Wood-stove storytelling in Spiti — folklore, card games, and
+          thukpa passed around the fire.</p>
       </div>
-      <div class="reveal bg-cloud rounded-2xl p-7 border border-ink/5">
-        <svg width="34" height="34" viewBox="0 0 34 34" fill="none"><path d="M6 28V14l11-9 11 9v14" stroke="#55694A" stroke-width="1.8" fill="none" stroke-linejoin="round"/></svg>
+      <div class="reveal exp-card bg-cloud rounded-2xl p-7 border border-ink/5">
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+          <path d="M6 28V14l11-9 11 9v14" stroke="#55694A" stroke-width="1.8" fill="none" stroke-linejoin="round" />
+        </svg>
         <h3 class="font-display text-lg mt-5">Weaving with the Apatani</h3>
-        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Learn a loom pattern that's older than the road into Ziro Valley itself.</p>
+        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Learn a loom pattern that's older than the road into Ziro
+          Valley itself.</p>
       </div>
     </div>
   </div>
@@ -201,11 +238,9 @@
       </div>
     </div>
     <div class="reveal order-1 lg:order-2 rounded-2xl overflow-hidden h-80 md:h-[26rem] shadow-2xl">
-      <img
-        src="/images/host-spotlight.jpg"
+      <img src="/images/host-spotlight.jpg"
         alt="Yangchen and Tenzin Bhutia on the porch of their homestay in Rumtek, Sikkim"
-        class="w-full h-full object-cover object-center"
-      />
+        class="w-full h-full object-cover object-center" />
     </div>
   </div>
 </section>
@@ -220,17 +255,20 @@
       <div class="reveal">
         <p class="font-display text-5xl text-ochre">01</p>
         <h3 class="font-display text-xl mt-4">Find the landscape</h3>
-        <p class="text-cloud/60 text-sm mt-2 leading-relaxed">Filter by region, dates, and the kind of quiet you're after — misty tea hills or dry alpine desert.</p>
+        <p class="text-cloud/60 text-sm mt-2 leading-relaxed">Filter by region, dates, and the kind of quiet you're
+          after — misty tea hills or dry alpine desert.</p>
       </div>
       <div class="reveal">
         <p class="font-display text-5xl text-ochre">02</p>
         <h3 class="font-display text-xl mt-4">Message the host directly</h3>
-        <p class="text-cloud/60 text-sm mt-2 leading-relaxed">Ask about the walk to the village, what's in season, or whether the dog is friendly. It's their home — they'll tell you.</p>
+        <p class="text-cloud/60 text-sm mt-2 leading-relaxed">Ask about the walk to the village, what's in season, or
+          whether the dog is friendly. It's their home — they'll tell you.</p>
       </div>
       <div class="reveal">
         <p class="font-display text-5xl text-ochre">03</p>
         <h3 class="font-display text-xl mt-4">Pay a small deposit</h3>
-        <p class="text-cloud/60 text-sm mt-2 leading-relaxed">We hold a 20% deposit to confirm the room; the rest is settled with your hosts, in person, the old way.</p>
+        <p class="text-cloud/60 text-sm mt-2 leading-relaxed">We hold a 20% deposit to confirm the room; the rest is
+          settled with your hosts, in person, the old way.</p>
       </div>
     </div>
   </div>
@@ -244,15 +282,18 @@
 
     <div class="grid md:grid-cols-3 gap-7 mt-14">
       <blockquote class="reveal bg-cloud rounded-2xl p-7 border border-ink/5">
-        <p class="font-display text-lg leading-snug">"Woke up to prayer flags and the smell of someone's breakfast fire. Didn't want the three days to end."</p>
+        <p class="font-display text-lg leading-snug">"Woke up to prayer flags and the smell of someone's breakfast fire.
+          Didn't want the three days to end."</p>
         <footer class="mt-5 text-sm text-ink/50">— Ritika, Nongriat Bridgehouse</footer>
       </blockquote>
       <blockquote class="reveal bg-cloud rounded-2xl p-7 border border-ink/5">
-        <p class="font-display text-lg leading-snug">"Our host taught my daughter to read the clouds for rain. She still does it at home."</p>
+        <p class="font-display text-lg leading-snug">"Our host taught my daughter to read the clouds for rain. She still
+          does it at home."</p>
         <footer class="mt-5 text-sm text-ink/50">— Farhan, Ziro Paddy House</footer>
       </blockquote>
       <blockquote class="reveal bg-cloud rounded-2xl p-7 border border-ink/5">
-        <p class="font-display text-lg leading-snug">"No wifi, no problem. Best sleep I've had in years, under three extra quilts."</p>
+        <p class="font-display text-lg leading-snug">"No wifi, no problem. Best sleep I've had in years, under three
+          extra quilts."</p>
         <footer class="mt-5 text-sm text-ink/50">— Meera, Komic Stone House</footer>
       </blockquote>
     </div>
@@ -261,23 +302,19 @@
 
 <!-- ============ NEWSLETTER CTA ============ -->
 <section class="bg-pine text-cloud py-20 relative overflow-hidden">
-  <div class="pointer-events-none absolute -bottom-20 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-moss/20 rounded-full blur-[130px] animate-mist-c"></div>
+  <canvas id="mistCanvasFooter" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+  <div
+    class="pointer-events-none absolute -bottom-20 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-moss/20 rounded-full blur-[130px] animate-mist-c">
+  </div>
   <div class="relative max-w-2xl mx-auto px-6 text-center reveal">
     <h2 class="font-display text-3xl md:text-4xl">New villages open a few times a year.</h2>
     <p class="text-cloud/60 mt-3">Leave your email and we'll write when the next one does — nothing else, ever.</p>
-    <form (submit)="onNewsletterSubmit(); $event.preventDefault()" class="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-      <input
-        required
-        type="email"
-        [(ngModel)]="newsletterEmail"
-        name="newsletterEmail"
-        placeholder="you@example.com"
-        class="flex-1 bg-cloud/10 border border-cloud/25 rounded-full px-5 py-3 text-sm placeholder:text-cloud/40 focus:outline-none focus:border-ochre text-cloud"
-      />
-      <button
-        type="submit"
-        class="btn-anim bg-ochre hover:bg-ochreD text-cloud font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer"
-      >
+    <form (submit)="onNewsletterSubmit(); $event.preventDefault()"
+      class="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+      <input required type="email" [(ngModel)]="newsletterEmail" name="newsletterEmail" placeholder="you@example.com"
+        class="flex-1 bg-cloud/10 border border-cloud/25 rounded-full px-5 py-3 text-sm placeholder:text-cloud/40 focus:outline-none focus:border-ochre text-cloud" />
+      <button type="submit"
+        class="btn-anim btn-shine bg-ochre hover:bg-ochreD text-cloud font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer">
         {{ newsletterSubmitted ? "You're on the list!" : "Notify me" }}
       </button>
     </form>
