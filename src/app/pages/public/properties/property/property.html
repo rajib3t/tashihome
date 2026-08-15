@@ -90,7 +90,7 @@
     <!-- Hero image -->
     <div class="reveal rounded-3xl overflow-hidden shadow-xl shadow-pine/10 h-[320px] md:h-[500px]">
       <div class="tile-wrap relative w-full h-full overflow-hidden">
-        <img [src]="galleryImages()[0].file_url"
+        <img [src]="propertyData()?.feature_image?.file_url"
           [alt]="galleryImages()[0].title || propertyData()?.name || 'Property image'"
           class="tile absolute inset-0 w-full h-full object-cover object-center" />
         @if (galleryImages()[0].title) {
