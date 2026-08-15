@@ -206,6 +206,7 @@ export interface Vendor {
   id: string;
   full_name: string;
   email: string;
+  is_profile_image_url?: string | null;
 }
 
 export interface Location {
