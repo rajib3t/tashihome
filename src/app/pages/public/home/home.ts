@@ -138,6 +138,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       // scroll / mousemove don't trigger change detection every frame.
       this.zone.runOutsideAngular(() => {
         this.mistCleanupFns.push(this.initHeroCanvas('#mistCanvas'));
+        this.mistCleanupFns.push(this.initStaysCanvas('#staysCanvas'));
         this.mistCleanupFns.push(this.initExpCanvas('#expCanvas'));
         this.mistCleanupFns.push(this.initConstellationCanvas('#constellationCanvas'));
         this.mistCleanupFns.push(this.initFooterCanvas('#mistCanvasFooter'));
@@ -404,6 +405,140 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseleave', onMouseLeave);
+    };
+  }
+
+  // ============================================================
+  // 1.5 STAYS CANVAS: Ambient mountain cloud wisps & floating
+  // golden alpine particles across the listings section
+  // ============================================================
+  private initStaysCanvas(selector: string): () => void {
+    if (this.reduceMotion) return () => {};
+
+    const canvas = this.el.nativeElement.querySelector(selector) as HTMLCanvasElement | null;
+    if (!canvas) return () => {};
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return () => {};
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0;
+    let h = 0;
+    let raf = 0;
+    const start = performance.now();
+
+    let particles: Array<{
+      x: number;
+      y: number;
+      r: number;
+      speedX: number;
+      speedY: number;
+      sway: number;
+      swaySpeed: number;
+      phase: number;
+      alpha: number;
+      color: string;
+    }> = [];
+
+    let mistPuffs: Array<{
+      x: number;
+      y: number;
+      r: number;
+      speed: number;
+      opacity: number;
+    }> = [];
+
+    const build = () => {
+      particles = [];
+      const pCount = Math.min(Math.floor(w / 38), 35);
+      for (let i = 0; i < pCount; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: 1 + Math.random() * 2.4,
+          speedX: 0.15 + Math.random() * 0.35,
+          speedY: (Math.random() - 0.5) * 0.15,
+          sway: 8 + Math.random() * 14,
+          swaySpeed: 0.3 + Math.random() * 0.6,
+          phase: Math.random() * Math.PI * 2,
+          alpha: 0.12 + Math.random() * 0.35,
+          color: Math.random() > 0.4 ? '250, 165, 45' : '71, 159, 181', // ochre or moss
+        });
+      }
+
+      mistPuffs = [];
+      for (let i = 0; i < 4; i++) {
+        mistPuffs.push({
+          x: Math.random() * w,
+          y: h * (0.2 + Math.random() * 0.6),
+          r: 180 + Math.random() * 220,
+          speed: 4 + Math.random() * 6,
+          opacity: 0.035 + Math.random() * 0.035,
+        });
+      }
+    };
+
+    const resize = () => {
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      build();
+    };
+
+    const draw = (now: number) => {
+      const t = (now - start) / 1000;
+      ctx.clearRect(0, 0, w, h);
+
+      // Draw soft cloud wisps
+      for (const m of mistPuffs) {
+        const mx = ((m.x + t * m.speed) % (w + m.r * 2)) - m.r;
+        const my = m.y + Math.sin(t * 0.15) * 12;
+        const grad = ctx.createRadialGradient(mx, my, 0, mx, my, m.r);
+        grad.addColorStop(0, `rgba(71, 159, 181, ${m.opacity})`);
+        grad.addColorStop(0.7, `rgba(71, 159, 181, ${m.opacity * 0.3})`);
+        grad.addColorStop(1, 'rgba(71, 159, 181, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(mx, my, m.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw particles
+      for (const p of particles) {
+        p.x += p.speedX;
+        const py = p.y + Math.sin(t * p.swaySpeed + p.phase) * p.sway;
+
+        if (p.x > w + 20) {
+          p.x = -20;
+          p.y = Math.random() * h;
+        }
+
+        const opacity = p.alpha * (0.6 + 0.4 * Math.sin(t * 1.2 + p.phase));
+        ctx.fillStyle = `rgba(${p.color}, ${opacity})`;
+        ctx.beginPath();
+        ctx.arc(p.x, py, p.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (p.r > 1.5) {
+          ctx.fillStyle = `rgba(${p.color}, ${opacity * 0.25})`;
+          ctx.beginPath();
+          ctx.arc(p.x, py, p.r * 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      raf = requestAnimationFrame(draw);
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
+    raf = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
     };
   }
 

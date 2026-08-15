@@ -1,0 +1,6 @@
+/* Footer background base */
+.footer-bg {
+  background-color: #0a0f14; /* fallback dark ink */
+  position: relative;
+  isolation: isolate;
+}
