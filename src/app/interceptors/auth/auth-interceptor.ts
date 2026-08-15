@@ -24,6 +24,8 @@ const getErrorMessage = (error: any): string => {
     return serverMessage || 'Resource not found.';
   } else if (error.status === 403) {
     return serverMessage || 'Access denied.';
+  } else if (error.status === 413) {
+    return serverMessage || 'Uploaded file is too large. Please choose a smaller file.';
   } else if (error.status === 400 || error.status === 406) {
     // For client errors, preserve the server message
     return serverMessage || 'Bad request.';

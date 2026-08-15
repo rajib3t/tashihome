@@ -176,6 +176,7 @@ export class CityManagement {
     });
     this.createErrorMessage.set(null);
     this.isCreateModalOpen.set(true);
+    this.cityImagePreview.set('')
   }
 
   closeCreateModal() {

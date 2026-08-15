@@ -1,4 +1,4 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -24,6 +24,10 @@ export class UploadImage {
   emptyText = input('No image selected');
 
   disabled = input(false);
+
+  maxSizeMb = input<number>(2); // Default max 2MB
+
+  fileSizeError = signal<string | null>(null);
 
   valueChange = output<File>();
   valueListChange = output<File[]>();
@@ -110,12 +114,21 @@ export class UploadImage {
   });
 
   onFileChange(event: Event) {
-
     const input = event.target as HTMLInputElement;
 
     if (!input.files?.length) return;
 
+    this.fileSizeError.set(null);
+
+    const maxBytes = this.maxSizeMb() * 1024 * 1024;
     const files = Array.from(input.files);
+
+    const oversized = files.find(f => f.size > maxBytes);
+    if (oversized) {
+      this.fileSizeError.set(`File "${oversized.name}" exceeds the ${this.maxSizeMb()}MB size limit.`);
+      input.value = '';
+      return;
+    }
 
     if (this.multiple()) {
       const readers = files.map((file) => new Promise<string>((resolve) => {
@@ -138,18 +151,15 @@ export class UploadImage {
     const reader = new FileReader();
 
     reader.onload = () => {
-
       const base64 = reader.result as string;
 
       this.previewChange.emit(base64);
 
       this.valueChange.emit(file);
-
     };
 
     reader.readAsDataURL(file);
 
     input.value = '';
-
   }
 }
