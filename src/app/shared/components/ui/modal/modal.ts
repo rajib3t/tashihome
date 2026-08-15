@@ -11,6 +11,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Inject, PLATFORM_ID } from '@angular/core';
 @Component({
   selector: 'app-modal',
+  standalone: true,
   imports: [
     CommonModule
   ],
