@@ -1,72 +1,145 @@
 <!-- ============ COVER IMAGE ============ -->
 <section id="top" class="relative h-[64vh] md:h-[78vh] min-h-[420px] overflow-hidden">
+  @if (propertyData()?.cover_image?.file_url || propertyData()?.feature_image?.file_url || galleryImages()[0]?.file_url)
+  {
   <img
     [src]="propertyData()?.cover_image?.file_url || propertyData()?.feature_image?.file_url || galleryImages()[0]?.file_url || ''"
     [alt]="propertyData()?.name || 'Property cover image'"
-    class="absolute inset-0 w-full h-full object-cover object-center"
-  />
-  <div class="pointer-events-none absolute -top-16 right-0 w-[34rem] h-[34rem] bg-moss/25 rounded-full blur-[120px] animate-mist-a"></div>
+    class="absolute inset-0 w-full h-full object-cover object-center" />
+  } @else {
+  <svg viewBox="0 0 1400 800" preserveAspectRatio="xMidYMax slice" class="absolute inset-0 w-full h-full"
+    xmlns="http://www.w3.org/2000/svg">
+    <rect width="1400" height="800" fill="#0C4550" />
+    <defs>
+      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0F5461" />
+        <stop offset="1" stop-color="#347E92" />
+      </linearGradient>
+    </defs>
+    <rect width="1400" height="520" fill="url(#skyGrad)" />
+    <circle cx="1180" cy="140" r="70" fill="#FAA52D" opacity="0.9" />
+    <path d="M0 420 Q200 340 400 410 T800 400 T1200 415 T1400 400 V800H0Z" fill="#2C3927" opacity="0.55" />
+    <path d="M0 470 Q220 400 460 460 T900 450 T1400 460 V800H0Z" fill="#264533" opacity="0.75" />
+    <path d="M0 560 Q150 520 300 555 T600 550 T900 560 T1200 550 T1400 560 V800H0Z" fill="#3E4E37" />
+    <path d="M0 620 Q150 585 300 615 T600 610 T900 618 T1200 610 T1400 618 V800H0Z" fill="#55694A" />
+    <path d="M0 690 Q150 655 300 685 T600 680 T900 688 T1200 680 T1400 688 V800H0Z" fill="#6E8248" />
+    <g transform="translate(210,470)">
+      <rect x="0" y="60" width="150" height="90" fill="#1B2A2C" opacity="0.88" />
+      <path d="M-15 60L75 -20L165 60Z" fill="#0C4550" />
+      <rect x="60" y="20" width="18" height="34" fill="#0C4550" />
+      <rect x="20" y="95" width="26" height="26" fill="#FAA52D" opacity="0.85" />
+      <rect x="100" y="95" width="26" height="26" fill="#FAA52D" opacity="0.85" />
+    </g>
+    <ellipse cx="1000" cy="600" rx="260" ry="46" fill="#F3FAFB" opacity="0.10" />
+    <ellipse cx="300" cy="640" rx="300" ry="50" fill="#F3FAFB" opacity="0.08" />
+  </svg>
+  }
+
+  <div
+    class="pointer-events-none absolute -top-16 right-0 w-[34rem] h-[34rem] bg-moss/25 rounded-full blur-[120px] animate-mist-a">
+  </div>
   <div class="absolute inset-0 bg-gradient-to-t from-pine via-pine/10 to-transparent"></div>
 
   <div class="absolute inset-x-0 bottom-0">
     <div class="max-w-7xl mx-auto px-6 lg:px-10 pb-8 md:pb-12">
-      <a href="/" class="inline-flex items-center gap-1.5 text-cloud/80 hover:text-ochre text-sm font-medium mb-4 transition-colors">
+      <a href="/"
+        class="inline-flex items-center gap-1.5 text-cloud/80 hover:text-ochre text-sm font-medium mb-4 transition-colors">
         ← All stays
       </a>
-      <span class="stamp stamp-pulse inline-block text-cloud text-[10px] font-semibold px-3 py-1 mb-4">HOST VERIFIED</span>
-      <h1 class="font-display text-4xl sm:text-5xl md:text-6xl text-cloud leading-[1.05]">{{propertyData()?.name    }}</h1>
+      <span class="stamp stamp-pulse inline-block text-cloud text-[10px] font-semibold px-3 py-1 mb-4">HOST
+        VERIFIED</span>
+      <h1 class="font-display text-4xl sm:text-5xl md:text-6xl text-cloud leading-[1.05]">{{ propertyData()?.name }}
+      </h1>
       <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-4 text-cloud/85 text-sm">
-        <span class="flex items-center gap-1.5">★ {{ propertyData()?.sale_per_night ?? propertyData()?.price_per_night ?? 0 | number }} <span class="text-cloud/55">/ night</span></span>
+        <span class="flex items-center gap-1.5">
+          ★ {{ propertyData()?.price_per_night ?? 0 | number }}
+          <span class="text-cloud/55">/ night</span>
+        </span>
+        @if (propertyData()?.city?.name) {
         <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
-        <span>{{ propertyData()?.city?.name }}{{ propertyData()?.location?.name ? ', ' + propertyData()?.location?.name : '' }}</span>
+        <span>{{ propertyData()?.city?.name }}{{ propertyData()?.location?.name ? ', ' + propertyData()?.location?.name
+          : '' }}</span>
+        }
+        @if (propertyData()?.address) {
         <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
         <span>{{ propertyData()?.address }}</span>
+        }
         @if ((propertyData()?.property_room_types ?? []).length > 0) {
-          <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
-          <span>
-            @for (roomType of propertyData()?.property_room_types ?? []; track roomType.id) {
-              {{ roomType.room_type?.name }} - {{ roomType.room_type?.capacity }}@if (!$last) {, }
-            }
-          </span>
+        <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
+        <span>
+          @for (rt of propertyData()?.property_room_types ?? []; track rt.id) {
+          {{ rt.room_type?.name }} · {{ rt.room_type?.capacity }} guests@if (!$last) {, }
+          }
+        </span>
+        } @else if (propertyData()?.room_type) {
+        <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
+        <span>{{ propertyData()?.room_type?.capacity }} guests · {{ propertyData()?.room_type?.name }}</span>
         }
       </div>
     </div>
   </div>
 </section>
+
 <!-- ============ GALLERY ============ -->
 <section class="relative -mt-8 md:-mt-10 z-10">
   <div class="max-w-7xl mx-auto px-6 lg:px-10">
     @if (galleryImages().length > 0) {
-      <div class="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-2 md:gap-2.5 rounded-3xl overflow-hidden shadow-xl shadow-pine/10 h-[300px] md:h-[460px] reveal">
-        @for (image of galleryImages().slice(0, 5); track image.file_url; let index = $index) {
-          <div
-            class="tile-wrap relative overflow-hidden"
-            [class.col-span-2]="index === 0"
-            [class.row-span-2]="index === 0"
-          >
-            <img
-              [src]="image.file_url"
-              [alt]="image.title || propertyData()?.name || 'Property image'"
-              class="tile absolute inset-0 w-full h-full object-cover object-center"
-            />
-            @if (image.title) {
-              <span class="absolute bottom-3 left-3 bg-ink/60 text-cloud text-[11px] font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">
-                {{ image.title }}
-              </span>
-            }
-          </div>
+
+    <!-- Hero image -->
+    <div class="reveal rounded-3xl overflow-hidden shadow-xl shadow-pine/10 h-[320px] md:h-[500px]">
+      <div class="tile-wrap relative w-full h-full overflow-hidden">
+        <img [src]="galleryImages()[0].file_url"
+          [alt]="galleryImages()[0].title || propertyData()?.name || 'Property image'"
+          class="tile absolute inset-0 w-full h-full object-cover object-center" />
+        @if (galleryImages()[0].title) {
+        <span
+          class="absolute bottom-3 left-3 bg-ink/60 text-cloud text-[11px] font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">
+          {{ galleryImages()[0].title }}
+        </span>
         }
       </div>
-    } @else {
-      <div class="rounded-3xl overflow-hidden shadow-xl shadow-pine/10 h-[300px] md:h-[460px] bg-gradient-to-br from-pine via-pine2 to-moss reveal grid place-items-center text-cloud/80">
-        <div class="text-center px-6">
-          <p class="font-display text-2xl">Gallery coming soon</p>
-          <p class="text-sm mt-2">This property has no gallery images attached yet.</p>
-        </div>
+    </div>
+
+    <!-- All remaining images -->
+    @if (galleryImages().length > 1) {
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-2.5 mt-2 md:mt-2.5">
+      @for (image of galleryImages().slice(1); track image.file_url) {
+      <div class="tile-wrap reveal relative overflow-hidden rounded-2xl h-[160px] md:h-[200px]">
+        <img [src]="image.file_url" [alt]="image.title || propertyData()?.name || 'Property image'"
+          class="tile absolute inset-0 w-full h-full object-cover object-center" />
+        @if (image.title) {
+        <span
+          class="absolute bottom-2 left-2 bg-ink/60 text-cloud text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">
+          {{ image.title }}
+        </span>
+        }
       </div>
+      }
+    </div>
+    }
+
+    } @else {
+    <div class="rounded-3xl overflow-hidden shadow-xl shadow-pine/10 h-[300px] md:h-[460px] reveal">
+      <svg viewBox="0 0 1200 460" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+        <rect width="1200" height="460" fill="#2E4A3E" />
+        <linearGradient id="galGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#347E92" />
+          <stop offset="1" stop-color="#0C4550" />
+        </linearGradient>
+        <rect width="1200" height="460" fill="url(#galGrad)" />
+        <path d="M0 280 Q200 220 400 275 T800 265 T1200 275 V460H0Z" fill="#2C3927" opacity="0.6" />
+        <path d="M0 340 Q200 295 400 335 T800 325 T1200 338 V460H0Z" fill="#3E4E37" />
+        <g transform="translate(480,200)">
+          <rect x="0" y="60" width="200" height="130" fill="#1B2A2C" opacity="0.9" />
+          <path d="M-20 60L100 -30L220 60Z" fill="#0F5461" />
+        </g>
+      </svg>
+    </div>
     }
   </div>
 </section>
+
+
 <!-- ============ MAIN CONTENT + BOOKING SIDEBAR ============ -->
 <section class="max-w-7xl mx-auto px-6 lg:px-10 pt-14 pb-20">
   <div class="grid lg:grid-cols-[1fr_360px] gap-14">
@@ -78,11 +151,15 @@
       <div class="reveal flex items-center justify-between gap-4 pb-8 border-b border-ink/10">
         <div>
           <p class="eyebrow text-mossD">Hosted by</p>
-          <h2 class="font-display text-2xl mt-1">{{ propertyData()?.vendor?.full_name || 'Host' }}</h2>
-          <p class="text-sm text-ink/55 mt-1">{{ propertyData()?.vendor?.email || 'Usually replies within an hour' }}</p>
+          <h2 class="font-display text-2xl mt-1">{{ propertyData()?.vendor?.full_name || 'Your Host' }}</h2>
+          <p class="text-sm text-ink/55 mt-1">{{ propertyData()?.vendor?.email || 'Usually replies within an hour' }}
+          </p>
         </div>
         <div class="w-14 h-14 rounded-full bg-cloud2 grid place-items-center shrink-0">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" stroke="#0C4550" stroke-width="1.6"/><path d="M4 21c1.4-4 4.4-6 8-6s6.6 2 8 6" stroke="#0C4550" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" stroke="#0C4550" stroke-width="1.6" />
+            <path d="M4 21c1.4-4 4.4-6 8-6s6.6 2 8 6" stroke="#0C4550" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
         </div>
       </div>
 
@@ -90,65 +167,80 @@
       <div class="reveal pt-8">
         <h2 class="font-display text-3xl">About this stay</h2>
         <div class="mt-4 space-y-4 text-[15px] leading-relaxed text-ink/70">
-          <p>{{ propertyData()?.description || 'No description available for this property yet.' }}</p>
+          @if (propertyData()?.description) {
+          <p>{{ propertyData()?.description }}</p>
+          } @else {
+          <p class="text-ink/45 italic">No description provided for this property yet.</p>
+          }
         </div>
       </div>
 
       <!-- amenities -->
+      @if ((propertyData()?.property_amenities ?? []).length > 0) {
       <div class="reveal pt-12">
         <h2 class="font-display text-3xl">Amenities</h2>
         <div class="grid sm:grid-cols-2 gap-3 mt-6">
           @for (amenity of propertyData()?.property_amenities ?? []; track amenity.id) {
-            <div class="flex items-center gap-3 p-4 rounded-2xl border border-ink/8 bg-white">
-              <span class="w-9 h-9 rounded-full bg-cloud2 grid place-items-center text-mossD shrink-0">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 14c0-5 3.5-9 8-9s8 4 8 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M2 14h20v2a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4v-2Z" stroke="currentColor" stroke-width="1.7"/></svg>
-              </span>
-              <span class="text-sm font-medium text-ink/80">{{ amenity.amenity?.name }}</span>
-            </div>
-          }
-          @if ((propertyData()?.property_amenities ?? []).length === 0) {
-            <p class="text-sm text-ink/55">No amenities listed yet.</p>
+          <div class="flex items-center gap-3 p-4 rounded-2xl border border-ink/8 bg-white">
+            <span class="w-9 h-9 rounded-full bg-cloud2 grid place-items-center text-mossD shrink-0">
+              @if (amenity.amenity?.icon_url) {
+              <img [src]="amenity.amenity.icon_url" [alt]="amenity.amenity.name" class="w-5 h-5 object-contain" />
+              } @else {
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3C9 8 6 10.5 6 14.5a6 6 0 0 0 12 0C18 10.5 15 8 12 3Z" stroke="currentColor"
+                  stroke-width="1.7" stroke-linejoin="round" />
+              </svg>
+              }
+            </span>
+            <span class="text-sm font-medium text-ink/80">{{ amenity.amenity?.name }}</span>
+          </div>
           }
         </div>
       </div>
+      }
 
       <!-- facilities -->
+      @if ((propertyData()?.property_facilities ?? []).length > 0) {
       <div class="reveal pt-12">
         <h2 class="font-display text-3xl">Facilities</h2>
         <div class="grid sm:grid-cols-2 gap-x-8 gap-y-3 mt-6 text-sm text-ink/75">
           @for (facility of propertyData()?.property_facilities ?? []; track facility.id) {
-            <div class="flex items-center gap-2.5">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" class="shrink-0"><path d="M5 12.5 9.5 17 19 7" stroke="#347E92" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              {{ facility.facility?.name }}
-            </div>
-          }
-          @if ((propertyData()?.property_facilities ?? []).length === 0) {
-            <p class="text-sm text-ink/55">No facilities listed yet.</p>
+          <div class="flex items-center gap-2.5">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" class="shrink-0">
+              <path d="M5 12.5 9.5 17 19 7" stroke="#347E92" stroke-width="2.2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            {{ facility.facility?.name }}
+          </div>
           }
         </div>
       </div>
+      }
 
       <!-- food options -->
+      @if ((propertyData()?.property_food_options ?? []).length > 0) {
       <div class="reveal pt-12">
         <h2 class="font-display text-3xl">Food options</h2>
-        <p class="text-sm text-ink/55 mt-2 max-w-lg">Food options listed by the host for this stay.</p>
+        <p class="text-sm text-ink/55 mt-2 max-w-lg">Food options offered by the host for this stay.</p>
         <div class="grid sm:grid-cols-2 gap-4 mt-6">
           @for (food of propertyData()?.property_food_options ?? []; track food.id) {
-            <div class="p-5 rounded-2xl bg-white border border-ink/8">
-              <div class="flex items-start justify-between gap-3">
-                <h3 class="font-display text-lg">{{ food.name }}</h3>
-                <span class="eyebrow text-mossD shrink-0 mt-1">{{ food.is_included ? 'Included' : 'Optional' }}</span>
-              </div>
-              <p class="text-sm text-ink/60 mt-2 leading-relaxed">
-                {{ food.is_included ? 'Included with the stay.' : 'Available on request.' }}
-              </p>
+          <div class="p-5 rounded-2xl bg-white border border-ink/8">
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="font-display text-lg">{{ food.name }}</h3>
+              @if (food.is_included) {
+              <span class="eyebrow text-mossD shrink-0 mt-1">Included</span>
+              } @else {
+              <span class="eyebrow text-ochreD shrink-0 mt-1">Optional</span>
+              }
             </div>
-          }
-          @if ((propertyData()?.property_food_options ?? []).length === 0) {
-            <p class="text-sm text-ink/55">No food options listed yet.</p>
+            <p class="text-sm text-ink/60 mt-2 leading-relaxed">
+              {{ food.is_included ? 'Included with the stay.' : 'Available on request — ask the host.' }}
+            </p>
+          </div>
           }
         </div>
       </div>
+      }
 
       <!-- good to know -->
       <div class="reveal pt-12">
@@ -156,15 +248,21 @@
         <div class="grid sm:grid-cols-3 gap-6 mt-6 text-sm">
           <div>
             <p class="eyebrow text-ink/40">Check-in / out</p>
-            <p class="text-ink/75 mt-2">Flexible on request<br/>Check-out by 10:00 AM</p>
+            <p class="text-ink/75 mt-2">Flexible on request<br />Check-out by 10:00 AM</p>
           </div>
           <div>
             <p class="eyebrow text-ink/40">House rules</p>
-            <p class="text-ink/75 mt-2">Subject to host policy<br/>Quiet hours after 9:30 PM</p>
+            <p class="text-ink/75 mt-2">Subject to host policy<br />Quiet hours after 9:30 PM</p>
           </div>
           <div>
             <p class="eyebrow text-ink/40">Cancellation</p>
-            <p class="text-ink/75 mt-2">Subject to booking terms<br/>Deposit policy may apply</p>
+            <p class="text-ink/75 mt-2">Subject to booking terms<br />
+              @if (propertyData()?.deposit) {
+              ₹{{ propertyData()?.deposit | number }} deposit applies
+              } @else {
+              Deposit policy may apply
+              }
+            </p>
           </div>
         </div>
       </div>
@@ -175,7 +273,11 @@
     <div id="book" class="reveal">
       <div class="sticky top-28 rounded-3xl border border-ink/10 bg-white shadow-lg shadow-pine/5 p-6">
         <div class="flex items-baseline justify-between">
-          <p class="font-display text-3xl">₹{{ propertyData()?.sale_per_night ?? propertyData()?.price_per_night ?? 0 | number }} <span class="text-sm font-body text-ink/50">/ night</span></p>
+          <p class="font-display text-3xl">
+            {{ propertyData()?.price_per_night ??
+            0 | number }}
+            <span class="text-sm font-body text-ink/50">/ night</span>
+          </p>
           <span class="flex items-center gap-1 text-sm text-ink/70">★ 4.9</span>
         </div>
 
@@ -190,27 +292,116 @@
           </div>
           <div class="col-span-2 rounded-xl border border-ink/12 px-3 py-2.5">
             <p class="text-[10px] eyebrow text-ink/40">Guests</p>
-            <p class="text-sm font-medium mt-0.5">{{ propertyData()?.room_type?.capacity || '2' }} guests max</p>
+            <p class="text-sm font-medium mt-0.5">
+              @if (propertyData()?.room_type?.capacity) {
+              {{ propertyData()?.room_type?.capacity }} guests max
+              } @else if ((propertyData()?.property_room_types ?? []).length > 0) {
+              {{ propertyData()?.property_room_types?.[0]?.room_type?.capacity }} guests max
+              } @else {
+              Add guests
+              }
+            </p>
           </div>
         </div>
 
-        <a href="#" class="btn-anim mt-5 w-full text-center block bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors">
+        <a href="#"
+          class="btn-anim mt-5 w-full text-center block bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors">
           Reserve dates
         </a>
-        <a href="#" class="mt-2.5 w-full text-center block border border-pine/25 hover:border-pine text-pine text-sm font-semibold px-5 py-3 rounded-full transition-colors">
+        <a href="#"
+          class="mt-2.5 w-full text-center block border border-pine/25 hover:border-pine text-pine text-sm font-semibold px-5 py-3 rounded-full transition-colors">
           Message the host
         </a>
 
         <div class="mt-6 pt-5 border-t border-ink/10 space-y-2.5 text-sm text-ink/70">
-          <div class="flex justify-between"><span>Base rate</span><span>₹{{ propertyData()?.sale_per_night ?? propertyData()?.price_per_night ?? 0 | number }}</span></div>
+          <div class="flex justify-between">
+            <span>Base rate</span>
+            <span>{{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.sale_per_night ??
+              propertyData()?.price_per_night ?? 0 | number }}</span>
+          </div>
           <div class="flex justify-between"><span>Taxes &amp; fees</span><span>As applicable</span></div>
-          <div class="flex justify-between"><span>Deposit</span><span>{{ propertyData()?.deposit ?? 'On request' }}</span></div>
-          <div class="flex justify-between font-semibold text-ink pt-2.5 border-t border-ink/10"><span>Total</span><span>Varies by stay</span></div>
+          <div class="flex justify-between">
+            <span>Deposit</span>
+            <span>
+              @if (propertyData()?.deposit) {
+              {{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.deposit | number }}
+              } @else {
+              On request
+              }
+            </span>
+          </div>
+          <div class="flex justify-between font-semibold text-ink pt-2.5 border-t border-ink/10">
+            <span>Total</span><span>Varies by stay</span>
+          </div>
         </div>
 
-        <p class="text-xs text-ink/45 mt-4 leading-relaxed">Availability and payment terms come from the property details API for this stay.</p>
+        <p class="text-xs text-ink/45 mt-4 leading-relaxed">
+          @if (propertyData()?.deposit) {
+          Pay a {{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.deposit | number }} deposit to hold your dates —
+          settle the rest directly on arrival.
+          } @else {
+          Availability and payment terms are confirmed directly with the host.
+          }
+        </p>
       </div>
     </div>
 
   </div>
 </section>
+
+<!-- ============ MORE STAYS ============ -->
+<!-- <section class="bg-cloud2/60 py-16">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex items-end justify-between gap-4 reveal">
+      <h2 class="font-display text-3xl">More stays in the hills</h2>
+      <a routerLink="/properties" class="text-sm font-semibold text-ochreD hover:underline shrink-0">View all stays
+        →</a>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+      <a routerLink="/properties"
+        class="reveal group bg-white rounded-2xl overflow-hidden border border-ink/5 hover:shadow-lg transition-shadow">
+        <div class="h-36 relative overflow-hidden"
+          style="background: linear-gradient(160deg,#405B4E,#5F8571 55%,#9BBFAA);">
+          <svg viewBox="0 0 400 140" class="absolute bottom-0 w-full">
+            <path d="M0 100 Q40 75 80 100 T160 100 T240 100 T320 100 T400 100 V140H0Z" fill="#2C3927" opacity="0.85" />
+          </svg>
+        </div>
+        <div class="p-4">
+          <h3 class="font-display text-lg leading-tight">Darjeeling Hills</h3>
+          <p class="text-sm text-ink/55 mt-1">Tea gardens &amp; mountain views</p>
+          <p class="font-display text-base mt-2 text-mossD">Explore stays →</p>
+        </div>
+      </a>
+      <a routerLink="/properties"
+        class="reveal group bg-white rounded-2xl overflow-hidden border border-ink/5 hover:shadow-lg transition-shadow">
+        <div class="h-36 relative overflow-hidden"
+          style="background: linear-gradient(160deg,#0F5461,#347E92 55%,#9DAEBB);">
+          <svg viewBox="0 0 400 140" class="absolute bottom-0 w-full">
+            <path d="M0 120L60 70L120 120Z" fill="#0F5461" />
+            <path d="M100 120L180 40L260 120Z" fill="#0C4550" />
+          </svg>
+        </div>
+        <div class="p-4">
+          <h3 class="font-display text-lg leading-tight">Sikkim Valleys</h3>
+          <p class="text-sm text-ink/55 mt-1">Monasteries &amp; river trails</p>
+          <p class="font-display text-base mt-2 text-mossD">Explore stays →</p>
+        </div>
+      </a>
+      <a routerLink="/properties"
+        class="reveal group bg-white rounded-2xl overflow-hidden border border-ink/5 hover:shadow-lg transition-shadow">
+        <div class="h-36 relative overflow-hidden"
+          style="background: linear-gradient(160deg,#2E4A3E,#4E7561 55%,#8FB39E);">
+          <svg viewBox="0 0 400 140" class="absolute inset-x-0 bottom-4">
+            <path d="M60 120 C60 70 340 70 340 120" stroke="#0C4550" stroke-width="8" fill="none"
+              stroke-linecap="round" />
+          </svg>
+        </div>
+        <div class="p-4">
+          <h3 class="font-display text-lg leading-tight">Meghalaya Highlands</h3>
+          <p class="text-sm text-ink/55 mt-1">Living root bridges &amp; waterfalls</p>
+          <p class="font-display text-base mt-2 text-mossD">Explore stays →</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section> -->

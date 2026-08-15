@@ -39,7 +39,8 @@ export class Public implements OnInit {
   public readonly settingsData = computed(() => this.settingService.settingsData());
   public readonly currentUrl = signal(this.router.url);
   public readonly isComingSoonEnabled = computed(() => {
-    if (this.currentUrl() === '/login') {
+    const url = this.currentUrl();
+    if (url === '/login' || url.startsWith('/property/')) {
       return false;
     }
     return isSettingEnabled(this.settingsData()?.['is_enabled_coming_soon']);
