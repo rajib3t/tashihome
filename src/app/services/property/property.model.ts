@@ -1,3 +1,4 @@
+import { CountrySearch } from "../country/country-model";
 
 
 
@@ -40,6 +41,7 @@ export const PROPERTY_TYPES_LABELS: Record<string, string> = {
 };
 
 export type PropertyType = (typeof PROPERTY_TYPES)[number];
+export type PropertyStatus = 'draft' | 'active' | 'inactive';
 
 export interface PropertyRequest {
   vendor_id: string;
@@ -54,7 +56,7 @@ export interface PropertyRequest {
   price_per_night?: number;
   deposit?: number;
   is_featured: boolean;
-  status: 'draft' | 'active' | 'inactive';
+  status: PropertyStatus;
   galleryImages: string[];
   featureImage: string;
   coverImage: string;
@@ -139,18 +141,22 @@ export interface PropertyFormValue {
   featureImage: string;
   coverImage: string;
 }
+export interface PropertySearch {
+  name?: string;
+  city?: string;
+  location?: string;
+  status?: PropertyStatus;
+  is_featured?: boolean;
+}
+
 
 export interface PropertyQuery {
   page: number;
   size: number;
-  search?: {
-    title?: string;
-    city?: string;
-    status?: string;
-  };
+  search?: PropertySearch;
 }
 
-export type PropertySearch = PropertyQuery['search'];
+
 
 
 

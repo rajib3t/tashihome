@@ -54,5 +54,49 @@ export class PropertyService {
       catchError(this.apiService.passthroughError)
     );
   }
+
+
+
+  public getPublicProperties(params: PropertyQuery): Observable<PaginatedResponse<Partial<PropertyData>>> {
+     const search = params.search ?? {};
+        const queryParams: Record<string, string | number | boolean> = {
+            page: params.page ?? 1,
+            size: params.size ?? 10,
+        };
+
+        const city = search.city?.trim();
+        const location = search.location?.trim();
+        const is_featured = search.is_featured;
+        const status = search.status?.trim();
+
+        if (city) {
+            queryParams['city_id'] = city;
+        }
+
+        if (location) {
+            queryParams['location_id'] = location;
+        }
+
+        if (status) {
+            queryParams['status'] = status;
+        }
+
+        if (is_featured !== undefined) {
+            queryParams['is_featured'] = is_featured;
+        }
+
+    return this.apiService.get<PaginatedResponse<Partial<PropertyData>>>('/public/properties/', { params: queryParams }).pipe(
+      map((response) => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public getPublicPropertyBySlug(slug: string): Observable<ApiResponse<Partial<PropertyData>>> {
+    return this.apiService.get<ApiResponse<Partial<PropertyData>>>(`/public/properties/${slug}`).pipe(
+      map((response) => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
 }
 

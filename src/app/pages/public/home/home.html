@@ -97,92 +97,49 @@
       </p>
     </div>
 
-    <!-- filter chips -->
-    <div id="chip-row" class="flex flex-wrap gap-2.5 mt-9 reveal">
-      <button
-        *ngFor="let option of filterOptions"
-        (click)="setFilter(option.key)"
-        class="chip eyebrow px-4 py-2 rounded-full border transition-all cursor-pointer"
-        [ngClass]="{
-          'active-chip bg-pine text-cloud border-pine shadow-sm': activeFilter === option.key,
-          'border-pine/25 text-pine hover:border-pine bg-transparent': activeFilter !== option.key
-        }"
-      >
-        {{ option.label }}
-      </button>
-    </div>
-
-    <!-- grid -->
     <div id="listing-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-7 mt-10">
-
-      <article
-        *ngFor="let item of filteredListings"
-        class="listing-card reveal card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/5 shadow-sm"
-      >
-        <!-- Dynamic Header Illustration -->
-        <div class="h-48 relative overflow-hidden card-illus" [style.background]="item.gradientBg">
-          <ng-container [ngSwitch]="item.vectorType">
-            <!-- Tea -->
-            <svg *ngSwitchCase="'tea'" viewBox="0 0 400 180" class="absolute bottom-0 w-full">
-              <path d="M0 130 Q40 100 80 130 T160 130 T240 130 T320 130 T400 130 V180H0Z" fill="#2C3927" opacity="0.85"/>
-              <path d="M0 150 Q40 125 80 150 T160 150 T240 150 T320 150 T400 150 V180H0Z" fill="#0C4550"/>
-            </svg>
-            <!-- Root bridge -->
-            <svg *ngSwitchCase="'root'" viewBox="0 0 400 180" class="absolute inset-x-0 bottom-6">
-              <path d="M60 150 C60 90 340 90 340 150" stroke="#0C4550" stroke-width="10" fill="none" stroke-linecap="round"/>
-              <path d="M60 150 C60 100 340 100 340 150" stroke="#2C3927" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.6"/>
-            </svg>
-            <!-- Monastery -->
-            <svg *ngSwitchCase="'monastery'" viewBox="0 0 400 180" class="absolute bottom-0 w-full">
-              <path d="M0 150L60 90L120 150Z" fill="#0F5461"/>
-              <path d="M100 150L180 60L260 150Z" fill="#0C4550"/>
-              <line x1="180" y1="60" x2="180" y2="10" stroke="#FAA52D" stroke-width="2"/>
-              <path class="flag-flutter" d="M180 14 L215 22 L180 30Z" fill="#FAA52D"/>
-            </svg>
-            <!-- Terrace -->
-            <svg *ngSwitchCase="'terrace'" viewBox="0 0 400 180" class="absolute bottom-0 w-full">
-              <path d="M0 175H400V150H0Z" fill="#2C3927"/>
-              <path d="M0 150H400V125H0Z" fill="#3E4E37" opacity="0.9"/>
-              <path d="M0 125H400V100H0Z" fill="#55694A" opacity="0.8"/>
-            </svg>
-            <!-- Desert -->
-            <svg *ngSwitchCase="'desert'" viewBox="0 0 400 180" class="absolute bottom-0 w-full">
-              <path d="M0 160L100 80L200 150L300 60L400 140V180H0Z" fill="#5A4A38"/>
-              <path d="M60 160H140V120H60Z" fill="#3C3226"/>
-            </svg>
-            <!-- Pine -->
-            <svg *ngSwitchDefault viewBox="0 0 400 180" class="absolute bottom-0 w-full">
-              <path d="M0 130 Q40 100 80 130 T160 130 T240 130 T320 130 T400 130 V180H0Z" fill="#2C3927" opacity="0.85"/>
-            </svg>
-          </ng-container>
-
-          <span class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1">
-            HOST VERIFIED
-          </span>
-        </div>
-
-        <div class="p-5">
-          <div class="flex items-start justify-between gap-2">
-            <h3 class="font-display text-xl leading-tight">{{ item.name }}</h3>
-            <span class="flex items-center gap-1 text-sm text-ink/70 shrink-0 mt-0.5">★ {{ item.rating }}</span>
-          </div>
-          <p class="text-sm text-ink/55 mt-1">{{ item.location }}</p>
-          <div class="flex flex-wrap gap-1.5 mt-3">
-            <span *ngFor="let tag of item.tags" class="text-xs bg-cloud2 px-2.5 py-1 rounded-full text-ink/70">
-              {{ tag }}
+      @for (item of properties(); track item.id) {
+        <article class="listing-card card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/5 shadow-sm">
+          <div
+            class="h-48 relative overflow-hidden card-illus"
+            [style.background]="item.feature_image?.file_url ? 'url(' + item.feature_image.file_url + ') center/cover no-repeat' : 'linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)'"
+          >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent"></div>
+            <span class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1">
+              HOST VERIFIED
             </span>
           </div>
-          <div class="flex items-center justify-between mt-4 pt-4 border-t border-ink/10">
-            <p class="font-display text-lg">₹{{ item.price | number }} <span class="text-xs font-body text-ink/50">/ night</span></p>
-            <a href="#" class="text-sm font-semibold text-ochreD hover:underline">View stay →</a>
-          </div>
-        </div>
-      </article>
 
+          <div class="p-5">
+            <div class="flex items-start justify-between gap-2">
+              <h3 class="font-display text-xl leading-tight">{{ item.name }}</h3>
+              <span class="flex items-center gap-1 text-sm text-ink/70 shrink-0 mt-0.5">★ 4.9</span>
+            </div>
+            <p class="text-sm text-ink/55 mt-1">{{ item.city?.name || 'Himalayan stay' }}{{ item.location?.name ? ', ' + item.location.name : '' }}</p>
+
+            <div class="flex flex-wrap gap-1.5 mt-3">
+              <span
+                *ngFor="let tag of (item.property_food_options ?? []).filter(item => item.is_included).slice(0, 3).map(item => item.name) || ['Family stay']"
+                class="text-xs bg-cloud2 px-2.5 py-1 rounded-full text-ink/70"
+              >
+                {{ tag }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-ink/10">
+              <p class="font-display text-lg">
+                ₹{{ item.price_per_night ?? item.sale_price ?? 0 | number }}
+                <span class="text-xs font-body text-ink/50">/ night</span>
+              </p>
+              <a href="" (click)="$event.preventDefault(); goToPropertyDetail(item?.slug)" class="text-sm font-semibold text-ochreD hover:underline">View stay →</a>
+            </div>
+          </div>
+        </article>
+      }
     </div>
 
-    <p *ngIf="filteredListings.length === 0" id="empty-state" class="text-center text-ink/50 mt-14">
-      No homes on the register for that landscape yet — try another filter.
+    <p *ngIf="properties().length === 0" id="empty-state" class="text-center text-ink/50 mt-14">
+      No homes on the register for that landscape yet.
     </p>
   </div>
 </section>
@@ -326,47 +283,3 @@
     </form>
   </div>
 </section>
-
-<!-- ============ FOOTER ============ -->
-<footer class="bg-ink text-cloud/70 py-14">
-  <div class="max-w-7xl mx-auto px-6 lg:px-10">
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
-      <div>
-        <div class="flex items-center gap-2.5">
-          <app-logo [size]="34" [glow]="false" [withText]="true" [variant]="'white'"></app-logo>
-        </div>
-        <p class="text-sm mt-4 leading-relaxed max-w-xs text-cloud/60">
-          Homestays across the Eastern Himalaya, listed one visited village at a time.
-        </p>
-      </div>
-      <div>
-        <p class="eyebrow text-cloud/40">Explore</p>
-        <ul class="mt-4 space-y-2 text-sm">
-          <li><a href="#stays" class="hover:text-ochre transition-colors">All stays</a></li>
-          <li><a href="#experiences" class="hover:text-ochre transition-colors">Experiences</a></li>
-          <li><a href="#hosts" class="hover:text-ochre transition-colors">Become a host</a></li>
-        </ul>
-      </div>
-      <div>
-        <p class="eyebrow text-cloud/40">Regions</p>
-        <ul class="mt-4 space-y-2 text-sm text-cloud/70">
-          <li>Darjeeling &amp; Kalimpong</li>
-          <li>Sikkim</li>
-          <li>Meghalaya</li>
-          <li>Arunachal Pradesh · Spiti</li>
-        </ul>
-      </div>
-      <div>
-        <p class="eyebrow text-cloud/40">Reach us</p>
-        <ul class="mt-4 space-y-2 text-sm text-cloud/70">
-          <li>hello&#64;tashihomes.stays</li>
-          <li>+91 33 4000 1122</li>
-        </ul>
-      </div>
-    </div>
-    <div class="border-t border-cloud/10 mt-12 pt-6 text-xs text-cloud/40 flex flex-col sm:flex-row justify-between gap-2">
-      <p>© 2026 Tashi Homes. A directory, not a hotel chain.</p>
-      <p>Made for the seven sister states and the hills beyond.</p>
-    </div>
-  </div>
-</footer>

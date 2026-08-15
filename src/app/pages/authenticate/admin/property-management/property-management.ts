@@ -73,10 +73,13 @@ export class PropertyManagement {
 
   private loadProperties(): void {
     const filters = this.searchForm.getRawValue();
+    const rawStatus = filters.status?.trim().toLowerCase();
+    const normalizedStatus = rawStatus === 'draft' || rawStatus === 'active' || rawStatus === 'inactive' ? rawStatus : undefined;
+
     const search: PropertySearch = {
-      title: filters.title?.trim() || undefined,
+      name: filters.title?.trim() || undefined,
       city: filters.city?.trim() || undefined,
-      status: filters.status?.trim() || undefined,
+      status: normalizedStatus,
     };
 
     this.isLoading.set(true);

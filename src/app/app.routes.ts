@@ -19,6 +19,8 @@ import { EditVendor } from './pages/authenticate/admin/vendor-management/edit-ve
 import { PropertyManagement } from './pages/authenticate/admin/property-management/property-management';
 import { CreateProperty } from './pages/authenticate/admin/property-management/create-property/create-property';
 import { EditProperty } from './pages/authenticate/admin/property-management/edit-property/edit-property';
+import { Property } from './pages/public/properties/property/property';
+import { Properties } from './pages/public/properties/properties';
 
 export const routes: Routes = [
     {
@@ -31,9 +33,30 @@ export const routes: Routes = [
                 title: 'Home',
             },
             {
+                path: 'home',
+                redirectTo: '',
+                pathMatch: 'full',
+            },
+            {
                 path: 'login',
                 component: Login,
                 title: 'Login',
+            },
+            {
+                path: 'properties',
+                component: Properties,
+                title: 'Property Management',
+            },
+          
+            {
+                path: 'property',
+                redirectTo: '',
+                pathMatch: 'full',
+            },
+            {
+                path: 'property/:slug',
+                component: Property,
+                title: 'Property Detail',
             }
         ]
     },

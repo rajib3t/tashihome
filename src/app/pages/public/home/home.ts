@@ -2,25 +2,34 @@ import {
   Component,
   OnInit,
   AfterViewInit,
+  OnDestroy,
   ElementRef,
   Inject,
   PLATFORM_ID,
   ChangeDetectorRef,
+  DestroyRef,
+  inject,
+  signal,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Logo } from '../../../shared/components/common/logo/logo';
+import { PropertyService } from '../../../services/property/property-service';
+import { PropertyData, PropertyQuery, PropertySearch } from '../../../services/property/property.model';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export interface HomestayListing {
   id: string;
-  region: 'tea' | 'root' | 'monastery' | 'terrace' | 'desert';
+  region: string;
   name: string;
   location: string;
   rating: number;
   tags: string[];
   price: number;
   gradientBg: string;
-  vectorType: 'tea' | 'root' | 'monastery' | 'terrace' | 'desert' | 'pine';
+  vectorType: string;
 }
 
 export interface StatItem {
@@ -33,12 +42,15 @@ export interface StatItem {
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, FormsModule, Logo],
+  imports: [CommonModule, FormsModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home implements OnInit, AfterViewInit {
-  activeFilter: string = 'all';
+export class Home implements OnInit, AfterViewInit, OnDestroy {
+  public properties = signal<Partial<PropertyData>[]>([]);
+  public readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private revealObserver?: IntersectionObserver;
   newsletterEmail: string = '';
   newsletterSubmitted: boolean = false;
 
@@ -49,108 +61,52 @@ export class Home implements OnInit, AfterViewInit {
     { target: 4.9, current: 0, decimals: 1, label: 'average guest rating' },
   ];
 
-  listings: HomestayListing[] = [
-    {
-      id: '1',
-      region: 'tea',
-      name: 'Fern Ridge Cottage',
-      location: 'Takdah, Darjeeling hills',
-      rating: 4.9,
-      tags: ['Wood-fired bath', 'Tea garden view'],
-      price: 2400,
-      gradientBg: 'linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)',
-      vectorType: 'tea',
-    },
-    {
-      id: '2',
-      region: 'root',
-      name: 'Nongriat Bridgehouse',
-      location: 'Nongriat, Meghalaya',
-      rating: 4.8,
-      tags: ['Waterfall walk', 'Khasi meals'],
-      price: 1900,
-      gradientBg: 'linear-gradient(160deg,#2E4A3E,#4E7561 55%,#8FB39E)',
-      vectorType: 'root',
-    },
-    {
-      id: '3',
-      region: 'monastery',
-      name: 'Rumtek Prayer House',
-      location: 'Rumtek, Sikkim',
-      rating: 5.0,
-      tags: ['Monastery bells', 'Butter tea'],
-      price: 2100,
-      gradientBg: 'linear-gradient(160deg,#0F5461,#347E92 55%,#9DAEBB)',
-      vectorType: 'monastery',
-    },
-    {
-      id: '4',
-      region: 'terrace',
-      name: 'Ziro Paddy House',
-      location: 'Ziro Valley, Arunachal Pradesh',
-      rating: 4.9,
-      tags: ['Rice beer tasting', 'Apatani weaving'],
-      price: 1700,
-      gradientBg: 'linear-gradient(160deg,#4B5B33,#6E8248 55%,#A9BC7C)',
-      vectorType: 'terrace',
-    },
-    {
-      id: '5',
-      region: 'desert',
-      name: 'Komic Stone House',
-      location: 'Komic, Spiti Valley',
-      rating: 4.7,
-      tags: ['Highest village road', 'Star-gazing roof'],
-      price: 1500,
-      gradientBg: 'linear-gradient(160deg,#6B5A45,#9A8265 55%,#CBB89A)',
-      vectorType: 'desert',
-    },
-    {
-      id: '6',
-      region: 'tea',
-      name: 'Lava Pine House',
-      location: 'Lava, Kalimpong hills',
-      rating: 4.8,
-      tags: ['Cloud forest trail', 'Wood stove'],
-      price: 2000,
-      gradientBg: 'linear-gradient(160deg,#405B4E,#5F8571 55%,#9BBFAA)',
-      vectorType: 'pine',
-    },
-  ];
-
-  filterOptions = [
-    { key: 'all', label: 'All regions' },
-    { key: 'tea', label: 'Tea hills' },
-    { key: 'root', label: 'Living root bridges' },
-    { key: 'monastery', label: 'Monastery valleys' },
-    { key: 'terrace', label: 'Rice terraces' },
-    { key: 'desert', label: 'Cold desert' },
-  ];
-
+  public readonly propertyService: PropertyService = inject(PropertyService);
   constructor(
     private el: ElementRef,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadProperties();
+
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => {
+        if (event.urlAfterRedirects === '/' || event.urlAfterRedirects.startsWith('/?')) {
+          this.loadProperties();
+          if (isPlatformBrowser(this.platformId)) {
+            window.scrollTo({ top: 0, behavior: 'auto' });
+          }
+        }
+      });
+  }
+
+  private loadProperties(): void {
+    const search: PropertySearch = {
+      is_featured: true,
+    };
+
+    const query: PropertyQuery = {
+      page: 1,
+      size: 6,
+      search,
+    };
+
+    this.propertyService.getPublicProperties(query).subscribe((response) => {
+      this.properties.set(response.data || []);
+      this.cdr.markForCheck();
+      this.refreshRevealObserver();
+    });
+  }
 
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.initRevealObserver();
       this.initStatsObserver();
     }
-  }
-
-  get filteredListings(): HomestayListing[] {
-    if (this.activeFilter === 'all') {
-      return this.listings;
-    }
-    return this.listings.filter((item) => item.region === this.activeFilter);
-  }
-
-  setFilter(filterKey: string): void {
-    this.activeFilter = filterKey;
   }
 
   scrollToStays(): void {
@@ -169,19 +125,27 @@ export class Home implements OnInit, AfterViewInit {
   }
 
   private initRevealObserver(): void {
+    this.revealObserver?.disconnect();
+
     const revealEls = this.el.nativeElement.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver(
+    this.revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('in');
-            observer.unobserve(entry.target);
+            this.revealObserver?.unobserve(entry.target);
           }
         });
       },
       { threshold: 0.15 }
     );
-    revealEls.forEach((el: Element) => observer.observe(el));
+    revealEls.forEach((el: Element) => this.revealObserver?.observe(el));
+  }
+
+  private refreshRevealObserver(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    queueMicrotask(() => this.initRevealObserver());
   }
 
   private initStatsObserver(): void {
@@ -229,5 +193,15 @@ export class Home implements OnInit, AfterViewInit {
     };
 
     requestAnimationFrame(update);
+  }
+
+  goToPropertyDetail(slug?: string): void {
+    if (!slug) return;
+
+    this.router.navigate(['/property', slug]);
+  }
+
+  ngOnDestroy(): void {
+    this.revealObserver?.disconnect();
   }
 }

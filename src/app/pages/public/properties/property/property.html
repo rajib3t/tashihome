@@ -1,0 +1,216 @@
+<!-- ============ COVER IMAGE ============ -->
+<section id="top" class="relative h-[64vh] md:h-[78vh] min-h-[420px] overflow-hidden">
+  <img
+    [src]="propertyData()?.cover_image?.file_url || propertyData()?.feature_image?.file_url || galleryImages()[0]?.file_url || ''"
+    [alt]="propertyData()?.name || 'Property cover image'"
+    class="absolute inset-0 w-full h-full object-cover object-center"
+  />
+  <div class="pointer-events-none absolute -top-16 right-0 w-[34rem] h-[34rem] bg-moss/25 rounded-full blur-[120px] animate-mist-a"></div>
+  <div class="absolute inset-0 bg-gradient-to-t from-pine via-pine/10 to-transparent"></div>
+
+  <div class="absolute inset-x-0 bottom-0">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 pb-8 md:pb-12">
+      <a href="/" class="inline-flex items-center gap-1.5 text-cloud/80 hover:text-ochre text-sm font-medium mb-4 transition-colors">
+        ← All stays
+      </a>
+      <span class="stamp stamp-pulse inline-block text-cloud text-[10px] font-semibold px-3 py-1 mb-4">HOST VERIFIED</span>
+      <h1 class="font-display text-4xl sm:text-5xl md:text-6xl text-cloud leading-[1.05]">{{propertyData()?.name    }}</h1>
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-4 text-cloud/85 text-sm">
+        <span class="flex items-center gap-1.5">★ {{ propertyData()?.sale_per_night ?? propertyData()?.price_per_night ?? 0 | number }} <span class="text-cloud/55">/ night</span></span>
+        <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
+        <span>{{ propertyData()?.city?.name }}{{ propertyData()?.location?.name ? ', ' + propertyData()?.location?.name : '' }}</span>
+        <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
+        <span>{{ propertyData()?.address }}</span>
+        @if ((propertyData()?.property_room_types ?? []).length > 0) {
+          <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
+          <span>
+            @for (roomType of propertyData()?.property_room_types ?? []; track roomType.id) {
+              {{ roomType.room_type?.name }} - {{ roomType.room_type?.capacity }}@if (!$last) {, }
+            }
+          </span>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ GALLERY ============ -->
+<section class="relative -mt-8 md:-mt-10 z-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    @if (galleryImages().length > 0) {
+      <div class="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-2 md:gap-2.5 rounded-3xl overflow-hidden shadow-xl shadow-pine/10 h-[300px] md:h-[460px] reveal">
+        @for (image of galleryImages().slice(0, 5); track image.file_url; let index = $index) {
+          <div
+            class="tile-wrap relative overflow-hidden"
+            [class.col-span-2]="index === 0"
+            [class.row-span-2]="index === 0"
+          >
+            <img
+              [src]="image.file_url"
+              [alt]="image.title || propertyData()?.name || 'Property image'"
+              class="tile absolute inset-0 w-full h-full object-cover object-center"
+            />
+            @if (image.title) {
+              <span class="absolute bottom-3 left-3 bg-ink/60 text-cloud text-[11px] font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">
+                {{ image.title }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="rounded-3xl overflow-hidden shadow-xl shadow-pine/10 h-[300px] md:h-[460px] bg-gradient-to-br from-pine via-pine2 to-moss reveal grid place-items-center text-cloud/80">
+        <div class="text-center px-6">
+          <p class="font-display text-2xl">Gallery coming soon</p>
+          <p class="text-sm mt-2">This property has no gallery images attached yet.</p>
+        </div>
+      </div>
+    }
+  </div>
+</section>
+<!-- ============ MAIN CONTENT + BOOKING SIDEBAR ============ -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 pt-14 pb-20">
+  <div class="grid lg:grid-cols-[1fr_360px] gap-14">
+
+    <!-- LEFT: content -->
+    <div class="min-w-0">
+
+      <!-- host strip -->
+      <div class="reveal flex items-center justify-between gap-4 pb-8 border-b border-ink/10">
+        <div>
+          <p class="eyebrow text-mossD">Hosted by</p>
+          <h2 class="font-display text-2xl mt-1">{{ propertyData()?.vendor?.full_name || 'Host' }}</h2>
+          <p class="text-sm text-ink/55 mt-1">{{ propertyData()?.vendor?.email || 'Usually replies within an hour' }}</p>
+        </div>
+        <div class="w-14 h-14 rounded-full bg-cloud2 grid place-items-center shrink-0">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" stroke="#0C4550" stroke-width="1.6"/><path d="M4 21c1.4-4 4.4-6 8-6s6.6 2 8 6" stroke="#0C4550" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+
+      <!-- description -->
+      <div class="reveal pt-8">
+        <h2 class="font-display text-3xl">About this stay</h2>
+        <div class="mt-4 space-y-4 text-[15px] leading-relaxed text-ink/70">
+          <p>{{ propertyData()?.description || 'No description available for this property yet.' }}</p>
+        </div>
+      </div>
+
+      <!-- amenities -->
+      <div class="reveal pt-12">
+        <h2 class="font-display text-3xl">Amenities</h2>
+        <div class="grid sm:grid-cols-2 gap-3 mt-6">
+          @for (amenity of propertyData()?.property_amenities ?? []; track amenity.id) {
+            <div class="flex items-center gap-3 p-4 rounded-2xl border border-ink/8 bg-white">
+              <span class="w-9 h-9 rounded-full bg-cloud2 grid place-items-center text-mossD shrink-0">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 14c0-5 3.5-9 8-9s8 4 8 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M2 14h20v2a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4v-2Z" stroke="currentColor" stroke-width="1.7"/></svg>
+              </span>
+              <span class="text-sm font-medium text-ink/80">{{ amenity.amenity?.name }}</span>
+            </div>
+          }
+          @if ((propertyData()?.property_amenities ?? []).length === 0) {
+            <p class="text-sm text-ink/55">No amenities listed yet.</p>
+          }
+        </div>
+      </div>
+
+      <!-- facilities -->
+      <div class="reveal pt-12">
+        <h2 class="font-display text-3xl">Facilities</h2>
+        <div class="grid sm:grid-cols-2 gap-x-8 gap-y-3 mt-6 text-sm text-ink/75">
+          @for (facility of propertyData()?.property_facilities ?? []; track facility.id) {
+            <div class="flex items-center gap-2.5">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" class="shrink-0"><path d="M5 12.5 9.5 17 19 7" stroke="#347E92" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              {{ facility.facility?.name }}
+            </div>
+          }
+          @if ((propertyData()?.property_facilities ?? []).length === 0) {
+            <p class="text-sm text-ink/55">No facilities listed yet.</p>
+          }
+        </div>
+      </div>
+
+      <!-- food options -->
+      <div class="reveal pt-12">
+        <h2 class="font-display text-3xl">Food options</h2>
+        <p class="text-sm text-ink/55 mt-2 max-w-lg">Food options listed by the host for this stay.</p>
+        <div class="grid sm:grid-cols-2 gap-4 mt-6">
+          @for (food of propertyData()?.property_food_options ?? []; track food.id) {
+            <div class="p-5 rounded-2xl bg-white border border-ink/8">
+              <div class="flex items-start justify-between gap-3">
+                <h3 class="font-display text-lg">{{ food.name }}</h3>
+                <span class="eyebrow text-mossD shrink-0 mt-1">{{ food.is_included ? 'Included' : 'Optional' }}</span>
+              </div>
+              <p class="text-sm text-ink/60 mt-2 leading-relaxed">
+                {{ food.is_included ? 'Included with the stay.' : 'Available on request.' }}
+              </p>
+            </div>
+          }
+          @if ((propertyData()?.property_food_options ?? []).length === 0) {
+            <p class="text-sm text-ink/55">No food options listed yet.</p>
+          }
+        </div>
+      </div>
+
+      <!-- good to know -->
+      <div class="reveal pt-12">
+        <h2 class="font-display text-3xl">Good to know</h2>
+        <div class="grid sm:grid-cols-3 gap-6 mt-6 text-sm">
+          <div>
+            <p class="eyebrow text-ink/40">Check-in / out</p>
+            <p class="text-ink/75 mt-2">Flexible on request<br/>Check-out by 10:00 AM</p>
+          </div>
+          <div>
+            <p class="eyebrow text-ink/40">House rules</p>
+            <p class="text-ink/75 mt-2">Subject to host policy<br/>Quiet hours after 9:30 PM</p>
+          </div>
+          <div>
+            <p class="eyebrow text-ink/40">Cancellation</p>
+            <p class="text-ink/75 mt-2">Subject to booking terms<br/>Deposit policy may apply</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: booking sidebar -->
+    <div id="book" class="reveal">
+      <div class="sticky top-28 rounded-3xl border border-ink/10 bg-white shadow-lg shadow-pine/5 p-6">
+        <div class="flex items-baseline justify-between">
+          <p class="font-display text-3xl">₹{{ propertyData()?.sale_per_night ?? propertyData()?.price_per_night ?? 0 | number }} <span class="text-sm font-body text-ink/50">/ night</span></p>
+          <span class="flex items-center gap-1 text-sm text-ink/70">★ 4.9</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5 mt-5">
+          <div class="rounded-xl border border-ink/12 px-3 py-2.5">
+            <p class="text-[10px] eyebrow text-ink/40">Check-in</p>
+            <p class="text-sm font-medium mt-0.5">Add date</p>
+          </div>
+          <div class="rounded-xl border border-ink/12 px-3 py-2.5">
+            <p class="text-[10px] eyebrow text-ink/40">Check-out</p>
+            <p class="text-sm font-medium mt-0.5">Add date</p>
+          </div>
+          <div class="col-span-2 rounded-xl border border-ink/12 px-3 py-2.5">
+            <p class="text-[10px] eyebrow text-ink/40">Guests</p>
+            <p class="text-sm font-medium mt-0.5">{{ propertyData()?.room_type?.capacity || '2' }} guests max</p>
+          </div>
+        </div>
+
+        <a href="#" class="btn-anim mt-5 w-full text-center block bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors">
+          Reserve dates
+        </a>
+        <a href="#" class="mt-2.5 w-full text-center block border border-pine/25 hover:border-pine text-pine text-sm font-semibold px-5 py-3 rounded-full transition-colors">
+          Message the host
+        </a>
+
+        <div class="mt-6 pt-5 border-t border-ink/10 space-y-2.5 text-sm text-ink/70">
+          <div class="flex justify-between"><span>Base rate</span><span>₹{{ propertyData()?.sale_per_night ?? propertyData()?.price_per_night ?? 0 | number }}</span></div>
+          <div class="flex justify-between"><span>Taxes &amp; fees</span><span>As applicable</span></div>
+          <div class="flex justify-between"><span>Deposit</span><span>{{ propertyData()?.deposit ?? 'On request' }}</span></div>
+          <div class="flex justify-between font-semibold text-ink pt-2.5 border-t border-ink/10"><span>Total</span><span>Varies by stay</span></div>
+        </div>
+
+        <p class="text-xs text-ink/45 mt-4 leading-relaxed">Availability and payment terms come from the property details API for this stay.</p>
+      </div>
+    </div>
+
+  </div>
+</section>

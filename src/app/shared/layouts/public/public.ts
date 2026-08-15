@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { ComingSoon } from '../../components/coming-soon/coming-soon';
 import { catchError, of } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
+import { PublicFooter } from './footer/footer';
 
 export function isSettingEnabled(value: unknown): boolean {
   if (typeof value === 'boolean') {
@@ -25,7 +26,8 @@ export function isSettingEnabled(value: unknown): boolean {
     HeaderPublic,
     RouterOutlet,
     CommonModule,
-    ComingSoon
+    ComingSoon,
+    PublicFooter,
   ],
   templateUrl: './public.html',
   styleUrl: './public.css',
