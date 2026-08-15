@@ -317,8 +317,7 @@
         <div>
           <p class="eyebrow text-mossD">Hosted by</p>
           <h2 class="font-display text-2xl mt-1">{{ propertyData()?.vendor?.full_name || 'Your Host' }}</h2>
-          <p class="text-sm text-ink/55 mt-1">{{ propertyData()?.vendor?.email || 'Usually replies within an hour' }}
-          </p>
+
         </div>
         <div class="w-14 h-14 rounded-full bg-cloud2 grid place-items-center shrink-0">
           @if(propertyData()?.vendor?.is_profile_image_url != null && propertyData()?.vendor?.is_profile_image_url !=
@@ -581,8 +580,7 @@
 <!-- ============ LIGHTBOX MODAL (Full Screen & Stacking Root) ============ -->
 @if (isLightboxOpen() && galleryImages().length > 0) {
 <div class="fixed inset-0 bg-black/95 backdrop-blur-2xl flex flex-col justify-between select-none"
-  style="z-index: 99999999 !important;"
-  (click)="closeLightbox()">
+  style="z-index: 99999999 !important;" (click)="closeLightbox()">
 
   <!-- Lightbox Header Bar (Above everything with distinct high-contrast bar) -->
   <div
