@@ -14,24 +14,11 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Logo } from '../../../shared/components/common/logo/logo';
 import { PropertyService } from '../../../services/property/property-service';
 import { PropertyData, PropertyQuery, PropertySearch } from '../../../services/property/property.model';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-
-export interface HomestayListing {
-  id: string;
-  region: string;
-  name: string;
-  location: string;
-  rating: number;
-  tags: string[];
-  price: number;
-  gradientBg: string;
-  vectorType: string;
-}
 
 export interface StatItem {
   target: number;
@@ -65,7 +52,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   private readonly zone = inject(NgZone);
   private revealObserver?: IntersectionObserver;
 
-  // cleanup handles for the mist canvas / card tilt / parallax effects
+  // cleanup handles for canvases / card tilt / parallax effects
   private mistCleanupFns: Array<() => void> = [];
   private tiltCleanupFn?: () => void;
   private parallaxCleanupFn?: () => void;
@@ -82,11 +69,12 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   public readonly propertyService: PropertyService = inject(PropertyService);
+
   constructor(
     private el: ElementRef,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.loadProperties();
@@ -149,8 +137,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       // Loop-driven effects run outside Angular's zone so rAF /
       // scroll / mousemove don't trigger change detection every frame.
       this.zone.runOutsideAngular(() => {
-        this.mistCleanupFns.push(this.initMistCanvas('#mistCanvas', 6));
-        this.mistCleanupFns.push(this.initMistCanvas('#mistCanvasFooter', 3));
+        this.mistCleanupFns.push(this.initHeroCanvas('#mistCanvas'));
+        this.mistCleanupFns.push(this.initExpCanvas('#expCanvas'));
+        this.mistCleanupFns.push(this.initConstellationCanvas('#constellationCanvas'));
+        this.mistCleanupFns.push(this.initFooterCanvas('#mistCanvasFooter'));
         this.tiltCleanupFn = this.initCardTilt('.card-tilt');
         this.parallaxCleanupFn = this.initParallax('#ridgeParallax', 0.15);
       });
@@ -257,39 +247,70 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ============================================================
-  // Mist canvas — layered, drifting cloud blobs behind the hero
-  // and footer CTA. Purely decorative, so it's skipped entirely
-  // under prefers-reduced-motion.
+  // 1. HERO CANVAS: Layered drifting mist + shimmering stardust
+  // with interactive cursor ambient swirl
   // ============================================================
-  private initMistCanvas(selector: string, layerCount: number): () => void {
-    if (this.reduceMotion) return () => { };
+  private initHeroCanvas(selector: string): () => void {
+    if (this.reduceMotion) return () => {};
 
     const canvas = this.el.nativeElement.querySelector(selector) as HTMLCanvasElement | null;
-    if (!canvas) return () => { };
+    if (!canvas) return () => {};
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return () => { };
+    if (!ctx) return () => {};
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let w = 0;
     let h = 0;
     let raf = 0;
     const start = performance.now();
-    let blobs: MistBlob[] = [];
 
-    const buildBlobs = () => {
+    // Mouse coordinates for ambient interactivity
+    let mouse = { x: -9999, y: -9999, active: false };
+
+    let blobs: MistBlob[] = [];
+    let sparkles: Array<{
+      x: number;
+      y: number;
+      size: number;
+      speedY: number;
+      speedX: number;
+      opacity: number;
+      pulseSpeed: number;
+      phase: number;
+      color: string;
+    }> = [];
+
+    const build = () => {
       blobs = [];
+      const layerCount = 6;
       for (let i = 0; i < layerCount; i++) {
         const depth = layerCount > 1 ? i / (layerCount - 1) : 0;
         blobs.push({
           x: Math.random() * w,
-          y: h * (0.15 + Math.random() * 0.55),
-          r: (140 + Math.random() * 220) * (1 - depth * 0.4),
-          speed: (6 + Math.random() * 10) * (0.5 + depth * 0.8),
-          bob: 8 + Math.random() * 14,
-          bobSpeed: 0.15 + Math.random() * 0.25,
+          y: h * (0.15 + Math.random() * 0.65),
+          r: (160 + Math.random() * 240) * (1 - depth * 0.35),
+          speed: (7 + Math.random() * 12) * (0.4 + depth * 0.7),
+          bob: 10 + Math.random() * 18,
+          bobSpeed: 0.12 + Math.random() * 0.2,
           phase: Math.random() * Math.PI * 2,
-          opacity: 0.05 + (1 - depth) * 0.09,
+          opacity: 0.04 + (1 - depth) * 0.08,
+        });
+      }
+
+      sparkles = [];
+      const sparkleCount = Math.min(Math.floor(w / 35), 45);
+      for (let i = 0; i < sparkleCount; i++) {
+        sparkles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          size: 0.8 + Math.random() * 2,
+          speedY: 0.15 + Math.random() * 0.35,
+          speedX: (Math.random() - 0.5) * 0.25,
+          opacity: 0.2 + Math.random() * 0.6,
+          pulseSpeed: 1 + Math.random() * 2.5,
+          phase: Math.random() * Math.PI * 2,
+          color: Math.random() > 0.4 ? '250, 165, 45' : '143, 199, 212', // ochre gold or mist teal
         });
       }
     };
@@ -300,23 +321,432 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      buildBlobs();
+      build();
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+      mouse.active = true;
+    };
+
+    const onMouseLeave = () => {
+      mouse.active = false;
     };
 
     const draw = (now: number) => {
       const t = (now - start) / 1000;
       ctx.clearRect(0, 0, w, h);
+
+      // Draw misty volumetric cloud blobs
       for (const b of blobs) {
-        const x = ((b.x + t * b.speed) % (w + b.r * 2)) - b.r;
-        const y = b.y + Math.sin(t * b.bobSpeed + b.phase) * b.bob;
-        const grad = ctx.createRadialGradient(x, y, 0, x, y, b.r);
-        grad.addColorStop(0, `rgba(245, 241, 232, ${b.opacity})`);
-        grad.addColorStop(1, 'rgba(245, 241, 232, 0)');
+        let bx = ((b.x + t * b.speed) % (w + b.r * 2)) - b.r;
+        let by = b.y + Math.sin(t * b.bobSpeed + b.phase) * b.bob;
+
+        // Soft cursor deflection
+        if (mouse.active) {
+          const dx = bx - mouse.x;
+          const dy = by - mouse.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 220 && dist > 0) {
+            const force = (1 - dist / 220) * 15;
+            bx += (dx / dist) * force;
+            by += (dy / dist) * force;
+          }
+        }
+
+        const grad = ctx.createRadialGradient(bx, by, 0, bx, by, b.r);
+        grad.addColorStop(0, `rgba(243, 250, 251, ${b.opacity})`);
+        grad.addColorStop(0.6, `rgba(243, 250, 251, ${b.opacity * 0.4})`);
+        grad.addColorStop(1, 'rgba(243, 250, 251, 0)');
         ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.arc(x, y, b.r, 0, Math.PI * 2);
+        ctx.arc(bx, by, b.r, 0, Math.PI * 2);
         ctx.fill();
       }
+
+      // Draw floating stardust particles
+      for (const s of sparkles) {
+        s.y -= s.speedY;
+        s.x += s.speedX + Math.sin(t + s.phase) * 0.15;
+        if (s.y < -10) s.y = h + 10;
+        if (s.x < -10) s.x = w + 10;
+        if (s.x > w + 10) s.x = -10;
+
+        const currentOpacity = s.opacity * (0.6 + 0.4 * Math.sin(t * s.pulseSpeed + s.phase));
+
+        ctx.fillStyle = `rgba(${s.color}, ${currentOpacity})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Soft glow halo
+        if (s.size > 1.4) {
+          ctx.fillStyle = `rgba(${s.color}, ${currentOpacity * 0.25})`;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.size * 2.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      raf = requestAnimationFrame(draw);
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    document.addEventListener('mouseleave', onMouseLeave);
+    raf = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseleave', onMouseLeave);
+    };
+  }
+
+  // ============================================================
+  // 2. EXPERIENCES CANVAS: Gentle floating morning pollen / breeze
+  // spores across the misty tea hills background
+  // ============================================================
+  private initExpCanvas(selector: string): () => void {
+    if (this.reduceMotion) return () => {};
+
+    const canvas = this.el.nativeElement.querySelector(selector) as HTMLCanvasElement | null;
+    if (!canvas) return () => {};
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return () => {};
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0;
+    let h = 0;
+    let raf = 0;
+    const start = performance.now();
+
+    let spores: Array<{
+      x: number;
+      y: number;
+      r: number;
+      speedX: number;
+      speedY: number;
+      sway: number;
+      swaySpeed: number;
+      phase: number;
+      alpha: number;
+      color: string;
+    }> = [];
+
+    const build = () => {
+      spores = [];
+      const count = Math.min(Math.floor(w / 40), 36);
+      for (let i = 0; i < count; i++) {
+        spores.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: 1.2 + Math.random() * 2.6,
+          speedX: 0.2 + Math.random() * 0.45,
+          speedY: (Math.random() - 0.5) * 0.2,
+          sway: 6 + Math.random() * 12,
+          swaySpeed: 0.4 + Math.random() * 0.8,
+          phase: Math.random() * Math.PI * 2,
+          alpha: 0.15 + Math.random() * 0.4,
+          color: Math.random() > 0.5 ? '250, 165, 45' : '71, 159, 181', // warm ochre or moss teal
+        });
+      }
+    };
+
+    const resize = () => {
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      build();
+    };
+
+    const draw = (now: number) => {
+      const t = (now - start) / 1000;
+      ctx.clearRect(0, 0, w, h);
+
+      for (const s of spores) {
+        s.x += s.speedX;
+        const currentY = s.y + Math.sin(t * s.swaySpeed + s.phase) * s.sway;
+
+        if (s.x > w + 20) {
+          s.x = -20;
+          s.y = Math.random() * h;
+        }
+
+        const opacity = s.alpha * (0.7 + 0.3 * Math.sin(t * 1.5 + s.phase));
+        ctx.fillStyle = `rgba(${s.color}, ${opacity})`;
+        ctx.beginPath();
+        ctx.arc(s.x, currentY, s.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(${s.color}, ${opacity * 0.25})`;
+        ctx.beginPath();
+        ctx.arc(s.x, currentY, s.r * 2.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      raf = requestAnimationFrame(draw);
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
+    raf = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+    };
+  }
+
+  // ============================================================
+  // 3. CONSTELLATION & FIREFLIES CANVAS: Dark Pine Forest Night
+  // with interactive starlight & glowing connection threads
+  // ============================================================
+  private initConstellationCanvas(selector: string): () => void {
+    if (this.reduceMotion) return () => {};
+
+    const canvas = this.el.nativeElement.querySelector(selector) as HTMLCanvasElement | null;
+    if (!canvas) return () => {};
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return () => {};
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0;
+    let h = 0;
+    let raf = 0;
+    const start = performance.now();
+
+    let mouse = { x: -9999, y: -9999, active: false };
+
+    let nodes: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      r: number;
+      alpha: number;
+      pulseSpeed: number;
+      phase: number;
+      isFirefly: boolean;
+    }> = [];
+
+    const build = () => {
+      nodes = [];
+      const count = Math.min(Math.floor(w / 28), 50);
+      for (let i = 0; i < count; i++) {
+        const isFirefly = Math.random() < 0.3;
+        nodes.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * (isFirefly ? 0.45 : 0.2),
+          vy: (Math.random() - 0.5) * (isFirefly ? 0.45 : 0.2),
+          r: isFirefly ? 1.6 + Math.random() * 1.6 : 0.9 + Math.random() * 1.4,
+          alpha: isFirefly ? 0.6 + Math.random() * 0.4 : 0.3 + Math.random() * 0.4,
+          pulseSpeed: 1 + Math.random() * 2.5,
+          phase: Math.random() * Math.PI * 2,
+          isFirefly,
+        });
+      }
+    };
+
+    const resize = () => {
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      build();
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+      mouse.active = true;
+    };
+
+    const onMouseLeave = () => {
+      mouse.active = false;
+    };
+
+    const draw = (now: number) => {
+      const t = (now - start) / 1000;
+      ctx.clearRect(0, 0, w, h);
+
+      // Move nodes
+      for (const n of nodes) {
+        n.x += n.vx;
+        n.y += n.vy;
+
+        if (n.x < 0) n.x = w;
+        if (n.x > w) n.x = 0;
+        if (n.y < 0) n.y = h;
+        if (n.y > h) n.y = 0;
+      }
+
+      // Draw connection lines between nearby stars
+      const maxDist = 110;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist < maxDist) {
+            let lineAlpha = (1 - dist / maxDist) * 0.18;
+
+            // Highlight connections near cursor
+            if (mouse.active) {
+              const mouseDist = Math.hypot(
+                (nodes[i].x + nodes[j].x) / 2 - mouse.x,
+                (nodes[i].y + nodes[j].y) / 2 - mouse.y
+              );
+              if (mouseDist < 140) {
+                lineAlpha += (1 - mouseDist / 140) * 0.35;
+              }
+            }
+
+            ctx.strokeStyle = `rgba(250, 165, 45, ${lineAlpha})`;
+            ctx.lineWidth = 0.85;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw star/firefly nodes
+      for (const n of nodes) {
+        const pulse = 0.6 + 0.4 * Math.sin(t * n.pulseSpeed + n.phase);
+        const currentAlpha = n.alpha * pulse;
+
+        if (n.isFirefly) {
+          // Warm glowing golden firefly
+          ctx.fillStyle = `rgba(250, 165, 45, ${currentAlpha})`;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = `rgba(250, 165, 45, ${currentAlpha * 0.3})`;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r * 3, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Crisp starlight
+          ctx.fillStyle = `rgba(243, 250, 251, ${currentAlpha})`;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      raf = requestAnimationFrame(draw);
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    document.addEventListener('mouseleave', onMouseLeave);
+    raf = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseleave', onMouseLeave);
+    };
+  }
+
+  // ============================================================
+  // 4. FOOTER CANVAS: Warm alpine sunset glow & rising embers
+  // ============================================================
+  private initFooterCanvas(selector: string): () => void {
+    if (this.reduceMotion) return () => {};
+
+    const canvas = this.el.nativeElement.querySelector(selector) as HTMLCanvasElement | null;
+    if (!canvas) return () => {};
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return () => {};
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0;
+    let h = 0;
+    let raf = 0;
+    const start = performance.now();
+
+    let embers: Array<{
+      x: number;
+      y: number;
+      r: number;
+      speedY: number;
+      speedX: number;
+      opacity: number;
+      pulseSpeed: number;
+      phase: number;
+    }> = [];
+
+    const build = () => {
+      embers = [];
+      const count = Math.min(Math.floor(w / 30), 40);
+      for (let i = 0; i < count; i++) {
+        embers.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: 1 + Math.random() * 2.2,
+          speedY: 0.3 + Math.random() * 0.6,
+          speedX: (Math.random() - 0.5) * 0.3,
+          opacity: 0.25 + Math.random() * 0.5,
+          pulseSpeed: 1.2 + Math.random() * 2,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+    };
+
+    const resize = () => {
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      build();
+    };
+
+    const draw = (now: number) => {
+      const t = (now - start) / 1000;
+      ctx.clearRect(0, 0, w, h);
+
+      for (const e of embers) {
+        e.y -= e.speedY;
+        e.x += e.speedX + Math.sin(t + e.phase) * 0.2;
+
+        if (e.y < -10) {
+          e.y = h + 10;
+          e.x = Math.random() * w;
+        }
+
+        const currentOpacity = e.opacity * (0.6 + 0.4 * Math.sin(t * e.pulseSpeed + e.phase));
+
+        ctx.fillStyle = `rgba(250, 165, 45, ${currentOpacity})`;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(250, 165, 45, ${currentOpacity * 0.25})`;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r * 2.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       raf = requestAnimationFrame(draw);
     };
 
@@ -336,7 +766,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // cards are rendered from the `properties` signal.
   // ============================================================
   private initCardTilt(selector: string): () => void {
-    if (this.reduceMotion) return () => { };
+    if (this.reduceMotion) return () => {};
 
     const cards = Array.from(
       this.el.nativeElement.querySelectorAll(selector)
@@ -381,10 +811,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // Ridge parallax — subtle vertical drift on scroll.
   // ============================================================
   private initParallax(selector: string, factor: number): () => void {
-    if (this.reduceMotion) return () => { };
+    if (this.reduceMotion) return () => {};
 
     const target = this.el.nativeElement.querySelector(selector) as HTMLElement | null;
-    if (!target) return () => { };
+    if (!target) return () => {};
 
     const onScroll = () => {
       const y = window.scrollY * factor;

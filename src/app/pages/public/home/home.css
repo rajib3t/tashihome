@@ -2,8 +2,9 @@
 
 .reveal {
     opacity: 0;
-    transform: translateY(18px);
-    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(22px);
+    transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
 }
 
 .reveal.is-visible,
@@ -12,41 +13,114 @@
     transform: translateY(0);
 }
 
-/* ---------- card tilt + lift ---------- */
-/* --rx / --ry are set per-frame from the component's initCardTilt() */
+/* ---------- Section Background Images ---------- */
+.bg-hero-img {
+    background: url('/images/hero-himalaya.jpg') center/cover no-repeat;
+}
 
+.bg-experiences-img {
+    background: url('/images/experiences-bg.jpg') center/cover no-repeat;
+}
+
+.bg-how-img {
+    background: url('/images/how-it-works-bg.jpg') center/cover no-repeat;
+}
+
+.bg-newsletter-img {
+    background: url('/images/newsletter-bg.jpg') center/cover no-repeat;
+}
+
+/* ---------- Topo / Contour Pattern Backgrounds ---------- */
+.bg-topo-pattern {
+    background-image: radial-gradient(rgba(18, 106, 122, 0.06) 1px, transparent 1px),
+                      radial-gradient(rgba(18, 106, 122, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    background-position: 0 0, 16px 16px;
+}
+
+.bg-topo-dark {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+                      radial-gradient(rgba(250, 165, 45, 0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-position: 0 0, 14px 14px;
+}
+
+/* ---------- Glassmorphism ---------- */
+.glass-card-light {
+    background: rgba(243, 250, 251, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(12, 69, 80, 0.06);
+}
+
+.glass-card-dark {
+    background: rgba(12, 69, 80, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- Card Tilt & Lift ---------- */
 .card-tilt {
     --rx: 0deg;
     --ry: 0deg;
     transform-style: preserve-3d;
-    transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
-    transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+    transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry));
+    transition: transform 0.15s ease-out, box-shadow 0.35s ease, border-color 0.35s ease;
     will-change: transform;
 
     &:hover {
-        box-shadow: 0 24px 48px -18px rgba(15, 84, 97, 0.35);
+        box-shadow: 0 28px 50px -16px rgba(12, 69, 80, 0.3);
+        border-color: rgba(71, 159, 181, 0.4);
     }
 }
 
 .card-illus {
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 
     .card-tilt:hover & {
-        transform: scale(1.06);
+        transform: scale(1.07);
     }
 }
 
+/* ---------- Experience Cards ---------- */
 .exp-card {
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
+    position: relative;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+
+    &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -12px rgba(12, 69, 80, 0.18);
+        border-color: rgba(71, 159, 181, 0.5);
+    }
+}
+
+/* ---------- Step Cards (How it works) ---------- */
+.step-card {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.4s ease;
 
     &:hover {
         transform: translateY(-6px);
-        border-color: rgba(85, 105, 74, 0.35);
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(250, 165, 45, 0.45);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
     }
 }
 
-/* ---------- button shine sweep ---------- */
+/* ---------- Testimonial Cards ---------- */
+.testimonial-card {
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
 
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 36px -10px rgba(12, 69, 80, 0.12);
+        border-color: rgba(250, 165, 45, 0.35);
+    }
+}
+
+/* ---------- Button Shine Sweep ---------- */
 .btn-shine {
     position: relative;
     overflow: hidden;
@@ -58,9 +132,9 @@
         left: -60%;
         width: 40%;
         height: 100%;
-        background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+        background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.4), transparent);
         transform: skewX(-20deg);
-        transition: left 0.6s ease;
+        transition: left 0.65s ease;
     }
 
     &:hover::after {
@@ -73,20 +147,30 @@
 }
 
 @keyframes stamp-breathe {
-
-    0%,
-    100% {
+    0%, 100% {
         opacity: 0.92;
     }
-
     50% {
         opacity: 1;
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
     }
 }
 
-/* ---------- accessibility ---------- */
+/* ---------- Floating animations ---------- */
+@keyframes floatGentle {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-8px) rotate(1deg);
+    }
+}
 
+.animate-float-gentle {
+    animation: floatGentle 6s ease-in-out infinite;
+}
+
+/* ---------- Accessibility ---------- */
 @media (prefers-reduced-motion: reduce) {
     .reveal {
         opacity: 1;
@@ -97,13 +181,16 @@
     .card-tilt,
     .card-illus,
     .exp-card,
+    .step-card,
+    .testimonial-card,
+    .animate-float-gentle,
     .btn-shine::after {
         transition: none !important;
         transform: none !important;
+        animation: none !important;
     }
 
-    #mistCanvas,
-    #mistCanvasFooter {
-        display: none;
+    canvas {
+        display: none !important;
     }
 }

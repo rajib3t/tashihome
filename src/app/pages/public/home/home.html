@@ -1,58 +1,38 @@
-<!-- ============================================================
-     ENHANCEMENTS IN THIS FILE
-     1. <canvas id="mistCanvas"> — layered, drifting mist behind the
-        hero, echoing "Sleep where the clouds start." Pure JS, no
-        libraries, ~2kb of logic, respects prefers-reduced-motion.
-     2. Real 3D tilt + shine-sweep on listing cards (was a bare
-        class name before with no behavior wired up).
-     3. Soft parallax on the ridge illustration as you scroll.
-     4. Micro-polish: button shine, card lift, richer stat easing.
- 
-     ANGULAR INTEGRATION NOTE
-     Everything below the closing </section> tags (the <style> and
-     <script> blocks) is written in plain JS for a live preview.
-     In your real component:
-       - Move the <style> block into homestay.component.scss (as-is).
-       - Move the mist-canvas + tilt logic into homestay.component.ts,
-         calling initMistCanvas() / initCardTilt() inside
-         ngAfterViewInit(), and cancelling the animation frame /
-         removing listeners inside ngOnDestroy(). The functions are
-         written as plain functions with no global state so the
-         copy-paste is direct.
-     ============================================================ -->
-
 <!-- ============ HERO ============ -->
-<section id="top" class="relative text-cloud overflow-hidden pt-36 pb-40 md:pt-44 md:pb-52"
+<section id="top" class="bg-hero-img relative text-cloud overflow-hidden pt-36 pb-40 md:pt-44 md:pb-52"
   style="background: url('/images/hero-himalaya.jpg') center/cover no-repeat;">
-  <!-- dark overlay for text legibility -->
-  <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-pine/90"></div>
+  <!-- dark gradient overlay for text legibility and depth -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black/65 via-black/45 to-pine/90"></div>
 
-  <!-- NEW: animated mist canvas — sits above the overlay, below the ambient blur orbs and copy -->
+  <!-- animated mist & stardust canvas with interactive cursor ambient swirl -->
   <canvas id="mistCanvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
 
-  <!-- ambient mist glow -->
+  <!-- ambient mist glow orbs -->
   <div
-    class="pointer-events-none absolute -top-24 right-0 w-[38rem] h-[38rem] bg-moss/25 rounded-full blur-[120px] animate-mist-a">
+    class="pointer-events-none absolute -top-24 right-0 w-[42rem] h-[42rem] bg-moss/25 rounded-full blur-[130px] animate-mist-a">
   </div>
   <div
-    class="pointer-events-none absolute bottom-0 left-0 w-[28rem] h-[28rem] bg-ochre/10 rounded-full blur-[110px] animate-mist-b">
+    class="pointer-events-none absolute bottom-0 left-0 w-[32rem] h-[32rem] bg-ochre/15 rounded-full blur-[120px] animate-mist-b">
   </div>
 
   <div class="relative max-w-7xl mx-auto px-6 lg:px-10">
-    <p class="eyebrow text-mist reveal">Homestays across the Eastern Himalaya</p>
-    <h1 class="font-display text-[13vw] leading-[0.95] md:text-[6.2rem] md:leading-[0.92] mt-5 max-w-4xl reveal">
+    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-6 reveal">
+      <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
+      <p class="eyebrow text-mist text-[11px] tracking-wider m-0">Homestays across the Eastern Himalaya</p>
+    </div>
+    <h1 class="font-display text-[13vw] leading-[0.95] md:text-[6.2rem] md:leading-[0.92] max-w-4xl reveal">
       Sleep where<br class="hidden sm:block"> the <em
         class="hero-accent font-accent not-italic text-ochre">clouds</em><br class="hidden sm:block">
       start.
     </h1>
-    <p class="mt-7 max-w-lg text-cloud/75 text-lg leading-relaxed reveal">
+    <p class="mt-7 max-w-xl text-cloud/85 text-lg md:text-xl font-light leading-relaxed reveal">
       Wood-fired baths, tea grown outside the window, and a family who'll teach you
       the mountain's names for things. Sixty-one homes across seven hill states, each one visited in person before it's
       listed.
     </p>
   </div>
 
-  <!-- ridge line illustration — now with parallax data attribute -->
+  <!-- ridge line illustration with parallax data attribute -->
   <div class="absolute bottom-0 inset-x-0" id="ridgeParallax" data-parallax="0.15">
     <svg viewBox="0 0 1440 220" class="w-full h-auto" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M0 160L120 110L240 150L380 70L520 130L650 40L800 120L940 60L1080 140L1220 90L1440 150V220H0V160Z"
@@ -62,10 +42,10 @@
     </svg>
   </div>
 
-  <!-- floating search card -->
+  <!-- floating search card with glassmorphism -->
   <div class="relative max-w-5xl mx-auto px-6 lg:px-10 -mb-20 md:-mb-24 mt-4">
     <div
-      class="reveal bg-cloud text-ink rounded-2xl md:rounded-full shadow-2xl shadow-black/30 px-6 py-5 md:px-8 md:py-4 grid md:grid-cols-[1fr_1fr_1fr_auto] gap-5 md:gap-3 items-center border border-ink/5">
+      class="reveal glass-card-light text-ink rounded-2xl md:rounded-full shadow-2xl shadow-black/35 px-6 py-5 md:px-8 md:py-4 grid md:grid-cols-[1fr_1fr_1fr_auto] gap-5 md:gap-3 items-center border border-white/60">
       <div class="md:border-r md:border-ink/10 md:pr-4">
         <p class="eyebrow text-moss">Region</p>
         <select id="region-select"
@@ -89,7 +69,7 @@
           class="mt-1 w-full bg-transparent font-display text-lg placeholder:text-ink/40 focus:outline-none" />
       </div>
       <button id="search-btn" (click)="scrollToStays()"
-        class="btn-anim btn-shine w-full md:w-auto bg-pine hover:bg-ink text-cloud font-semibold text-sm px-7 py-3.5 rounded-full transition-colors whitespace-nowrap cursor-pointer">
+        class="btn-anim btn-shine w-full md:w-auto bg-pine hover:bg-ink text-cloud font-semibold text-sm px-8 py-4 rounded-full transition-colors whitespace-nowrap cursor-pointer shadow-lg shadow-pine/30">
         Find a stay
       </button>
     </div>
@@ -97,177 +77,246 @@
 </section>
 
 <!-- ============ STATS STRIP ============ -->
-<section class="stat-section bg-cloud pt-32 md:pt-36 pb-16">
+<section class="stat-section bg-cloud bg-topo-pattern pt-32 md:pt-36 pb-16 relative border-b border-ink/5">
   <div class="max-w-7xl mx-auto px-6 lg:px-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center md:text-left">
-    <div *ngFor="let stat of stats" class="reveal">
-      <p class="font-display text-4xl text-ochre">
-        {{ stat.decimals ? stat.current.toFixed(stat.decimals) : (stat.current | number: '1.0-0') }}{{ stat.suffix || ''
-        }}
+    <div *ngFor="let stat of stats" class="reveal relative">
+      <p class="font-display text-4xl md:text-5xl text-ochre tracking-tight">
+        {{ stat.decimals ? stat.current.toFixed(stat.decimals) : (stat.current | number: '1.0-0') }}{{ stat.suffix || '' }}
       </p>
-      <p class="text-sm text-ink/60 mt-1">{{ stat.label }}</p>
+      <p class="text-sm font-medium text-ink/70 mt-1.5">{{ stat.label }}</p>
     </div>
   </div>
 </section>
 
 <!-- ============ LISTINGS ============ -->
-<section id="stays" class="bg-cloud py-20 md:py-28">
+<section id="stays" class="bg-cloud bg-topo-pattern py-20 md:py-28 relative">
   <div class="max-w-7xl mx-auto px-6 lg:px-10">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 reveal">
       <div>
-        <p class="eyebrow text-moss">Currently open for booking</p>
-        <h2 class="font-display text-4xl md:text-5xl mt-3">Homes worth the climb</h2>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-moss/10 text-moss mb-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+          <p class="eyebrow text-moss text-[10px] m-0">Currently open for booking</p>
+        </div>
+        <h2 class="font-display text-4xl md:text-5xl mt-2 text-ink">Homes worth the climb</h2>
       </div>
-      <p class="max-w-sm text-ink/60 text-sm leading-relaxed">
+      <p class="max-w-md text-ink/65 text-sm md:text-base leading-relaxed">
         Every listing is a spare room or cottage in a family home — not a rental
         managed from somewhere else. Filter by the landscape you're chasing.
       </p>
     </div>
 
-    <div id="listing-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-7 mt-10">
+    <div id="listing-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
       @for (item of properties(); track item.id) {
-      <article class="listing-card card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/5 shadow-sm">
-        <div class="h-48 relative overflow-hidden card-illus"
+      <article class="listing-card card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/10 shadow-md hover:shadow-xl transition-all duration-300">
+        <div class="h-52 relative overflow-hidden card-illus"
           [style.background]="item.feature_image?.file_url ? 'url(' + item.feature_image.file_url + ') center/cover no-repeat' : 'linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)'">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent"></div>
-          <span class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/15"></div>
+          <span class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1 bg-black/30 backdrop-blur-sm">
             HOST VERIFIED
+          </span>
+          <span class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-ink flex items-center gap-1 shadow-sm">
+            <span class="text-ochre">★</span> 4.9
           </span>
         </div>
 
-        <div class="p-5">
+        <div class="p-6">
           <div class="flex items-start justify-between gap-2">
-            <h3 class="font-display text-xl leading-tight">{{ item.name }}</h3>
-            <span class="flex items-center gap-1 text-sm text-ink/70 shrink-0 mt-0.5">★ 4.9</span>
+            <h3 class="font-display text-2xl leading-tight group-hover:text-pine transition-colors">{{ item.name }}</h3>
           </div>
-          <p class="text-sm text-ink/55 mt-1">{{ item.city?.name || 'Himalayan stay' }}{{ item.location?.name ? ', ' +
-            item.location.name : '' }}</p>
+          <p class="text-sm text-ink/60 mt-1 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-moss shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {{ item.city?.name || 'Himalayan stay' }}{{ item.location?.name ? ', ' + item.location.name : '' }}
+          </p>
 
-          <div class="flex flex-wrap gap-1.5 mt-3">
+          <div class="flex flex-wrap gap-1.5 mt-4">
             <span
               *ngFor="let tag of getFoodOptionTags(item)"
-              class="text-xs bg-cloud2 px-2.5 py-1 rounded-full text-ink/70">
+              class="text-xs bg-cloud2/80 border border-ink/5 px-2.5 py-1 rounded-full text-ink/75 font-medium">
               {{ tag }}
             </span>
           </div>
 
-          <div class="flex items-center justify-between mt-4 pt-4 border-t border-ink/10">
-            <p class="font-display text-lg">
+          <div class="flex items-center justify-between mt-5 pt-4 border-t border-ink/10">
+            <p class="font-display text-xl text-ink">
               ₹{{ (item.price_per_night ?? item.sale_price ?? 0) | number }}
-              <span class="text-xs font-body text-ink/50">/ night</span>
+              <span class="text-xs font-body font-normal text-ink/50">/ night</span>
             </p>
             <a href="" (click)="$event.preventDefault(); goToPropertyDetail(item?.slug)"
-              class="text-sm font-semibold text-ochreD hover:underline">View stay →</a>
+              class="inline-flex items-center gap-1 text-sm font-semibold text-ochreD hover:text-ochre transition-colors group-hover:translate-x-0.5">
+              View stay →
+            </a>
           </div>
         </div>
       </article>
       }
     </div>
 
-    <p *ngIf="properties().length === 0" id="empty-state" class="text-center text-ink/50 mt-14">
+    <p *ngIf="properties().length === 0" id="empty-state" class="text-center text-ink/50 mt-14 text-base">
       No homes on the register for that landscape yet.
     </p>
   </div>
 </section>
 
-<!-- ============ EXPERIENCES ============ -->
-<section id="experiences" class="bg-cloud2 py-20 md:py-28">
-  <div class="max-w-7xl mx-auto px-6 lg:px-10">
-    <p class="eyebrow text-moss reveal">What fills the days</p>
-    <h2 class="font-display text-4xl md:text-5xl mt-3 max-w-xl reveal">Not a checklist. An invitation from your hosts.
-    </h2>
+<!-- ============ EXPERIENCES (With Serene Himalayan Tea Hills Background & Canvas) ============ -->
+<section id="experiences" class="bg-experiences-img relative text-cloud py-24 md:py-32 overflow-hidden"
+  style="background: url('/images/experiences-bg.jpg') center/cover no-repeat;">
+  <!-- Balanced atmospheric overlay that keeps the scenic tea hills clearly visible while maintaining contrast -->
+  <div class="absolute inset-0 bg-gradient-to-b from-pine/85 via-black/40 to-pine/90"></div>
+
+  <!-- Interactive morning pollen / mountain breeze canvas animation -->
+  <canvas id="expCanvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-2xl mx-auto reveal">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-mist border border-white/20 backdrop-blur-md mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-ochre animate-pulse"></span>
+        <p class="eyebrow text-mist text-[10px] m-0">What fills the days</p>
+      </div>
+      <h2 class="font-display text-4xl md:text-5xl text-cloud">Not a checklist. An invitation from your hosts.</h2>
+      <p class="text-cloud/80 text-base md:text-lg mt-3">Immersive seasonal traditions rooted in centuries of hill life.</p>
+    </div>
 
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
-      <div class="reveal exp-card bg-cloud rounded-2xl p-7 border border-ink/5">
-        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-          <path d="M17 4C17 4 9 11 9 19a8 8 0 0016 0c0-8-8-15-8-15Z" stroke="#55694A" stroke-width="1.8" />
-        </svg>
-        <h3 class="font-display text-lg mt-5">Tea plucking at dawn</h3>
-        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Join the morning flush in Darjeeling's estates before the
-          mist lifts off the rows.</p>
+      <!-- Experience 1: Tea Plucking -->
+      <div class="reveal exp-card glass-card-dark rounded-2xl overflow-hidden border border-white/20 shadow-xl flex flex-col group">
+        <div class="h-40 relative overflow-hidden">
+          <img src="/images/exp-tea.jpg" alt="Tea plucking at dawn" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          <span class="absolute bottom-3 left-3 text-[10px] font-bold text-cloud bg-ochre/90 backdrop-blur-sm px-3 py-1 rounded-full shadow">DARJEELING</span>
+        </div>
+        <div class="p-6 flex-1 flex flex-col bg-pine/30">
+          <h3 class="font-display text-2xl text-cloud group-hover:text-ochre transition-colors">Tea plucking at dawn</h3>
+          <p class="text-sm text-cloud/75 mt-2.5 leading-relaxed flex-1">Join the morning flush in Darjeeling's estates before the mist lifts off the rows.</p>
+        </div>
       </div>
-      <div class="reveal exp-card bg-cloud rounded-2xl p-7 border border-ink/5">
-        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-          <path d="M4 24C4 24 10 6 17 6s13 18 13 18" stroke="#55694A" stroke-width="1.8" fill="none" />
-        </svg>
-        <h3 class="font-display text-lg mt-5">Crossing a root bridge</h3>
-        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Walk a bridge the Khasi grew from fig roots over
-          generations, guided by the family who tends it.</p>
+
+      <!-- Experience 2: Living Root Bridge -->
+      <div class="reveal exp-card glass-card-dark rounded-2xl p-6 border border-white/20 shadow-xl flex flex-col group">
+        <div class="w-14 h-14 rounded-2xl bg-moss/20 border border-moss/40 grid place-items-center mb-5 text-mist group-hover:scale-110 transition-transform">
+          <svg width="30" height="30" viewBox="0 0 34 34" fill="none">
+            <path d="M4 24C4 24 10 6 17 6s13 18 13 18" stroke="#8FC7D4" stroke-width="2.2" fill="none" stroke-linecap="round" />
+            <path d="M9 19C12 14 15 14 17 14s5 0 8 5" stroke="#FAA52D" stroke-width="2" stroke-dasharray="2 2" />
+          </svg>
+        </div>
+        <span class="text-[11px] font-bold text-mist tracking-widest uppercase mb-1">MEGHALAYA</span>
+        <h3 class="font-display text-2xl text-cloud group-hover:text-ochre transition-colors">Crossing a root bridge</h3>
+        <p class="text-sm text-cloud/75 mt-2.5 leading-relaxed flex-1">Walk a bridge the Khasi grew from fig roots over generations, guided by the family who tends it.</p>
       </div>
-      <div class="reveal exp-card bg-cloud rounded-2xl p-7 border border-ink/5">
-        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-          <circle cx="17" cy="17" r="12" stroke="#55694A" stroke-width="1.8" />
-          <path d="M17 8v9l6 4" stroke="#55694A" stroke-width="1.8" stroke-linecap="round" />
-        </svg>
-        <h3 class="font-display text-lg mt-5">Evenings by the bukhari</h3>
-        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Wood-stove storytelling in Spiti — folklore, card games, and
-          thukpa passed around the fire.</p>
+
+      <!-- Experience 3: Evenings by Bukhari -->
+      <div class="reveal exp-card glass-card-dark rounded-2xl p-6 border border-white/20 shadow-xl flex flex-col group">
+        <div class="w-14 h-14 rounded-2xl bg-ochre/20 border border-ochre/40 grid place-items-center mb-5 text-ochre group-hover:scale-110 transition-transform">
+          <svg width="30" height="30" viewBox="0 0 34 34" fill="none">
+            <circle cx="17" cy="17" r="12" stroke="#FAA52D" stroke-width="2.2" />
+            <path d="M17 8v9l6 4" stroke="#FAA52D" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+        </div>
+        <span class="text-[11px] font-bold text-ochre tracking-widest uppercase mb-1">SPITI VALLEY</span>
+        <h3 class="font-display text-2xl text-cloud group-hover:text-ochre transition-colors">Evenings by the bukhari</h3>
+        <p class="text-sm text-cloud/75 mt-2.5 leading-relaxed flex-1">Wood-stove storytelling in Spiti — folklore, card games, and piping-hot thukpa passed around the fire.</p>
       </div>
-      <div class="reveal exp-card bg-cloud rounded-2xl p-7 border border-ink/5">
-        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-          <path d="M6 28V14l11-9 11 9v14" stroke="#55694A" stroke-width="1.8" fill="none" stroke-linejoin="round" />
-        </svg>
-        <h3 class="font-display text-lg mt-5">Weaving with the Apatani</h3>
-        <p class="text-sm text-ink/60 mt-2 leading-relaxed">Learn a loom pattern that's older than the road into Ziro
-          Valley itself.</p>
+
+      <!-- Experience 4: Weaving with Apatani -->
+      <div class="reveal exp-card glass-card-dark rounded-2xl p-6 border border-white/20 shadow-xl flex flex-col group">
+        <div class="w-14 h-14 rounded-2xl bg-moss/20 border border-moss/40 grid place-items-center mb-5 text-mist group-hover:scale-110 transition-transform">
+          <svg width="30" height="30" viewBox="0 0 34 34" fill="none">
+            <path d="M6 28V14l11-9 11 9v14" stroke="#8FC7D4" stroke-width="2.2" fill="none" stroke-linejoin="round" />
+            <path d="M12 28V18h10v10" stroke="#FAA52D" stroke-width="2" />
+          </svg>
+        </div>
+        <span class="text-[11px] font-bold text-mist tracking-widest uppercase mb-1">ARUNACHAL</span>
+        <h3 class="font-display text-xl text-cloud group-hover:text-ochre transition-colors">Weaving with the Apatani</h3>
+        <p class="text-sm text-cloud/75 mt-2.5 leading-relaxed flex-1">Learn a loom pattern that's older than the road into Ziro Valley itself from master village weavers.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============ HOST SPOTLIGHT ============ -->
-<section id="hosts" class="bg-cloud py-20 md:py-28">
+<section id="hosts" class="bg-cloud bg-topo-pattern py-20 md:py-28 relative">
   <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-14 items-center">
     <div class="reveal order-2 lg:order-1">
-      <p class="eyebrow text-moss">Host spotlight</p>
-      <h2 class="font-display text-3xl md:text-4xl mt-3 leading-tight">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-moss/10 text-moss mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+        <p class="eyebrow text-moss text-[10px] m-0">Host spotlight</p>
+      </div>
+      <h2 class="font-display text-3xl md:text-4xl lg:text-5xl mt-2 leading-tight text-ink">
         "Guests come for the view. They stay for the third cup of tea."
       </h2>
-      <p class="mt-6 text-ink/65 leading-relaxed max-w-md">
+      <p class="mt-6 text-ink/75 text-base md:text-lg leading-relaxed max-w-lg">
         Yangchen and Tenzin have opened two rooms of their family home in Rumtek for
         eleven years. Between them they keep the kitchen garden, the prayer wheel
         on the porch, and a guest book filled in six languages.
       </p>
-      <div class="flex items-center gap-4 mt-8">
-        <div class="stamp w-14 h-14 shrink-0 grid place-items-center text-moss">
-          <span class="font-display text-xs">EST.<br>2013</span>
+      <div class="flex items-center gap-5 mt-8 p-4 rounded-2xl bg-white/80 border border-ink/10 shadow-sm max-w-md">
+        <div class="stamp w-14 h-14 shrink-0 grid place-items-center text-moss bg-moss/5 rounded-full">
+          <span class="font-display text-xs text-center font-bold">EST.<br>2013</span>
         </div>
         <div>
-          <p class="font-semibold">Yangchen &amp; Tenzin Bhutia</p>
-          <p class="text-sm text-ink/50">Rumtek Prayer House, Sikkim</p>
+          <p class="font-semibold text-ink text-base">Yangchen &amp; Tenzin Bhutia</p>
+          <p class="text-sm text-ink/60">Rumtek Prayer House, Sikkim</p>
         </div>
       </div>
     </div>
-    <div class="reveal order-1 lg:order-2 rounded-2xl overflow-hidden h-80 md:h-[26rem] shadow-2xl">
+    <div class="reveal order-1 lg:order-2 rounded-3xl overflow-hidden h-80 md:h-[28rem] shadow-2xl relative border-4 border-white/80 animate-float-gentle">
       <img src="/images/host-spotlight.jpg"
         alt="Yangchen and Tenzin Bhutia on the porch of their homestay in Rumtek, Sikkim"
         class="w-full h-full object-cover object-center" />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+      <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl text-xs font-semibold text-ink shadow-md">
+        📍 Rumtek, East Sikkim (Elev. 5,800 ft)
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ============ HOW IT WORKS ============ -->
-<section id="how" class="bg-pine text-cloud py-20 md:py-28">
-  <div class="max-w-7xl mx-auto px-6 lg:px-10">
-    <p class="eyebrow text-mist reveal">Booking a stay</p>
-    <h2 class="font-display text-4xl md:text-5xl mt-3 max-w-lg reveal">Three steps, no middleman.</h2>
+<!-- ============ HOW IT WORKS (Himalayan Night Pine Forest & Constellation Canvas) ============ -->
+<section id="how" class="bg-how-img relative text-cloud py-24 md:py-32 overflow-hidden"
+  style="background: url('/images/how-it-works-bg.jpg') center/cover no-repeat;">
+  <!-- Dark pine & starry night atmospheric overlay -->
+  <div class="absolute inset-0 bg-gradient-to-b from-pine/95 via-pine/80 to-pine/95"></div>
 
-    <div class="grid md:grid-cols-3 gap-10 mt-16">
-      <div class="reveal">
-        <p class="font-display text-5xl text-ochre">01</p>
-        <h3 class="font-display text-xl mt-4">Find the landscape</h3>
-        <p class="text-cloud/60 text-sm mt-2 leading-relaxed">Filter by region, dates, and the kind of quiet you're
+  <!-- Interactive Constellation & Firefly Canvas Animation -->
+  <canvas id="constellationCanvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-2xl mx-auto reveal">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cloud/10 text-mist border border-cloud/20 backdrop-blur-md mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-ochre"></span>
+        <p class="eyebrow text-mist text-[10px] m-0">Booking a stay</p>
+      </div>
+      <h2 class="font-display text-4xl md:text-5xl text-cloud">Three steps, no middleman.</h2>
+      <p class="text-cloud/70 text-sm md:text-base mt-3">Direct host communication with transparent community guarantees.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 mt-16">
+      <div class="reveal step-card glass-card-dark rounded-2xl p-8 border border-white/15">
+        <div class="w-14 h-14 rounded-2xl bg-ochre/20 border border-ochre/40 grid place-items-center mb-6">
+          <p class="font-display text-3xl text-ochre m-0">01</p>
+        </div>
+        <h3 class="font-display text-2xl text-cloud">Find the landscape</h3>
+        <p class="text-cloud/70 text-sm md:text-base mt-3 leading-relaxed">Filter by region, dates, and the kind of quiet you're
           after — misty tea hills or dry alpine desert.</p>
       </div>
-      <div class="reveal">
-        <p class="font-display text-5xl text-ochre">02</p>
-        <h3 class="font-display text-xl mt-4">Message the host directly</h3>
-        <p class="text-cloud/60 text-sm mt-2 leading-relaxed">Ask about the walk to the village, what's in season, or
+
+      <div class="reveal step-card glass-card-dark rounded-2xl p-8 border border-white/15">
+        <div class="w-14 h-14 rounded-2xl bg-ochre/20 border border-ochre/40 grid place-items-center mb-6">
+          <p class="font-display text-3xl text-ochre m-0">02</p>
+        </div>
+        <h3 class="font-display text-2xl text-cloud">Message the host directly</h3>
+        <p class="text-cloud/70 text-sm md:text-base mt-3 leading-relaxed">Ask about the walk to the village, what's in season, or
           whether the dog is friendly. It's their home — they'll tell you.</p>
       </div>
-      <div class="reveal">
-        <p class="font-display text-5xl text-ochre">03</p>
-        <h3 class="font-display text-xl mt-4">Pay a small deposit</h3>
-        <p class="text-cloud/60 text-sm mt-2 leading-relaxed">We hold a 20% deposit to confirm the room; the rest is
+
+      <div class="reveal step-card glass-card-dark rounded-2xl p-8 border border-white/15">
+        <div class="w-14 h-14 rounded-2xl bg-ochre/20 border border-ochre/40 grid place-items-center mb-6">
+          <p class="font-display text-3xl text-ochre m-0">03</p>
+        </div>
+        <h3 class="font-display text-2xl text-cloud">Pay a small deposit</h3>
+        <p class="text-cloud/70 text-sm md:text-base mt-3 leading-relaxed">We hold a 20% deposit to confirm the room; the rest is
           settled with your hosts, in person, the old way.</p>
       </div>
     </div>
@@ -275,46 +324,80 @@
 </section>
 
 <!-- ============ TESTIMONIALS ============ -->
-<section class="bg-cloud2 py-20 md:py-28">
+<section class="bg-cloud2 bg-topo-pattern py-20 md:py-28 relative">
   <div class="max-w-7xl mx-auto px-6 lg:px-10">
-    <p class="eyebrow text-moss reveal">From the guest book</p>
-    <h2 class="font-display text-4xl md:text-5xl mt-3 reveal">What people write before they leave</h2>
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 reveal">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-moss/10 text-moss mb-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+          <p class="eyebrow text-moss text-[10px] m-0">From the guest book</p>
+        </div>
+        <h2 class="font-display text-4xl md:text-5xl text-ink">What people write before they leave</h2>
+      </div>
+      <p class="max-w-xs text-ink/60 text-sm">Real journal entries from travelers across Himalayan circuits.</p>
+    </div>
 
-    <div class="grid md:grid-cols-3 gap-7 mt-14">
-      <blockquote class="reveal bg-cloud rounded-2xl p-7 border border-ink/5">
-        <p class="font-display text-lg leading-snug">"Woke up to prayer flags and the smell of someone's breakfast fire.
+    <div class="grid md:grid-cols-3 gap-8 mt-14">
+      <blockquote class="reveal testimonial-card bg-white rounded-2xl p-8 border border-ink/10 shadow-sm relative">
+        <div class="text-ochre text-2xl mb-3">★★★★★</div>
+        <p class="font-display text-xl leading-snug text-ink">"Woke up to prayer flags and the smell of someone's breakfast fire.
           Didn't want the three days to end."</p>
-        <footer class="mt-5 text-sm text-ink/50">— Ritika, Nongriat Bridgehouse</footer>
+        <footer class="mt-6 pt-4 border-t border-ink/10 text-sm font-medium text-ink/60 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-moss"></span>
+          Ritika, Nongriat Bridgehouse
+        </footer>
       </blockquote>
-      <blockquote class="reveal bg-cloud rounded-2xl p-7 border border-ink/5">
-        <p class="font-display text-lg leading-snug">"Our host taught my daughter to read the clouds for rain. She still
+
+      <blockquote class="reveal testimonial-card bg-white rounded-2xl p-8 border border-ink/10 shadow-sm relative">
+        <div class="text-ochre text-2xl mb-3">★★★★★</div>
+        <p class="font-display text-xl leading-snug text-ink">"Our host taught my daughter to read the clouds for rain. She still
           does it at home."</p>
-        <footer class="mt-5 text-sm text-ink/50">— Farhan, Ziro Paddy House</footer>
+        <footer class="mt-6 pt-4 border-t border-ink/10 text-sm font-medium text-ink/60 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-moss"></span>
+          Farhan, Ziro Paddy House
+        </footer>
       </blockquote>
-      <blockquote class="reveal bg-cloud rounded-2xl p-7 border border-ink/5">
-        <p class="font-display text-lg leading-snug">"No wifi, no problem. Best sleep I've had in years, under three
+
+      <blockquote class="reveal testimonial-card bg-white rounded-2xl p-8 border border-ink/10 shadow-sm relative">
+        <div class="text-ochre text-2xl mb-3">★★★★★</div>
+        <p class="font-display text-xl leading-snug text-ink">"No wifi, no problem. Best sleep I've had in years, under three
           extra quilts."</p>
-        <footer class="mt-5 text-sm text-ink/50">— Meera, Komic Stone House</footer>
+        <footer class="mt-6 pt-4 border-t border-ink/10 text-sm font-medium text-ink/60 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-moss"></span>
+          Meera, Komic Stone House
+        </footer>
       </blockquote>
     </div>
   </div>
 </section>
 
-<!-- ============ NEWSLETTER CTA ============ -->
-<section class="bg-pine text-cloud py-20 relative overflow-hidden">
+<!-- ============ NEWSLETTER CTA (Alpine Golden Hour Snow Peaks & Floating Embers Canvas) ============ -->
+<section class="bg-newsletter-img relative text-cloud py-24 md:py-32 overflow-hidden"
+  style="background: url('/images/newsletter-bg.jpg') center/cover no-repeat;">
+  <!-- Dark alpine sunset overlay -->
+  <div class="absolute inset-0 bg-gradient-to-b from-pine/90 via-black/60 to-pine/95"></div>
+
+  <!-- Warm golden embers & sunset clouds canvas -->
   <canvas id="mistCanvasFooter" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+
   <div
-    class="pointer-events-none absolute -bottom-20 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-moss/20 rounded-full blur-[130px] animate-mist-c">
+    class="pointer-events-none absolute -bottom-20 left-1/2 -translate-x-1/2 w-[44rem] h-[44rem] bg-ochre/15 rounded-full blur-[140px] animate-mist-c">
   </div>
+
   <div class="relative max-w-2xl mx-auto px-6 text-center reveal">
-    <h2 class="font-display text-3xl md:text-4xl">New villages open a few times a year.</h2>
-    <p class="text-cloud/60 mt-3">Leave your email and we'll write when the next one does — nothing else, ever.</p>
+    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-6">
+      <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
+      <p class="eyebrow text-mist text-[11px] m-0">Dispatches from the ridges</p>
+    </div>
+    <h2 class="font-display text-4xl md:text-5xl text-cloud leading-tight">New villages open a few times a year.</h2>
+    <p class="text-cloud/80 text-base md:text-lg mt-4 max-w-lg mx-auto leading-relaxed">Leave your email and we'll write when the next mountain circuit is ready — nothing else, ever.</p>
+
     <form (submit)="onNewsletterSubmit(); $event.preventDefault()"
       class="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
       <input required type="email" [(ngModel)]="newsletterEmail" name="newsletterEmail" placeholder="you@example.com"
-        class="flex-1 bg-cloud/10 border border-cloud/25 rounded-full px-5 py-3 text-sm placeholder:text-cloud/40 focus:outline-none focus:border-ochre text-cloud" />
+        class="flex-1 bg-white/15 backdrop-blur-md border border-white/30 rounded-full px-6 py-4 text-sm placeholder:text-cloud/50 focus:outline-none focus:border-ochre text-cloud shadow-inner" />
       <button type="submit"
-        class="btn-anim btn-shine bg-ochre hover:bg-ochreD text-cloud font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer">
+        class="btn-anim btn-shine bg-ochre hover:bg-ochreD text-cloud font-semibold text-sm px-8 py-4 rounded-full transition-colors cursor-pointer shadow-lg shadow-ochre/30">
         {{ newsletterSubmitted ? "You're on the list!" : "Notify me" }}
       </button>
     </form>
