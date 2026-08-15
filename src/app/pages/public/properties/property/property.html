@@ -1,45 +1,78 @@
 <!-- ============ COVER IMAGE ============ -->
-<section id="top" class="relative h-[64vh] md:h-[78vh] min-h-[420px] overflow-hidden">
+<section id="top" class="relative h-[68vh] md:h-[82vh] min-h-[460px] overflow-hidden">
   @if (propertyData()?.cover_image?.file_url || propertyData()?.feature_image?.file_url || galleryImages()[0]?.file_url)
   {
   <img
     [src]="propertyData()?.cover_image?.file_url || propertyData()?.feature_image?.file_url || galleryImages()[0]?.file_url || ''"
     [alt]="propertyData()?.name || 'Property cover image'"
-    class="absolute inset-0 w-full h-full object-cover object-center" />
+    class="absolute inset-0 w-full h-full object-cover object-center scale-105" />
   } @else {
   <div class="absolute inset-0 bg-gradient-to-br from-pine2 via-pine to-[#132d33]">
-    <div
-      class="absolute inset-0 opacity-20 bg-[radial-gradient(#FAA52D_1px,transparent_1px)] [background-size:24px_24px]">
-    </div>
+    <!-- topographic contour pattern instead of generic dot grid -->
+    <svg class="absolute inset-0 w-full h-full opacity-[0.12]" preserveAspectRatio="none" viewBox="0 0 800 600"
+      xmlns="http://www.w3.org/2000/svg">
+      <path d="M-20 480 Q 140 380 280 460 T 560 420 T 840 470" stroke="#FAA52D" stroke-width="1.4" fill="none" />
+      <path d="M-20 520 Q 160 430 320 500 T 600 470 T 840 510" stroke="#FAA52D" stroke-width="1.2" fill="none" />
+      <path d="M-20 560 Q 180 480 360 540 T 640 520 T 840 555" stroke="#FAA52D" stroke-width="1" fill="none" />
+      <path d="M-20 260 Q 120 140 260 230 T 520 170 T 840 240" stroke="#FAA52D" stroke-width="1.2" fill="none" />
+      <path d="M-20 300 Q 140 190 300 270 T 560 220 T 840 290" stroke="#FAA52D" stroke-width="1" fill="none" />
+    </svg>
   </div>
   }
 
   <div
     class="pointer-events-none absolute -top-16 right-0 w-[34rem] h-[34rem] bg-moss/25 rounded-full blur-[120px] animate-mist-a">
   </div>
+  <div
+    class="pointer-events-none absolute -bottom-24 -left-16 w-[26rem] h-[26rem] bg-ochre/15 rounded-full blur-[110px]">
+  </div>
+
   <!-- dark overlays for navbar, logo and text legibility -->
-  <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-transparent"></div>
-  <div class="absolute inset-0 bg-gradient-to-t from-pine via-pine/50 to-transparent"></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/15 to-transparent"></div>
+  <div class="absolute inset-0 bg-gradient-to-t from-pine via-pine/55 to-transparent"></div>
 
   <div class="absolute inset-x-0 bottom-0">
-    <div class="max-w-7xl mx-auto px-6 lg:px-10 pb-8 md:pb-12">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 pb-10 md:pb-14">
       <a href="/"
-        class="inline-flex items-center gap-1.5 text-cloud/80 hover:text-ochre text-sm font-medium mb-4 transition-colors">
-        ← All stays
+        class="group inline-flex items-center gap-1.5 text-cloud/80 hover:text-ochre text-sm font-medium mb-5 transition-colors">
+        <span class="inline-block transition-transform group-hover:-translate-x-1">←</span> All stays
       </a>
-      <span class="stamp stamp-pulse inline-block text-cloud text-[10px] font-semibold px-3 py-1 mb-4">HOST
-        VERIFIED</span>
-      <h1 class="font-display text-4xl sm:text-5xl md:text-6xl text-cloud leading-[1.05]">{{ propertyData()?.name }}
+
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <span class="stamp stamp-pulse inline-flex items-center gap-1.5 text-cloud text-[10px] font-semibold px-3 py-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          HOST VERIFIED
+        </span>
+        <span
+          class="inline-flex items-center gap-1 text-cloud/90 text-[10px] font-semibold px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15">
+          ★ 4.9 rated stay
+        </span>
+      </div>
+
+      <h1
+        class="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-cloud leading-[1.03] tracking-tight max-w-4xl drop-shadow-sm">
+        {{ propertyData()?.name }}
       </h1>
-      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-4 text-cloud/85 text-sm">
-        <span class="flex items-center gap-1.5">
-          ★ {{ propertyData()?.price_per_night ?? 0 | number }}
-          <span class="text-cloud/55">/ night</span>
+
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-5 text-cloud/85 text-sm">
+        <span class="flex items-center gap-1.5 font-medium text-cloud">
+          <span class="text-ochre">₹</span>{{ propertyData()?.price_per_night ?? 0 | number }}
+          <span class="text-cloud/55 font-normal">/ night</span>
         </span>
         @if (propertyData()?.city?.name) {
         <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
-        <span>{{ propertyData()?.city?.name }}{{ propertyData()?.location?.name ? ', ' + propertyData()?.location?.name
-          : '' }}</span>
+        <span class="inline-flex items-center gap-1.5">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" class="opacity-70">
+            <path d="M12 21s-7-6.2-7-11.2A7 7 0 0 1 19 9.8C19 14.8 12 21 12 21Z" stroke="currentColor"
+              stroke-width="1.6" />
+            <circle cx="12" cy="9.5" r="2.2" stroke="currentColor" stroke-width="1.6" />
+          </svg>
+          {{ propertyData()?.city?.name }}{{ propertyData()?.location?.name ? ', ' + propertyData()?.location?.name : ''
+          }}
+        </span>
         }
         @if (propertyData()?.address) {
         <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
@@ -59,15 +92,24 @@
       </div>
     </div>
   </div>
+
+  <!-- signature element: hand-drawn ridgeline seam into the page below -->
+  <svg class="absolute -bottom-px left-0 w-full h-[46px] md:h-[64px] text-cloud2" viewBox="0 0 1440 64"
+    preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 64 L0 34 L140 8 L260 40 L400 4 L560 30 L700 12 L860 42 L1020 6 L1180 36 L1320 14 L1440 30 L1440 64 Z"
+      fill="currentColor" opacity="0.55" />
+    <path d="M0 64 L0 46 L160 26 L320 50 L480 22 L660 46 L840 24 L1020 48 L1200 22 L1440 44 L1440 64 Z"
+      fill="currentColor" />
+  </svg>
 </section>
 
 <!-- ============ GALLERY (Luxury Bento Grid & Interactive Lightbox) ============ -->
-<section class="relative -mt-8 md:-mt-10 z-10">
+<section class="relative -mt-3 md:-mt-4 z-10">
   <div class="max-w-7xl mx-auto px-6 lg:px-10">
     @if (galleryImages().length > 0) {
 
     <div
-      class="reveal relative rounded-3xl overflow-hidden shadow-2xl shadow-pine/15 border border-white/30 bg-cloud2/40">
+      class="reveal relative rounded-3xl overflow-hidden shadow-2xl shadow-pine/20 border border-white/40 bg-cloud2/40 ring-1 ring-black/[0.03]">
 
       <!-- Layout for 5+ images (Classic Luxury Bento Grid) -->
       @if (galleryImages().length >= 5) {
@@ -78,13 +120,16 @@
           class="md:col-span-2 md:row-span-2 relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
           <img [src]="galleryImages()[0].file_url"
             [alt]="galleryImages()[0].title || propertyData()?.name || 'Property showcase photo'"
-            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+            class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
           <div
-            class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            class="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          </div>
+          <div
+            class="absolute inset-0 ring-1 ring-inset ring-white/0 group-hover:ring-white/20 transition-all duration-300 rounded-2xl">
           </div>
           @if (galleryImages()[0].title) {
           <span
-            class="absolute bottom-3 left-3 bg-ink/75 text-cloud text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-md shadow-sm">
+            class="absolute bottom-3 left-3 bg-ink/75 text-cloud text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-md shadow-sm translate-y-0 group-hover:-translate-y-0.5 transition-transform">
             {{ galleryImages()[0].title }}
           </span>
           }
@@ -95,7 +140,7 @@
           class="hidden md:block relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
           <img [src]="galleryImages()[1].file_url"
             [alt]="galleryImages()[1].title || propertyData()?.name || 'Property photo'"
-            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+            class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
           <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
           @if (galleryImages()[1].title) {
           <span
@@ -110,7 +155,7 @@
           class="hidden md:block relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
           <img [src]="galleryImages()[2].file_url"
             [alt]="galleryImages()[2].title || propertyData()?.name || 'Property photo'"
-            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+            class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
           <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
           @if (galleryImages()[2].title) {
           <span
@@ -125,7 +170,7 @@
           class="hidden md:block relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
           <img [src]="galleryImages()[3].file_url"
             [alt]="galleryImages()[3].title || propertyData()?.name || 'Property photo'"
-            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+            class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
           <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
           @if (galleryImages()[3].title) {
           <span
@@ -140,7 +185,7 @@
           class="hidden md:block relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
           <img [src]="galleryImages()[4].file_url"
             [alt]="galleryImages()[4].title || propertyData()?.name || 'Property photo'"
-            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+            class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
           @if (galleryImages().length > 5) {
           <div
             class="absolute inset-0 bg-ink/65 group-hover:bg-ink/55 backdrop-blur-[2px] flex flex-col items-center justify-center text-cloud transition-colors duration-300">
@@ -171,9 +216,9 @@
           class="md:col-span-2 md:row-span-2 relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
           <img [src]="galleryImages()[0].file_url"
             [alt]="galleryImages()[0].title || propertyData()?.name || 'Property photo'"
-            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+            class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
           <div
-            class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            class="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           </div>
           @if (galleryImages()[0].title) {
           <span
@@ -185,7 +230,7 @@
         <div (click)="openLightbox(i + 1)"
           class="hidden md:block relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
           <img [src]="img.file_url" [alt]="img.title || propertyData()?.name || 'Property photo'"
-            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+            class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
           <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
           @if (img.title) {
           <span
@@ -204,9 +249,9 @@
           class="md:col-span-2 relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
           <img [src]="galleryImages()[0].file_url"
             [alt]="galleryImages()[0].title || propertyData()?.name || 'Property photo'"
-            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+            class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
           <div
-            class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            class="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           </div>
           @if (galleryImages()[0].title) {
           <span
@@ -219,7 +264,7 @@
           <div (click)="openLightbox(i + 1)"
             class="relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
             <img [src]="img.file_url" [alt]="img.title || propertyData()?.name || 'Property photo'"
-              class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+              class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
             @if (img.title) {
             <span
@@ -238,7 +283,7 @@
         @for (img of galleryImages(); track img.file_url; let i = $index) {
         <div (click)="openLightbox(i)" class="relative group cursor-pointer overflow-hidden rounded-2xl bg-pine/5">
           <img [src]="img.file_url" [alt]="img.title || propertyData()?.name || 'Property photo'"
-            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+            class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
           <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
           @if (img.title) {
           <span
@@ -256,9 +301,9 @@
         class="relative group cursor-pointer overflow-hidden rounded-2xl h-[340px] sm:h-[420px] md:h-[480px] bg-pine/5">
         <img [src]="galleryImages()[0].file_url"
           [alt]="galleryImages()[0].title || propertyData()?.name || 'Property photo'"
-          class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out" />
+          class="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-[900ms] ease-out" />
         <div
-          class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          class="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         </div>
         @if (galleryImages()[0].title) {
         <span
@@ -270,8 +315,9 @@
 
       <!-- Floating "Show all photos" pill button -->
       <button type="button" (click)="openLightbox(0)"
-        class="absolute bottom-4 right-4 md:bottom-5 md:right-5 z-20 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/90 hover:bg-white text-ink text-xs md:text-sm font-semibold shadow-lg shadow-pine/15 backdrop-blur-md border border-white/60 hover:border-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer">
-        <svg class="w-4 h-4 text-pine" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        class="absolute bottom-4 right-4 md:bottom-5 md:right-5 z-20 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/90 hover:bg-white text-ink text-xs md:text-sm font-semibold shadow-lg shadow-pine/20 backdrop-blur-md border border-white/60 hover:border-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer">
+        <svg class="w-4 h-4 text-pine transition-transform group-hover:rotate-3" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
           <rect width="18" height="18" x="3" y="3" rx="2" stroke-width="2" />
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9h18M9 21V9" />
         </svg>
@@ -283,8 +329,13 @@
     } @else {
     <!-- Graceful Luxury Placeholder (When no photos yet) -->
     <div
-      class="reveal rounded-3xl overflow-hidden shadow-xl shadow-pine/10 border border-ink/8 bg-gradient-to-br from-pine/90 via-pine to-pine2 p-8 md:p-14 text-cloud flex flex-col md:flex-row items-center justify-between gap-8">
-      <div class="max-w-xl text-center md:text-left">
+      class="reveal relative rounded-3xl overflow-hidden shadow-xl shadow-pine/15 border border-ink/8 bg-gradient-to-br from-pine/90 via-pine to-pine2 p-8 md:p-14 text-cloud flex flex-col md:flex-row items-center justify-between gap-8">
+      <svg class="absolute inset-0 w-full h-full opacity-[0.08]" preserveAspectRatio="none" viewBox="0 0 800 300"
+        xmlns="http://www.w3.org/2000/svg">
+        <path d="M-20 240 Q 140 160 280 220 T 560 190 T 840 230" stroke="#FAA52D" stroke-width="1.4" fill="none" />
+        <path d="M-20 270 Q 160 200 320 250 T 600 230 T 840 265" stroke="#FAA52D" stroke-width="1" fill="none" />
+      </svg>
+      <div class="relative max-w-xl text-center md:text-left">
         <span class="stamp inline-block text-ochre text-[10px] font-semibold px-3 py-1 mb-3">GALLERY UPDATE IN
           PROGRESS</span>
         <h3 class="font-display text-2xl md:text-3xl text-cloud">Curated Visual Journey</h3>
@@ -294,7 +345,7 @@
         </p>
       </div>
       <div
-        class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 grid place-items-center shrink-0">
+        class="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 grid place-items-center shrink-0">
         <svg class="w-10 h-10 text-ochre/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -306,217 +357,359 @@
 </section>
 
 <!-- ============ MAIN CONTENT + BOOKING SIDEBAR ============ -->
-<section class="max-w-7xl mx-auto px-6 lg:px-10 pt-14 pb-20">
-  <div class="grid lg:grid-cols-[1fr_360px] gap-14">
+<section class="relative py-16 md:py-24 overflow-hidden border-t border-ink/5">
+  <!-- Background: Serene Himalayan valley with winding river & cedar forest -->
+  <div class="pointer-events-none absolute inset-0 z-0"
+    style="background: url('/images/property-bg.jpg') center 25%/cover no-repeat;"></div>
+  <!-- Balanced light overlay to showcase the landscape while ensuring maximum readability of text and cards -->
+  <div class="pointer-events-none absolute inset-0 z-0"
+    style="background: linear-gradient(180deg, rgba(248,252,249,0.74) 0%, rgba(253,250,244,0.66) 50%, rgba(248,252,249,0.78) 100%);">
+  </div>
 
-    <!-- LEFT: content -->
-    <div class="min-w-0">
+  <!-- Soft ambient glowing blurs -->
+  <div
+    class="pointer-events-none absolute top-1/4 -left-20 w-[36rem] h-[36rem] bg-moss/15 rounded-full blur-[130px] z-0">
+  </div>
+  <div
+    class="pointer-events-none absolute bottom-1/4 -right-20 w-[36rem] h-[36rem] bg-ochre/15 rounded-full blur-[130px] z-0">
+  </div>
 
-      <!-- host strip -->
-      <div class="reveal flex items-center justify-between gap-4 pb-8 border-b border-ink/10">
-        <div>
-          <p class="eyebrow text-mossD">Hosted by</p>
-          <h2 class="font-display text-2xl mt-1">{{ propertyData()?.vendor?.full_name || 'Your Host' }}</h2>
+  <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid lg:grid-cols-[1fr_360px] gap-14">
 
-        </div>
-        <div class="w-14 h-14 rounded-full bg-cloud2 grid place-items-center shrink-0">
-          @if(propertyData()?.vendor?.is_profile_image_url != null && propertyData()?.vendor?.is_profile_image_url !=
-          '') {
-          <img [src]="propertyData()?.vendor?.is_profile_image_url"
-            [alt]="propertyData()?.vendor?.full_name || 'Host profile image'"
-            class="w-12 h-12 rounded-full object-cover" />
-          } @else {
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" stroke="#0C4550" stroke-width="1.6" />
-            <path d="M4 21c1.4-4 4.4-6 8-6s6.6 2 8 6" stroke="#0C4550" stroke-width="1.6" stroke-linecap="round" />
-          </svg>
-          }
-        </div>
-      </div>
+      <!-- LEFT: content -->
+      <div class="min-w-0 space-y-10">
 
-      <!-- description -->
-      <div class="reveal pt-8">
-        <h2 class="font-display text-3xl">About this stay</h2>
-        <div class="mt-4 space-y-4 text-[15px] leading-relaxed text-ink/70">
-          @if (propertyData()?.description) {
-          <p>{{ propertyData()?.description }}</p>
-          } @else {
-          <p class="text-ink/45 italic">No description provided for this property yet.</p>
-          }
-        </div>
-      </div>
-
-      <!-- amenities -->
-      @if ((propertyData()?.property_amenities ?? []).length > 0) {
-      <div class="reveal pt-12">
-        <h2 class="font-display text-3xl">Amenities</h2>
-        <div class="grid sm:grid-cols-2 gap-3 mt-6">
-          @for (amenity of propertyData()?.property_amenities ?? []; track amenity.id) {
-          <div class="flex items-center gap-3 p-4 rounded-2xl border border-ink/8 bg-white">
-            <span class="w-9 h-9 rounded-full bg-cloud2 grid place-items-center text-mossD shrink-0">
-              @if (amenity.amenity?.icon_url) {
-              <img [src]="amenity.amenity.icon_url" [alt]="amenity.amenity.name" class="w-5 h-5 object-contain" />
+        <!-- host strip -->
+        <div
+          class="reveal relative flex items-center justify-between gap-4 p-5 rounded-2xl border border-white/80 shadow-sm glass-property-card overflow-hidden">
+          <div class="absolute -right-6 -top-8 w-24 h-24 rounded-full bg-ochre/10 blur-2xl"></div>
+          <div class="relative">
+            <p class="eyebrow text-mossD">Hosted by</p>
+            <h2 class="font-display text-2xl mt-1 text-ink">{{ propertyData()?.vendor?.full_name || 'Your Host' }}</h2>
+            <p class="text-xs text-ink/50 mt-1 flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" class="text-mossD">
+                <path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+              Verified identity &amp; responsive host
+            </p>
+          </div>
+          <div class="relative shrink-0">
+            <div
+              class="w-14 h-14 rounded-full bg-cloud2/80 border border-white/80 shadow-xs grid place-items-center overflow-hidden">
+              @if(propertyData()?.vendor?.is_profile_image_url != null && propertyData()?.vendor?.is_profile_image_url
+              != '') {
+              <img [src]="propertyData()?.vendor?.is_profile_image_url"
+                [alt]="propertyData()?.vendor?.full_name || 'Host profile image'" class="w-full h-full object-cover" />
               } @else {
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
-                <path d="M12 3C9 8 6 10.5 6 14.5a6 6 0 0 0 12 0C18 10.5 15 8 12 3Z" stroke="currentColor"
-                  stroke-width="1.7" stroke-linejoin="round" />
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" stroke="#0C4550" stroke-width="1.6" />
+                <path d="M4 21c1.4-4 4.4-6 8-6s6.6 2 8 6" stroke="#0C4550" stroke-width="1.6" stroke-linecap="round" />
               </svg>
               }
+            </div>
+            <span
+              class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-mossD grid place-items-center border-2 border-white shadow-sm">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12.5 9.5 17 19 7" stroke="white" stroke-width="3" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
             </span>
-            <span class="text-sm font-medium text-ink/80">{{ amenity.amenity?.name }}</span>
           </div>
-          }
         </div>
-      </div>
-      }
 
-      <!-- facilities -->
-      @if ((propertyData()?.property_facilities ?? []).length > 0) {
-      <div class="reveal pt-12">
-        <h2 class="font-display text-3xl">Facilities</h2>
-        <div class="grid sm:grid-cols-2 gap-x-8 gap-y-3 mt-6 text-sm text-ink/75">
-          @for (facility of propertyData()?.property_facilities ?? []; track facility.id) {
-          <div class="flex items-center gap-2.5">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" class="shrink-0">
-              <path d="M5 12.5 9.5 17 19 7" stroke="#347E92" stroke-width="2.2" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-            {{ facility.facility?.name }}
+        <!-- description -->
+        <div
+          class="reveal relative p-6 md:p-8 rounded-3xl border border-white/80 shadow-sm glass-property-card overflow-hidden">
+          <span
+            class="pointer-events-none absolute top-4 right-6 font-display text-7xl text-ink/[0.05] leading-none select-none">&rdquo;</span>
+          <div class="flex items-center gap-3 relative">
+            <span class="w-8 h-[3px] rounded-full bg-ochre"></span>
+            <p class="eyebrow text-mossD">The story</p>
           </div>
-          }
+          <h2 class="font-display text-3xl text-ink mt-2">About this stay</h2>
+          <div class="mt-4 space-y-4 text-[15px] leading-relaxed text-ink/75 relative">
+            @if (propertyData()?.description) {
+            <p>{{ propertyData()?.description }}</p>
+            } @else {
+            <p class="text-ink/45 italic">No description provided for this property yet.</p>
+            }
+          </div>
         </div>
-      </div>
-      }
 
-      <!-- food options -->
-      @if ((propertyData()?.property_food_options ?? []).length > 0) {
-      <div class="reveal pt-12">
-        <h2 class="font-display text-3xl">Food options</h2>
-        <p class="text-sm text-ink/55 mt-2 max-w-lg">Food options offered by the host for this stay.</p>
-        <div class="grid sm:grid-cols-2 gap-4 mt-6">
-          @for (food of propertyData()?.property_food_options ?? []; track food.id) {
-          <div class="p-5 rounded-2xl bg-white border border-ink/8">
-            <div class="flex items-start justify-between gap-3">
-              <h3 class="font-display text-lg">{{ food.name }}</h3>
-              @if (food.is_included) {
-              <span class="eyebrow text-mossD shrink-0 mt-1">Included</span>
-              } @else {
-              <span class="eyebrow text-ochreD shrink-0 mt-1">Optional</span>
+        <!-- amenities -->
+        @if ((propertyData()?.property_amenities ?? []).length > 0) {
+        <div class="reveal">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-[3px] rounded-full bg-ochre"></span>
+            <p class="eyebrow text-mossD">What's on offer</p>
+          </div>
+          <h2 class="font-display text-3xl text-ink mt-2">Amenities</h2>
+          <div class="grid sm:grid-cols-2 gap-3 mt-6">
+            @for (amenity of propertyData()?.property_amenities ?? []; track amenity.id) {
+            <div
+              class="group flex items-center gap-3 p-4 rounded-2xl glass-property-tile shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+              <span
+                class="w-9 h-9 rounded-full bg-gradient-to-br from-cloud2/90 to-moss/15 grid place-items-center text-mossD shrink-0 border border-white/60 group-hover:border-ochre/40 transition-colors">
+                @if (amenity.amenity?.icon_url) {
+                <img [src]="amenity.amenity.icon_url" [alt]="amenity.amenity.name" class="w-5 h-5 object-contain" />
+                } @else {
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3C9 8 6 10.5 6 14.5a6 6 0 0 0 12 0C18 10.5 15 8 12 3Z" stroke="currentColor"
+                    stroke-width="1.7" stroke-linejoin="round" />
+                </svg>
+                }
+              </span>
+              <span class="text-sm font-medium text-ink/85">{{ amenity.amenity?.name }}</span>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- facilities -->
+        @if ((propertyData()?.property_facilities ?? []).length > 0) {
+        <div class="reveal">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-[3px] rounded-full bg-ochre"></span>
+            <p class="eyebrow text-mossD">On the property</p>
+          </div>
+          <h2 class="font-display text-3xl text-ink mt-2">Facilities</h2>
+          <div class="p-6 rounded-3xl glass-property-card border border-white/80 shadow-sm mt-6">
+            <div class="grid sm:grid-cols-2 gap-x-8 gap-y-3.5 text-sm text-ink/80">
+              @for (facility of propertyData()?.property_facilities ?? []; track facility.id) {
+              <div class="flex items-center gap-2.5">
+                <span class="w-5 h-5 rounded-full bg-moss/15 grid place-items-center shrink-0">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12.5 9.5 17 19 7" stroke="#347E92" stroke-width="2.4" stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                </span>
+                <span>{{ facility.facility?.name }}</span>
+              </div>
               }
             </div>
-            <p class="text-sm text-ink/60 mt-2 leading-relaxed">
-              {{ food.is_included ? 'Included with the stay.' : 'Available on request — ask the host.' }}
-            </p>
-          </div>
-          }
-        </div>
-      </div>
-      }
-
-      <!-- good to know -->
-      <div class="reveal pt-12">
-        <h2 class="font-display text-3xl">Good to know</h2>
-        <div class="grid sm:grid-cols-3 gap-6 mt-6 text-sm">
-          <div>
-            <p class="eyebrow text-ink/40">Check-in / out</p>
-            <p class="text-ink/75 mt-2">Flexible on request<br />Check-out by 10:00 AM</p>
-          </div>
-          <div>
-            <p class="eyebrow text-ink/40">House rules</p>
-            <p class="text-ink/75 mt-2">Subject to host policy<br />Quiet hours after 9:30 PM</p>
-          </div>
-          <div>
-            <p class="eyebrow text-ink/40">Cancellation</p>
-            <p class="text-ink/75 mt-2">Subject to booking terms<br />
-              @if (propertyData()?.deposit) {
-              ₹{{ propertyData()?.deposit | number }} deposit applies
-              } @else {
-              Deposit policy may apply
-              }
-            </p>
           </div>
         </div>
+        }
+
+        <!-- food options -->
+        @if ((propertyData()?.property_food_options ?? []).length > 0) {
+        <div class="reveal">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-[3px] rounded-full bg-ochre"></span>
+            <p class="eyebrow text-mossD">In the kitchen</p>
+          </div>
+          <h2 class="font-display text-3xl text-ink mt-2">Food options</h2>
+          <p class="text-sm text-ink/65 mt-2 max-w-lg">Food options offered by the host for this stay.</p>
+          <div class="grid sm:grid-cols-2 gap-4 mt-6">
+            @for (food of propertyData()?.property_food_options ?? []; track food.id) {
+            <div class="p-5 rounded-2xl glass-property-tile shadow-sm hover:shadow-md transition-shadow duration-200">
+              <div class="flex items-start justify-between gap-3">
+                <h3 class="font-display text-lg text-ink">{{ food.name }}</h3>
+                @if (food.is_included) {
+                <span
+                  class="eyebrow text-mossD shrink-0 mt-1 px-2.5 py-0.5 rounded-full bg-moss/10 border border-moss/20">Included</span>
+                } @else {
+                <span
+                  class="eyebrow text-ochreD shrink-0 mt-1 px-2.5 py-0.5 rounded-full bg-ochre/10 border border-ochre/20">Optional</span>
+                }
+              </div>
+              <p class="text-sm text-ink/65 mt-2 leading-relaxed">
+                {{ food.is_included ? 'Included with the stay.' : 'Available on request — ask the host.' }}
+              </p>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- good to know -->
+        <div class="reveal">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-[3px] rounded-full bg-ochre"></span>
+            <p class="eyebrow text-mossD">Before you book</p>
+          </div>
+          <h2 class="font-display text-3xl text-ink mt-2">Good to know</h2>
+          <div class="p-6 md:p-8 rounded-3xl glass-property-card border border-white/80 shadow-sm mt-6">
+            <div class="grid sm:grid-cols-3 gap-6 text-sm">
+              <div class="flex gap-3">
+                <span
+                  class="w-9 h-9 rounded-full bg-cloud2/80 grid place-items-center text-mossD shrink-0 border border-white/60">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6" />
+                    <path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <div>
+                  <p class="eyebrow text-ink/40">Check-in / out</p>
+                  <p class="text-ink/80 mt-2 font-medium">Flexible on request<br /><span
+                      class="text-ink/60 font-normal">Check-out by 10:00 AM</span></p>
+                </div>
+              </div>
+              <div class="flex gap-3">
+                <span
+                  class="w-9 h-9 rounded-full bg-cloud2/80 grid place-items-center text-mossD shrink-0 border border-white/60">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 4h9l3 3v13H6V4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                    <path d="M9 10h6M9 13.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <div>
+                  <p class="eyebrow text-ink/40">House rules</p>
+                  <p class="text-ink/80 mt-2 font-medium">Subject to host policy<br /><span
+                      class="text-ink/60 font-normal">Quiet hours after 9:30 PM</span></p>
+                </div>
+              </div>
+              <div class="flex gap-3">
+                <span
+                  class="w-9 h-9 rounded-full bg-cloud2/80 grid place-items-center text-mossD shrink-0 border border-white/60">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" stroke="currentColor"
+                      stroke-width="1.6" stroke-linejoin="round" />
+                  </svg>
+                </span>
+                <div>
+                  <p class="eyebrow text-ink/40">Cancellation</p>
+                  <p class="text-ink/80 mt-2 font-medium">Subject to booking terms<br />
+                    <span class="text-ink/60 font-normal">
+                      @if (propertyData()?.deposit) {
+                      ₹{{ propertyData()?.deposit | number }} deposit applies
+                      } @else {
+                      Deposit policy may apply
+                      }
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-    </div>
+      <!-- RIGHT: booking sidebar -->
+      <div id="book" class="reveal">
+        <div
+          class="sticky top-28 rounded-3xl border border-white/90 glass-property-card-solid shadow-2xl shadow-pine/15 p-6 overflow-hidden relative">
+          <span
+            class="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full bg-ochre/10 blur-2xl"></span>
 
-    <!-- RIGHT: booking sidebar -->
-    <div id="book" class="reveal">
-      <div class="sticky top-28 rounded-3xl border border-ink/10 bg-white shadow-lg shadow-pine/5 p-6">
-        <div class="flex items-baseline justify-between">
-          <p class="font-display text-3xl">
-            {{ propertyData()?.price_per_night ??
-            0 | number }}
-            <span class="text-sm font-body text-ink/50">/ night</span>
+          <div class="relative flex items-baseline justify-between">
+            <p class="font-display text-3xl text-ink">
+              ₹{{ propertyData()?.price_per_night ?? 0 | number }}
+              <span class="text-sm font-body text-ink/50">/ night</span>
+            </p>
+            <span
+              class="flex items-center gap-1 text-sm text-ink/70 bg-cloud2/80 px-2.5 py-1 rounded-full border border-white/80">★
+              4.9</span>
+          </div>
+          <p class="text-xs text-ink/45 mt-1">Taxes calculated at checkout</p>
+
+          <div class="grid grid-cols-2 gap-2.5 mt-5">
+            <div
+              class="rounded-xl border border-ink/10 bg-white/60 px-3 py-2.5 hover:border-ochre/40 transition-colors">
+              <p class="text-[10px] eyebrow text-ink/40 flex items-center gap-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+                Check-in
+              </p>
+              <p class="text-sm font-medium mt-1 text-ink">Add date</p>
+            </div>
+            <div
+              class="rounded-xl border border-ink/10 bg-white/60 px-3 py-2.5 hover:border-ochre/40 transition-colors">
+              <p class="text-[10px] eyebrow text-ink/40 flex items-center gap-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+                Check-out
+              </p>
+              <p class="text-sm font-medium mt-1 text-ink">Add date</p>
+            </div>
+            <div
+              class="col-span-2 rounded-xl border border-ink/10 bg-white/60 px-3 py-2.5 hover:border-ochre/40 transition-colors">
+              <p class="text-[10px] eyebrow text-ink/40 flex items-center gap-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                  <path d="M16 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M3 20c.7-3.5 3.4-5.5 6.5-5.5S15.8 16.5 16.5 20" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" />
+                </svg>
+                Guests
+              </p>
+              <p class="text-sm font-medium mt-1 text-ink">
+                @if (propertyData()?.room_type?.capacity) {
+                {{ propertyData()?.room_type?.capacity }} guests max
+                } @else if ((propertyData()?.property_room_types ?? []).length > 0) {
+                {{ propertyData()?.property_room_types?.[0]?.room_type?.capacity }} guests max
+                } @else {
+                Add guests
+                }
+              </p>
+            </div>
+          </div>
+
+          <a href="#"
+            class="btn-anim group mt-5 w-full text-center flex items-center justify-center gap-2 bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors shadow-md shadow-ochre/25">
+            Reserve dates
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              class="transition-transform group-hover:translate-x-1">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </a>
+          <a href="#"
+            class="mt-2.5 w-full text-center block border border-pine/25 hover:border-pine hover:bg-pine/5 text-pine text-sm font-semibold px-5 py-3 rounded-full transition-colors">
+            Message the host
+          </a>
+
+          <p class="text-center text-[11px] text-ink/45 mt-3 flex items-center justify-center gap-1.5">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" stroke="currentColor" stroke-width="1.6"
+                stroke-linejoin="round" />
+            </svg>
+            You won't be charged yet
           </p>
-          <span class="flex items-center gap-1 text-sm text-ink/70">★ 4.9</span>
+
+          <div class="mt-6 pt-5 border-t border-ink/10 space-y-2.5 text-sm text-ink/70">
+            <div class="flex justify-between">
+              <span>Base rate</span>
+              <span class="font-medium text-ink">{{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.sale_per_night
+                ??
+                propertyData()?.price_per_night ?? 0 | number }}</span>
+            </div>
+            <div class="flex justify-between"><span>Taxes &amp; fees</span><span>As applicable</span></div>
+            <div class="flex justify-between">
+              <span>Deposit</span>
+              <span class="font-medium text-ink">
+                @if (propertyData()?.deposit) {
+                {{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.deposit | number }}
+                } @else {
+                On request
+                }
+              </span>
+            </div>
+            <div class="flex justify-between font-semibold text-ink pt-2.5 border-t border-ink/10">
+              <span>Total</span><span>Varies by stay</span>
+            </div>
+          </div>
+
+          <p class="text-xs text-ink/50 mt-4 leading-relaxed">
+            @if (propertyData()?.deposit) {
+            Pay a {{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.deposit | number }} deposit to hold your dates
+            —
+            settle the rest directly on arrival.
+            } @else {
+            Availability and payment terms are confirmed directly with the host.
+            }
+          </p>
         </div>
-
-        <div class="grid grid-cols-2 gap-2.5 mt-5">
-          <div class="rounded-xl border border-ink/12 px-3 py-2.5">
-            <p class="text-[10px] eyebrow text-ink/40">Check-in</p>
-            <p class="text-sm font-medium mt-0.5">Add date</p>
-          </div>
-          <div class="rounded-xl border border-ink/12 px-3 py-2.5">
-            <p class="text-[10px] eyebrow text-ink/40">Check-out</p>
-            <p class="text-sm font-medium mt-0.5">Add date</p>
-          </div>
-          <div class="col-span-2 rounded-xl border border-ink/12 px-3 py-2.5">
-            <p class="text-[10px] eyebrow text-ink/40">Guests</p>
-            <p class="text-sm font-medium mt-0.5">
-              @if (propertyData()?.room_type?.capacity) {
-              {{ propertyData()?.room_type?.capacity }} guests max
-              } @else if ((propertyData()?.property_room_types ?? []).length > 0) {
-              {{ propertyData()?.property_room_types?.[0]?.room_type?.capacity }} guests max
-              } @else {
-              Add guests
-              }
-            </p>
-          </div>
-        </div>
-
-        <a href="#"
-          class="btn-anim mt-5 w-full text-center block bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors">
-          Reserve dates
-        </a>
-        <a href="#"
-          class="mt-2.5 w-full text-center block border border-pine/25 hover:border-pine text-pine text-sm font-semibold px-5 py-3 rounded-full transition-colors">
-          Message the host
-        </a>
-
-        <div class="mt-6 pt-5 border-t border-ink/10 space-y-2.5 text-sm text-ink/70">
-          <div class="flex justify-between">
-            <span>Base rate</span>
-            <span>{{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.sale_per_night ??
-              propertyData()?.price_per_night ?? 0 | number }}</span>
-          </div>
-          <div class="flex justify-between"><span>Taxes &amp; fees</span><span>As applicable</span></div>
-          <div class="flex justify-between">
-            <span>Deposit</span>
-            <span>
-              @if (propertyData()?.deposit) {
-              {{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.deposit | number }}
-              } @else {
-              On request
-              }
-            </span>
-          </div>
-          <div class="flex justify-between font-semibold text-ink pt-2.5 border-t border-ink/10">
-            <span>Total</span><span>Varies by stay</span>
-          </div>
-        </div>
-
-        <p class="text-xs text-ink/45 mt-4 leading-relaxed">
-          @if (propertyData()?.deposit) {
-          Pay a {{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.deposit | number }} deposit to hold your dates —
-          settle the rest directly on arrival.
-          } @else {
-          Availability and payment terms are confirmed directly with the host.
-          }
-        </p>
       </div>
-    </div>
 
+    </div>
   </div>
 </section>
 
@@ -579,7 +772,8 @@
 
 <!-- ============ LIGHTBOX MODAL (Full Screen & Stacking Root) ============ -->
 @if (isLightboxOpen() && galleryImages().length > 0) {
-<div class="fixed inset-0 bg-black/95 backdrop-blur-2xl flex flex-col justify-between select-none"
+<div
+  class="fixed inset-0 bg-black/95 backdrop-blur-2xl flex flex-col justify-between select-none animate-[fadeIn_.2s_ease-out]"
   style="z-index: 99999999 !important;" (click)="closeLightbox()">
 
   <!-- Lightbox Header Bar (Above everything with distinct high-contrast bar) -->
@@ -638,7 +832,7 @@
     <div class="relative max-h-[70vh] sm:max-h-[75vh] max-w-5xl flex items-center justify-center">
       <img [src]="galleryImages()[activePhotoIndex()]?.file_url"
         [alt]="galleryImages()[activePhotoIndex()]?.title || propertyData()?.name || 'Property photo'"
-        class="max-h-[70vh] sm:max-h-[75vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl transition-all duration-300" />
+        class="max-h-[70vh] sm:max-h-[75vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl ring-1 ring-white/10 transition-all duration-300" />
     </div>
 
     <!-- Next button -->
@@ -657,7 +851,7 @@
     <div class="flex items-center justify-center gap-2 max-w-4xl mx-auto min-w-max">
       @for (img of galleryImages(); track img.file_url; let i = $index) {
       <button type="button" (click)="selectPhoto(i)"
-        class="w-14 h-10 sm:w-18 sm:h-12 rounded-lg overflow-hidden border-2 transition-all cursor-pointer shrink-0"
+        class="w-14 h-10 sm:w-18 sm:h-12 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer shrink-0"
         [class.border-ochre]="activePhotoIndex() === i" [class.ring-2]="activePhotoIndex() === i"
         [class.ring-ochre]="activePhotoIndex() === i" [class.scale-105]="activePhotoIndex() === i"
         [class.opacity-100]="activePhotoIndex() === i" [class.border-transparent]="activePhotoIndex() !== i"
