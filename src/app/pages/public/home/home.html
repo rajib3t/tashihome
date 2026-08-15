@@ -1,5 +1,7 @@
 <!-- ============ HERO ============ -->
-<section id="top" class="relative bg-pine text-cloud overflow-hidden pt-36 pb-40 md:pt-44 md:pb-52">
+<section id="top" class="relative text-cloud overflow-hidden pt-36 pb-40 md:pt-44 md:pb-52" style="background: url('/images/hero-himalaya.jpg') center/cover no-repeat;">
+  <!-- dark overlay for text legibility -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-pine/90"></div>
   <!-- ambient mist glow -->
   <div
     class="pointer-events-none absolute -top-24 right-0 w-[38rem] h-[38rem] bg-moss/25 rounded-full blur-[120px] animate-mist-a"
@@ -198,14 +200,12 @@
         </div>
       </div>
     </div>
-    <div class="reveal order-1 lg:order-2 rounded-2xl overflow-hidden h-80 md:h-[26rem]" style="background: linear-gradient(155deg,#0F5461,#347E92 50%,#FAA52D);">
-      <svg viewBox="0 0 400 320" class="w-full h-full">
-        <path d="M0 260L90 150L180 260Z" fill="#0F5461"/>
-        <path d="M150 260L240 110L330 260Z" fill="#0C4550"/>
-        <line x1="240" y1="110" x2="240" y2="40" stroke="#FAA52D" stroke-width="3"/>
-        <path class="flag-flutter" d="M240 46 L300 60 L240 74Z" fill="#F3FAFB" opacity="0.9"/>
-        <circle cx="330" cy="60" r="26" fill="#F3FAFB" opacity="0.85"/>
-      </svg>
+    <div class="reveal order-1 lg:order-2 rounded-2xl overflow-hidden h-80 md:h-[26rem] shadow-2xl">
+      <img
+        src="/images/host-spotlight.jpg"
+        alt="Yangchen and Tenzin Bhutia on the porch of their homestay in Rumtek, Sikkim"
+        class="w-full h-full object-cover object-center"
+      />
     </div>
   </div>
 </section>
