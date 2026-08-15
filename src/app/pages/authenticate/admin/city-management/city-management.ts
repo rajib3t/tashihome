@@ -69,17 +69,20 @@ export class CityManagement {
   public readonly editCityForm = this.formBuilder.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
     countryId: ['', [Validators.required]],
+    tagLine: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(75)]],
+    shortDescription: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200)]],
+    isFeatured: [false],
     city_image: [null as File | string | null],
   });
 
-    readonly searchForm = this.formBuilder.group({
-      name: [''],
-      country_id: [''],
-      status: [''],
-    });
+  readonly searchForm = this.formBuilder.group({
+    name: [''],
+    country_id: [''],
+    status: [''],
+  });
 
-    readonly pageSizeOptions = [10, 20, 30];
-    onSearch(): void {
+  readonly pageSizeOptions = [10, 20, 30];
+  onSearch(): void {
     this.currentPage.set(1);
     this.loadCities();
   }
@@ -97,41 +100,41 @@ export class CityManagement {
   }
   //  List Cities 
   loadCities() {
-     const filters = this.searchForm.getRawValue();
-        const search: CitySearch = {
-          name: filters.name?.trim() || undefined,
-          country_id: filters.country_id?.trim() || undefined,
-          status: filters.status?.trim() || undefined,
-        };
-    
-        const query: CountryQuery = {
-          page: this.currentPage(),
-          size: this.pageSize(),
-          search,
-        };
-    
-        this.isLoading.set(true);
-        this.errorMessage.set('');
+    const filters = this.searchForm.getRawValue();
+    const search: CitySearch = {
+      name: filters.name?.trim() || undefined,
+      country_id: filters.country_id?.trim() || undefined,
+      status: filters.status?.trim() || undefined,
+    };
 
-        this.cityService.getCities(query)
-              .pipe(
-                finalize(() => this.isLoading.set(false)),
-                catchError((error) => {
-                  this.errorMessage.set(error?.error?.message || error?.message || 'Unable to load countries.');
-                  this.cities.set([]);
-                  this.totalItems.set(0);
-                  return of(null);
-                })
-              )
-              .subscribe((response) => {
-                if (!response) {
-                  return;
-                }
-        
-                this.cities.set(response.data || []);
-                this.totalItems.set(response.meta?.total || 0);
-                this.meta = { ...response.meta };
-              });
+    const query: CountryQuery = {
+      page: this.currentPage(),
+      size: this.pageSize(),
+      search,
+    };
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.cityService.getCities(query)
+      .pipe(
+        finalize(() => this.isLoading.set(false)),
+        catchError((error) => {
+          this.errorMessage.set(error?.error?.message || error?.message || 'Unable to load countries.');
+          this.cities.set([]);
+          this.totalItems.set(0);
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+
+        this.cities.set(response.data || []);
+        this.totalItems.set(response.meta?.total || 0);
+        this.meta = { ...response.meta };
+      });
   }
 
   // ================= CREATE =================
@@ -145,6 +148,17 @@ export class CityManagement {
       '',
       [Validators.required],
     ],
+    tagLine: [
+      '',
+      [Validators.required, Validators.minLength(2), Validators.maxLength(75)],
+    ],
+    shortDescription: [
+      '',
+      [Validators.required, Validators.minLength(2), Validators.maxLength(200)],
+    ],
+    isFeatured: [
+      false,
+    ],
     city_image: [
       null as File | string | null,
       [Validators.required],
@@ -152,7 +166,14 @@ export class CityManagement {
   });
 
   openCreateModal() {
-    this.createCityForm.reset({ name: '', countryId: '', city_image: null });
+    this.createCityForm.reset({
+      name: '',
+      countryId: '',
+      tagLine: '',
+      shortDescription: '',
+      isFeatured: false,
+      city_image: null,
+    });
     this.createErrorMessage.set(null);
     this.isCreateModalOpen.set(true);
   }
@@ -174,6 +195,9 @@ export class CityManagement {
     const payload = new FormData();
     payload.append('name', formData.name || '');
     payload.append('country_id', formData.countryId || '');
+    payload.append('short_description', formData.shortDescription || '');
+    payload.append('tag_line', formData.tagLine || '');
+    payload.append('is_featured', String(formData.isFeatured ?? false));
     if (formData.city_image) {
       payload.append('image_url', formData.city_image);
     }
@@ -183,11 +207,11 @@ export class CityManagement {
         this.isCreating.set(false);
         this.closeCreateModal();
         // Refresh the list
-        this.loadCountries();
+        this.loadCities();
       },
       error: (err) => {
         this.isCreating.set(false);
-        this.createErrorMessage.set(err?.error?.message || 'Failed to create country');
+        this.createErrorMessage.set(err?.error?.message || 'Failed to create city');
       },
     });
   }
@@ -218,6 +242,18 @@ export class CityManagement {
     return this.createCityForm.get('city_image')!;
   }
 
+  get shortDescriptionControl() {
+    return this.createCityForm.get('shortDescription')!;
+  }
+
+  get tagLineControl() {
+    return this.createCityForm.get('tagLine')!;
+  }
+
+  get isFeaturedControl() {
+    return this.createCityForm.get('isFeatured')!;
+  }
+
   get editNameControl() {
     return this.editCityForm.get('name')!;
   }
@@ -230,8 +266,20 @@ export class CityManagement {
     return this.editCityForm.get('city_image')!;
   }
 
+  get editShortDescriptionControl() {
+    return this.editCityForm.get('shortDescription')!;
+  }
 
-   getSerialNumber(index: number): number {
+  get editTagLineControl() {
+    return this.editCityForm.get('tagLine')!;
+  }
+
+  get editIsFeaturedControl() {
+    return this.editCityForm.get('isFeatured')!;
+  }
+
+
+  getSerialNumber(index: number): number {
     const currentPage = this.currentPage() || 1;
     const itemsPerPage = this.meta?.size || 2;
     return (currentPage - 1) * itemsPerPage + index + 1;
@@ -260,6 +308,9 @@ export class CityManagement {
     this.editCityForm.reset({
       name: city.name,
       countryId: city.country?.id || '',
+      tagLine: city.tag_line || '',
+      shortDescription: city.short_description || '',
+      isFeatured: !!city.is_featured,
       city_image: city.image_url || null,
     });
     this.editErrorMessage.set(null);
@@ -286,7 +337,9 @@ export class CityManagement {
     const payload = new FormData();
     payload.append('name', formValue.name || '');
     payload.append('country_id', formValue.countryId || '');
-
+    payload.append('short_description', formValue.shortDescription || '');
+    payload.append('tag_line', formValue.tagLine || '');
+    payload.append('is_featured', String(formValue.isFeatured));
     if (formValue.city_image && typeof formValue.city_image !== 'string') {
       payload.append('image_url', formValue.city_image);
     }

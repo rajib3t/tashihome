@@ -10,58 +10,46 @@
             </button>
         </div>
         <form [formGroup]="searchForm" class="grid gap-4 lg:grid-cols-4" (ngSubmit)="onSearch()">
-      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
-        <span class="mb-2 block">Country name</span>
-        <input
-          type="text"
-          formControlName="name"
-          placeholder="Search by name"
-          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-        />
-      </label>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                <span class="mb-2 block">Country name</span>
+                <input type="text" formControlName="name" placeholder="Search by name"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+            </label>
 
-      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
-        <span class="mb-2 block">Country</span>
-        <select
-          formControlName="country_id"
-          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-        >
-          <option value="">All countries</option>
-          @for (country of countries(); track country.id) {
-            <option [value]="country.id">{{ country.name }}</option>
-          }
-        </select>
-      </label>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                <span class="mb-2 block">Country</span>
+                <select formControlName="country_id"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <option value="">All countries</option>
+                    @for (country of countries(); track country.id) {
+                    <option [value]="country.id">{{ country.name }}</option>
+                    }
+                </select>
+            </label>
 
-      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
-        <span class="mb-2 block">Status</span>
-        <select
-          formControlName="status"
-          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-        >
-          <option value="">All status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          
-        </select>
-      </label>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                <span class="mb-2 block">Status</span>
+                <select formControlName="status"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <option value="">All status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
 
-      <div class="flex items-end gap-2">
-        <button
-          type="submit"
-          class="cursor-pointer inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
-        >
-          Search
-        </button>
-        <button
-          type="button"
-          class="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200"
-          (click)="onReset()"
-        >
-          Reset
-        </button>
-      </div>
-    </form>
+                </select>
+            </label>
+
+            <div class="flex items-end gap-2">
+                <button type="submit"
+                    class="cursor-pointer inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90">
+                    Search
+                </button>
+                <button type="button"
+                    class="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200"
+                    (click)="onReset()">
+                    Reset
+                </button>
+            </div>
+        </form>
         @if (createErrorMessage()) {
         <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {{ createErrorMessage() }}
@@ -75,41 +63,51 @@
                             <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">SL</th>
                             <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Name</th>
                             <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Country</th>
+                            <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Featured</th>
                             <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
                             <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
-                    @if (isLoading()) {
+                        @if (isLoading()) {
                         <tr>
                             <td colspan="5" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                                 Loading cities...
                             </td>
                         </tr>
-                    } @else if (cities().length === 0) {
+                        } @else if (cities().length === 0) {
                         <tr>
                             <td colspan="5" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
-                            No cities found.
+                                No cities found.
                             </td>
                         </tr>
-                    } @else {
+                        } @else {
                         @for (city of cities(); track city.id; let i = $index) {
                         <tr>
                             <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ getSerialNumber(i) }}</td>
                             <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
                                 <div class="flex items-center gap-2">
-                                    <img
-                                        [src]="city.image_url"
-                                        [alt]="city.name"
-                                        class="h-8 w-8 rounded-full object-cover"
-                                    />
+                                    <img [src]="city.image_url" [alt]="city.name"
+                                        class="h-8 w-8 rounded-full object-cover" />
                                     {{ city.name }}
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ city.country?.name }}</td>
                             <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
-                                <span
-                                    [class.bg-emerald-50]="city.status !== 'inactive'"
+                                <span [class.bg-emerald-50]="city.is_featured"
+                                    [class.text-emerald-700]="city.is_featured"
+                                    [class.dark:bg-emerald-500/15]="city.is_featured"
+                                    [class.dark:text-emerald-300]="city.is_featured"
+                                    [class.bg-slate-100]="!city.is_featured"
+                                    [class.text-slate-600]="!city.is_featured"
+                                    [class.dark:bg-slate-800]="!city.is_featured"
+                                    [class.dark:text-slate-400]="!city.is_featured"
+                                    class="rounded-full px-2.5 py-1 text-xs font-semibold">
+                                    {{ city.is_featured ? 'Featured' : 'Not Featured' }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                                <span [class.bg-emerald-50]="city.status !== 'inactive'"
                                     [class.text-emerald-700]="city.status !== 'inactive'"
                                     [class.dark:bg-emerald-500/15]="city.status !== 'inactive'"
                                     [class.dark:text-emerald-300]="city.status !== 'inactive'"
@@ -117,23 +115,18 @@
                                     [class.text-rose-700]="city.status === 'inactive'"
                                     [class.dark:bg-rose-500/15]="city.status === 'inactive'"
                                     [class.dark:text-rose-300]="city.status === 'inactive'"
-                                    class="rounded-full px-2.5 py-1 text-xs font-semibold"
-                                    >
+                                    class="rounded-full px-2.5 py-1 text-xs font-semibold">
                                     {{ getStatusLabel(city.status) }}
                                 </span>
                             </td>
+
                             <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
                                 <div class="flex items-center gap-2">
-                                    <button
-                                            type="button"
-                                            (click)="openEditModal(city)"
-                                            class="cursor-pointer rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
-                                        >
-                                            Edit
-                                        </button>
-                                    <button
-                                        type="button"
-                                        (click)="openStatusModal(city)"
+                                    <button type="button" (click)="openEditModal(city)"
+                                        class="cursor-pointer rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200">
+                                        Edit
+                                    </button>
+                                    <button type="button" (click)="openStatusModal(city)"
                                         [class.border-red-200]="city.status !== 'inactive'"
                                         [class.text-red-600]="city.status !== 'inactive'"
                                         [class.hover:bg-red-50]="city.status !== 'inactive'"
@@ -146,27 +139,22 @@
                                         [class.dark:border-emerald-900/50]="city.status === 'inactive'"
                                         [class.dark:text-emerald-400]="city.status === 'inactive'"
                                         [class.dark:hover:bg-emerald-900/20]="city.status === 'inactive'"
-                                        class="cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition"
-                                    >
-                                    {{ getDisableActionLabel(city) }}
+                                        class="cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition">
+                                        {{ getDisableActionLabel(city) }}
                                     </button>
                                 </div>
                             </td>
                         </tr>
                         }
-                    }
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
         <div class="mt-6">
-        <app-pagination
-            [meta]="meta"
-            (pageChange)="onPageChange($event)"
-            [pageSizeOptions]="pageSizeOptions"
-            (pageSizeChange)="onPageSizeChange($event)"
-        ></app-pagination>
-    </div>
+            <app-pagination [meta]="meta" (pageChange)="onPageChange($event)" [pageSizeOptions]="pageSizeOptions"
+                (pageSizeChange)="onPageSizeChange($event)"></app-pagination>
+        </div>
     </app-card>
 
     <app-modal [isOpen]="isCreateModalOpen()" (close)="closeCreateModal()" className="max-w-[700px] m-4">
@@ -191,7 +179,8 @@
                             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
                         <input id="name" type="text" formControlName="name"
                             [class.border-red-500]="nameControl.invalid && nameControl.touched"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter city name" />
                         @if (nameControl.invalid && nameControl.touched) {
                         <p class="mt-1 text-xs text-red-600 dark:text-red-400">
                             @if (nameControl.errors?.['required']) {
@@ -226,6 +215,51 @@
                     </div>
 
                     <div class="mb-4">
+                        <label for="tagLine" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tag
+                            Line</label>
+                        <input type="text" id="tagLine" formControlName="tagLine"
+                            [class.border-red-500]="tagLineControl.invalid && tagLineControl.touched"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter tag line" />
+                        @if (tagLineControl.invalid && tagLineControl.touched) {
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            @if (tagLineControl.errors?.['required']) {
+                            Tag line is required.
+                            } @else if (tagLineControl.errors?.['minlength']) {
+                            Tag line must be at least {{ tagLineControl.errors?.['minlength'].requiredLength }}
+                            characters.
+                            } @else if (tagLineControl.errors?.['maxlength']) {
+                            Tag line must not exceed {{ tagLineControl.errors?.['maxlength'].requiredLength }}
+                            characters.
+                            }
+                        </p>
+                        }
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="shortDescription"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Short
+                            Description</label>
+                        <textarea id="shortDescription" formControlName="shortDescription" rows="3"
+                            [class.border-red-500]="shortDescriptionControl.invalid && shortDescriptionControl.touched"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter short description"></textarea>
+                        @if (shortDescriptionControl.invalid && shortDescriptionControl.touched) {
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            @if (shortDescriptionControl.errors?.['required']) {
+                            Short description is required.
+                            } @else if (shortDescriptionControl.errors?.['minlength']) {
+                            Short description must be at least {{
+                            shortDescriptionControl.errors?.['minlength'].requiredLength }} characters.
+                            } @else if (shortDescriptionControl.errors?.['maxlength']) {
+                            Short description must not exceed {{
+                            shortDescriptionControl.errors?.['maxlength'].requiredLength }} characters.
+                            }
+                        </p>
+                        }
+                    </div>
+
+                    <div class="mb-4">
                         <label for="cityImage"
                             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">City Image</label>
                         <app-upload-image [id]="'cityImage'" [name]="'cityImage'" [preview]="cityImagePreview()"
@@ -233,6 +267,22 @@
                             (previewChange)="cityImagePreview.set($event)"
                             (valueChange)="createCityForm.controls.city_image.setValue($event)">
                         </app-upload-image>
+                        @if (cityImageControl.invalid && cityImageControl.touched) {
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            @if (cityImageControl.errors?.['required']) {
+                            City image is required.
+                            }
+                        </p>
+                        }
+                    </div>
+
+                    <div class="flex items-center gap-3 mb-4">
+                        <input type="checkbox" id="isFeatured"
+                            class="h-5 w-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary dark:focus:ring-primary/50"
+                            formControlName="isFeatured" />
+                        <label for="isFeatured" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Is Featured
+                        </label>
                     </div>
 
                     <div class="flex items-center justify-end gap-3">
@@ -251,7 +301,8 @@
 
     </app-modal>
     <app-modal [isOpen]="isEditModalOpen()" (close)="closeEditModal()" className="max-w-[700px] m-4">
-        <div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+        <div
+            class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
             <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white">Edit City</h2>
             </div>
@@ -266,60 +317,115 @@
 
                 <form [formGroup]="editCityForm" (ngSubmit)="submitEditForm()" novalidate>
                     <div class="mb-4">
-                        <label for="edit-name" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                        <input
-                            id="edit-name"
-                            type="text"
-                            formControlName="name"
+                        <label for="edit-name"
+                            class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                        <input id="edit-name" type="text" formControlName="name"
                             [class.border-red-500]="editNameControl.invalid && editNameControl.touched"
                             class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        />
+                            placeholder="Enter city name" />
+                        @if (editNameControl.invalid && editNameControl.touched) {
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            @if (editNameControl.errors?.['required']) {
+                            Name is required.
+                            } @else if (editNameControl.errors?.['minlength']) {
+                            Name must be at least {{ editNameControl.errors?.['minlength'].requiredLength }} characters.
+                            } @else if (editNameControl.errors?.['maxlength']) {
+                            Name must not exceed {{ editNameControl.errors?.['maxlength'].requiredLength }} characters.
+                            }
+                        </p>
+                        }
                     </div>
 
                     <div class="mb-4">
-                        <label for="edit-countryId" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
-                        <select
-                            id="edit-countryId"
-                            formControlName="countryId"
+                        <label for="edit-countryId"
+                            class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
+                        <select id="edit-countryId" formControlName="countryId"
                             [class.border-red-500]="editCountryIdControl.invalid && editCountryIdControl.touched"
-                            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        >
+                            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                             <option value="">Select Country</option>
                             @for (country of countries(); track country.id) {
                             <option [value]="country.id">{{ country.name }}</option>
                             }
                         </select>
+                        @if (editCountryIdControl.invalid && editCountryIdControl.touched) {
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            @if (editCountryIdControl.errors?.['required']) {
+                            Country is required.
+                            }
+                        </p>
+                        }
                     </div>
 
                     <div class="mb-4">
-                        <label for="edit-cityImage" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">City Image</label>
-                        <app-upload-image
-                            [id]="'edit-cityImage'"
-                            [name]="'editCityImage'"
-                            [preview]="editCityImagePreview()"
-                            buttonText="Upload New Image"
-                            emptyText="No City Image"
+                        <label for="edit-tagLine"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tag
+                            Line</label>
+                        <input type="text" id="edit-tagLine" formControlName="tagLine"
+                            [class.border-red-500]="editTagLineControl.invalid && editTagLineControl.touched"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter tag line" />
+                        @if (editTagLineControl.invalid && editTagLineControl.touched) {
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            @if (editTagLineControl.errors?.['required']) {
+                            Tag line is required.
+                            } @else if (editTagLineControl.errors?.['minlength']) {
+                            Tag line must be at least {{ editTagLineControl.errors?.['minlength'].requiredLength }}
+                            characters.
+                            } @else if (editTagLineControl.errors?.['maxlength']) {
+                            Tag line must not exceed {{ editTagLineControl.errors?.['maxlength'].requiredLength }}
+                            characters.
+                            }
+                        </p>
+                        }
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="edit-shortDescription"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Short
+                            Description</label>
+                        <textarea id="edit-shortDescription" formControlName="shortDescription" rows="3"
+                            [class.border-red-500]="editShortDescriptionControl.invalid && editShortDescriptionControl.touched"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter short description"></textarea>
+                        @if (editShortDescriptionControl.invalid && editShortDescriptionControl.touched) {
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            @if (editShortDescriptionControl.errors?.['required']) {
+                            Short description is required.
+                            } @else if (editShortDescriptionControl.errors?.['minlength']) {
+                            Short description must be at least {{
+                            editShortDescriptionControl.errors?.['minlength'].requiredLength }} characters.
+                            } @else if (editShortDescriptionControl.errors?.['maxlength']) {
+                            Short description must not exceed {{
+                            editShortDescriptionControl.errors?.['maxlength'].requiredLength }} characters.
+                            }
+                        </p>
+                        }
+                    </div>
+                    <div class="mb-4">
+                        <label for="edit-cityImage"
+                            class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">City Image</label>
+                        <app-upload-image [id]="'edit-cityImage'" [name]="'editCityImage'"
+                            [preview]="editCityImagePreview()" buttonText="Upload New Image" emptyText="No City Image"
                             (previewChange)="editCityImagePreview.set($event)"
-                            (valueChange)="editCityForm.controls.city_image.setValue($event)"
-                        >
+                            (valueChange)="editCityForm.controls.city_image.setValue($event)">
                         </app-upload-image>
                     </div>
 
-                    
+                    <div class="flex items-center gap-3 mb-4">
+                        <input type="checkbox" id="editIsFeatured"
+                            class="h-5 w-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary dark:focus:ring-primary/50"
+                            formControlName="isFeatured" />
+                        <label for="editIsFeatured" class="text-sm font-medium text-gray-700 dark:text-gray-300">Is
+                            Featured</label>
+                    </div>
 
                     <div class="flex items-center justify-end gap-3">
-                        <button
-                            type="button"
-                            (click)="closeEditModal()"
-                            class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        >
+                        <button type="button" (click)="closeEditModal()"
+                            class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                             Cancel
                         </button>
-                        <button
-                            type="submit"
-                            [disabled]="isEditing() || editCityForm.invalid"
-                            class="cursor-pointer inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white "
-                        >
+                        <button type="submit" [disabled]="isEditing() || editCityForm.invalid"
+                            class="cursor-pointer inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white ">
                             {{ isEditing() ? 'Saving...' : 'Save Changes' }}
                         </button>
                     </div>
@@ -338,34 +444,30 @@
                 Are you sure you want to
                 {{ isInactive(cityToToggleStatus()) ? 'enable' : 'disable' }}
                 <span class="font-semibold text-gray-900 dark:text-white">{{ cityToToggleStatus()?.name }}</span>?
-                {{ isInactive(cityToToggleStatus()) ? 'This will set its status to active.' : 'This will set its status to inactive.' }}
+                {{ isInactive(cityToToggleStatus()) ? 'This will set its status to active.' : 'This will set its status
+                to inactive.' }}
             </p>
 
             @if (statusErrorMessage()) {
-            <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+            <div
+                class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
                 {{ statusErrorMessage() }}
             </div>
             }
 
             <div class="mt-6 flex justify-end gap-3">
-                <button
-                    type="button"
-                    (click)="closeStatusModal()"
-                    class="cursor-pointer rounded-lg bg-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                >
+                <button type="button" (click)="closeStatusModal()"
+                    class="cursor-pointer rounded-lg bg-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Cancel
                 </button>
-                <button
-                    type="button"
-                    [disabled]="isUpdatingStatus()"
-                    (click)="confirmStatusToggle()"
+                <button type="button" [disabled]="isUpdatingStatus()" (click)="confirmStatusToggle()"
                     [class.bg-red-600]="!isInactive(cityToToggleStatus())"
                     [class.hover:bg-red-700]="!isInactive(cityToToggleStatus())"
                     [class.bg-emerald-600]="isInactive(cityToToggleStatus())"
                     [class.hover:bg-emerald-700]="isInactive(cityToToggleStatus())"
-                    class="cursor-pointer rounded-lg px-4 py-2 text-white transition-colors disabled:opacity-50"
-                >
-                    {{ isUpdatingStatus() ? (isInactive(cityToToggleStatus()) ? 'Enabling...' : 'Disabling...') : (isInactive(cityToToggleStatus()) ? 'Enable' : 'Disable') }}
+                    class="cursor-pointer rounded-lg px-4 py-2 text-white transition-colors disabled:opacity-50">
+                    {{ isUpdatingStatus() ? (isInactive(cityToToggleStatus()) ? 'Enabling...' : 'Disabling...') :
+                    (isInactive(cityToToggleStatus()) ? 'Enable' : 'Disable') }}
                 </button>
             </div>
         </div>
