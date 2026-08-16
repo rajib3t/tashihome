@@ -43,18 +43,18 @@ export const routes: Routes = [
                 title: 'Login',
             },
             {
-                path: 'properties',
+                path: 'stays',
                 component: Properties,
                 title: 'Property Management',
             },
-          
+
             {
-                path: 'property',
+                path: 'stay',
                 redirectTo: '',
                 pathMatch: 'full',
             },
             {
-                path: 'property/:slug',
+                path: 'stay/:slug',
                 component: Property,
                 title: 'Property Detail',
             }
@@ -96,44 +96,44 @@ export const routes: Routes = [
                         title: 'Location Management',
                     },
                     {
-                        path:'facility-management',
-                        component:FacilityManagement,
-                        title:'Facility Management'
+                        path: 'facility-management',
+                        component: FacilityManagement,
+                        title: 'Facility Management'
                     },
                     {
-                        path:'amenity-management',
-                        component:AmenityManagement,
-                        title:'Amenity Management'
+                        path: 'amenity-management',
+                        component: AmenityManagement,
+                        title: 'Amenity Management'
                     },
                     {
-                        path:'room-type-management',
-                        component:RoomTypeManagement,
-                        title:'Room Type Management'
+                        path: 'room-type-management',
+                        component: RoomTypeManagement,
+                        title: 'Room Type Management'
                     },
                     {
-                        path:'property-management',
-                        component:PropertyManagement,
-                        title:'Property Management'
+                        path: 'property-management',
+                        component: PropertyManagement,
+                        title: 'Property Management'
                     },
                     {
-                        path:'property-management/create',
-                        component:CreateProperty,
-                        title:'Create Property'
+                        path: 'property-management/create',
+                        component: CreateProperty,
+                        title: 'Create Property'
                     },
                     {
-                        path:'property-management/:id/edit',
-                        component:EditProperty,
-                        title:'Edit Property'
+                        path: 'property-management/:id/edit',
+                        component: EditProperty,
+                        title: 'Edit Property'
                     },
                     {
-                        path:'vendor-management',
-                        component:VendorManagement,
-                        title:'Vendor Management'
+                        path: 'vendor-management',
+                        component: VendorManagement,
+                        title: 'Vendor Management'
                     },
                     {
-                        path:'vendor-management/:id/edit',
-                        component:EditVendor,
-                        title:'Edit Vendor'
+                        path: 'vendor-management/:id/edit',
+                        component: EditVendor,
+                        title: 'Edit Vendor'
                     }
                 ]
             }

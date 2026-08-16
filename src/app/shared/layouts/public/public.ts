@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angular/core';
-import {  HeaderPublic } from './header/header';
+import { HeaderPublic } from './header/header';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { SettingsService } from '../../../services/settings/settings-service';
 import { CommonModule } from '@angular/common';
@@ -40,7 +40,7 @@ export class Public implements OnInit {
   public readonly currentUrl = signal(this.router.url);
   public readonly isComingSoonEnabled = computed(() => {
     const url = this.currentUrl();
-    if (url === '/login' || url.startsWith('/property/')) {
+    if (url === '/login' || url.startsWith('/stay/')) {
       return false;
     }
     return isSettingEnabled(this.settingsData()?.['is_enabled_coming_soon']);

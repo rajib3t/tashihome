@@ -265,7 +265,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   goToPropertyDetail(slug?: string): void {
     if (!slug) return;
 
-    this.router.navigate(['/property', slug]);
+    this.router.navigate(['/stay', slug]);
   }
 
   // ============================================================

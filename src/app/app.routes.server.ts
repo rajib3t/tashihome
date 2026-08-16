@@ -10,7 +10,7 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client
   },
   {
-    path: 'property/:slug',
+    path: 'stay/:slug',
     renderMode: RenderMode.Client
   },
   {

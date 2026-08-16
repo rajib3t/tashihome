@@ -52,11 +52,9 @@
         <select id="region-select"
           class="mt-1 w-full bg-transparent font-display text-lg focus:outline-none cursor-pointer">
           <option>Any hill state</option>
-          <option>Darjeeling &amp; Kalimpong</option>
-          <option>Sikkim</option>
-          <option>Meghalaya</option>
-          <option>Arunachal Pradesh</option>
-          <option>Spiti Valley</option>
+          @for(city of cities();track city.id) {
+          <option [value]="city.id">{{ city.name }}</option>
+          }
         </select>
       </div>
       <div class="md:border-r md:border-ink/10 md:pr-4">
