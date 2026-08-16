@@ -1,8 +1,9 @@
-import { Component, HostListener, inject, Input, OnInit } from '@angular/core';
+import { Component, HostListener, inject, Input, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Logo } from '../../../components/common/logo/logo';
 import { AuthService } from '../../../../services/auth/auth-service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-public-header',
@@ -26,15 +27,22 @@ export class HeaderPublic implements OnInit {
 
   isMenuOpen = false;
   isScrolled = false;
-  isAuthenticated = false;
+  isAuthenticated = computed(() => !!this.authService.authUser());
 
   ngOnInit(): void {
-    this.checkAuthStatus();
+    this.initializeAuth();
   }
 
-  checkAuthStatus(): void {
-    const user = this.authService.authUser();
-    this.isAuthenticated = !!user;
+  async initializeAuth(): Promise<void> {
+    try {
+      console.log('Header: Initializing auth...');
+      const token = this.authService.getToken();
+      console.log('Header: Token exists:', !!token);
+      await firstValueFrom(this.authService.initializeAuth());
+      console.log('Header: Auth initialized, user:', this.authService.authUser());
+    } catch (error) {
+      console.error('Error initializing auth:', error);
+    }
   }
 
   @HostListener('window:scroll', [])

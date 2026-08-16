@@ -97,6 +97,11 @@
         <small class="text-red-500 text-xs">You must agree to the terms</small>
         }
 
+        <label class="flex items-start gap-2.5 text-sm text-ink/60 pt-1">
+          <input type="checkbox" formControlName="subscribe" class="rounded mt-0.5" />
+          <span>Subscribe to our newsletter for updates and exclusive offers</span>
+        </label>
+
         <button type="submit" [disabled]="isSubmitting()"
           class="btn-anim w-full bg-ochre hover:bg-ochreD disabled:bg-ochre/50 text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors">
           @if (isSubmitting()) {

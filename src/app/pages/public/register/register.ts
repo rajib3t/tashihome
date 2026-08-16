@@ -27,6 +27,7 @@ export class Register implements AfterViewInit {
     phone: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     agreeTerms: [false, [Validators.requiredTrue]],
+    subscribe: [false],
   });
   public errorMessage = signal('');
   public showPassword = signal(false);
@@ -72,10 +73,10 @@ export class Register implements AfterViewInit {
     this.isSubmitting.set(true);
     this.errorMessage.set('');
 
-    const { fullName, email, phone, password } = this.registerForm.value;
+    const { fullName, email, phone, password, subscribe } = this.registerForm.value;
 
     // TODO: Add API call for registration
-    console.log('Registration data:', { fullName, email, phone, password });
+    console.log('Registration data:', { fullName, email, phone, password, subscribe });
 
     // Placeholder for API integration
     // this.authService.register({ fullName, email, phone, password }).subscribe({
