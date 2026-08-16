@@ -2,35 +2,35 @@
 
   <!-- LEFT: illustrated brand panel -->
   <div class="relative hidden lg:block bg-pine text-cloud overflow-hidden login-brand-panel">
-    <div class="pointer-events-none absolute -top-20 right-0 w-[28rem] h-[28rem] bg-moss/25 rounded-full blur-[110px] animate-mist-a"></div>
+    <div
+      class="pointer-events-none absolute -top-20 right-0 w-[28rem] h-[28rem] bg-moss/25 rounded-full blur-[110px] animate-mist-a">
+    </div>
     <svg viewBox="0 0 700 900" preserveAspectRatio="xMidYMax slice" class="absolute inset-0 w-full h-full opacity-40">
-      <rect width="700" height="900" fill="#0C4550"/>
+      <rect width="700" height="900" fill="#0C4550" />
       <linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#0F5461"/><stop offset="1" stop-color="#347E92"/>
+        <stop offset="0" stop-color="#0F5461" />
+        <stop offset="1" stop-color="#347E92" />
       </linearGradient>
-      <rect width="700" height="560" fill="url(#lg1)"/>
-      <circle cx="560" cy="150" r="55" fill="#FAA52D" opacity="0.85"/>
-      <path d="M0 460 Q120 400 240 450 T480 440 T700 450V900H0Z" fill="#2C3927" opacity="0.55"/>
-      <path d="M0 540 Q140 490 300 535 T600 528 T700 535V900H0Z" fill="#3E4E37"/>
-      <path d="M0 620 Q140 585 300 615 T600 610 T700 616V900H0Z" fill="#55694A"/>
-      <path d="M0 700 Q140 670 300 692 T600 688 T700 692V900H0Z" fill="#6E8248"/>
-      <g transform="translate(120,560)">
-        <rect x="0" y="70" width="170" height="100" fill="#1B2A2C" opacity="0.88"/>
-        <path d="M-18 70L85 -25L188 70Z" fill="#0C4550"/>
-        <rect x="70" y="24" width="20" height="38" fill="#0C4550"/>
-        <rect x="24" y="108" width="28" height="28" fill="#FAA52D" opacity="0.85"/>
-        <rect x="118" y="108" width="28" height="28" fill="#FAA52D" opacity="0.85"/>
-      </g>
+      <rect width="700" height="560" fill="url(#lg1)" />
+      <circle cx="560" cy="150" r="55" fill="#FAA52D" opacity="0.85" />
+      <path d="M0 460 Q120 400 240 450 T480 440 T700 450V900H0Z" fill="#2C3927" opacity="0.55" />
+      <path d="M0 540 Q140 490 300 535 T600 528 T700 535V900H0Z" fill="#3E4E37" />
+      <path d="M0 620 Q140 585 300 615 T600 610 T700 616V900H0Z" fill="#55694A" />
+      <path d="M0 700 Q140 670 300 692 T600 688 T700 692V900H0Z" fill="#6E8248" />
+
     </svg>
     <div class="relative h-full flex flex-col justify-between p-12">
       <a routerLink="/" class="flex items-center gap-2.5">
-        <app-logo [variant]="'white'" [size]="48" tagline="your home, your way" [glow]="true" [withText]="true" [href]="null">
+        <app-logo [variant]="'white'" [size]="48" tagline="your home, your way" [glow]="true" [withText]="true"
+          [href]="null">
         </app-logo>
       </a>
       <div class="max-w-sm">
         <p class="eyebrow text-mist">Welcome back</p>
-        <h1 class="font-display text-4xl leading-[1.1] mt-3">Sleep where the <em class="font-accent not-italic text-ochre">clouds</em> start.</h1>
-        <p class="text-cloud/70 text-sm mt-4 leading-relaxed">Sign in to manage your trips, message hosts, and pick up where you left off.</p>
+        <h1 class="font-display text-4xl leading-[1.1] mt-3">Sleep where the <em
+            class="font-accent not-italic text-ochre">clouds</em> start.</h1>
+        <p class="text-cloud/70 text-sm mt-4 leading-relaxed">Sign in to manage your trips, message hosts, and pick up
+          where you left off.</p>
       </div>
     </div>
   </div>
@@ -44,12 +44,13 @@
       </a>
 
       <h1 class="font-display text-3xl">Log in</h1>
-      <p class="text-sm text-ink/55 mt-2">New to {{ settingsData()?.['app_name'] }}? <a routerLink="/register" class="text-ochreD font-semibold hover:underline">Create an account</a></p>
+      <p class="text-sm text-ink/55 mt-2">New to {{ settingsData()?.['app_name'] }}? <a routerLink="/register"
+          class="text-ochreD font-semibold hover:underline">Create an account</a></p>
 
       @if (errorMessage()) {
-        <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-          {{ errorMessage() }}
-        </div>
+      <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        {{ errorMessage() }}
+      </div>
       }
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mt-8 space-y-4">
@@ -57,26 +58,35 @@
           <label class="text-xs font-medium text-ink/60 block mb-1.5">Email</label>
           <input type="email" formControlName="email" placeholder="you@example.com" />
           @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
-            <small class="text-red-500 text-xs">Please enter a valid email</small>
+          <small class="text-red-500 text-xs">Please enter a valid email</small>
           }
         </div>
         <div>
           <div class="flex items-center justify-between mb-1.5">
             <label class="text-xs font-medium text-ink/60">Password</label>
-            <a routerLink="/forgot-password" class="text-xs font-semibold text-ochreD hover:underline">Forgot password?</a>
+            <a routerLink="/forgot-password" class="text-xs font-semibold text-ochreD hover:underline">Forgot
+              password?</a>
           </div>
           <div class="relative">
             <input [type]="showPassword() ? 'text' : 'password'" formControlName="password" placeholder="••••••••" />
-            <button type="button" (click)="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/60">
+            <button type="button" (click)="togglePasswordVisibility()"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/60">
               @if (showPassword()) {
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
               } @else {
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
               }
             </button>
           </div>
           @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
-            <small class="text-red-500 text-xs">Password is required</small>
+          <small class="text-red-500 text-xs">Password is required</small>
           }
         </div>
         <label class="flex items-center gap-2.5 text-sm text-ink/60">
@@ -84,11 +94,12 @@
           Keep me signed in
         </label>
 
-        <button type="submit" [disabled]="isSubmitting()" class="btn-anim w-full bg-ochre hover:bg-ochreD disabled:bg-ochre/50 text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors">
+        <button type="submit" [disabled]="isSubmitting()"
+          class="btn-anim w-full bg-ochre hover:bg-ochreD disabled:bg-ochre/50 text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors">
           @if (isSubmitting()) {
-            <span>Logging in...</span>
+          <span>Logging in...</span>
           } @else {
-            <span>Log in</span>
+          <span>Log in</span>
           }
         </button>
       </form>
@@ -100,17 +111,34 @@
       </div>
 
       <div class="grid grid-cols-2 gap-3">
-        <button type="button" class="flex items-center justify-center gap-2 border border-ink/12 rounded-full py-2.5 text-sm font-medium hover:border-ink/30 transition-colors">
-          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.25 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.85A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.44.34-2.1V7.05H2.18A11 11 0 0 0 1 12c0 1.77.43 3.45 1.18 4.95l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.85C6.71 7.3 9.14 5.38 12 5.38z"/></svg>
+        <button type="button"
+          class="flex items-center justify-center gap-2 border border-ink/12 rounded-full py-2.5 text-sm font-medium hover:border-ink/30 transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24">
+            <path fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+            <path fill="#34A853"
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.25 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.85A11 11 0 0 0 12 23z" />
+            <path fill="#FBBC05"
+              d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.44.34-2.1V7.05H2.18A11 11 0 0 0 1 12c0 1.77.43 3.45 1.18 4.95l3.66-2.85z" />
+            <path fill="#EA4335"
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.85C6.71 7.3 9.14 5.38 12 5.38z" />
+          </svg>
           Google
         </button>
-        <button type="button" class="flex items-center justify-center gap-2 border border-ink/12 rounded-full py-2.5 text-sm font-medium hover:border-ink/30 transition-colors">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#1B2A2C"><path d="M17.05 12.5c-.02-2.24 1.83-3.32 1.91-3.37-1.04-1.53-2.67-1.74-3.25-1.76-1.38-.14-2.7.82-3.4.82-.71 0-1.79-.8-2.94-.78-1.5.02-2.89.88-3.66 2.23-1.57 2.72-.4 6.75 1.13 8.96.75 1.08 1.63 2.28 2.79 2.24 1.13-.05 1.55-.72 2.9-.72 1.36 0 1.73.72 2.92.7 1.2-.02 1.96-1.09 2.7-2.18.85-1.25 1.2-2.46 1.22-2.52-.03-.02-2.33-.9-2.35-3.62z"/><path d="M14.9 5.83c.63-.76 1.05-1.82.94-2.87-.9.04-2.01.6-2.66 1.35-.58.67-1.09 1.75-.95 2.78 1 .08 2.03-.5 2.67-1.26z"/></svg>
+        <button type="button"
+          class="flex items-center justify-center gap-2 border border-ink/12 rounded-full py-2.5 text-sm font-medium hover:border-ink/30 transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#1B2A2C">
+            <path
+              d="M17.05 12.5c-.02-2.24 1.83-3.32 1.91-3.37-1.04-1.53-2.67-1.74-3.25-1.76-1.38-.14-2.7.82-3.4.82-.71 0-1.79-.8-2.94-.78-1.5.02-2.89.88-3.66 2.23-1.57 2.72-.4 6.75 1.13 8.96.75 1.08 1.63 2.28 2.79 2.24 1.13-.05 1.55-.72 2.9-.72 1.36 0 1.73.72 2.92.7 1.2-.02 1.96-1.09 2.7-2.18.85-1.25 1.2-2.46 1.22-2.52-.03-.02-2.33-.9-2.35-3.62z" />
+            <path
+              d="M14.9 5.83c.63-.76 1.05-1.82.94-2.87-.9.04-2.01.6-2.66 1.35-.58.67-1.09 1.75-.95 2.78 1 .08 2.03-.5 2.67-1.26z" />
+          </svg>
           Apple
         </button>
       </div>
 
-      <p class="text-xs text-ink/40 mt-8 text-center leading-relaxed">By continuing, you agree to Tashi Homes' <a href="#" class="underline">Terms</a> and <a href="#" class="underline">Privacy Policy</a>.</p>
+      <p class="text-xs text-ink/40 mt-8 text-center leading-relaxed">By continuing, you agree to {{ settingsData()?.['app_name'] }}'s <a
+          href="#" class="underline">Terms</a> and <a href="#" class="underline">Privacy Policy</a>.</p>
     </div>
   </div>
 </div>
