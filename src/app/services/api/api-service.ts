@@ -99,20 +99,23 @@ export class ApiService {
   private createHeaders(isProtected: boolean = false, body?: any, method?: string, endpoint?: string): HttpHeaders {
     // Let the interceptor handle all headers including Content-Type, Accept, etc.
     let headers = new HttpHeaders();
-    
+
+    const csrfToken = this.getCsrfToken();
+
+    if (csrfToken) {
+      headers = headers.set('X-CSRF-Token', csrfToken);
+      headers = headers.set('X-XSRF-TOKEN', csrfToken);
+    } else {
+      console.warn('CSRF token cookie was not readable in this runtime. Request will be sent without CSRF header.');
+    }
+
     const isRefreshTokenPost = !isProtected && method?.toLowerCase() === 'post' && endpoint === REFRESH_ENDPOINT;
 
     if (isProtected || isRefreshTokenPost) {
       headers = headers.set('X-Is-Protected', 'true');
-      const csrfToken = this.getCsrfToken();
-      
-      if (csrfToken) {
-        headers = headers.set('X-CSRF-Token', csrfToken);
-        headers = headers.set('X-XSRF-TOKEN', csrfToken);
-      } else {
-        console.warn('CSRF token cookie was not readable in this runtime. Protected request will be sent without CSRF header.');
-      }
     }
+
+    
     
     // Don't set Content-Type for FormData - let Angular auto-set with boundary
     if (body instanceof FormData) {

@@ -11,6 +11,7 @@ import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 import { Router, RouterModule } from '@angular/router';
 import { Avatar } from '../../../../shared/components/users/avatar/avatar';
+import { environment } from '../../../../../environments/environment';
 @Component({
   selector: 'app-vendor-management',
   imports: [
@@ -27,6 +28,7 @@ import { Avatar } from '../../../../shared/components/users/avatar/avatar';
   styleUrl: './vendor-management.css',
 })
 export class VendorManagement {
+  public readonly assetUrl = environment.assetUrl;
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);
 

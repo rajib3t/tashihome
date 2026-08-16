@@ -11,6 +11,7 @@ import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { City, CitySearch } from '../../../../services/city/city-model';
 import { catchError, finalize, of } from 'rxjs';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-city-management',
@@ -26,6 +27,7 @@ import { Pagination } from '../../../../shared/components/ui/pagination/paginati
   styleUrl: './city-management.css',
 })
 export class CityManagement {
+  public readonly assetUrl = environment.assetUrl;
   private readonly formBuilder = inject(FormBuilder);
 
   private readonly cityService = inject(CityService)
@@ -305,7 +307,7 @@ export class CityManagement {
 
   openEditModal(city: City) {
     this.selectedCity.set(city);
-    this.editCityImagePreview.set(city.image_url || '');
+    this.editCityImagePreview.set(this.assetUrl + (city.image_url || ''));
     this.editCityForm.reset({
       name: city.name,
       countryId: city.country?.id || '',

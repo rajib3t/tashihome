@@ -81,7 +81,7 @@
                   <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ getSerialNumber(i) }}</td>
                   <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ amenity.name }}</td>
                   <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
-                    <img [src]="amenity.icon_url" [alt]="amenity.name" class="h-10 w-10 rounded-full object-cover" />
+                    <img [src]="assetUrl + amenity.icon_url" [alt]="amenity.name" class="h-10 w-10 rounded-full object-cover" />
                   </td>
                   <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
                     <span

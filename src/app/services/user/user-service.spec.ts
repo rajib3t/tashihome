@@ -48,4 +48,30 @@ describe('UserService', () => {
 
     req.flush({ data: [], meta: { total: 0, page: 2, size: 10, totalPages: 0 } });
   });
+
+  it('should post registration payload to the public auth endpoint', () => {
+    const payload = {
+      full_name: 'Jane Doe',
+      email: 'jane@example.com',
+      phone: '1234567890',
+      password: 'Password123!',
+      is_subscriber: true,
+      is_terms_accept: true,
+    };
+
+    service.registerUser(payload).subscribe();
+
+    const req = httpMock.expectOne((request) => request.url.includes('/auth/register'));
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(payload);
+
+    req.flush({
+      data: {
+        full_name: 'Jane Doe',
+        email: 'jane@example.com',
+        phone: '1234567890'
+      }
+    });
+  });
 });

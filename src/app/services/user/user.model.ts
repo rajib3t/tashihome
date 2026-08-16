@@ -66,3 +66,20 @@ export interface VendorQuery {
 }
 
 
+
+
+export interface RegisterUserRequest {
+    email: string;
+    full_name: string;
+    password: string;
+    phone: string;
+    is_subscriber: boolean;
+    is_terms_accept: boolean;
+}
+
+export interface RegisterUserResponse {
+    full_name: string;
+    email: string;
+    phone: string;
+}
+

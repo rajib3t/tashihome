@@ -9,6 +9,7 @@ import { UploadImage } from '../../../../shared/components/common/upload-image/u
 import { Card } from '../../../../shared/components/ui/card/card';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pagination/pagination';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-amenity-management',
@@ -17,6 +18,7 @@ import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pag
   styleUrl: './amenity-management.css',
 })
 export class AmenityManagement {
+  public readonly assetUrl = environment.assetUrl;
   private readonly formBuilder = inject(FormBuilder);
   private readonly amenityService = inject(AmenityService);
 
@@ -136,7 +138,7 @@ export class AmenityManagement {
       icon: amenity.icon_url || null,
     });
     this.editErrorMessage.set(null);
-    this.iconPreview.set(amenity.icon_url || '');
+    this.iconPreview.set(this.assetUrl + (amenity.icon_url || ''));
     this.isEditModalOpen.set(true);
   }
 

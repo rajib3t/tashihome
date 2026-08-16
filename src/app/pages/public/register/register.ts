@@ -4,6 +4,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Logo } from '../../../shared/components/common/logo/logo';
 import { SettingsService } from '../../../services/settings/settings-service';
+import { UserService } from '../../../services/user/user-service';
+import { RegisterUserRequest } from '../../../services/user/user.model';
 
 @Component({
   selector: 'app-register',
@@ -18,6 +20,7 @@ import { SettingsService } from '../../../services/settings/settings-service';
 })
 export class Register implements AfterViewInit {
   public readonly settingService = inject(SettingsService);
+  private readonly userService = inject(UserService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
   public readonly settingsData = computed(() => this.settingService.settingsData());
@@ -32,7 +35,7 @@ export class Register implements AfterViewInit {
   public errorMessage = signal('');
   public showPassword = signal(false);
   public isSubmitting = signal(false);
-
+  public successMessage = signal('');
   public passwordStrength = computed(() => {
     const password = this.registerForm.get('password')?.value || '';
     let score = 0;
@@ -73,31 +76,32 @@ export class Register implements AfterViewInit {
     this.isSubmitting.set(true);
     this.errorMessage.set('');
 
-    const { fullName, email, phone, password, subscribe } = this.registerForm.value;
+    const { fullName, email, phone, password, subscribe, agreeTerms } = this.registerForm.value;
 
-    // TODO: Add API call for registration
-    console.log('Registration data:', { fullName, email, phone, password, subscribe });
+    const userData: RegisterUserRequest = {
+      full_name: fullName ?? '',
+      email: email ?? '',
+      phone: phone ?? '',
+      password: password ?? '',
+      is_subscriber: !!subscribe,
+      is_terms_accept: !!agreeTerms
+    };
 
-    // Placeholder for API integration
-    // this.authService.register({ fullName, email, phone, password }).subscribe({
-    //   next: (response) => {
-    //     if (response.status === 'success' || response.status === 200) {
-    //       this.router.navigate(['/login']);
-    //     } else {
-    //       this.errorMessage.set(response.message || 'Registration failed. Please try again.');
-    //     }
-    //     this.isSubmitting.set(false);
-    //   },
-    //   error: (err) => {
-    //     this.errorMessage.set(err.message || 'An error occurred. Please try again.');
-    //     this.isSubmitting.set(false);
-    //   },
-    // });
-
-    // Simulate API call completion
-    setTimeout(() => {
-      this.isSubmitting.set(false);
-      this.errorMessage.set('Registration API will be integrated later');
-    }, 1000);
+    this.userService.registerUser(userData).subscribe({
+      next: (response) => {
+        if (response.status === 'success' || response.status === 200) {
+          this.registerForm.reset();
+          this.successMessage.set(response.message || 'Registration successful! Please check your email for verification.');
+        } else {
+          this.errorMessage.set(response.message || 'Registration failed. Please try again.');
+        }
+        this.isSubmitting.set(false);
+      },
+      error: (err) => {
+        const errorMsg = this.userService.apiService.extractApiErrorMessage(err);
+        this.errorMessage.set(errorMsg || 'An error occurred. Please try again.');
+        this.isSubmitting.set(false);
+      },
+    });
   }
 }

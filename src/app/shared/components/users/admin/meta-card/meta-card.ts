@@ -4,6 +4,7 @@ import { Avatar } from '../../avatar/avatar';
 import { UserService } from '../../../../../services/user/user-service';
 import { Modal } from '../../../ui/modal/modal';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-meta-card',
@@ -17,7 +18,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 })
 export class MetaCard {
   public readonly userService = inject(UserService);
-
+  public readonly assetUrl = environment.assetUrl
   @Input() user: User | VendorDetail | null = null;
   @Input() editForm: FormGroup | null = null;
   @Input() isUpdating: boolean = false;

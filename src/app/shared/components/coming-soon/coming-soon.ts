@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal, PLATFORM_ID } from '@angular/core';
 import { SettingsService } from '../../../services/settings/settings-service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { environment } from '../../../../environments/environment';
 function formatLaunchDate(value: string | null | undefined): string | null {
   if (!value) return null;
  
@@ -63,7 +64,7 @@ export class ComingSoon {
    private readonly settingService = inject(SettingsService);
    private readonly platformId = inject(PLATFORM_ID);
 
-
+  public readonly assetUrl = environment.assetUrl;
 
   // mirrors useAtomValue(appName) / useAtomValue(whiteLogo)
   readonly name = this.settingService.settingsData()['app_name']?.trim() || 'TashiHome 1.0';

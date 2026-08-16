@@ -37,6 +37,7 @@ import { environment } from '../../../../../../environments/environment';
   templateUrl: './edit-property.html',
 })
 export class EditProperty implements AfterViewChecked {
+  public readonly assetUrl = environment.assetUrl;
   private readonly route = inject(ActivatedRoute);
   private readonly formBuilder = inject(FormBuilder);
   private readonly propertyService = inject(PropertyService);
@@ -662,7 +663,7 @@ export class EditProperty implements AfterViewChecked {
     }
 
     if (featureUrl) {
-      this.featureImagePreview.set(featureUrl);
+      this.featureImagePreview.set(this.assetUrl + featureUrl);
       this.propertyForm.get('featureImage')?.setValue(featureUrl);
     }
 
@@ -680,7 +681,7 @@ export class EditProperty implements AfterViewChecked {
     }
 
     if (coverUrl) {
-      this.coverImagePreview.set(coverUrl);
+      this.coverImagePreview.set(this.assetUrl + coverUrl);
       this.propertyForm.get('coverImage')?.setValue(coverUrl);
     }
 

@@ -50,13 +50,13 @@
         muted
         loop
         playsinline
-        [poster]="media().image ?? '/home-bg.jpg'"
+        [poster]="assetUrl + (media().image ?? '/home-bg.jpg')"
       >
-        <source [src]="videoUrl" type="video/mp4" />
+        <source [src]="assetUrl + videoUrl" type="video/mp4" />
       </video>
       <img
         *ngIf="!media().video && media().image as imageUrl"
-        [src]="imageUrl"
+        [src]="assetUrl + imageUrl"
         alt="Coming soon background"
         class="absolute inset-0 h-full w-full object-cover"
       />
@@ -79,7 +79,7 @@
                 class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-accent/50 bg-primary-foreground/12 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-md"
               >
                 <img
-                  [src]="logo ?? '/logo.png'"
+                  [src]="assetUrl + (logo ?? '/logo.png')"
                   alt="Homestay logo"
                   class="h-14 w-14 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
                 />

@@ -4,6 +4,7 @@ import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PropertyService } from '../../../../services/property/property-service';
 import { PropertyAsset, PropertyData } from '../../../../services/property/property.model';
+import { environment } from '../../../../../environments/environment';
 
 
 @Component({
@@ -13,6 +14,7 @@ import { PropertyAsset, PropertyData } from '../../../../services/property/prope
   styleUrl: './property.css',
 })
 export class Property {
+  public readonly assetUrl = environment.assetUrl;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly el = inject(ElementRef);

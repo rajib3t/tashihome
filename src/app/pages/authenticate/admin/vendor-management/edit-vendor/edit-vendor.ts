@@ -11,6 +11,7 @@ import { RequestVendor, VendorDetail } from '../../../../../services/user/user.m
 import { MetaCard } from '../../../../../shared/components/users/admin/meta-card/meta-card';
 import { CompanyCard } from '../../../../../shared/components/users/admin/company-card/company-card';
 import { InfoCard } from '../../../../../shared/components/users/admin/info-card/info-card';
+import { environment } from '../../../../../../environments/environment';
 
 interface VendorFormValue {
   full_name: string;
@@ -47,6 +48,7 @@ interface VendorFormValue {
   styleUrl: './edit-vendor.css',
 })
 export class EditVendor {
+    public readonly assetUrl = environment.assetUrl;
   private readonly destroyRef = inject(DestroyRef);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly formBuilder = inject(FormBuilder);
@@ -114,7 +116,7 @@ export class EditVendor {
 
         if (vendor) {
           this.updateFromData(vendor);
-          this.vendorImagePreview.set(vendor.is_profile_image_url ? vendor.is_profile_image_url : '');
+          this.vendorImagePreview.set( vendor.is_profile_image_url ? this.assetUrl + vendor.is_profile_image_url : '');
         }
 
         this.isLoading.set(false);

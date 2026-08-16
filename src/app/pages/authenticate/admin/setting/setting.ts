@@ -8,6 +8,7 @@ import { SettingsService } from '../../../../services/settings/settings-service'
 import { catchError, finalize } from 'rxjs';
 import { throwError } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-setting',
@@ -26,6 +27,7 @@ export class Setting {
   private settingsService = inject(SettingsService);
   private platformId = inject(PLATFORM_ID);
 
+  public readonly assetUrl = environment.assetUrl;
 
   public errorMessage = signal('');
   public showPassword = signal(false);
@@ -84,11 +86,11 @@ export class Setting {
         };
 
         this.settingForm.patchValue(settings);
-        this.logoPreview.set(settings.app_logo || '');
-        this.whiteLogoPreview.set(settings.white_logo || '');
-        this.faviconPreview.set(settings.app_favicon || '');
-        this.comingBackgroundImagePreview.set(settings.coming_background_image || '');
-        this.comingSoonVideoPreview.set(settings.coming_soon_video || '');
+        this.logoPreview.set(this.assetUrl + (settings.app_logo || ''));
+        this.whiteLogoPreview.set(this.assetUrl + (settings.white_logo || ''));
+        this.faviconPreview.set(this.assetUrl + (settings.app_favicon || ''));
+        this.comingBackgroundImagePreview.set(this.assetUrl + (settings.coming_background_image || ''));
+        this.comingSoonVideoPreview.set(this.assetUrl + (settings.coming_soon_video || ''));
       },
       error: (error) => {
         console.error('Error fetching settings:', error);
@@ -174,7 +176,7 @@ appendFileOnly('coming_soon_video', coming_soon_video);
 formData.append('launch_date', this.normalizeDateOnly(launch_date));
 
 // Debug: log FormData contents
-console.log('FormData contents:');
+
 for (const [key, value] of formData.entries()) {
   console.log(`${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
 }

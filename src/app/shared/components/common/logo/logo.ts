@@ -16,10 +16,11 @@ export class Logo {
   private readonly themeService = inject(ThemeService);
 
   readonly theme$ = this.themeService.theme$;
-
+  public readonly assetUrl = environment.assetUrl;
   readonly applicationName = computed(() => {
     const settings = this.settingService.settingsData();
     return settings?.['app_name']?.trim() || environment.applicationName;
+
   });
 
   @Input() size = 36;
@@ -35,18 +36,18 @@ export class Logo {
     const settings = this.settingService.settingsData();
 
     if (this.variant === 'white') {
-      return settings?.['white_logo'] || '/images/tashi-logo-white.svg';
+      return this.assetUrl + (settings?.['white_logo'] || '/images/tashi-logo-white.svg');
     }
 
     if (this.variant === 'dark') {
-      return settings?.['app_logo'] || '/images/tashi-logo-blue.svg';
+      return this.assetUrl + (settings?.['app_logo'] || '/images/tashi-logo-blue.svg');
     }
 
     // 'auto' based on active theme
     if (theme === 'dark') {
-      return settings?.['white_logo'] || settings?.['app_logo'] || '/images/tashi-logo-white.svg';
+      return this.assetUrl + (settings?.['white_logo'] || settings?.['app_logo'] || '/images/tashi-logo-white.svg');
     }
-    return settings?.['app_logo'] || '/images/tashi-logo-blue.svg';
+    return this.assetUrl + (settings?.['app_logo'] || '/images/tashi-logo-blue.svg');
   }
 
   getTextClass(theme: string | null): string {

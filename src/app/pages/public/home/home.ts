@@ -21,6 +21,7 @@ import { filter, catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery, CitySearch } from '../../../services/city/city-model';
+import { environment } from '../../../../environments/environment';
 
 export interface StatItem {
   target: number;
@@ -48,6 +49,7 @@ interface MistBlob {
   styleUrl: './home.css',
 })
 export class Home implements OnInit, AfterViewInit, OnDestroy {
+  public readonly assetUrl = environment.assetUrl;
   public properties = signal<Partial<PropertyData>[]>([]);
   public cities = signal<Partial<City>[]>([]);
   public readonly router = inject(Router);

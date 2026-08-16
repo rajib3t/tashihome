@@ -2,7 +2,7 @@ import { inject, Service } from '@angular/core';
 import { ApiService } from '../api/api-service';
 import { catchError, map, Observable , throwError} from 'rxjs';
 import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
-import { RequestVendor, User, VendorDetail, VendorQuery, VendorUpdateRequest } from './user.model';
+import { RegisterUserRequest, RegisterUserResponse, RequestVendor, User, VendorDetail, VendorQuery, VendorUpdateRequest } from './user.model';
 
 @Service()
 export class UserService {
@@ -130,5 +130,13 @@ export class UserService {
           map(response => response.data),
           catchError(this.apiService.passthroughError)
       )
+  }
+
+
+  public registerUser(userData: RegisterUserRequest): Observable<ApiResponse<RegisterUserResponse>> {
+    return this.apiService.post<ApiResponse<RegisterUserResponse>>('/auth/register', userData).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
   }
 }

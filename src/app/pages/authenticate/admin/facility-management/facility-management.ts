@@ -9,6 +9,7 @@ import { UploadImage } from '../../../../shared/components/common/upload-image/u
 import { FacilityService } from '../../../../services/facility/facility-service';
 import { Facility, FacilityQuery, FacilitySearch } from '../../../../services/facility/facility-model';
 import { catchError, finalize, of } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-facility-management',
@@ -25,6 +26,7 @@ import { catchError, finalize, of } from 'rxjs';
   styleUrl: './facility-management.css',
 })
 export class FacilityManagement {
+  public readonly assetUrl = environment.assetUrl;
   private readonly formBuilder = inject(FormBuilder);
   private readonly facilityService = inject(FacilityService);
 
@@ -158,7 +160,7 @@ export class FacilityManagement {
     });
     this.editErrorMessage.set(null);
     this.isEditModalOpen.set(true);
-    this.iconPreview.set(facility.icon_url || '');
+    this.iconPreview.set(this.assetUrl + (facility.icon_url || ''));
   }
 
   closeEditModal() {
