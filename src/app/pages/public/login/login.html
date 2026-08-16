@@ -3,25 +3,12 @@
   <!-- LEFT: illustrated brand panel -->
   <div class="relative hidden lg:block bg-pine text-cloud overflow-hidden login-brand-panel">
     <div
-      class="pointer-events-none absolute -top-20 right-0 w-[28rem] h-[28rem] bg-moss/25 rounded-full blur-[110px] animate-mist-a">
+      class="pointer-events-none absolute -top-20 right-0 w-md h-md bg-moss/25 rounded-full blur-[110px] animate-mist-a">
     </div>
-    <svg viewBox="0 0 700 900" preserveAspectRatio="xMidYMax slice" class="absolute inset-0 w-full h-full opacity-40">
-      <rect width="700" height="900" fill="#0C4550" />
-      <linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#0F5461" />
-        <stop offset="1" stop-color="#347E92" />
-      </linearGradient>
-      <rect width="700" height="560" fill="url(#lg1)" />
-      <circle cx="560" cy="150" r="55" fill="#FAA52D" opacity="0.85" />
-      <path d="M0 460 Q120 400 240 450 T480 440 T700 450V900H0Z" fill="#2C3927" opacity="0.55" />
-      <path d="M0 540 Q140 490 300 535 T600 528 T700 535V900H0Z" fill="#3E4E37" />
-      <path d="M0 620 Q140 585 300 615 T600 610 T700 616V900H0Z" fill="#55694A" />
-      <path d="M0 700 Q140 670 300 692 T600 688 T700 692V900H0Z" fill="#6E8248" />
-
-    </svg>
+   
     <div class="relative h-full flex flex-col justify-between p-12">
       <a routerLink="/" class="flex items-center gap-2.5">
-        <app-logo [variant]="'white'" [size]="48" tagline="your home, your way" [glow]="true" [withText]="true"
+        <app-logo [variant]="'dark'" [size]="48" tagline="your home, your way" [glow]="true" [withText]="true"
           [href]="null">
         </app-logo>
       </a>
@@ -137,8 +124,9 @@
         </button>
       </div>
 
-      <p class="text-xs text-ink/40 mt-8 text-center leading-relaxed">By continuing, you agree to {{ settingsData()?.['app_name'] }}'s <a
-          href="#" class="underline">Terms</a> and <a href="#" class="underline">Privacy Policy</a>.</p>
+      <p class="text-xs text-ink/40 mt-8 text-center leading-relaxed">By continuing, you agree to {{
+        settingsData()?.['app_name'] }}'s <a href="#" class="underline">Terms</a> and <a href="#"
+          class="underline">Privacy Policy</a>.</p>
     </div>
   </div>
 </div>

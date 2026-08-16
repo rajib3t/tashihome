@@ -21,6 +21,17 @@
     </nav>
 
     <div class="flex items-center gap-3">
+      <ng-container *ngIf="isAuthenticated; else loginTemplate">
+        <a (click)="navigateToProfile()" class="hidden sm:flex w-10 h-10 rounded-full bg-cloud2 items-center justify-center text-pine text-xs font-semibold hover:text-ochreD transition-colors cursor-pointer" title="Your profile">DP</a>
+      </ng-container>
+      <ng-template #loginTemplate>
+        <a
+          routerLink="/login"
+          class="btn-anim hidden sm:inline-block bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+        >
+          Login
+        </a>
+      </ng-template>
       <a
         href="#stays"
         class="btn-anim hidden sm:inline-block bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
@@ -48,6 +59,12 @@
     <a href="#experiences" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Experiences</a>
     <a href="#hosts" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Hosts</a>
     <a href="#how" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">How it works</a>
+    <ng-container *ngIf="isAuthenticated; else mobileLoginTemplate">
+      <a (click)="navigateToProfile(); closeMenu()" class="block text-sm font-medium hover:text-ochre">Profile</a>
+    </ng-container>
+    <ng-template #mobileLoginTemplate>
+      <a routerLink="/login" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Login</a>
+    </ng-template>
     <a href="#stays" (click)="closeMenu()" class="inline-block bg-ochre text-cloud text-sm font-semibold px-5 py-2.5 rounded-full">
       Browse stays
     </a>

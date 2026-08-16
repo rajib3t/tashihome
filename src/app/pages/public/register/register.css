@@ -1,0 +1,138 @@
+:host {
+  font-family: 'Inter', sans-serif;
+  background-color: #F3FAFB;
+  color: #1B2A2C;
+}
+
+/* Brand panel background image */
+.register-brand-panel {
+  background-image: url('/images/hero-himalaya.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Form panel background image */
+.register-form-panel {
+  background-image: url('/images/property-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.register-form-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(243, 250, 251, 0.92); /* #F3FAFB with 92% opacity */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1;
+}
+
+.register-form-panel > div {
+  position: relative;
+  z-index: 2;
+}
+
+/* Form-specific input styling */
+input[type=text],
+input[type=email],
+input[type=password],
+input[type=tel] {
+  width: 100%;
+  border: 1px solid rgba(27, 42, 44, 0.14);
+  border-radius: 0.9rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  background: #fff;
+  transition: border-color 0.2s ease;
+}
+
+input:focus {
+  border-color: #479FB5;
+}
+
+input[type=checkbox] {
+  accent-color: #0C4550;
+}
+
+/* Password strength bar */
+.strength-bar {
+  height: 4px;
+  border-radius: 9999px;
+  background: #E3F0F2;
+  overflow: hidden;
+}
+
+.strength-fill {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes mistFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(2.5%, -4%) scale(1.06);
+  }
+}
+
+.animate-mist-a {
+  animation: mistFloat 14s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .animate-mist-a {
+    animation: none;
+  }
+}
+
+/* Button animation */
+.btn-anim {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-anim::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.65s ease;
+}
+
+.btn-anim:hover::after {
+  left: 130%;
+}
+
+/* Focus styles */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #FAA52D;
+  outline-offset: 3px;
+}

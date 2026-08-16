@@ -21,12 +21,18 @@ import { CreateProperty } from './pages/authenticate/admin/property-management/c
 import { EditProperty } from './pages/authenticate/admin/property-management/edit-property/edit-property';
 import { Property } from './pages/public/properties/property/property';
 import { Properties } from './pages/public/properties/properties';
+import { Register } from './pages/public/register/register';
 
 export const routes: Routes = [
     {
         path: 'login',
         component: Login,
         title: 'Login',
+    },
+    {
+        path: "register",
+        component: Register,
+        title: "Register",
     },
     {
         path: '',

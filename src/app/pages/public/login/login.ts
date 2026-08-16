@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal, AfterViewInit, computed } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth/auth-service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LoginRequest } from '../../../services/auth/auth.model';
 import { Logo } from '../../../shared/components/common/logo/logo';
 import { SettingsService } from '../../../services/settings/settings-service';
@@ -12,7 +12,8 @@ import { SettingsService } from '../../../services/settings/settings-service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    Logo
+    Logo,
+    RouterLink
   ],
   templateUrl: './login.html',
   styleUrl: './login.css',
@@ -38,9 +39,11 @@ export class Login implements AfterViewInit {
 
   public ngAfterViewInit() {
     // Trigger reveal animation
-    setTimeout(() => {
-      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
-    }, 100);
+    if (typeof document !== 'undefined') {
+      setTimeout(() => {
+        document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+      }, 100);
+    }
   }
 
   public onSubmit() {

@@ -51,7 +51,7 @@
       </span>
 
       @if (tagline) {
-      <span class="text-[10px] font-medium uppercase tracking-[0.2em] opacity-70">
+      <span class="text-[10px] font-medium uppercase tracking-[0.2em] opacity-7" [ngClass]="getTextClass(theme$ | async)">
         {{ tagline }}
       </span>
       }
