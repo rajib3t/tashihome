@@ -68,4 +68,42 @@ export class CityService {
             catchError(this.apiService.passthroughError)
         )
     }
+
+    public getPublicCities(params: CityQuery): Observable<PaginatedResponse<City>> {
+        const search = params.search ?? {};
+        const queryParams: Record<string, string | number> = {
+            page: params.page ?? 1,
+            size: params.size ?? 10,
+        };
+
+        const name = search.name?.trim();
+        const country_id = search.country_id?.trim();
+        const status = search.status?.trim();
+
+        if (name) {
+            queryParams['name'] = name;
+        }
+
+        if (country_id) {
+            queryParams['country_id'] = country_id;
+        }
+
+        if (status) {
+            queryParams['status'] = status;
+        }
+
+        if (params.sortBy?.trim()) {
+            queryParams['sortBy'] = params.sortBy.trim();
+        }
+
+        if (params.sortOrder) {
+            queryParams['sortOrder'] = params.sortOrder;
+        }
+
+        return this.apiService.get<PaginatedResponse<City>>('/public/cities/', { params: queryParams }).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        )
+    }
+
 }

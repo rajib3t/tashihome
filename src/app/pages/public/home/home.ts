@@ -19,6 +19,8 @@ import { PropertyData, PropertyQuery, PropertySearch } from '../../../services/p
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CityService } from '../../../services/city/city-service';
+import { City, CityQuery, CitySearch } from '../../../services/city/city-model';
 
 export interface StatItem {
   target: number;
@@ -47,6 +49,7 @@ interface MistBlob {
 })
 export class Home implements OnInit, AfterViewInit, OnDestroy {
   public properties = signal<Partial<PropertyData>[]>([]);
+  public cities = signal<Partial<City>[]>([]);
   public readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly zone = inject(NgZone);
@@ -69,15 +72,16 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   public readonly propertyService: PropertyService = inject(PropertyService);
-
+  public readonly cityService: CityService = inject(CityService);
   constructor(
     private el: ElementRef,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProperties();
+    this.loadCities();
 
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
@@ -98,6 +102,23 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       .filter((opt) => opt && opt.is_included && opt.name)
       .map((opt) => opt.name);
     return included.length > 0 ? included.slice(0, 3) : ['Family stay'];
+  }
+
+  private loadCities(): void {
+    const query: CitySearch = {
+      is_featured: true
+    }
+    const cityQuery: CityQuery = {
+      search: query,
+      page: 1,
+      size: 4,
+    }
+
+    this.cityService.getPublicCities(cityQuery).subscribe((response) => {
+      this.cities.set(response?.data || []);
+      this.cdr.markForCheck();
+    })
+
   }
 
   private loadProperties(): void {
@@ -252,13 +273,13 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // with interactive cursor ambient swirl
   // ============================================================
   private initHeroCanvas(selector: string): () => void {
-    if (this.reduceMotion) return () => {};
+    if (this.reduceMotion) return () => { };
 
     const canvas = this.el.nativeElement.querySelector(selector) as HTMLCanvasElement | null;
-    if (!canvas) return () => {};
+    if (!canvas) return () => { };
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return () => {};
+    if (!ctx) return () => { };
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let w = 0;
@@ -413,13 +434,13 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // golden alpine particles across the listings section
   // ============================================================
   private initStaysCanvas(selector: string): () => void {
-    if (this.reduceMotion) return () => {};
+    if (this.reduceMotion) return () => { };
 
     const canvas = this.el.nativeElement.querySelector(selector) as HTMLCanvasElement | null;
-    if (!canvas) return () => {};
+    if (!canvas) return () => { };
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return () => {};
+    if (!ctx) return () => { };
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let w = 0;
@@ -547,13 +568,13 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // spores across the misty tea hills background
   // ============================================================
   private initExpCanvas(selector: string): () => void {
-    if (this.reduceMotion) return () => {};
+    if (this.reduceMotion) return () => { };
 
     const canvas = this.el.nativeElement.querySelector(selector) as HTMLCanvasElement | null;
-    if (!canvas) return () => {};
+    if (!canvas) return () => { };
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return () => {};
+    if (!ctx) return () => { };
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let w = 0;
@@ -645,13 +666,13 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // with interactive starlight & glowing connection threads
   // ============================================================
   private initConstellationCanvas(selector: string): () => void {
-    if (this.reduceMotion) return () => {};
+    if (this.reduceMotion) return () => { };
 
     const canvas = this.el.nativeElement.querySelector(selector) as HTMLCanvasElement | null;
-    if (!canvas) return () => {};
+    if (!canvas) return () => { };
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return () => {};
+    if (!ctx) return () => { };
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let w = 0;
@@ -805,13 +826,13 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // 4. FOOTER CANVAS: Warm alpine sunset glow & rising embers
   // ============================================================
   private initFooterCanvas(selector: string): () => void {
-    if (this.reduceMotion) return () => {};
+    if (this.reduceMotion) return () => { };
 
     const canvas = this.el.nativeElement.querySelector(selector) as HTMLCanvasElement | null;
-    if (!canvas) return () => {};
+    if (!canvas) return () => { };
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return () => {};
+    if (!ctx) return () => { };
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let w = 0;
@@ -901,7 +922,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // cards are rendered from the `properties` signal.
   // ============================================================
   private initCardTilt(selector: string): () => void {
-    if (this.reduceMotion) return () => {};
+    if (this.reduceMotion) return () => { };
 
     const cards = Array.from(
       this.el.nativeElement.querySelectorAll(selector)
@@ -946,10 +967,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // Ridge parallax — subtle vertical drift on scroll.
   // ============================================================
   private initParallax(selector: string, factor: number): () => void {
-    if (this.reduceMotion) return () => {};
+    if (this.reduceMotion) return () => { };
 
     const target = this.el.nativeElement.querySelector(selector) as HTMLElement | null;
-    if (!target) return () => {};
+    if (!target) return () => { };
 
     const onScroll = () => {
       const y = window.scrollY * factor;
