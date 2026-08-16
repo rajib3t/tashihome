@@ -24,6 +24,11 @@ import { Properties } from './pages/public/properties/properties';
 
 export const routes: Routes = [
     {
+        path: 'login',
+        component: Login,
+        title: 'Login',
+    },
+    {
         path: '',
         component: Public,
         children: [
@@ -36,11 +41,6 @@ export const routes: Routes = [
                 path: 'home',
                 redirectTo: '',
                 pathMatch: 'full',
-            },
-            {
-                path: 'login',
-                component: Login,
-                title: 'Login',
             },
             {
                 path: 'stays',

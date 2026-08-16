@@ -1,0 +1,58 @@
+:host {
+  font-family: 'Inter', sans-serif;
+  background-color: #F3FAFB;
+  color: #1B2A2C;
+}
+
+/* Brand panel background image */
+.login-brand-panel {
+  background-image: url('/images/hero-himalaya.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Form panel background image */
+.login-form-panel {
+  background-image: url('/images/property-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.login-form-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(243, 250, 251, 0.92); /* #F3FAFB with 92% opacity */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1;
+}
+
+.login-form-panel > div {
+  position: relative;
+  z-index: 2;
+}
+
+/* Form-specific input styling */
+input[type=text],
+input[type=email],
+input[type=password] {
+  width: 100%;
+  border: 1px solid rgba(27, 42, 44, 0.14);
+  border-radius: 0.9rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  background: #fff;
+  transition: border-color 0.2s ease;
+}
+
+input:focus {
+  border-color: #479FB5;
+}
+
+input[type=checkbox] {
+  accent-color: #0C4550;
+}
