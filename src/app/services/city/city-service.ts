@@ -71,7 +71,7 @@ export class CityService {
 
     public getPublicCities(params: CityQuery): Observable<PaginatedResponse<City>> {
         const search = params.search ?? {};
-        const queryParams: Record<string, string | number> = {
+        const queryParams: Record<string, string | number | boolean> = {
             page: params.page ?? 1,
             size: params.size ?? 10,
         };
@@ -79,9 +79,13 @@ export class CityService {
         const name = search.name?.trim();
         const country_id = search.country_id?.trim();
         const status = search.status?.trim();
+        const is_featured = search.is_featured;
 
         if (name) {
             queryParams['name'] = name;
+        }
+        if (is_featured !== undefined) {
+            queryParams['is_featured'] = is_featured;
         }
 
         if (country_id) {
