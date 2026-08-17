@@ -1,0 +1,76 @@
+<div class="min-h-screen flex items-center justify-center px-6 py-16">
+  <div class="w-full max-w-sm reveal">
+
+    <!-- Logo / Brand -->
+    <a routerLink="/" class="flex items-center gap-2.5 mb-10 justify-center">
+      <app-logo [variant]="'dark'" [size]="36" tagline="your home, your way" [glow]="false" [withText]="true" [href]="null">
+      </app-logo>
+    </a>
+
+    <!-- STATE 1: Activate Account Button -->
+    @if (!isActivated()) {
+    <div id="state-request" class="state-panel active-state text-center">
+      <span class="w-14 h-14 rounded-full bg-cloud2 grid place-items-center text-mossD mx-auto mb-6">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <polyline points="16 11 18 13 22 9" />
+        </svg>
+      </span>
+
+      <h1 class="font-display text-3xl">Activate your account</h1>
+      <p class="text-sm text-ink/55 mt-2.5 leading-relaxed">
+        Click the button below to complete your registration and activate your account.
+      </p>
+
+      @if (errorMessage()) {
+      <div class="mt-5 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 text-left">
+        {{ errorMessage() }}
+      </div>
+      }
+
+      <div class="mt-8 space-y-4">
+        <button type="button" (click)="onActivate()" [disabled]="isSubmitting()"
+          class="btn-anim w-full bg-ochre hover:bg-ochreD disabled:bg-ochre/50 text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors cursor-pointer">
+          @if (isSubmitting()) {
+          <span>Activating account...</span>
+          } @else {
+          <span>Activate Account</span>
+          }
+        </button>
+      </div>
+
+      <a routerLink="/login"
+        class="flex items-center justify-center gap-1.5 text-sm font-semibold text-pine hover:text-ochreD mt-6">
+        ← Back to log in
+      </a>
+    </div>
+    } @else {
+    <!-- STATE 2: Account Successfully Activated -->
+    <div id="state-sent" class="state-panel active-state text-center">
+      <span class="stamp w-14 h-14 rounded-full text-mossD grid place-items-center mx-auto mb-6">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </span>
+
+      <h1 class="font-display text-3xl">Account Activated!</h1>
+      <p class="text-sm text-ink/55 mt-2.5 leading-relaxed">
+        {{ successMessage() || 'Your account has been successfully verified. You can now log in.' }}
+      </p>
+
+      <a routerLink="/login"
+        class="btn-anim mt-8 w-full inline-block text-center bg-pine hover:bg-ink text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors cursor-pointer">
+        Proceed to log in
+      </a>
+
+      <a routerLink="/login"
+        class="flex items-center justify-center gap-1.5 text-sm font-semibold text-pine hover:text-ochreD mt-6">
+        ← Back to log in
+      </a>
+    </div>
+    }
+
+  </div>
+</div>

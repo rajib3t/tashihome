@@ -20,7 +20,6 @@ export class Logo {
   readonly applicationName = computed(() => {
     const settings = this.settingService.settingsData();
     return settings?.['app_name']?.trim() || environment.applicationName;
-
   });
 
   @Input() size = 36;
@@ -31,6 +30,7 @@ export class Logo {
   @Input() glow = false;
   @Input() variant: 'auto' | 'white' | 'dark' = 'auto';
   @Input() textColor = '';
+  @Input() taglineColor = '';
 
   getLogoSrc(theme: string | null): string {
     const settings = this.settingService.settingsData();
@@ -60,6 +60,19 @@ export class Logo {
     if (this.variant === 'dark') {
       return 'text-ink';
     }
-    return theme === 'dark' ? 'text-white' : 'text-foreground dark:text-white';
+    return theme === 'dark' ? 'text-white' : 'text-ink dark:text-white';
+  }
+
+  getTaglineClass(theme: string | null): string {
+    if (this.taglineColor) {
+      return this.taglineColor;
+    }
+    if (this.variant === 'white') {
+      return 'text-mist';
+    }
+    if (this.variant === 'dark') {
+      return 'text-ink/65';
+    }
+    return theme === 'dark' ? 'text-mist' : 'text-ink/65 dark:text-mist';
   }
 }

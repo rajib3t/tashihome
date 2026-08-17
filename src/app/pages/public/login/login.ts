@@ -79,7 +79,8 @@ export class Login implements AfterViewInit {
         this.isSubmitting.set(false);
       },
       error: (err) => {
-        this.errorMessage.set(err.message || 'An error occurred. Please try again.');
+        const error = this.authService.apiService.extractApiErrorMessage(err);
+        this.errorMessage.set(error || 'An error occurred. Please try again.');
         this.isSubmitting.set(false);
       },
     });

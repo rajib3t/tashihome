@@ -139,4 +139,11 @@ export class UserService {
       catchError(this.apiService.passthroughError)
     );
   }
+
+  public activateAccount(token: string): Observable<ApiResponse<any>> {
+    return this.apiService.post<ApiResponse<any>>(`/auth/activate-account/${token}`, {}).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
 }

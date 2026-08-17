@@ -22,6 +22,7 @@ import { EditProperty } from './pages/authenticate/admin/property-management/edi
 import { Property } from './pages/public/properties/property/property';
 import { Properties } from './pages/public/properties/properties';
 import { Register } from './pages/public/register/register';
+import { ActiveAccount } from './pages/public/active-account/active-account';
 
 export const routes: Routes = [
     {
@@ -33,6 +34,26 @@ export const routes: Routes = [
         path: "register",
         component: Register,
         title: "Register",
+    },
+    {
+        path: 'active-account',
+        component: ActiveAccount,
+        title: 'Activate Account',
+    },
+    {
+        path: 'active-account/:token',
+        component: ActiveAccount,
+        title: 'Activate Account',
+    },
+    {
+        path: 'activate-account',
+        component: ActiveAccount,
+        title: 'Activate Account',
+    },
+    {
+        path: 'activate-account/:token',
+        component: ActiveAccount,
+        title: 'Activate Account',
     },
     {
         path: '',

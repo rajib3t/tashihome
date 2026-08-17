@@ -55,24 +55,25 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
   const authService = inject(AuthService);
 
   // Don't modify headers for authentication endpoints
- if (
-  req.url.includes('auth/login') || 
-  req.url.includes('auth/refresh') || 
-  req.url.includes('auth/register') || 
-  req.url.includes('auth/forgot-password') || 
-  req.url.includes('auth/reset-password') || 
-  req.url.includes('auth/verify-email') || 
-  req.url.includes('settings/fetch') ||
-  req.url.includes('/public/') // Matches any URL containing /public/
-) {
-  console.log('AuthInterceptor: Skipping auth endpoints');
-  const headers = req.headers
-    .set('Content-Type', 'application/json')
-    .set('Accept', 'application/json');
+  if (
+    req.url.includes('auth/login') ||
+    req.url.includes('auth/refresh') ||
+    req.url.includes('auth/register') ||
+    req.url.includes('auth/forgot-password') ||
+    req.url.includes('auth/reset-password') ||
+    req.url.includes('auth/verify-email') ||
+    req.url.includes('auth/activate-account') ||
+    req.url.includes('settings/fetch') ||
+    req.url.includes('/public/') // Matches any URL containing /public/
+  ) {
+    console.log('AuthInterceptor: Skipping auth endpoints');
+    const headers = req.headers
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
 
-  const modifiedReq = req.clone({ headers });
-  return next(modifiedReq);
-}
+    const modifiedReq = req.clone({ headers });
+    return next(modifiedReq);
+  }
 
 
 
@@ -94,7 +95,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
   if (isProtected) {
     const token = authService.getToken();
 
-    
+
     if (!token) {
       console.log("AuthInterceptor: No token found for protected request; returning 401 immediately");
       return throwError(() => ({
@@ -111,7 +112,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
     try {
       const isTokenExpired = jwtHelper.isTokenExpired(token);
       if (isTokenExpired) {
-        
+
         return authService.refreshToken().pipe(
           switchMap((response) => {
             const newAccessToken = extractAccessToken(response);
@@ -138,7 +139,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
       }
 
       const decodedToken = jwtHelper.decodeToken(token);
-      
+
       if (decodedToken && decodedToken.sub) {
         headers = headers.set('X-User-ID', decodedToken.sub);
       }

@@ -42,7 +42,7 @@
 
     <!-- Text -->
     @if (withText) {
-    <span class="flex flex-col leading-none">
+    <span class="flex flex-col leading-tight">
       <span
         class="font-display text-xl tracking-tight transition-colors duration-300"
         [ngClass]="getTextClass(theme$ | async)"
@@ -51,7 +51,10 @@
       </span>
 
       @if (tagline) {
-      <span class="text-[10px] font-medium uppercase tracking-[0.2em] opacity-7" [ngClass]="getTextClass(theme$ | async)">
+      <span
+        class="text-[9.5px] font-semibold uppercase tracking-[0.22em] transition-colors duration-300 mt-0.5"
+        [ngClass]="getTaglineClass(theme$ | async)"
+      >
         {{ tagline }}
       </span>
       }
