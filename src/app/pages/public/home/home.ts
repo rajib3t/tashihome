@@ -22,6 +22,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery, CitySearch } from '../../../services/city/city-model';
 import { environment } from '../../../../environments/environment';
+import { SingleProperty } from '../../../shared/components/properties/single-property/single-property';
 
 export interface StatItem {
   target: number;
@@ -44,7 +45,11 @@ interface MistBlob {
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    SingleProperty
+  ],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

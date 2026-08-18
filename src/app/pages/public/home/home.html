@@ -161,54 +161,7 @@
 
     <div id="listing-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
       @for (item of properties(); track item.id) {
-      <article
-        class="listing-card card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/10 shadow-md hover:shadow-xl transition-all duration-300">
-        <div class="h-52 relative overflow-hidden card-illus"
-          [style.background]="item.feature_image?.file_url ? 'url(' + assetUrl + item.feature_image.file_url + ') center/cover no-repeat' : 'linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)'">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/15"></div>
-          <span
-            class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1 bg-black/30 backdrop-blur-sm">
-            HOST VERIFIED
-          </span>
-          <span
-            class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-ink flex items-center gap-1 shadow-sm">
-            <span class="text-ochre">★</span> 4.9
-          </span>
-        </div>
-
-        <div class="p-6">
-          <div class="flex items-start justify-between gap-2">
-            <h3 class="font-display text-2xl leading-tight group-hover:text-pine transition-colors">{{ item.name }}</h3>
-          </div>
-          <p class="text-sm text-ink/60 mt-1 flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 text-moss shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            {{ item.city?.name || 'Himalayan stay' }}{{ item.location?.name ? ', ' + item.location.name : '' }}
-          </p>
-
-          <div class="flex flex-wrap gap-1.5 mt-4">
-            <span *ngFor="let tag of getFoodOptionTags(item)"
-              class="text-xs bg-cloud2/80 border border-ink/5 px-2.5 py-1 rounded-full text-ink/75 font-medium">
-              {{ tag }}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between mt-5 pt-4 border-t border-ink/10">
-            <p class="font-display text-xl text-ink">
-              ₹{{ (item.price_per_night ?? item.sale_price ?? 0) | number }}
-              <span class="text-xs font-body font-normal text-ink/50">/ night</span>
-            </p>
-            <a href="" (click)="$event.preventDefault(); goToPropertyDetail(item?.slug)"
-              class="inline-flex items-center gap-1 text-sm font-semibold text-ochreD hover:text-ochre transition-colors group-hover:translate-x-0.5">
-              View stay →
-            </a>
-          </div>
-        </div>
-      </article>
+        <app-single-property [item]="item"></app-single-property>
       }
     </div>
 
