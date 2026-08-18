@@ -1,7 +1,7 @@
 import { computed, inject, Service, signal } from '@angular/core';
 import { ApiService } from '../api/api-service';
 import { User } from '../user/user.model';
-import { LoginRequest, LoginResponse, RefreshTokenResponseData } from './auth.model';
+import { LoginRequest, LoginResponse, RefreshTokenResponseData, ResetPasswordRequest } from './auth.model';
 import { ApiResponse } from '../api/api-response.model';
 import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import { UserService } from '../user/user-service';
@@ -131,6 +131,20 @@ export class AuthService {
         return document.cookie.split("; ").find(row => row.startsWith(name + "="))?.split("=")[1];
     }
 
+
+    public forgotPassword(email: string): Observable<ApiResponse<any>> {
+        return this.apiService.post<ApiResponse<any>>('/auth/forgot-password', { email }).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        );
+    }
+
+    public resetPassword(data: ResetPasswordRequest): Observable<ApiResponse<any>> {
+        return this.apiService.post<ApiResponse<any>>('/auth/reset-password', data).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        );
+    }
 
     public logout(): Observable<ApiResponse<any>> {
         return this.apiService.protectedPost<ApiResponse<any>>('/auth/logout', {}).pipe(

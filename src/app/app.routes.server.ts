@@ -6,6 +6,46 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client
   },
   {
+    path: 'register',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'forgot-password',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'password-reset',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'password-reset/:token',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'reset-password',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'reset-password/:token',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'active-account',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'active-account/:token',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'activate-account',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'activate-account/:token',
+    renderMode: RenderMode.Client
+  },
+  {
     path: 'stay/:slug',
     renderMode: RenderMode.Client
   },
@@ -18,3 +58,4 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender
   }
 ];
+
