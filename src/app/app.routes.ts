@@ -4,7 +4,7 @@ import { Home } from './pages/public/home/home';
 import { Login } from './pages/public/login/login';
 import { authGuard } from './guards/auth/auth-guard';
 import { Authenticate } from './shared/layouts/authenticate/authenticate';
-import { adminGuard } from './guards/auth/role-guard';
+import { adminGuard, userGuard } from './guards/auth/role-guard';
 import { Admin } from './shared/layouts/authenticate/admin/admin';
 import { AdminDashboard } from './pages/authenticate/admin/admin-dashboard/admin-dashboard';
 import { Setting } from './pages/authenticate/admin/setting/setting';
@@ -25,6 +25,8 @@ import { Register } from './pages/public/register/register';
 import { ActiveAccount } from './pages/public/active-account/active-account';
 import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
 import { PasswordReset } from './pages/public/password-reset/password-reset';
+import { Profile as ProfileUser } from './pages/authenticate/user/profile/profile'
+import { User } from './shared/layouts/authenticate/user/user';
 
 export const routes: Routes = [
     {
@@ -188,6 +190,17 @@ export const routes: Routes = [
                         path: 'vendor-management/:id/edit',
                         component: EditVendor,
                         title: 'Edit Vendor'
+                    }
+                ]
+            },
+            {
+                path: 'profile',
+                component: User,
+                children: [
+                    {
+                        path: '',
+                        component: ProfileUser,
+                        title: 'Profile'
                     }
                 ]
             }

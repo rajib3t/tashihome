@@ -8,6 +8,7 @@ export interface User {
     status: string;
     role: UserRole;
     is_profile_image_url: string;
+    created_at: string;
 }
 
 export type UserRole = 'user' | 'admin' | 'vendor';

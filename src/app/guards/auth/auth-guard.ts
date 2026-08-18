@@ -21,14 +21,10 @@ export const authGuard: CanActivateFn = (route, state) => {
       const user = authService.authUser();
       const role = user?.role?.toLowerCase();
 
-      if (role === 'admin' && !state.url.startsWith('/admin')) {
-        return router.parseUrl('/admin');
-      }
-      if (role === 'vendor' && !state.url.startsWith('/vendor')) {
-        return router.parseUrl('/vendor');
-      }
-      if (role === 'user' && !state.url.startsWith('/user')) {
-        return router.parseUrl('/user/dashboard');
+      // Don't interfere with programmatic navigation after login
+      // Only protect against unauthorized access
+      if (state.url.startsWith('/admin') && role !== 'admin') {
+        return router.parseUrl('/profile');
       }
 
       return true;
