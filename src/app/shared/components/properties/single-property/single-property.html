@@ -1,8 +1,16 @@
 <article
-        class="listing-card card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/10 shadow-md hover:shadow-xl transition-all duration-300">
-        <div class="h-52 relative overflow-hidden card-illus"
-          [style.background]="item.feature_image?.file_url ? 'url(' + assetUrl + item.feature_image.file_url + ') center/cover no-repeat' : 'linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)'">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/15"></div>
+        (click)="goToPropertyDetail()"
+        class="listing-card card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/10 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
+        <div class="h-52 relative overflow-hidden card-illus">
+          <img *ngIf="item.feature_image?.file_url"
+            [src]="assetUrl + (item.feature_image?.file_url || '')"
+            [alt]="item.name || 'Property image'"
+            class="w-full h-full object-cover"
+            (error)="onImageError($event)" />
+          <div *ngIf="!item.feature_image?.file_url"
+            class="w-full h-full"
+            style="background: linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)"></div>
+          <div class="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-black/15"></div>
           <span
             class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1 bg-black/30 backdrop-blur-sm">
             HOST VERIFIED
@@ -39,7 +47,7 @@
               ₹{{ (item.price_per_night ?? item.sale_price ?? 0) | number }}
               <span class="text-xs font-body font-normal text-ink/50">/ night</span>
             </p>
-            <a href="" (click)="$event.preventDefault(); goToPropertyDetail()"
+            <a href="" (click)="$event.preventDefault(); $event.stopPropagation(); goToPropertyDetail()"
               class="inline-flex items-center gap-1 text-sm font-semibold text-ochreD hover:text-ochre transition-colors group-hover:translate-x-0.5">
               View stay →
             </a>
