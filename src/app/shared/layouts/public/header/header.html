@@ -22,7 +22,16 @@
 
     <div class="flex items-center gap-3">
       <ng-container *ngIf="isAuthenticated; else loginTemplate">
-        <a (click)="navigateToProfile()" class="hidden sm:flex w-10 h-10 rounded-full bg-cloud2 items-center justify-center text-pine text-xs font-semibold hover:text-ochreD transition-colors cursor-pointer" title="Your profile">DP</a>
+        <a (click)="navigateToProfile()" class="hidden sm:flex w-10 h-10 rounded-full bg-cloud2 items-center justify-center text-pine text-xs font-semibold hover:text-ochreD transition-colors cursor-pointer" title="Your profile">
+           <app-avatar
+              [name]="user()?.full_name || 'User'"
+              [size]="40"
+              [rounded]="true"
+              [src]="assetUrl + user()?.is_profile_image_url"
+            
+              backgroundColor="bg-primary">
+            </app-avatar>
+        </a>
       </ng-container>
       <ng-template #loginTemplate>
         <a

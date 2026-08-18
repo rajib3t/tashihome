@@ -1,22 +1,27 @@
-import { Component, HostListener, inject, Input, OnInit, computed } from '@angular/core';
+import { Component, HostListener, inject, Input, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Logo } from '../../../components/common/logo/logo';
 import { AuthService } from '../../../../services/auth/auth-service';
 import { firstValueFrom } from 'rxjs';
-
+import { User } from '../../../../services/user/user.model';
+import { environment } from '../../../../../environments/environment';
+import { Avatar } from '../../../../shared/components/users/avatar/avatar';
 @Component({
   selector: 'app-public-header',
   imports: [
     CommonModule,
     RouterLink,
-    Logo
+    Logo,
+    Avatar
   ],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
 export class HeaderPublic implements OnInit {
+  public readonly assetUrl = environment.assetUrl;
   private authService = inject(AuthService);
+  public readonly user = signal<User | undefined>(undefined);
   private router = inject(Router);
   @Input() menuItems: { label: string; route: string }[] = [
     { label: 'Stays', route: '#stays' },
@@ -31,11 +36,12 @@ export class HeaderPublic implements OnInit {
 
   ngOnInit(): void {
     this.initializeAuth();
+    this.user.set(this.authService.authUser() ?? undefined);
   }
 
   async initializeAuth(): Promise<void> {
     try {
-      console.log('Header: Initializing auth...');
+   
       const token = this.authService.getToken();
       console.log('Header: Token exists:', !!token);
       await firstValueFrom(this.authService.initializeAuth());
