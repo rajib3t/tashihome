@@ -143,10 +143,22 @@ export class AuthService {
         );
     }
 
-    public getActiveAccount(token: string): Observable<ApiResponse<User>> {
-        return this.apiService.protectedGet<ApiResponse<User>>(`/auth/check-active-account/${token}`).pipe(
+    public checkActiveAccount(token: string): Observable<ApiResponse<User>> {
+        return this.apiService.get<ApiResponse<User>>(`/auth/check-active-account/${encodeURIComponent(token)}`).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         );
-}
+    }
+
+    public activateAccount(token: string): Observable<ApiResponse<User>> {
+        return this.apiService.post<ApiResponse<User>>(`/auth/activate-account/${encodeURIComponent(token)}`, {}).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        );
+    }
+
+    /** @deprecated Use checkActiveAccount for the token-validation endpoint. */
+    public getActiveAccount(token: string): Observable<ApiResponse<User>> {
+        return this.checkActiveAccount(token);
+    }
 }
