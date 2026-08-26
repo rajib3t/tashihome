@@ -93,6 +93,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   private autocompleteElement?: HTMLInputElement;
   private autocompleteInstance?: any;
   private autocompleteListener?: google.maps.places.MapsEventListener;
+  private googleMapsScript?: HTMLScriptElement;
   private googleMapsLoaded = false;
   private selectedCityForAutocomplete: string | null = null;
   private createdPropertyId: string | null = null;
@@ -160,6 +161,14 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     this.autocompleteInstance = undefined;
     this.autocompleteElement = undefined;
     this.autocompleteInitialized = false;
+
+    // The document retains injected scripts. Detach callbacks to avoid a
+    // pending Maps download retaining this destroyed component instance.
+    if (this.googleMapsScript) {
+      this.googleMapsScript.onload = null;
+      this.googleMapsScript.onerror = null;
+      this.googleMapsScript = undefined;
+    }
   }
 
   saveAndReturnToList(): void {
@@ -274,10 +283,12 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     };
 
     const script = document.createElement('script');
+    this.googleMapsScript = script;
     script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
     script.onload = () => {
+      this.googleMapsScript = undefined;
       if (!window.google || !window.google.maps || !window.google.maps.places) {
         console.error('Google Maps API script loaded but maps library is unavailable.');
         return;
@@ -286,6 +297,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
       this.tryInitGoogleAutocomplete();
     };
     script.onerror = () => {
+      this.googleMapsScript = undefined;
       console.error('Failed to load the Google Maps API script. Check network access and API key.');
     };
     document.head.appendChild(script);

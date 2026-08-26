@@ -117,6 +117,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
   private autocompleteElement?: HTMLInputElement;
   private autocompleteInstance?: any;
   private autocompleteListener?: google.maps.places.MapsEventListener;
+  private googleMapsScript?: HTMLScriptElement;
   private googleMapsLoaded = false;
   private selectedCityForAutocomplete: string | null = null;
   private propertyId: string | null = null;
@@ -194,6 +195,15 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     this.autocompleteInstance = undefined;
     this.autocompleteElement = undefined;
     this.autocompleteInitialized = false;
+
+    // A script element is retained by the document until page unload. Clear its
+    // handlers so a pending Google Maps download cannot retain this component
+    // after the user navigates away.
+    if (this.googleMapsScript) {
+      this.googleMapsScript.onload = null;
+      this.googleMapsScript.onerror = null;
+      this.googleMapsScript = undefined;
+    }
   }
 
   nextStep(): void {
@@ -337,14 +347,19 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     }
 
     const script = document.createElement('script');
+    this.googleMapsScript = script;
     script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
     script.onload = () => {
+      this.googleMapsScript = undefined;
       if (window.google && window.google.maps && window.google.maps.places) {
         this.googleMapsLoaded = true;
         this.tryInitGoogleAutocomplete();
       }
+    };
+    script.onerror = () => {
+      this.googleMapsScript = undefined;
     };
     document.head.appendChild(script);
   }
