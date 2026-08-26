@@ -23,12 +23,18 @@ import { Property } from './pages/public/properties/property/property';
 import { Properties } from './pages/public/properties/properties';
 import { Register } from './pages/public/register/register';
 import { ActivateAccount } from './pages/public/activate-account/activate-account';
+import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
 
 export const routes: Routes = [
     {
         path: 'login',
         component: Login,
         title: 'Login',
+    },
+    {
+        path: 'forgot-password',
+        component: ForgotPassword,
+        title: 'Forgot Password',
     },
     {
         path: "register",

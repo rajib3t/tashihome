@@ -18,6 +18,10 @@ export interface LoginResponse {
 }
 
 
+export interface ForgotPasswordRequest {
+    email: string;
+}
+
 export interface RefreshTokenResponseData {
   
     token: string;
