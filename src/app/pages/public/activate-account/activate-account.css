@@ -1,0 +1,57 @@
+:host {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  color: #1B2A2C;
+}
+
+.activate-account-page {
+  position: relative;
+  background: #F3FAFB url('/images/property-bg.jpg') center / cover no-repeat;
+}
+
+.activate-account-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(243, 250, 251, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.activate-account-page > section {
+  position: relative;
+  z-index: 1;
+}
+
+.activation-mark {
+  background: #E3F0F2;
+}
+
+.btn-anim {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-anim::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.65s ease;
+}
+
+.btn-anim:hover::after {
+  left: 130%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

@@ -18,6 +18,7 @@ const renderEnvironment = (production, apiUrl) => `export const environment = {
   apiUrl: ${quote(apiUrl)},
   applicationName: ${quote(applicationName)},
   googleMapsApiKey: ${quote(process.env.GOOGLE_MAPS_API_KEY || '')},
+  assetUrl: ${quote(process.env.ASSET_URL || '')}
 };
 `;
 

@@ -1,0 +1,31 @@
+<main class="activate-account-page min-h-screen flex items-center justify-center px-6 py-16">
+  <section class="w-full max-w-sm text-center reveal" aria-labelledby="activation-title">
+    <a routerLink="/" class="flex items-center justify-center mb-10">
+      <app-logo [variant]="'dark'" [size]="36" [withText]="true" [href]="null"></app-logo>
+    </a>
+
+    <span class="stamp activation-mark w-14 h-14 rounded-full text-mossD grid place-items-center mx-auto mb-6"
+      aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </span>
+
+    <p class="eyebrow text-mossD">You're all set</p>
+    <h1 id="activation-title" class="font-display text-3xl mt-3">Your account is active</h1>
+    <p class="text-sm text-ink/55 mt-2.5 leading-relaxed">
+      Welcome to Tashi Homes. Your email has been verified and your account is ready to use.
+    </p>
+
+    <a routerLink="/login"
+      class="btn-anim mt-8 w-full inline-block text-center bg-pine hover:bg-ink text-cloud text-sm font-semibold px-5 py-3.5 rounded-full transition-colors">
+      Continue to log in
+    </a>
+
+    <a routerLink="/"
+      class="flex items-center justify-center gap-1.5 text-sm font-semibold text-pine hover:text-ochreD mt-6">
+      <span aria-hidden="true">←</span> Back to home
+    </a>
+  </section>
+</main>

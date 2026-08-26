@@ -142,4 +142,11 @@ export class AuthService {
             catchError(this.apiService.passthroughError)
         );
     }
+
+    public getActiveAccount(token: string): Observable<ApiResponse<User>> {
+        return this.apiService.protectedGet<ApiResponse<User>>(`/auth/check-active-account/${token}`).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        );
+}
 }

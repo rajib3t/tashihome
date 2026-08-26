@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, computed, inject, NgZone, OnInit, AfterViewChecked, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, DestroyRef, computed, inject, NgZone, OnInit, OnDestroy, AfterViewChecked, signal, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
@@ -28,7 +28,7 @@ import { environment } from '../../../../../../environments/environment';
   imports: [CommonModule, ReactiveFormsModule, Card],
   templateUrl: './create-property.html',
 })
-export class CreateProperty implements OnInit, AfterViewChecked {
+export class CreateProperty implements OnInit, AfterViewChecked, OnDestroy {
   private readonly formBuilder = inject(FormBuilder);
   private readonly propertyService = inject(PropertyService);
   private readonly userService = inject(UserService);
@@ -92,6 +92,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
   private autocompleteInitialized = false;
   private autocompleteElement?: HTMLInputElement;
   private autocompleteInstance?: any;
+  private autocompleteListener?: google.maps.places.MapsEventListener;
   private googleMapsLoaded = false;
   private selectedCityForAutocomplete: string | null = null;
   private createdPropertyId: string | null = null;
@@ -149,6 +150,16 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
         }
         this.locations.set([]);
       });
+  }
+
+  ngOnDestroy(): void {
+    // Google Maps keeps event callbacks independently of Angular. Removing this
+    // listener prevents its closure from retaining the destroyed form component.
+    this.autocompleteListener?.remove();
+    this.autocompleteListener = undefined;
+    this.autocompleteInstance = undefined;
+    this.autocompleteElement = undefined;
+    this.autocompleteInitialized = false;
   }
 
   saveAndReturnToList(): void {
@@ -316,7 +327,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
       fields: ['geometry', 'formatted_address'],
     });
 
-    autocomplete.addListener('place_changed', () => {
+    this.autocompleteListener = autocomplete.addListener('place_changed', () => {
       type GooglePlaceResult = {
         geometry?: {
           location?: {
