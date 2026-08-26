@@ -3,7 +3,7 @@ import { ApiService } from '../api/api-service';
 import { User } from '../user/user.model';
 import { ForgotPasswordRequest, LoginRequest, LoginResponse, RefreshTokenResponseData, ResetPasswordRequest } from './auth.model';
 import { ApiResponse } from '../api/api-response.model';
-import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
+import { catchError, finalize, map, Observable, of, tap, throwError } from 'rxjs';
 import { UserService } from '../user/user-service';
 export const ACCESS_TOKEN = 'access_token'
 export const REFRESH_ENDPOINT = '/auth/refresh-token'
@@ -135,7 +135,7 @@ export class AuthService {
     public logout(): Observable<ApiResponse<any>> {
         return this.apiService.protectedPost<ApiResponse<any>>('/auth/logout', {}).pipe(
             map(response => response.data),
-            tap(() => {
+            finalize(() => {
                 this.#authUser.set(null);
                 this.removeToken();
             }),

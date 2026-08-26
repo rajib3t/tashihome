@@ -64,6 +64,16 @@ export class HeaderPublic implements OnInit {
     this.isMenuOpen = false;
   }
   
+  public signOut(): void {
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => {
+        this.authService.removeToken();
+        this.router.navigate(['/login']);
+      },
+    });
+  }
+
   navigateToProfile(): void {
     const user = this.authService.authUser();
     
