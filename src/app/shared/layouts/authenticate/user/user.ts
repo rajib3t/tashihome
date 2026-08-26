@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderPublic } from '../../public/header/header';
-import { Logo } from '../../../components/common/logo/logo';
+import { PublicFooter } from '../../public/footer/footer';
 
 @Component({
   selector: 'app-user',
-  imports: [RouterOutlet, HeaderPublic, Logo],
+  imports: [RouterOutlet, HeaderPublic, PublicFooter],
   styleUrl: './user.css',
   templateUrl: './user.html',
 })

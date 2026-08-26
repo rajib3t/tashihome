@@ -25,6 +25,7 @@ export class HeaderPublic implements OnInit {
 
   isMenuOpen = false;
   isScrolled = false;
+  readonly authUser = this.authService.authUser;
   isAuthenticated = computed(() => !!this.authService.authUser());
 
   ngOnInit(): void {
