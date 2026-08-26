@@ -25,6 +25,9 @@ import { Register } from './pages/public/register/register';
 import { ActivateAccount } from './pages/public/activate-account/activate-account';
 import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
 import { PasswordReset } from './pages/public/password-reset/password-reset';
+import { User as UserLayout } from './shared/layouts/authenticate/user/user';
+import { Profile } from './pages/authenticate/user/profile/profile';
+import { userGuard } from './guards/auth/role-guard';
 
 export const routes: Routes = [
     {
@@ -163,6 +166,23 @@ export const routes: Routes = [
                         path: 'vendor-management/:id/edit',
                         component: EditVendor,
                         title: 'Edit Vendor'
+                    }
+                ]
+            },
+            {
+                path: 'profile',
+                redirectTo: 'user',
+                pathMatch: 'full',
+            },
+            {
+                path: 'user',
+                canActivate: [userGuard],
+                component: UserLayout,
+                children: [
+                    {
+                        path: '',
+                        component: Profile,
+                        title: 'Your Profile',
                     }
                 ]
             }

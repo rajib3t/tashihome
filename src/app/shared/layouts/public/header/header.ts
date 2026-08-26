@@ -75,7 +75,7 @@ export class HeaderPublic implements OnInit {
     } else if (role === 'vendor') {
       this.router.navigate(['/vendor']);
     } else if (role === 'user') {
-      this.router.navigate(['/user/dashboard']);
+      this.router.navigate(['/user']);
     }
   }
 }

@@ -1,8 +1,9 @@
 import { inject, PLATFORM_ID } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { isPlatformServer } from '@angular/common';
+import { map, of } from 'rxjs';
 import { AuthService } from '../../services/auth/auth-service';
-import { map } from 'rxjs';
+
 export const authGuard: CanActivateFn = (route, state) => {
   const platformId = inject(PLATFORM_ID);
   if (isPlatformServer(platformId)) {
@@ -11,16 +12,15 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   const authService = inject(AuthService);
   const router = inject(Router);
+  const authCheck$ = authService.authUser() ? of(true) : authService.initializeAuth();
 
-  return authService.initializeAuth().pipe(
+  return authCheck$.pipe(
     map((isAuth) => {
       if (!isAuth) {
         return router.parseUrl('/login');
       }
 
-      const user = authService.authUser();
-      const role = user?.role?.toLowerCase();
-
+      const role = authService.authUser()?.role?.toLowerCase();
       if (role === 'admin' && !state.url.startsWith('/admin')) {
         return router.parseUrl('/admin');
       }
@@ -28,7 +28,7 @@ export const authGuard: CanActivateFn = (route, state) => {
         return router.parseUrl('/vendor');
       }
       if (role === 'user' && !state.url.startsWith('/user')) {
-        return router.parseUrl('/user/dashboard');
+        return router.parseUrl('/user');
       }
 
       return true;

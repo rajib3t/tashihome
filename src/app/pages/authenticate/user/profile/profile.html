@@ -1,0 +1,45 @@
+<section class="relative overflow-hidden bg-pine px-6 pb-24 pt-16 text-cloud lg:px-10">
+  <div class="pointer-events-none absolute -right-24 -top-28 h-96 w-96 rounded-full bg-moss/25 blur-[110px]"></div>
+  <div class="relative mx-auto max-w-6xl">
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-end">
+      <div class="grid h-24 w-24 place-items-center rounded-full bg-cloud2 font-display text-3xl text-pine ring-4 ring-cloud/20">{{ initials() }}</div>
+      <div class="flex-1">
+        <h1 class="font-display text-3xl sm:text-4xl">{{ authUser()?.full_name || 'Your profile' }}</h1>
+        <p class="mt-1.5 text-sm text-cloud/70">Manage your trips, saved stays and account details.</p>
+      </div>
+      <button type="button" (click)="selectTab('account')" class="rounded-full border border-cloud/30 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-cloud hover:text-pine">Edit profile</button>
+    </div>
+  </div>
+</section>
+
+<section class="relative -mt-10 px-6 lg:px-10">
+  <div class="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-xl shadow-pine/5">
+    <div class="flex gap-7 overflow-x-auto border-b border-ink/10 px-6 sm:px-8">
+      <button type="button" (click)="selectTab('trips')" [class.profile-tab-active]="activeTab() === 'trips'" class="profile-tab">Your trips</button>
+      <button type="button" (click)="selectTab('saved')" [class.profile-tab-active]="activeTab() === 'saved'" class="profile-tab">Saved stays</button>
+      <button type="button" (click)="selectTab('reviews')" [class.profile-tab-active]="activeTab() === 'reviews'" class="profile-tab">Reviews</button>
+      <button type="button" (click)="selectTab('account')" [class.profile-tab-active]="activeTab() === 'account'" class="profile-tab">Account details</button>
+    </div>
+
+    @if (activeTab() === 'trips') {
+      <div class="profile-panel">
+        <h2 class="font-display text-2xl">Your trips</h2>
+        <p class="mt-2 text-sm text-ink/60">Your upcoming and completed bookings will appear here.</p>
+        <a routerLink="/stays" class="mt-6 inline-flex rounded-full bg-ochre px-5 py-2.5 text-sm font-semibold text-cloud hover:bg-ochreD">Browse stays</a>
+      </div>
+    } @else if (activeTab() === 'saved') {
+      <div class="profile-panel"><h2 class="font-display text-2xl">Saved stays</h2><p class="mt-2 text-sm text-ink/60">Save places you love and return to them when planning your next trip.</p></div>
+    } @else if (activeTab() === 'reviews') {
+      <div class="profile-panel"><h2 class="font-display text-2xl">Reviews</h2><p class="mt-2 text-sm text-ink/60">Reviews you write after completed stays will appear here.</p></div>
+    } @else {
+      <div class="profile-panel">
+        <h2 class="font-display text-2xl">Personal information</h2>
+        <div class="mt-6 grid max-w-2xl gap-4 sm:grid-cols-2">
+          <div class="profile-field"><span>Full name</span><strong>{{ authUser()?.full_name || 'Not provided' }}</strong></div>
+          <div class="profile-field"><span>Phone number</span><strong>{{ authUser()?.phone || 'Not provided' }}</strong></div>
+          <div class="profile-field sm:col-span-2"><span>Email</span><strong>{{ authUser()?.email || 'Not provided' }}</strong></div>
+        </div>
+      </div>
+    }
+  </div>
+</section>

@@ -69,6 +69,8 @@ export class Login implements AfterViewInit {
           const userRole = response.data.user.role?.toLowerCase();
           if (userRole === 'admin') {
             this.router.navigate(['/admin']);
+          } else if (userRole === 'user') {
+            this.router.navigate(['/profile']);
           }
           // else if (userRole === 'vendor') {
           //   this.router.navigate(['/vendor']);

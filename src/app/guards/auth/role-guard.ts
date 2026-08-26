@@ -1,7 +1,7 @@
 import { isPlatformServer } from '@angular/common';
 import { inject, PLATFORM_ID } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { map } from 'rxjs';
+import { map, of } from 'rxjs';
 import { AuthService } from '../../services/auth/auth-service';
 import { UserRole } from '../../services/user/user.model';
 
@@ -14,26 +14,30 @@ export const roleGuard = (allowedRoles: UserRole[]): CanActivateFn => {
 
     const authService = inject(AuthService);
     const router = inject(Router);
+    const authCheck$ = authService.authUser() ? of(true) : authService.initializeAuth();
 
-    return authService.initializeAuth().pipe(
+    return authCheck$.pipe(
       map((isAuth) => {
         if (!isAuth) {
           return router.parseUrl('/login');
         }
 
         const userRole = authService.authUser()?.role?.toLowerCase();
-        const normalizedAllowedRoles = allowedRoles.map((role) => role.toLowerCase());
-
-        if (userRole && normalizedAllowedRoles.includes(userRole)) {
+        if (userRole && allowedRoles.map((role) => role.toLowerCase()).includes(userRole)) {
           return true;
         }
 
-        return router.parseUrl('/dashboard');
+        if (userRole === 'admin') {
+          return router.parseUrl('/admin');
+        }
+        if (userRole === 'vendor') {
+          return router.parseUrl('/vendor');
+        }
+        return router.parseUrl('/user');
       })
     );
   };
 };
-
 
 export const adminGuard: CanActivateFn = roleGuard(['admin']);
 export const vendorGuard: CanActivateFn = roleGuard(['vendor']);
