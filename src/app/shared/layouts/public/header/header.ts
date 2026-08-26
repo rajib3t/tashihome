@@ -2,22 +2,20 @@ import { Component, HostListener, inject, Input, OnInit, computed } from '@angul
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Logo } from '../../../components/common/logo/logo';
+import { Avatar } from '../../../components/users/avatar/avatar';
 import { AuthService } from '../../../../services/auth/auth-service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-public-header',
-  imports: [
-    CommonModule,
-    RouterLink,
-    Logo
-  ],
+  imports: [CommonModule, RouterLink, Logo, Avatar],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
 export class HeaderPublic implements OnInit {
-  private authService = inject(AuthService);
-  private router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
   @Input() menuItems: { label: string; route: string }[] = [
     { label: 'Stays', route: '#stays' },
     { label: 'Experiences', route: '#experiences' },
@@ -28,20 +26,13 @@ export class HeaderPublic implements OnInit {
   isMenuOpen = false;
   isScrolled = false;
   isAuthenticated = computed(() => !!this.authService.authUser());
-  userInitials = computed(() => {
-    const name = this.authService.authUser()?.full_name?.trim() || '';
-    return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'U';
-  });
 
   ngOnInit(): void {
     this.initializeAuth();
   }
 
   async initializeAuth(): Promise<void> {
-    if (this.authService.authUser()) {
-      return;
-    }
-
+    if (this.authService.authUser()) return;
     try {
       await firstValueFrom(this.authService.initializeAuth());
     } catch (error) {
@@ -51,19 +42,12 @@ export class HeaderPublic implements OnInit {
 
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    if (typeof window !== 'undefined') {
-      this.isScrolled = window.scrollY > 40;
-    }
+    if (typeof window !== 'undefined') this.isScrolled = window.scrollY > 40;
   }
 
-  toggleMenu(): void {
-    this.isMenuOpen = !this.isMenuOpen;
-  }
+  toggleMenu(): void { this.isMenuOpen = !this.isMenuOpen; }
+  closeMenu(): void { this.isMenuOpen = false; }
 
-  closeMenu(): void {
-    this.isMenuOpen = false;
-  }
-  
   public signOut(): void {
     this.authService.logout().subscribe({
       next: () => this.router.navigate(['/login']),
@@ -75,21 +59,10 @@ export class HeaderPublic implements OnInit {
   }
 
   navigateToProfile(): void {
-    const user = this.authService.authUser();
-    
-    if (!user) {
-      this.router.navigate(['/login']);
-      return;
-    }
-    
-    const role = user?.role?.toLowerCase();
-    
-    if (role === 'admin') {
-      this.router.navigate(['/admin']);
-    } else if (role === 'vendor') {
-      this.router.navigate(['/vendor']);
-    } else if (role === 'user') {
-      this.router.navigate(['/user']);
-    }
+    const role = this.authService.authUser()?.role?.toLowerCase();
+    if (role === 'admin') this.router.navigate(['/admin']);
+    else if (role === 'vendor') this.router.navigate(['/vendor']);
+    else if (role === 'user') this.router.navigate(['/user']);
+    else this.router.navigate(['/login']);
   }
 }

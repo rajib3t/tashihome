@@ -2,7 +2,7 @@
   <div class="pointer-events-none absolute -right-24 -top-28 h-96 w-96 rounded-full bg-moss/25 blur-[110px]"></div>
   <div class="relative mx-auto max-w-6xl">
     <div class="flex flex-col gap-6 sm:flex-row sm:items-end">
-      <div class="grid h-24 w-24 place-items-center rounded-full bg-cloud2 font-display text-3xl text-pine ring-4 ring-cloud/20">{{ initials() }}</div>
+      <div class="profile-avatar ring-4 ring-cloud/20"><app-avatar [name]="authUser()?.full_name || 'User'" [src]="authUser()?.is_profile_image_url || undefined" [size]="96"></app-avatar></div>
       <div class="flex-1">
         <h1 class="font-display text-3xl sm:text-4xl">{{ authUser()?.full_name || 'Your profile' }}</h1>
         <p class="mt-1.5 text-sm text-cloud/70">Manage your trips, saved stays and account details.</p>
