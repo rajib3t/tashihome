@@ -28,18 +28,22 @@ export class HeaderPublic implements OnInit {
   isMenuOpen = false;
   isScrolled = false;
   isAuthenticated = computed(() => !!this.authService.authUser());
+  userInitials = computed(() => {
+    const name = this.authService.authUser()?.full_name?.trim() || '';
+    return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'U';
+  });
 
   ngOnInit(): void {
     this.initializeAuth();
   }
 
   async initializeAuth(): Promise<void> {
+    if (this.authService.authUser()) {
+      return;
+    }
+
     try {
-      console.log('Header: Initializing auth...');
-      const token = this.authService.getToken();
-      console.log('Header: Token exists:', !!token);
       await firstValueFrom(this.authService.initializeAuth());
-      console.log('Header: Auth initialized, user:', this.authService.authUser());
     } catch (error) {
       console.error('Error initializing auth:', error);
     }
