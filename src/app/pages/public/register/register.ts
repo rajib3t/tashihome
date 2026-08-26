@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal, AfterViewInit, computed } from '@angular/core';
+import { Component, DestroyRef, inject, signal, AfterViewInit, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Logo } from '../../../shared/components/common/logo/logo';
@@ -21,6 +22,7 @@ import { RegisterUserRequest } from '../../../services/user/user.model';
 export class Register implements AfterViewInit {
   public readonly settingService = inject(SettingsService);
   private readonly userService = inject(UserService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
   public readonly settingsData = computed(() => this.settingService.settingsData());
@@ -87,7 +89,7 @@ export class Register implements AfterViewInit {
       is_terms_accept: !!agreeTerms
     };
 
-    this.userService.registerUser(userData).subscribe({
+    this.userService.registerUser(userData).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         if (response.status === 'success' || response.status === 200) {
           this.registerForm.reset();

@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
   apiUrl: '/api',
-  applicationName: 'TashiHome 1.0',
+  applicationName: 'Tashi Home',
   googleMapsApiKey: 'AIzaSyAn3wu_bnp-RnvtorQNiX2pUjjsHetST1o',
-  assetUrl:'http://localhost:4200/api/v1/assets/',
+  assetUrl: 'http://127.0.0.1:8020/api/v1/assets/'
 };

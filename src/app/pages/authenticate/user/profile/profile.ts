@@ -1,41 +1,21 @@
-import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../services/auth/auth-service';
-import { User } from '../../../../services/user/user.model';
 import { Avatar } from '../../../../shared/components/users/avatar/avatar';
-import { environment } from '../../../../../environments/environment';
+
 @Component({
   selector: 'app-profile',
-  standalone: true,
-  imports: [
-    CommonModule,
-    Avatar
-  ],
-  templateUrl: './profile.html',
+  imports: [RouterLink, Avatar],
   styleUrl: './profile.css',
+  templateUrl: './profile.html',
 })
-export class Profile implements OnInit, AfterViewInit {
-  public readonly assetUrl = environment.assetUrl;
-  activeTab: 'trips' | 'saved' | 'reviews' | 'account' = 'trips';
+export class Profile {
+  private readonly authService = inject(AuthService);
 
-  private authService = inject(AuthService);
-  public readonly user = signal<User | undefined>(undefined);
+  public readonly authUser = this.authService.authUser;
+  public readonly activeTab = signal<'trips' | 'saved' | 'reviews' | 'account'>('trips');
 
-  ngOnInit(): void {
-    this.user.set(this.authService.authUser() ?? undefined);
-  }
-
-  ngAfterViewInit(): void {
-    if (typeof document === 'undefined') {
-      return;
-    }
-
-    queueMicrotask(() => {
-      document.querySelectorAll('.reveal').forEach((el) => el.classList.add('in'));
-    });
-  }
-
-  setTab(tab: 'trips' | 'saved' | 'reviews' | 'account'): void {
-    this.activeTab = tab;
+  public selectTab(tab: 'trips' | 'saved' | 'reviews' | 'account'): void {
+    this.activeTab.set(tab);
   }
 }

@@ -1,4 +1,5 @@
-import { Component, ElementRef, inject, PLATFORM_ID, signal, HostListener } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, PLATFORM_ID, signal, HostListener } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isPlatformBrowser } from '@angular/common';
 import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,6 +20,7 @@ export class Property {
   private readonly router = inject(Router);
   private readonly el = inject(ElementRef);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly destroyRef = inject(DestroyRef);
   public propertyService = inject(PropertyService);
   public propertyData = signal<Partial<PropertyData> | null>(null);
   public galleryImages = signal<PropertyAsset[]>([]);
@@ -28,6 +30,7 @@ export class Property {
   public activePhotoIndex = signal<number>(0);
 
   private revealObserver?: IntersectionObserver;
+  private revealInitTimer?: ReturnType<typeof setTimeout>;
 
   @HostListener('window:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent): void {
@@ -45,12 +48,15 @@ export class Property {
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
     if (slug) {
-      this.propertyService.getPublicPropertyBySlug(slug).subscribe({
+      this.propertyService.getPublicPropertyBySlug(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           this.propertyData.set(res.data);
           this.galleryImages.set(this.buildGalleryImages(res.data));
           // Re-scan after data loads so dynamically rendered .reveal els are observed
-          setTimeout(() => this.initRevealObserver(), 0);
+          this.revealInitTimer = setTimeout(() => {
+            this.revealInitTimer = undefined;
+            this.initRevealObserver();
+          }, 0);
         },
         error: (error) => {
           console.error('Error fetching property:', error);
@@ -67,6 +73,9 @@ export class Property {
   }
 
   ngOnDestroy(): void {
+    if (this.revealInitTimer !== undefined) {
+      clearTimeout(this.revealInitTimer);
+    }
     this.revealObserver?.disconnect();
     if (isPlatformBrowser(this.platformId)) {
       document.body.style.overflow = '';

@@ -61,6 +61,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly zone = inject(NgZone);
   private revealObserver?: IntersectionObserver;
+  private statsObserver?: IntersectionObserver;
+  private statsAnimationFrame?: number;
+  private destroyed = false;
 
   // cleanup handles for canvases / card tilt / parallax effects
   private mistCleanupFns: Array<() => void> = [];
@@ -121,7 +124,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       size: 4,
     }
 
-    this.cityService.getPublicCities(cityQuery).subscribe((response) => {
+    this.cityService.getPublicCities(cityQuery).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((response) => {
       this.cities.set(response?.data || []);
       this.cdr.markForCheck();
     })
@@ -142,6 +145,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.propertyService
       .getPublicProperties(query)
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         catchError((error) => {
           console.warn('Could not load featured properties:', error);
           return of({ data: [], total: 0, page: 1, size: 6 });
@@ -226,19 +230,20 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     const statSection = this.el.nativeElement.querySelector('.stat-section');
     if (!statSection) return;
 
-    const observer = new IntersectionObserver(
+    this.statsObserver?.disconnect();
+    this.statsObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             this.animateStats();
-            observer.unobserve(entry.target);
+            this.statsObserver?.unobserve(entry.target);
           }
         });
       },
       { threshold: 0.4 }
     );
 
-    observer.observe(statSection);
+    this.statsObserver.observe(statSection);
   }
 
   private animateStats(): void {
@@ -257,7 +262,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       this.cdr.markForCheck();
 
       if (progress < 1) {
-        requestAnimationFrame(update);
+        this.statsAnimationFrame = requestAnimationFrame(update);
       } else {
         this.stats.forEach((stat) => {
           stat.current = stat.target;
@@ -266,7 +271,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       }
     };
 
-    requestAnimationFrame(update);
+    this.statsAnimationFrame = requestAnimationFrame(update);
   }
 
   goToPropertyDetail(slug?: string): void {
@@ -963,6 +968,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) return;
 
     queueMicrotask(() => {
+      if (this.destroyed) return;
       this.zone.runOutsideAngular(() => {
         this.tiltCleanupFn?.();
         this.tiltCleanupFn = this.initCardTilt('.card-tilt');
@@ -988,7 +994,12 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.revealObserver?.disconnect();
+    this.statsObserver?.disconnect();
+    if (this.statsAnimationFrame !== undefined) {
+      cancelAnimationFrame(this.statsAnimationFrame);
+    }
     this.mistCleanupFns.forEach((stop) => stop());
     this.tiltCleanupFn?.();
     this.parallaxCleanupFn?.();

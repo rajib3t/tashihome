@@ -50,7 +50,19 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client
   },
   {
-    path: 'admin/**',
+    path: 'password-reset/:token',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'activate-account/:token',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'admin/property-management/:id/edit',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'admin/vendor-management/:id/edit',
     renderMode: RenderMode.Client
   },
   {

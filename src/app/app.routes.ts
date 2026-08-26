@@ -22,22 +22,18 @@ import { EditProperty } from './pages/authenticate/admin/property-management/edi
 import { Property } from './pages/public/properties/property/property';
 import { Properties } from './pages/public/properties/properties';
 import { Register } from './pages/public/register/register';
-import { ActiveAccount } from './pages/public/active-account/active-account';
+import { ActivateAccount } from './pages/public/activate-account/activate-account';
 import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
 import { PasswordReset } from './pages/public/password-reset/password-reset';
-import { Profile as ProfileUser } from './pages/authenticate/user/profile/profile'
-import { User } from './shared/layouts/authenticate/user/user';
+import { User as UserLayout } from './shared/layouts/authenticate/user/user';
+import { Profile } from './pages/authenticate/user/profile/profile';
+import { userGuard } from './guards/auth/role-guard';
 
 export const routes: Routes = [
     {
         path: 'login',
         component: Login,
         title: 'Login',
-    },
-    {
-        path: "register",
-        component: Register,
-        title: "Register",
     },
     {
         path: 'forgot-password',
@@ -55,33 +51,13 @@ export const routes: Routes = [
         title: 'Reset Password',
     },
     {
-        path: 'reset-password',
-        component: PasswordReset,
-        title: 'Reset Password',
+        path: "register",
+        component: Register,
+        title: "Register",
     },
     {
-        path: 'reset-password/:token',
-        component: PasswordReset,
-        title: 'Reset Password',
-    },
-    {
-        path: 'active-account',
-        component: ActiveAccount,
-        title: 'Activate Account',
-    },
-    {
-        path: 'active-account/:token',
-        component: ActiveAccount,
-        title: 'Activate Account',
-    },
-    {
-        path: 'activate-account',
-        component: ActiveAccount,
-        title: 'Activate Account',
-    },
-    {
-        path: 'activate-account/:token',
-        component: ActiveAccount,
+        path:'activate-account/:token',
+        component: ActivateAccount,
         title: 'Activate Account',
     },
     {
@@ -195,12 +171,18 @@ export const routes: Routes = [
             },
             {
                 path: 'profile',
-                component: User,
+                redirectTo: 'user',
+                pathMatch: 'full',
+            },
+            {
+                path: 'user',
+                canActivate: [userGuard],
+                component: UserLayout,
                 children: [
                     {
                         path: '',
-                        component: ProfileUser,
-                        title: 'Profile'
+                        component: Profile,
+                        title: 'Your Profile',
                     }
                 ]
             }

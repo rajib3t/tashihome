@@ -2,6 +2,10 @@ declare global {
   namespace google {
     namespace maps {
       namespace places {
+        interface MapsEventListener {
+          remove(): void;
+        }
+
         interface AutocompleteOptions {
           types?: string[];
           fields?: string[];
@@ -11,7 +15,7 @@ declare global {
         }
 
         interface Autocomplete {
-          addListener(eventName: string, handler: () => void): void;
+          addListener(eventName: string, handler: () => void): MapsEventListener;
           getPlace(): {
             geometry?: {
               location?: {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewChecked, Component, DestroyRef, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
+import { AfterViewChecked, Component, DestroyRef, ElementRef, OnDestroy, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -36,7 +36,7 @@ import { environment } from '../../../../../../environments/environment';
   imports: [CommonModule, ReactiveFormsModule, Card, UploadImage],
   templateUrl: './edit-property.html',
 })
-export class EditProperty implements AfterViewChecked {
+export class EditProperty implements AfterViewChecked, OnDestroy {
   public readonly assetUrl = environment.assetUrl;
   private readonly route = inject(ActivatedRoute);
   private readonly formBuilder = inject(FormBuilder);
@@ -116,6 +116,8 @@ export class EditProperty implements AfterViewChecked {
   private autocompleteInitialized = false;
   private autocompleteElement?: HTMLInputElement;
   private autocompleteInstance?: any;
+  private autocompleteListener?: google.maps.places.MapsEventListener;
+  private googleMapsScript?: HTMLScriptElement;
   private googleMapsLoaded = false;
   private selectedCityForAutocomplete: string | null = null;
   private propertyId: string | null = null;
@@ -168,7 +170,7 @@ export class EditProperty implements AfterViewChecked {
       this.locations.set([]);
     });
 
-    this.route.paramMap.subscribe((params) => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const idParam = params.get('id');
       if (!idParam) {
         this.router.navigate(['/admin/property-management']);
@@ -177,12 +179,31 @@ export class EditProperty implements AfterViewChecked {
       this.loadProperty(idParam);
     });
 
-    this.route.queryParamMap.subscribe((params) => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const stepParam = Number(params.get('step'));
       if (!Number.isNaN(stepParam)) {
         this.currentStep = Math.max(0, Math.min(stepParam, this.wizardSteps.length - 1));
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    // Google Maps event callbacks outlive the Angular view unless explicitly
+    // removed, retaining this component and its form after navigation.
+    this.autocompleteListener?.remove();
+    this.autocompleteListener = undefined;
+    this.autocompleteInstance = undefined;
+    this.autocompleteElement = undefined;
+    this.autocompleteInitialized = false;
+
+    // A script element is retained by the document until page unload. Clear its
+    // handlers so a pending Google Maps download cannot retain this component
+    // after the user navigates away.
+    if (this.googleMapsScript) {
+      this.googleMapsScript.onload = null;
+      this.googleMapsScript.onerror = null;
+      this.googleMapsScript = undefined;
+    }
   }
 
   nextStep(): void {
@@ -326,14 +347,19 @@ export class EditProperty implements AfterViewChecked {
     }
 
     const script = document.createElement('script');
+    this.googleMapsScript = script;
     script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
     script.onload = () => {
+      this.googleMapsScript = undefined;
       if (window.google && window.google.maps && window.google.maps.places) {
         this.googleMapsLoaded = true;
         this.tryInitGoogleAutocomplete();
       }
+    };
+    script.onerror = () => {
+      this.googleMapsScript = undefined;
     };
     document.head.appendChild(script);
   }
@@ -357,7 +383,7 @@ export class EditProperty implements AfterViewChecked {
       fields: ['geometry', 'formatted_address'],
     });
 
-    autocomplete.addListener('place_changed', () => {
+    this.autocompleteListener = autocomplete.addListener('place_changed', () => {
       type GooglePlaceResult = {
         geometry?: {
           location?: {

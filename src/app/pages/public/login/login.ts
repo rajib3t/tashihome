@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal, AfterViewInit, computed } from '@angular/core';
+import { Component, DestroyRef, inject, signal, AfterViewInit, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth/auth-service';
 import { Router, RouterLink } from '@angular/router';
@@ -23,6 +24,7 @@ export class Login implements AfterViewInit {
   public readonly settingService = inject(SettingsService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   public readonly settingsData = computed(() => this.settingService.settingsData());
   public readonly loginForm = this.formBuilder.group({
@@ -62,13 +64,21 @@ export class Login implements AfterViewInit {
       password: password as string,
       rememberMe: !!rememberMe,
     };
-    this.authService.login(payload).subscribe({
+    this.authService.login(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         console.log('Login response:', response);
         if (response.status === 'success' || response.status === 200) {
-          const userRole = response.data.user.role?.toLowerCase() as UserRole;
-          console.log('User role:', userRole);
-          this.redirectBasedOnRole(userRole);
+          const userRole = response.data.user.role?.toLowerCase();
+          if (userRole === 'admin') {
+            this.router.navigate(['/admin']);
+          } else if (userRole === 'user') {
+            this.router.navigate(['/profile']);
+          }
+          // else if (userRole === 'vendor') {
+          //   this.router.navigate(['/vendor']);
+          // } else {
+          //   this.router.navigate(['/dashboard']);
+          // }
         } else {
           this.errorMessage.set(response.message || 'Login failed. Please try again.');
         }

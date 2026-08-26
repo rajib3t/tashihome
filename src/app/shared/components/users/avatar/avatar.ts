@@ -1,4 +1,4 @@
-import { Component, Input, Output, signal, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, signal, EventEmitter, computed, OnDestroy } from '@angular/core';
 
 @Component({
   selector: 'app-avatar',
@@ -6,7 +6,7 @@ import { Component, Input, Output, signal, EventEmitter, computed } from '@angul
   templateUrl: './avatar.html',
   styleUrl: './avatar.css',
 })
-export class Avatar {
+export class Avatar implements OnDestroy {
   // Core
   #name = signal<string>('');
   @Input()
@@ -14,9 +14,17 @@ export class Avatar {
   set name(val: string) { this.#name.set(val); }
 
   #src = signal<string | undefined>(undefined);
+  private previewObjectUrl?: string;
   @Input()
   get src(): string | undefined { return this.#src(); }
-  set src(val: string | undefined) { this.#src.set(val); }
+  set src(val: string | undefined) {
+    // Blob URLs created by this component retain the selected file until revoked.
+    // Do not revoke URLs supplied by a parent, since this component does not own them.
+    if (this.previewObjectUrl && val !== this.previewObjectUrl) {
+      this.revokePreviewObjectUrl();
+    }
+    this.#src.set(val);
+  }
 
   @Input() size = 40;
   @Input() rounded = true;
@@ -241,7 +249,9 @@ export class Avatar {
     this.imageUpload.emit(file);
 
     // Optional preview immediately
-    this.src = URL.createObjectURL(file);
+    this.revokePreviewObjectUrl();
+    this.previewObjectUrl = URL.createObjectURL(file);
+    this.#src.set(this.previewObjectUrl);
     this.imageError.set(false);
 
     input.value = '';
@@ -249,5 +259,16 @@ export class Avatar {
 
   triggerFileInput(fileInput: HTMLInputElement) {
     fileInput.click();
+  }
+
+  ngOnDestroy(): void {
+    this.revokePreviewObjectUrl();
+  }
+
+  private revokePreviewObjectUrl(): void {
+    if (!this.previewObjectUrl) return;
+
+    URL.revokeObjectURL(this.previewObjectUrl);
+    this.previewObjectUrl = undefined;
   }
 }

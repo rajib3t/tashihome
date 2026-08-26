@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, finalize, of } from 'rxjs';
 import { Country, CountryQuery, CountrySearch } from '../../../../services/country/country-model';
@@ -25,6 +26,7 @@ import { Modal } from '../../../../shared/components/ui/modal/modal';
 export class CountryManagement {
   private readonly formBuilder = inject(FormBuilder);
   private readonly countryService = inject(CountryService);
+  private readonly destroyRef = inject(DestroyRef);
   meta!: PaginationMeta;
   readonly countries = signal<Country[]>([]);
   readonly isLoading = signal(false);
@@ -64,7 +66,7 @@ export class CountryManagement {
 }
 
 private setupCodeUppercase(form: FormGroup): void {
-  form.get('code')?.valueChanges.subscribe((value) => {
+  form.get('code')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
     if (value && value !== value.toUpperCase()) {
       form.get('code')?.setValue(value.toUpperCase(), { emitEvent: false });
     }

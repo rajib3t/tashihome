@@ -1,9 +1,9 @@
 import { computed, inject, Service, signal } from '@angular/core';
 import { ApiService } from '../api/api-service';
 import { User } from '../user/user.model';
-import { LoginRequest, LoginResponse, RefreshTokenResponseData, ResetPasswordRequest } from './auth.model';
+import { ForgotPasswordRequest, LoginRequest, LoginResponse, RefreshTokenResponseData, ResetPasswordRequest } from './auth.model';
 import { ApiResponse } from '../api/api-response.model';
-import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
+import { catchError, finalize, map, Observable, of, tap, throwError } from 'rxjs';
 import { UserService } from '../user/user-service';
 export const ACCESS_TOKEN = 'access_token'
 export const REFRESH_ENDPOINT = '/auth/refresh-token'
@@ -149,11 +149,51 @@ export class AuthService {
     public logout(): Observable<ApiResponse<any>> {
         return this.apiService.protectedPost<ApiResponse<any>>('/auth/logout', {}).pipe(
             map(response => response.data),
-            tap(() => {
+            finalize(() => {
                 this.#authUser.set(null);
                 this.removeToken();
             }),
             catchError(this.apiService.passthroughError)
         );
+    }
+
+    public forgotPassword(data: ForgotPasswordRequest): Observable<ApiResponse<unknown>> {
+        return this.apiService.post<ApiResponse<unknown>>('/auth/forgot-password', data).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        );
+    }
+
+    public checkResetPasswordToken(token: string): Observable<ApiResponse<unknown>> {
+        return this.apiService.get<ApiResponse<unknown>>('/auth/check-reset-password-token/' + encodeURIComponent(token)).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        );
+    }
+
+    public resetPassword(data: ResetPasswordRequest): Observable<ApiResponse<unknown>> {
+        return this.apiService.post<ApiResponse<unknown>>('/auth/reset-password', data).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        );
+    }
+
+    public checkActiveAccount(token: string): Observable<ApiResponse<User>> {
+        return this.apiService.get<ApiResponse<User>>(`/auth/check-active-account/${encodeURIComponent(token)}`).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        );
+    }
+
+    public activateAccount(token: string): Observable<ApiResponse<User>> {
+        return this.apiService.post<ApiResponse<User>>(`/auth/activate-account/${encodeURIComponent(token)}`, {}).pipe(
+            map(response => response.data),
+            catchError(this.apiService.passthroughError)
+        );
+    }
+
+    /** @deprecated Use checkActiveAccount for the token-validation endpoint. */
+    public getActiveAccount(token: string): Observable<ApiResponse<User>> {
+        return this.checkActiveAccount(token);
     }
 }
