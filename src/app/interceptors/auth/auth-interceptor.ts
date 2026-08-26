@@ -61,6 +61,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
   req.url.includes('auth/register') || 
   req.url.includes('auth/forgot-password') || 
   req.url.includes('auth/reset-password') || 
+  req.url.includes('auth/check-reset-password-token') ||
   req.url.includes('auth/verify-email') || 
   req.url.includes('auth/check-active-account') ||
   req.url.includes('auth/activate-account') ||

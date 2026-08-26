@@ -24,6 +24,7 @@ import { Properties } from './pages/public/properties/properties';
 import { Register } from './pages/public/register/register';
 import { ActivateAccount } from './pages/public/activate-account/activate-account';
 import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
+import { PasswordReset } from './pages/public/password-reset/password-reset';
 
 export const routes: Routes = [
     {
@@ -35,6 +36,16 @@ export const routes: Routes = [
         path: 'forgot-password',
         component: ForgotPassword,
         title: 'Forgot Password',
+    },
+    {
+        path: 'password-reset',
+        component: PasswordReset,
+        title: 'Reset Password',
+    },
+    {
+        path: 'password-reset/:token',
+        component: PasswordReset,
+        title: 'Reset Password',
     },
     {
         path: "register",
