@@ -7,7 +7,7 @@ import { AuthService } from '../../../../services/auth/auth-service';
 import { firstValueFrom } from 'rxjs';
 import { User } from '../../../../services/user/user.model';
 import { environment } from '../../../../../environments/environment';
-import { Avatar } from '../../../../shared/components/users/avatar/avatar';
+
 @Component({
   selector: 'app-public-header',
   imports: [CommonModule, RouterLink, Logo, Avatar],
@@ -32,7 +32,7 @@ export class HeaderPublic implements OnInit {
 
   ngOnInit(): void {
     this.initializeAuth();
-    this.user.set(this.authService.authUser() ?? undefined);
+    
   }
 
   async initializeAuth(): Promise<void> {

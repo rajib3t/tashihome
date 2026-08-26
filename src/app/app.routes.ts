@@ -27,7 +27,7 @@ import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
 import { PasswordReset } from './pages/public/password-reset/password-reset';
 import { User as UserLayout } from './shared/layouts/authenticate/user/user';
 import { Profile } from './pages/authenticate/user/profile/profile';
-import { userGuard } from './guards/auth/role-guard';
+
 
 export const routes: Routes = [
     {
