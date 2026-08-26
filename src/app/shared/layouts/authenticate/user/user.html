@@ -1,17 +1,5 @@
 <div class="min-h-screen bg-cloud text-ink">
-  <header class="sticky top-0 z-50 border-b border-ink/10 bg-cloud/95 backdrop-blur">
-    <div class="mx-auto flex h-20 max-w-6xl items-center justify-between px-6 lg:px-10">
-      <app-logo [size]="40" [glow]="false" [withText]="true" [href]="'/'" variant="dark"></app-logo>
-      <nav class="hidden items-center gap-8 text-sm font-medium md:flex">
-        <a routerLink="/stays" class="transition-colors hover:text-ochreD">Stays</a>
-        <a routerLink="/user" class="transition-colors hover:text-ochreD">Your profile</a>
-      </nav>
-      <div class="flex items-center gap-3">
-        <a routerLink="/user" class="grid h-10 w-10 place-items-center rounded-full bg-cloud2 text-xs font-bold text-pine">{{ initials() }}</a>
-        <button type="button" (click)="logout()" class="hidden rounded-full border border-pine/25 px-4 py-2 text-sm font-semibold text-pine transition-colors hover:bg-pine hover:text-cloud sm:block">Sign out</button>
-      </div>
-    </div>
-  </header>
+  <app-public-header></app-public-header>
 
   <main><router-outlet></router-outlet></main>
 
