@@ -10,7 +10,7 @@ export class FacilityService {
 
 
      public create(data: FormData): Observable<ApiResponse<Facility>> {
-        return this.apiService.protectedPost<ApiResponse<Facility>>('/facilities/', data).pipe(
+        return this.apiService.protectedPost<ApiResponse<Facility>>('/admin/facilities/', data).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         )
@@ -46,21 +46,21 @@ export class FacilityService {
             queryParams['sortOrder'] = params.sortOrder;
         }
 
-        return this.apiService.protectedGet<PaginatedResponse<Facility>>('/facilities/', { params: queryParams }).pipe(
+        return this.apiService.protectedGet<PaginatedResponse<Facility>>('/admin/facilities/', { params: queryParams }).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         )
     }
 
     public update(id: string, data: FormData): Observable<ApiResponse<Facility>> {
-        return this.apiService.protectedPut<ApiResponse<Facility>>(`/facilities/${id}`, data).pipe(
+        return this.apiService.protectedPut<ApiResponse<Facility>>(`/admin/facilities/${id}`, data).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         )
     }
 
     public statusUpdate(id: string, status: string): Observable<ApiResponse<Facility>> {
-        return this.apiService.protectedPatch<ApiResponse<Facility>>(`/facilities/${id}/${status}`, { status }).pipe(
+        return this.apiService.protectedPatch<ApiResponse<Facility>>(`/admin/facilities/${id}/${status}`, { status }).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         )

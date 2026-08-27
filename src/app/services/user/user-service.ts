@@ -47,7 +47,7 @@ export class UserService {
 
 
   createVendor(vendorData: RequestVendor): Observable<ApiResponse<User>> {
-    return this.apiService.protectedPost<ApiResponse<User>>('/vendors/', vendorData).pipe(
+    return this.apiService.protectedPost<ApiResponse<User>>('/admin/vendors/', vendorData).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
@@ -91,7 +91,7 @@ export class UserService {
       queryParams['sortOrder'] = params.sortOrder;
     }
 
-    return this.apiService.protectedGet<PaginatedResponse<User>>('/vendors/', { params: queryParams }).pipe(
+    return this.apiService.protectedGet<PaginatedResponse<User>>('/admin/vendors/', { params: queryParams }).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
@@ -99,7 +99,7 @@ export class UserService {
 
 
   public getVendorById(vendorId: string): Observable<ApiResponse<VendorDetail>> {
-    return this.apiService.protectedGet<ApiResponse<VendorDetail>>(`/vendors/${vendorId}`).pipe(
+    return this.apiService.protectedGet<ApiResponse<VendorDetail>>(`/admin/vendors/${vendorId}`).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
@@ -109,7 +109,7 @@ export class UserService {
     const formData = new FormData();
     formData.append('profile_image', imageFile);
 
-    return this.apiService.protectedUploadPatch<ApiResponse<VendorDetail>>(`/vendors/${vendorId}/profile-image`, formData).pipe(
+    return this.apiService.protectedUploadPatch<ApiResponse<VendorDetail>>(`/admin/vendors/${vendorId}/profile-image`, formData).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
@@ -119,14 +119,14 @@ export class UserService {
     vendorId : string,
     vendorDetail : Partial<RequestVendor>,
   ): Observable<ApiResponse<VendorDetail>> {
-    return this.apiService.protectedPut<ApiResponse<VendorDetail>>(`/vendors/${vendorId}`, vendorDetail).pipe(
+    return this.apiService.protectedPut<ApiResponse<VendorDetail>>(`/admin/vendors/${vendorId}`, vendorDetail).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
   }
 
   public statusUpdateVendor(id: string, status: string): Observable<ApiResponse<VendorDetail>> {
-      return this.apiService.protectedPatch<ApiResponse<VendorDetail>>(`/vendors/change/${id}/${status}`, { status }).pipe(
+      return this.apiService.protectedPatch<ApiResponse<VendorDetail>>(`/admin/vendors/change/${id}/${status}`, { status }).pipe(
           map(response => response.data),
           catchError(this.apiService.passthroughError)
       )

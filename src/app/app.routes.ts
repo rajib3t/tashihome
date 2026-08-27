@@ -30,6 +30,8 @@ import { Profile } from './pages/authenticate/user/profile/profile';
 import { Vendor } from './shared/layouts/authenticate/vendor/vendor';
 import { Dashboard } from './pages/authenticate/vendor/dashboard/dashboard';
 import { VendorPropertyManagement } from './pages/authenticate/vendor/vendor-property-management/vendor-property-management';
+import { CreateVendorProperty } from './pages/authenticate/vendor/vendor-property-management/create-property/create-property';
+import { EditVendorProperty } from './pages/authenticate/vendor/vendor-property-management/edit-property/edit-property';
 
 
 export const routes: Routes = [
@@ -186,6 +188,16 @@ export const routes: Routes = [
                         path:'property-management',
                         component:VendorPropertyManagement,
                         title:'Vendor Property Management'
+                    },
+                    {
+                        path:'property-management/create',
+                        component:CreateVendorProperty,
+                        title:'Create Property'
+                    },
+                    {
+                        path:'property-management/:id/edit',
+                        component:EditVendorProperty,
+                        title:'Edit Property'
                     }
                 ]
             },

@@ -1,0 +1,193 @@
+<div class="space-y-6 p-4 md:p-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-semibold text-slate-800 dark:text-slate-100">Create Property</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Add a new listing through the step-by-step wizard.</p>
+    </div>
+    <button
+      type="button"
+      class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200 cursor-pointer"
+      (click)="cancel()"
+    >
+      Back to list
+    </button>
+  </div>
+
+  <app-card title="Property Details" desc="Complete each step then publish the property.">
+    <div class="mb-6 flex flex-wrap gap-2">
+      @for (step of wizardSteps; track step; let i = $index) {
+        <div class="flex items-center gap-2">
+          <span
+            class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
+            [class]="i === currentStep ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'"
+          >
+            {{ i + 1 }}
+          </span>
+          <span class="text-sm text-slate-600 dark:text-slate-300">{{ step }}</span>
+        </div>
+      }
+    </div>
+
+    <form [formGroup]="propertyForm" class="space-y-6">
+      <!-- STEP 0: Property Details -->
+      @if (currentStep === 0) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property name</span>
+            <input formControlName="name" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+            @if (propertyForm.get('name')?.touched && propertyForm.get('name')?.invalid) {
+              <small class="text-xs text-red-500">Name is required and must be at least 3 characters.</small>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property type</span>
+            <select formControlName="type" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+              @for (type of PROPERTY_TYPES_LABELS | keyvalue; track type.key) {
+                <option [value]="type.key">{{ type.value }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">City</span>
+            <div class="relative">
+              <input
+                type="text"
+                [value]="citySearchTerm()"
+                (input)="onCitySearchChange($any($event.target).value)"
+                (focus)="openCityDropdown()"
+                (blur)="onCityInputBlur()"
+                placeholder="Search city"
+                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-24 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              />
+              <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                @if (selectedCityLabel()) {
+                  <button
+                    type="button"
+                    class="pointer-events-auto rounded-full border border-slate-200 px-2 py-1 font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300"
+                    (click)="clearCitySelection()"
+                  >
+                    Clear
+                  </button>
+                } @else {
+                  <span>Autocomplete</span>
+                }
+              </div>
+
+              @if (isCityDropdownOpen() && filteredCities().length) {
+                <div class="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                  @for (city of filteredCities(); track city.id) {
+                    <button
+                      type="button"
+                      class="w-full border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
+                      (mousedown)="selectCity(city)"
+                    >
+                      <span class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ city.name }}</span>
+                    </button>
+                  }
+                </div>
+              } @else if (isCityDropdownOpen() && citySearchTerm().trim()) {
+                <div class="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                  No cities match your search.
+                </div>
+              }
+            </div>
+            <input type="hidden" formControlName="city_id" />
+            @if (propertyForm.get('city_id')?.invalid && propertyForm.get('city_id')?.touched) {
+              <p class="text-xs text-red-500">City is required.</p>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Location</span>
+            <select
+              formControlName="location_id"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary disabled:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800"
+              [disabled]="!propertyForm.get('city_id')?.value || loadingLocations()"
+            >
+              <option value="">
+                {{ loadingLocations() ? 'Loading locations...' : 'Select location' }}
+              </option>
+              @for (location of locations(); track location.id) {
+                <option [value]="location.id">{{ location.name }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Google Location Autocomplete</span>
+            <input
+              #googleLocationInput
+              formControlName="address"
+              type="text"
+              placeholder="Search and select a location"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+            @if (propertyForm.get('address')?.touched && propertyForm.get('address')?.invalid) {
+              <small class="text-xs text-red-500">Please choose a location from Google autocomplete.</small>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Latitude</span>
+            <input
+              formControlName="lat"
+              type="number"
+              step="any"
+              placeholder="Latitude will be auto-filled"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Longitude</span>
+            <input
+              formControlName="lon"
+              type="number"
+              step="any"
+              placeholder="Longitude will be auto-filled"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Description</span>
+            <textarea
+              formControlName="description"
+              rows="5"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            ></textarea>
+            @if (propertyForm.get('description')?.touched && propertyForm.get('description')?.invalid) {
+              <small class="text-xs text-red-500">Description is required and must be at least 20 characters.</small>
+            }
+          </label>
+        </div>
+      }
+
+      <div class="flex items-center justify-end border-t border-slate-200 pt-6 dark:border-slate-700">
+        @if (currentStep === 0) {
+          <div class="flex gap-3">
+            <button
+              type="button"
+              class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:text-slate-200 disabled:opacity-60 cursor-pointer"
+              (click)="saveAndReturnToList()"
+              [disabled]="isSaving()"
+            >
+              {{ isSaving() ? 'Saving...' : 'Save' }}
+            </button>
+            <button
+              type="button"
+              class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60 cursor-pointer"
+              (click)="saveAndContinue()"
+              [disabled]="isSaving()"
+            >
+              {{ isSaving() ? 'Saving...' : 'Save and Continue' }}
+            </button>
+          </div>
+        }
+      </div>
+    </form>
+  </app-card>
+</div>
+

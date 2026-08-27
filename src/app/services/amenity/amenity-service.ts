@@ -9,7 +9,7 @@ export class AmenityService {
   public readonly apiService = inject(ApiService);
 
   public create(data: FormData): Observable<ApiResponse<Amenity>> {
-    return this.apiService.protectedPost<ApiResponse<Amenity>>('/amenities/', data).pipe(
+    return this.apiService.protectedPost<ApiResponse<Amenity>>('/admin/amenities/', data).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
@@ -41,21 +41,21 @@ export class AmenityService {
       queryParams['sortOrder'] = params.sortOrder;
     }
 
-    return this.apiService.protectedGet<PaginatedResponse<Amenity>>('/amenities/', { params: queryParams }).pipe(
+    return this.apiService.protectedGet<PaginatedResponse<Amenity>>('/admin/amenities/', { params: queryParams }).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
   }
 
   public update(id: string, data: FormData): Observable<ApiResponse<Amenity>> {
-    return this.apiService.protectedPut<ApiResponse<Amenity>>(`/amenities/${id}`, data).pipe(
+    return this.apiService.protectedPut<ApiResponse<Amenity>>(`/admin/amenities/${id}`, data).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
   }
 
   public statusUpdate(id: string, status: string): Observable<ApiResponse<Amenity>> {
-    return this.apiService.protectedPatch<ApiResponse<Amenity>>(`/amenities/${id}/${status}`, { status }).pipe(
+    return this.apiService.protectedPatch<ApiResponse<Amenity>>(`/admin/amenities/${id}/${status}`, { status }).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );

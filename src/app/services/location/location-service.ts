@@ -10,21 +10,21 @@ export class LocationService {
 
 
     public createLocation(location: LocationRequest): Observable<ApiResponse<LocationResponse>> {
-            return this.apiService.protectedPost<ApiResponse<LocationResponse>>('/locations/', location).pipe(
+            return this.apiService.protectedPost<ApiResponse<LocationResponse>>('/admin/locations/', location).pipe(
                 map(response => response.data),
                 catchError(this.apiService.passthroughError)
             )
         }
 
     public updateLocation(id: string, location: Partial<LocationRequest>): Observable<ApiResponse<LocationResponse>> {
-            return this.apiService.protectedPut<ApiResponse<LocationResponse>>(`/locations/${id}`, location).pipe(
+            return this.apiService.protectedPut<ApiResponse<LocationResponse>>(`/admin/locations/${id}`, location).pipe(
                 map(response => response.data),
                 catchError(this.apiService.passthroughError)
             )
         }
 
     public statusUpdate(id: string, status: string): Observable<ApiResponse<LocationResponse>> {
-            return this.apiService.protectedPatch<ApiResponse<LocationResponse>>(`/locations/${id}/${status}`, { status }).pipe(
+            return this.apiService.protectedPatch<ApiResponse<LocationResponse>>(`/admin/locations/${id}/${status}`, { status }).pipe(
                 map(response => response.data),
                 catchError(this.apiService.passthroughError)
             )
@@ -62,7 +62,7 @@ export class LocationService {
                 queryParams['sortOrder'] = params.sortOrder;
             }
     
-            return this.apiService.protectedGet<PaginatedResponse<LocationResponse>>('/locations/', { params: queryParams }).pipe(
+            return this.apiService.protectedGet<PaginatedResponse<LocationResponse>>('/admin/locations/', { params: queryParams }).pipe(
                 map(response => response.data),
                 catchError(this.apiService.passthroughError)
             )

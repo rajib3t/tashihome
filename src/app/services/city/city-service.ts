@@ -12,7 +12,7 @@ export class CityService {
 
 
     public createCity(city: FormData): Observable<ApiResponse<City>> {
-        return this.apiService.protectedPost<ApiResponse<City>>('/cities/', city).pipe(
+        return this.apiService.protectedPost<ApiResponse<City>>('/admin/cities/', city).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         )
@@ -49,21 +49,21 @@ export class CityService {
             queryParams['sortOrder'] = params.sortOrder;
         }
 
-        return this.apiService.protectedGet<PaginatedResponse<City>>('/cities/', { params: queryParams }).pipe(
+        return this.apiService.protectedGet<PaginatedResponse<City>>('/admin/cities/', { params: queryParams }).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         )
     }
 
     public updateCity(id: string, city: Partial<CityRequest>): Observable<ApiResponse<City>> {
-        return this.apiService.protectedPut<ApiResponse<City>>(`/cities/${id}`, city).pipe(
+        return this.apiService.protectedPut<ApiResponse<City>>(`/admin/cities/${id}`, city).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         )
     }
 
     public statusUpdate(id: string, status: string): Observable<ApiResponse<City>> {
-        return this.apiService.protectedPatch<ApiResponse<City>>(`/cities/${id}/${status}`, { status }).pipe(
+        return this.apiService.protectedPatch<ApiResponse<City>>(`/admin/cities/${id}/${status}`, { status }).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         )

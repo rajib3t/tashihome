@@ -1,1 +1,147 @@
-<p>vendor-property-management works!</p>
+<app-page-breadcrumb pageTitle="Property Management" homelink="/vendor"></app-page-breadcrumb>
+
+<div class="space-y-6">
+  <app-card title="Property List" desc="Manage properties using a search form and paginated results.">
+    <div class="mb-4 flex justify-end">
+      <button
+        type="button"
+        class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+        (click)="navigateToCreate()"
+      >
+        <span>+ Create Property</span>
+      </button>
+    </div>
+
+    <form [formGroup]="searchForm" class="grid gap-4 lg:grid-cols-4" (ngSubmit)="onSearch()">
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <span class="mb-2 block">Title</span>
+        <input
+          type="text"
+          formControlName="title"
+          placeholder="Search by title"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        />
+      </label>
+
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <span class="mb-2 block">City</span>
+        <input
+          type="text"
+          formControlName="city"
+          placeholder="Search by city"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        />
+      </label>
+
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <span class="mb-2 block">Status</span>
+        <select
+          formControlName="status"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        >
+          <option value="">All status</option>
+          <option value="draft">Draft</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </label>
+
+      <div class="flex items-end gap-2">
+        <button
+          type="submit"
+          class="cursor-pointer inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+        >
+          Search
+        </button>
+        <button
+          type="button"
+          class="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200"
+          (click)="onReset()"
+        >
+          Reset
+        </button>
+      </div>
+    </form>
+
+    @if (errorMessage()) {
+      <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+          <thead class="bg-slate-50 dark:bg-slate-900/80">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">SL</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Property</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Type</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Location</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Price</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+            @if (isLoading()) {
+              <tr>
+                <td colspan="7" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                  Loading properties...
+                </td>
+              </tr>
+            } @else if (properties().length === 0) {
+              <tr>
+                <td colspan="7" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                  No properties found.
+                </td>
+              </tr>
+            } @else {
+              @for (property of properties(); track property.id; let i = $index) {
+                <tr>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ (currentPage() - 1) * pageSize() + i + 1 }}</td>
+                  <td class="px-4 py-3">
+                    <p class="font-semibold text-slate-800 dark:text-slate-100">{{ property.name }}</p>
+                  </td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                    {{ typeLabel(property.type) }}
+                  </td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                    <p>{{ property.city.name }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ property.location.name }}</p>
+                  </td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                    {{ formatCurrency(property.price_per_night ?? property.sale_per_night ?? 0) }}
+                  </td>
+                  <td class="px-4 py-3">
+                    <span [class]="getStatusClass(property.status)" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold">
+                      {{ statusLabel(property.status) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <button
+                      type="button"
+                      class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
+                      (click)="navigateToEdit(property)"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <app-pagination
+        [meta]="meta"
+        (pageChange)="onPageChange($event)"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </div>
+  </app-card>
+</div>

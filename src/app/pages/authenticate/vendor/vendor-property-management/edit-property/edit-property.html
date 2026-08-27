@@ -1,0 +1,385 @@
+<div class="space-y-6 p-4 md:p-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-semibold text-slate-800 dark:text-slate-100">Edit Property</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Update the selected listing details.</p>
+    </div>
+    <button
+      type="button"
+      class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200 cursor-pointer"
+      (click)="cancel()"
+    >
+      Back to list
+    </button>
+  </div>
+
+  <app-card title="Property Details" desc="Follow the steps to edit the listing.">
+    <div class="mb-6 flex flex-wrap gap-2">
+      @for (step of wizardSteps; track step; let i = $index) {
+        <div class="flex items-center gap-2">
+          <span
+            class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
+            [class]="i === currentStep ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'"
+          >
+            {{ i + 1 }}
+          </span>
+          <span class="text-sm text-slate-600 dark:text-slate-300">{{ step }}</span>
+        </div>
+      }
+    </div>
+
+    <form [formGroup]="propertyForm" (ngSubmit)="submitPropertyForm()" class="space-y-6">
+      @if (currentStep === 0) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property name</span>
+            <input formControlName="name" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+            @if (propertyForm.get('name')?.touched && propertyForm.get('name')?.invalid) {
+              <small class="text-xs text-red-500">Name is required and must be at least 3 characters.</small>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Property type</span>
+            <select formControlName="type" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+              @for (type of PROPERTY_TYPES_LABELS | keyvalue; track type.key) {
+                <option [value]="type.key">{{ type.value }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">City</span>
+            <div class="relative">
+              <input
+                type="text"
+                [value]="citySearchTerm()"
+                (input)="onCitySearchChange($any($event.target).value)"
+                (focus)="openCityDropdown()"
+                (blur)="onCityInputBlur()"
+                placeholder="Search city"
+                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-24 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              />
+              <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                @if (selectedCityLabel()) {
+                  <button
+                    type="button"
+                    class="pointer-events-auto rounded-full border border-slate-200 px-2 py-1 font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300"
+                    (click)="clearCitySelection()"
+                  >
+                    Clear
+                  </button>
+                } @else {
+                  <span>Autocomplete</span>
+                }
+              </div>
+
+              @if (isCityDropdownOpen() && filteredCities().length) {
+                <div class="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                  @for (city of filteredCities(); track city.id) {
+                    <button
+                      type="button"
+                      class="w-full border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
+                      (mousedown)="selectCity(city)"
+                    >
+                      <span class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ city.name }}</span>
+                    </button>
+                  }
+                </div>
+              } @else if (isCityDropdownOpen() && citySearchTerm().trim()) {
+                <div class="absolute z-20 mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                  No cities match your search.
+                </div>
+              }
+            </div>
+            <input type="hidden" formControlName="city_id" />
+            @if (propertyForm.get('city_id')?.invalid && propertyForm.get('city_id')?.touched) {
+              <p class="text-xs text-red-500">City is required.</p>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Location</span>
+            <select
+              formControlName="location_id"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary disabled:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800"
+              [disabled]="!propertyForm.get('city_id')?.value || loadingLocations()"
+            >
+              <option value="">
+                {{ loadingLocations() ? 'Loading locations...' : 'Select location' }}
+              </option>
+              @for (location of locations(); track location.id) {
+                <option [value]="location.id">{{ location.name }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Google Location Autocomplete</span>
+            <input
+              #googleLocationInput
+              formControlName="address"
+              type="text"
+              placeholder="Search and select a location"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+            @if (propertyForm.get('address')?.touched && propertyForm.get('address')?.invalid) {
+              <small class="text-xs text-red-500">Please choose a location from Google autocomplete.</small>
+            }
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Latitude</span>
+            <input
+              formControlName="lat"
+              type="number"
+              step="any"
+              placeholder="Latitude will be auto-filled"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Longitude</span>
+            <input
+              formControlName="lon"
+              type="number"
+              step="any"
+              placeholder="Longitude will be auto-filled"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <label class="block space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Description</span>
+            <textarea
+              formControlName="description"
+              rows="5"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            ></textarea>
+            @if (propertyForm.get('description')?.touched && propertyForm.get('description')?.invalid) {
+              <small class="text-xs text-red-500">Description is required and must be at least 20 characters.</small>
+            }
+          </label>
+        </div>
+      }
+
+      @if (currentStep === 1) {
+        <div class="space-y-6">
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Amenities</span>
+            @if (amenities().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (amenity of amenities(); track amenity.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input type="checkbox" [checked]="isSelectionChecked('amenity_ids', amenity.id)" (change)="toggleSelection('amenity_ids', amenity.id)" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                    {{ amenity.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No amenities loaded yet.</p>
+            }
+          </div>
+
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Facilities</span>
+            @if (facilities().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (facility of facilities(); track facility.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input type="checkbox" [checked]="isSelectionChecked('facility_ids', facility.id)" (change)="toggleSelection('facility_ids', facility.id)" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                    {{ facility.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No facilities loaded yet.</p>
+            }
+          </div>
+
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Room types</span>
+            @if (roomTypes().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (roomType of roomTypes(); track roomType.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input type="checkbox" [checked]="isSelectionChecked('room_type_ids', roomType.id)" (change)="toggleSelection('room_type_ids', roomType.id)" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                    {{ roomType.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No room types loaded yet.</p>
+            }
+          </div>
+
+          <div class="space-y-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Food options</span>
+            @if (foodOptions().length) {
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @for (foodOption of foodOptions(); track foodOption.id) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <input type="checkbox" [checked]="isSelectionChecked('food_option_ids', foodOption.id)" (change)="toggleSelection('food_option_ids', foodOption.id)" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                    {{ foodOption.name }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-slate-500 dark:text-slate-400">No food options loaded yet.</p>
+            }
+          </div>
+        </div>
+      }
+
+      @if (currentStep === 2) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Price per night</span>
+            <input
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              [value]="getFormattedCurrency('price_per_night')"
+              (input)="formatCurrencyInput('price_per_night', $event)"
+              (blur)="formatCurrencyOnBlur('price_per_night', $event)"
+              placeholder="₹0"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Sale price</span>
+            <input
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              [value]="getFormattedCurrency('sale_price')"
+              (input)="formatCurrencyInput('sale_price', $event)"
+              (blur)="formatCurrencyOnBlur('sale_price', $event)"
+              placeholder="₹0"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+            @if (propertyForm.get('sale_price')?.touched && isSalePriceLessThanNightlyPrice()) {
+              <small class="text-xs text-red-500">Sale price must be less than price per night.</small>
+            }
+          </label>
+        </div>
+      }
+
+      @if (currentStep === 3) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <div class="space-y-3 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Gallery images</span>
+            <app-upload-image
+              [id]="'gallery-upload-edit'"
+              [name]="'gallery-upload-edit'"
+              [multiple]="true"
+              [buttonText]="'Upload gallery images'"
+              [emptyText]="'No gallery images selected'"
+              (valueListChange)="addGalleryFiles($event)"
+              (previewListChange)="addGalleryImages($event)"
+            ></app-upload-image>
+
+            @if (galleryPreviews().length) {
+              <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                @for (image of galleryPreviews(); track image; let i = $index) {
+                  <div class="group relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                    <img [src]="assetUrl + image" [alt]="'Gallery image ' + (i + 1)" class="h-28 w-full object-cover" />
+                    <button
+                      type="button"
+                      class="absolute top-2 right-2 inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-rose-600/90 text-white shadow-md transition hover:bg-rose-700 focus:outline-none"
+                      (click)="removeGalleryImage(i)"
+                      title="Delete image"
+                    >
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Feature image</span>
+            <app-upload-image
+              [id]="'feature-image-edit'"
+              [name]="'feature-image-edit'"
+              [preview]="featureImagePreview()"
+              [buttonText]="'Upload feature image'"
+              [emptyText]="'No feature image selected'"
+              (valueChange)="handleFeatureImageFile($event)"
+              (previewChange)="handleFeatureImagePreview($event)"
+            ></app-upload-image>
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Cover image</span>
+            <app-upload-image
+              [id]="'cover-image-edit'"
+              [name]="'cover-image-edit'"
+              [preview]="coverImagePreview()"
+              [buttonText]="'Upload cover image'"
+              [emptyText]="'No cover image selected'"
+              (valueChange)="handleCoverImageFile($event)"
+              (previewChange)="handleCoverImagePreview($event)"
+            ></app-upload-image>
+          </label>
+        </div>
+      }
+
+      @if (currentStep === 4) {
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Publish status</span>
+            <select formControlName="status" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+
+          <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 md:col-span-2">
+            <input type="checkbox" formControlName="is_featured" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+            <span class="font-medium">Featured Property</span>
+          </label>
+        </div>
+      }
+
+      <div class="flex items-center justify-between border-t border-slate-200 pt-6 dark:border-slate-700">
+        <button
+          type="button"
+          class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:text-slate-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          (click)="previousStep()"
+          [disabled]="currentStep === 0"
+        >
+          Previous
+        </button>
+
+        <div class="flex gap-3">
+          @if (currentStep < wizardSteps.length - 1) {
+            <button
+              type="button"
+              class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+              (click)="nextStep()"
+              [disabled]="isSaving()"
+            >
+              {{ isSaving() ? 'Saving...' : 'Next' }}
+            </button>
+          } @else {
+            <button
+              type="submit"
+              class="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+              [disabled]="isSaving()"
+            >
+              {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+            </button>
+          }
+        </div>
+      </div>
+    </form>
+  </app-card>
+</div>
+

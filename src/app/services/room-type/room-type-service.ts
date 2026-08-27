@@ -9,7 +9,7 @@ export class RoomTypeService {
   public readonly apiService = inject(ApiService);
 
   public create(data: RoomTypeRequest): Observable<ApiResponse<RoomType>> {
-    return this.apiService.protectedPost<ApiResponse<RoomType>>('/room-types/', data).pipe(
+    return this.apiService.protectedPost<ApiResponse<RoomType>>('/admin/room-types/', data).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
@@ -41,21 +41,21 @@ export class RoomTypeService {
       queryParams['sortOrder'] = params.sortOrder;
     }
 
-    return this.apiService.protectedGet<PaginatedResponse<RoomType>>('/room-types/', { params: queryParams }).pipe(
+    return this.apiService.protectedGet<PaginatedResponse<RoomType>>('/admin/room-types/', { params: queryParams }).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
   }
 
   public update(id: string, data: RoomTypeRequest): Observable<ApiResponse<RoomType>> {
-    return this.apiService.protectedPut<ApiResponse<RoomType>>(`/room-types/${id}`, data).pipe(
+    return this.apiService.protectedPut<ApiResponse<RoomType>>(`/admin/room-types/${id}`, data).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );
   }
 
   public statusUpdate(id: string, status: string): Observable<ApiResponse<RoomType>> {
-    return this.apiService.protectedPatch<ApiResponse<RoomType>>(`/room-types/${id}/${status}`, { status }).pipe(
+    return this.apiService.protectedPatch<ApiResponse<RoomType>>(`/admin/room-types/${id}/${status}`, { status }).pipe(
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     );

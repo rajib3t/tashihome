@@ -71,7 +71,7 @@ export class SettingsService {
     }
 
     saveSettings(formData: FormData): Observable<ApiResponse<SettingItem[]>> {
-      return this.apiService.protectedUpload<ApiResponse<SettingItem[]>>('settings/', formData, {
+      return this.apiService.protectedUpload<ApiResponse<SettingItem[]>>('admin/settings/', formData, {
         headers: {
           Accept: 'application/json',
         },
@@ -83,7 +83,7 @@ export class SettingsService {
 
 
     getSettings(): Observable<any> {
-      return this.apiService.protectedGet<any>('/settings/fetch').pipe(
+      return this.apiService.protectedGet<any>('admin/settings/fetch').pipe(
         map(response => response.data),
         tap(data => this.setSettingsData(data.data)),
        catchError(this.apiService.passthroughError)
@@ -95,7 +95,7 @@ export class SettingsService {
         return this.#publicSettingsRequest;
       }
 
-      this.#publicSettingsRequest = this.apiService.get<any>('/settings/fetch').pipe(
+      this.#publicSettingsRequest = this.apiService.get<any>('/admin/settings/fetch').pipe(
         map(response => response.data),
         tap(data => this.setSettingsData(data?.data ?? data)),
         catchError((error) => {

@@ -40,34 +40,34 @@ export class CountryService {
             queryParams['sortOrder'] = params.sortOrder;
         }
 
-        return this.apiService.protectedGet<PaginatedResponse<Country>>('/countries/', { params: queryParams }).pipe(
+        return this.apiService.protectedGet<PaginatedResponse<Country>>('/admin/countries/', { params: queryParams }).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         );
     }
 
     createCountry(country: CountryRequest): Observable<ApiResponse<Country>> {
-        return this.apiService.protectedPost<ApiResponse<Country>>('/countries/', country).pipe(
+        return this.apiService.protectedPost<ApiResponse<Country>>('/admin/countries/', country).pipe(
             map(response => response.data)
         );
     }
 
     updateCountry(id: string, country: Partial<CountryRequest>): Observable<ApiResponse<Country>> {
-        return this.apiService.protectedPut<ApiResponse<Country>>(`/countries/${id}`, country).pipe(
+        return this.apiService.protectedPut<ApiResponse<Country>>(`/admin/countries/${id}`, country).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         );
     }
 
     statusUpdate(id: string, status: string): Observable<ApiResponse<Country>> {
-        return this.apiService.protectedPatch<ApiResponse<Country>>(`/countries/${id}/${status}`, { status }).pipe(
+        return this.apiService.protectedPatch<ApiResponse<Country>>(`/admin/countries/${id}/${status}`, { status }).pipe(
             map(response => response.data),
             catchError(this.apiService.passthroughError)
         );
     }
 
     deleteCountry(id: string): Observable<void> {
-        return this.apiService.protectedDelete<void>(`/countries/${id}/`).pipe(
+        return this.apiService.protectedDelete<void>(`/admin/countries/${id}/`).pipe(
             map(() => undefined)
         );
     }
