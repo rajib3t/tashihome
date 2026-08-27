@@ -4,7 +4,7 @@ import { Home } from './pages/public/home/home';
 import { Login } from './pages/public/login/login';
 import { authGuard } from './guards/auth/auth-guard';
 import { Authenticate } from './shared/layouts/authenticate/authenticate';
-import { adminGuard, userGuard } from './guards/auth/role-guard';
+import { adminGuard, userGuard, vendorGuard } from './guards/auth/role-guard';
 import { Admin } from './shared/layouts/authenticate/admin/admin';
 import { AdminDashboard } from './pages/authenticate/admin/admin-dashboard/admin-dashboard';
 import { Setting } from './pages/authenticate/admin/setting/setting';
@@ -27,6 +27,9 @@ import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
 import { PasswordReset } from './pages/public/password-reset/password-reset';
 import { User as UserLayout } from './shared/layouts/authenticate/user/user';
 import { Profile } from './pages/authenticate/user/profile/profile';
+import { Vendor } from './shared/layouts/authenticate/vendor/vendor';
+import { Dashboard } from './pages/authenticate/vendor/dashboard/dashboard';
+import { VendorPropertyManagement } from './pages/authenticate/vendor/vendor-property-management/vendor-property-management';
 
 
 export const routes: Routes = [
@@ -166,6 +169,23 @@ export const routes: Routes = [
                         path: 'vendor-management/:id/edit',
                         component: EditVendor,
                         title: 'Edit Vendor'
+                    }
+                ]
+            },
+            {
+                path:'vendor',
+                canActivate: [vendorGuard],
+                component: Vendor,
+                children:[
+                    {
+                        path:'',
+                        component:Dashboard,
+                        title:'Vendor Dashboard'
+                    },
+                    {
+                        path:'property-management',
+                        component:VendorPropertyManagement,
+                        title:'Vendor Property Management'
                     }
                 ]
             },

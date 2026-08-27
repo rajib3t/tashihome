@@ -74,11 +74,9 @@ export class Login implements AfterViewInit {
           } else if (userRole === 'user') {
             this.router.navigate(['/profile']);
           }
-          // else if (userRole === 'vendor') {
-          //   this.router.navigate(['/vendor']);
-          // } else {
-          //   this.router.navigate(['/dashboard']);
-          // }
+          else if (userRole === 'vendor') {
+            this.router.navigate(['/vendor']);
+          } 
         } else {
           this.errorMessage.set(response.message || 'Login failed. Please try again.');
         }
