@@ -143,6 +143,7 @@ export interface PropertyFormValue {
 }
 export interface PropertySearch {
   name?: string;
+  type?: PropertyType | string;
   city?: string;
   city_id?: string;
   location?: string;

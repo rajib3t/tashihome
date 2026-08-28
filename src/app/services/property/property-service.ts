@@ -20,6 +20,7 @@ function buildPropertyQueryParams(query?: PropertyQuery): Record<string, string 
   };
 
   const name = search.name?.trim();
+  const type = search.type?.trim();
   const city = search.city?.trim();
   const city_id = search.city_id?.trim();
   const location = search.location?.trim();
@@ -28,6 +29,7 @@ function buildPropertyQueryParams(query?: PropertyQuery): Record<string, string 
   const is_featured = search.is_featured;
 
   if (name) queryParams['name'] = name;
+  if (type) queryParams['type'] = type;
   if (city) queryParams['city'] = city;
   if (city_id) queryParams['city_id'] = city_id;
   if (location) queryParams['location'] = location;

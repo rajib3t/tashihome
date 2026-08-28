@@ -99,7 +99,7 @@ export const routes: Routes = [
             {
                 path: 'stays',
                 component: Properties,
-                title: 'Property Management',
+                title: 'Stays - Tashihomes',
             },
 
             {

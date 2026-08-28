@@ -16,7 +16,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PropertyService } from '../../../services/property/property-service';
 import { PropertyData, PropertyQuery, PropertySearch } from '../../../services/property/property.model';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CityService } from '../../../services/city/city-service';
@@ -48,6 +48,7 @@ interface MistBlob {
   imports: [
     CommonModule, 
     FormsModule,
+    RouterModule,
     SingleProperty
   ],
   templateUrl: './home.html',

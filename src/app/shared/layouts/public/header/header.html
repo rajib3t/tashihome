@@ -14,7 +14,7 @@
     </a>
 
     <nav class="hidden md:flex items-center gap-8 text-sm font-medium transition-colors" [ngClass]="isScrolled ? 'text-ink' : 'text-cloud'">
-      <a routerLink="/" fragment="stays" class="hover:text-ochre transition-colors">Stays</a>
+      <a routerLink="/stays" class="hover:text-ochre transition-colors">Stays</a>
       <a routerLink="/our-story" class="hover:text-ochre transition-colors">Our Story</a>
       <a routerLink="/" fragment="experiences" class="hover:text-ochre transition-colors">Experiences</a>
       <a routerLink="/" fragment="hosts" class="hover:text-ochre transition-colors">Hosts</a>
@@ -35,8 +35,7 @@
         </a>
       </ng-template>
       <a
-        routerLink="/"
-        fragment="stays"
+        routerLink="/stays"
         class="btn-anim hidden sm:inline-block bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
       >
         Browse stays
@@ -58,7 +57,7 @@
 
   <!-- mobile menu -->
   <div *ngIf="isMenuOpen" id="mobile-menu" class="md:hidden bg-pine text-cloud px-6 pb-6 pt-2 space-y-4 shadow-xl border-t border-cloud/10">
-    <a routerLink="/" fragment="stays" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Stays</a>
+    <a routerLink="/stays" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Stays</a>
     <a routerLink="/our-story" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Our Story</a>
     <a routerLink="/" fragment="experiences" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Experiences</a>
     <a routerLink="/" fragment="hosts" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Hosts</a>
@@ -70,7 +69,7 @@
     <ng-template #mobileLoginTemplate>
       <a routerLink="/login" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Login</a>
     </ng-template>
-    <a routerLink="/" fragment="stays" (click)="closeMenu()" class="inline-block bg-ochre text-cloud text-sm font-semibold px-5 py-2.5 rounded-full">
+    <a routerLink="/stays" (click)="closeMenu()" class="inline-block bg-ochre text-cloud text-sm font-semibold px-5 py-2.5 rounded-full">
       Browse stays
     </a>
   </div>
