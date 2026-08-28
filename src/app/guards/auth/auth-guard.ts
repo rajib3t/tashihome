@@ -35,3 +35,32 @@ export const authGuard: CanActivateFn = (route, state) => {
     })
   );
 };
+
+/**
+ * Guard for guest-only pages (e.g. /login, /register).
+ * If the user is already authenticated, redirect them to their role dashboard.
+ */
+export const guestGuard: CanActivateFn = () => {
+  const platformId = inject(PLATFORM_ID);
+  if (isPlatformServer(platformId)) {
+    return true;
+  }
+
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  const authCheck$ = authService.authUser() ? of(true) : authService.initializeAuth();
+
+  return authCheck$.pipe(
+    map((isAuth) => {
+      if (!isAuth) {
+        return true; // not logged in → allow access to login page
+      }
+
+      // Already logged in → redirect to role dashboard
+      const role = authService.authUser()?.role?.toLowerCase();
+      if (role === 'admin')  return router.parseUrl('/admin');
+      if (role === 'vendor') return router.parseUrl('/vendor');
+      return router.parseUrl('/user');
+    })
+  );
+};

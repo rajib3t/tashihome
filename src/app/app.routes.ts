@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { Public } from './shared/layouts/public/public';
 import { Home } from './pages/public/home/home';
 import { Login } from './pages/public/login/login';
-import { authGuard } from './guards/auth/auth-guard';
+import { authGuard, guestGuard } from './guards/auth/auth-guard';
 import { Authenticate } from './shared/layouts/authenticate/authenticate';
 import { adminGuard, userGuard, vendorGuard } from './guards/auth/role-guard';
 import { Admin } from './shared/layouts/authenticate/admin/admin';
@@ -39,6 +39,7 @@ export const routes: Routes = [
         path: 'login',
         component: Login,
         title: 'Login',
+        canActivate: [guestGuard],
     },
     {
         path: 'forgot-password',

@@ -1,12 +1,9 @@
-import { Component, HostListener, inject, Input, OnInit, computed, signal } from '@angular/core';
+import { Component, HostListener, inject, Input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Logo } from '../../../components/common/logo/logo';
 import { Avatar } from '../../../components/users/avatar/avatar';
 import { AuthService } from '../../../../services/auth/auth-service';
-import { firstValueFrom } from 'rxjs';
-import { User } from '../../../../services/user/user.model';
-import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-public-header',
@@ -14,7 +11,7 @@ import { environment } from '../../../../../environments/environment';
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
-export class HeaderPublic implements OnInit {
+export class HeaderPublic {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -29,20 +26,6 @@ export class HeaderPublic implements OnInit {
   isScrolled = false;
   readonly authUser = this.authService.authUser;
   isAuthenticated = computed(() => !!this.authService.authUser());
-
-  ngOnInit(): void {
-    this.initializeAuth();
-    
-  }
-
-  async initializeAuth(): Promise<void> {
-    if (this.authService.authUser()) return;
-    try {
-      await firstValueFrom(this.authService.initializeAuth());
-    } catch (error) {
-      console.error('Error initializing auth:', error);
-    }
-  }
 
   @HostListener('window:scroll', [])
   onWindowScroll(): void {

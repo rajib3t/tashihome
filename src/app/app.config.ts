@@ -6,7 +6,8 @@ import { provideClientHydration, withNoHttpTransferCache } from '@angular/platfo
 import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { authInterceptor } from './interceptors/auth/auth-interceptor';
 import { SettingsService } from './services/settings/settings-service';
-import { catchError, firstValueFrom, of, timeout } from 'rxjs';
+import { AuthService } from './services/auth/auth-service';
+import { catchError, firstValueFrom, forkJoin, of, timeout } from 'rxjs';
 import { AppTitleStrategy } from './app-title-strategy';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -26,6 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withNoHttpTransferCache()),
     provideAppInitializer(() => {
       const settingsService = inject(SettingsService);
+      const authService = inject(AuthService);
       const platformId = inject(PLATFORM_ID);
 
       if (!isPlatformBrowser(platformId)) {
@@ -33,10 +35,15 @@ export const appConfig: ApplicationConfig = {
       }
 
       return firstValueFrom(
-        settingsService.getPublicSettings().pipe(
-          timeout({ first: 5000 }),
-          catchError(() => of(null))
-        )
+        forkJoin([
+          settingsService.getPublicSettings().pipe(
+            timeout({ first: 5000 }),
+            catchError(() => of(null))
+          ),
+          authService.initializeAuth().pipe(
+            catchError(() => of(false))
+          ),
+        ])
       ).catch(() => undefined);
     }),
   ]
