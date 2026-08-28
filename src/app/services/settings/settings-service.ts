@@ -83,7 +83,7 @@ export class SettingsService {
 
 
     getSettings(): Observable<any> {
-      return this.apiService.protectedGet<any>('admin/settings/fetch').pipe(
+      return this.apiService.protectedGet<any>('/admin/settings/fetch').pipe(
         map(response => response.data),
         tap(data => this.setSettingsData(data.data)),
        catchError(this.apiService.passthroughError)

@@ -132,6 +132,13 @@ export class UserService {
       )
   }
 
+  public sendVendorPasswordReset(vendorId: string, confirm: string): Observable<ApiResponse<any>> {
+    return this.apiService.protectedPost<ApiResponse<any>>(`/admin/vendors/${vendorId}/password-reset`, { confirm }).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
 
   public registerUser(userData: RegisterUserRequest): Observable<ApiResponse<RegisterUserResponse>> {
     return this.apiService.post<ApiResponse<RegisterUserResponse>>('/auth/register', userData).pipe(

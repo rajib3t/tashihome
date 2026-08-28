@@ -44,6 +44,17 @@ export class VendorManagement {
     statusErrorMessage = signal<string | null>(null);
     vendorToToggleStatus = signal<VendorDetail | null>(null);
 
+  // Password Reset modal state
+  readonly isPasswordResetModalOpen = signal<boolean>(false);
+  readonly isSendingPasswordReset = signal<boolean>(false);
+  readonly passwordResetError = signal<string | null>(null);
+  readonly passwordResetSuccess = signal<string | null>(null);
+  readonly vendorToResetPassword = signal<User | VendorDetail | null>(null);
+
+  readonly passwordResetForm = this.formBuilder.group({
+    confirm: ['', [Validators.required, Validators.pattern(/^CONFIRM$/)]],
+  });
+
   // Cities List State
     readonly users = signal<User[]>([]);
     readonly isLoading = signal(false);
@@ -246,6 +257,61 @@ export class VendorManagement {
         }
         this.closeStatusModal();
         this.loadVendors();
+      });
+  }
+
+  get confirmControl() {
+    return this.passwordResetForm.get('confirm')!;
+  }
+
+  openPasswordResetModal(vendor: User | VendorDetail) {
+    this.vendorToResetPassword.set(vendor);
+    this.passwordResetForm.reset({ confirm: '' });
+    this.passwordResetError.set(null);
+    this.isSendingPasswordReset.set(false);
+    this.isPasswordResetModalOpen.set(true);
+  }
+
+  closePasswordResetModal() {
+    this.isPasswordResetModalOpen.set(false);
+    this.vendorToResetPassword.set(null);
+    this.passwordResetForm.reset({ confirm: '' });
+    this.passwordResetError.set(null);
+  }
+
+  submitPasswordReset() {
+    const vendor = this.vendorToResetPassword();
+    if (!vendor) {
+      return;
+    }
+
+    if (this.passwordResetForm.invalid) {
+      this.passwordResetForm.markAllAsTouched();
+      return;
+    }
+
+    const confirmText = this.passwordResetForm.value.confirm?.trim() || 'CONFIRM';
+    this.isSendingPasswordReset.set(true);
+    this.passwordResetError.set(null);
+
+    this.userService.sendVendorPasswordReset(vendor.id, confirmText)
+      .pipe(
+        finalize(() => this.isSendingPasswordReset.set(false)),
+        catchError((error) => {
+          const apiError = this.userService.apiService.extractApiErrorMessage(error);
+          this.passwordResetError.set(
+            apiError || error?.error?.message || error?.message || 'Failed to send password reset link. Please try again.'
+          );
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        const successMsg = response.message || `Password reset link has been successfully sent to ${vendor.email}.`;
+        this.passwordResetSuccess.set(successMsg);
+        this.closePasswordResetModal();
       });
   }
 }

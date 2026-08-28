@@ -8,6 +8,23 @@
 </app-page-breadcrumb>
 <div class="space-y-6">
   <app-card title="Edit Vendor" desc="Manage and update vendor profile information.">
+        <div class="mb-4 flex justify-end">
+            <button
+                type="button"
+                (click)="openPasswordResetModal()"
+                class="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-amber-700 cursor-pointer"
+            >
+                <span>Reset Password</span>
+            </button>
+        </div>
+
+        @if (passwordResetSuccess()) {
+            <div class="mb-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300">
+                <span>{{ passwordResetSuccess() }}</span>
+                <button type="button" (click)="passwordResetSuccess.set(null)" class="cursor-pointer text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-white font-bold ml-2">✕</button>
+            </div>
+        }
+
         @if (vendor(); as vendor) {
             <app-meta-card 
               [user]="vendor" 
@@ -45,3 +62,73 @@
         }
     </app-card>
 </div>
+
+<!-- Password Reset Modal -->
+<app-modal [isOpen]="isPasswordResetModalOpen()" (close)="closePasswordResetModal()" className="max-w-[480px] m-4">
+    <div class="relative w-full max-w-[480px] rounded-3xl bg-white p-6 dark:bg-gray-900">
+        <div class="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                Send Password Reset Link
+            </h2>
+        </div>
+
+        <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">
+            Are you sure you want to send a password reset link to
+            <span class="font-semibold text-gray-900 dark:text-white">{{ vendor()?.full_name }}</span>
+            ({{ vendor()?.email }})?
+        </p>
+
+        <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            To confirm, please type <span class="font-bold text-amber-600 dark:text-amber-400">CONFIRM</span> below:
+        </p>
+
+        @if (passwordResetError()) {
+        <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+            {{ passwordResetError() }}
+        </div>
+        }
+
+        <form [formGroup]="passwordResetForm" (ngSubmit)="submitPasswordReset()" class="mt-4" novalidate>
+            <div class="mb-4">
+                <label for="edit-vendor-reset-confirm" class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Confirmation Text
+                </label>
+                <input
+                    id="edit-vendor-reset-confirm"
+                    type="text"
+                    formControlName="confirm"
+                    placeholder="Type CONFIRM to confirm"
+                    autocomplete="off"
+                    [class.border-red-500]="resetConfirmControl.invalid && resetConfirmControl.touched"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                />
+                @if (resetConfirmControl.invalid && resetConfirmControl.touched) {
+                <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                    @if (resetConfirmControl.errors?.['required']) {
+                        Please type CONFIRM to proceed.
+                    } @else if (resetConfirmControl.errors?.['pattern']) {
+                        You must type exactly "CONFIRM".
+                    }
+                </p>
+                }
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <button
+                    type="button"
+                    (click)="closePasswordResetModal()"
+                    class="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    [disabled]="isSendingPasswordReset() || passwordResetForm.invalid"
+                    class="cursor-pointer rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {{ isSendingPasswordReset() ? 'Sending Link...' : 'Send Link' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</app-modal>

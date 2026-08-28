@@ -11,6 +11,7 @@ import { RequestVendor, VendorDetail } from '../../../../../services/user/user.m
 import { MetaCard } from '../../../../../shared/components/users/admin/meta-card/meta-card';
 import { CompanyCard } from '../../../../../shared/components/users/admin/company-card/company-card';
 import { InfoCard } from '../../../../../shared/components/users/admin/info-card/info-card';
+import { Modal } from '../../../../../shared/components/ui/modal/modal';
 import { environment } from '../../../../../../environments/environment';
 
 interface VendorFormValue {
@@ -42,7 +43,8 @@ interface VendorFormValue {
     // UploadImage,
     MetaCard,
     CompanyCard,
-    InfoCard
+    InfoCard,
+    Modal
   ],
   templateUrl: './edit-vendor.html',
   styleUrl: './edit-vendor.css',
@@ -68,6 +70,18 @@ export class EditVendor {
   readonly isImageUploading = signal(false);
   readonly imageUploadError = signal<string | null>(null);
   readonly isUpdating = signal(false);
+  readonly isPasswordResetModalOpen = signal(false);
+  readonly isSendingPasswordReset = signal(false);
+  readonly passwordResetError = signal<string | null>(null);
+  readonly passwordResetSuccess = signal<string | null>(null);
+
+  readonly passwordResetForm = this.formBuilder.group({
+    confirm: ['', [Validators.required, Validators.pattern(/^CONFIRM$/)]],
+  });
+
+  get resetConfirmControl() {
+    return this.passwordResetForm.get('confirm')!;
+  }
   
   readonly vendorForm = this.formBuilder.group({
     full_name: ['', Validators.required],
@@ -245,6 +259,54 @@ export class EditVendor {
     });
   }
 
+  openPasswordResetModal() {
+    this.passwordResetForm.reset({ confirm: '' });
+    this.passwordResetError.set(null);
+    this.isSendingPasswordReset.set(false);
+    this.isPasswordResetModalOpen.set(true);
+  }
 
-  
+  closePasswordResetModal() {
+    this.isPasswordResetModalOpen.set(false);
+    this.passwordResetForm.reset({ confirm: '' });
+    this.passwordResetError.set(null);
+  }
+
+  submitPasswordReset() {
+    const id = this.vendorId();
+    if (!id) {
+      this.passwordResetError.set('Vendor ID not found.');
+      return;
+    }
+
+    if (this.passwordResetForm.invalid) {
+      this.passwordResetForm.markAllAsTouched();
+      return;
+    }
+
+    const confirmText = this.passwordResetForm.value.confirm?.trim() || 'CONFIRM';
+    this.isSendingPasswordReset.set(true);
+    this.passwordResetError.set(null);
+
+    this.userService.sendVendorPasswordReset(id, confirmText)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (response) => {
+          this.isSendingPasswordReset.set(false);
+          const email = this.vendor()?.email || 'vendor';
+          const successMsg = response?.message || `Password reset link has been successfully sent to ${email}.`;
+          this.passwordResetSuccess.set(successMsg);
+          this.closePasswordResetModal();
+        },
+        error: (error) => {
+          this.isSendingPasswordReset.set(false);
+          const apiError = this.userService.apiService.extractApiErrorMessage(error);
+          this.passwordResetError.set(
+            apiError || error?.error?.message || error?.message || 'Failed to send password reset link. Please try again.'
+          );
+        }
+      });
+  }
 }
