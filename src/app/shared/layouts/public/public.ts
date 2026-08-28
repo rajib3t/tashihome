@@ -37,7 +37,6 @@ export class Public implements OnInit {
   public readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   public readonly settingsData = computed(() => this.settingService.settingsData());
-  public readonly currentUrl = signal(this.router.url);
   public readonly isComingSoonEnabled = computed(() => {
     const url = this.currentUrl();
     if (
