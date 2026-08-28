@@ -144,16 +144,20 @@ export interface PropertyFormValue {
 export interface PropertySearch {
   name?: string;
   city?: string;
+  city_id?: string;
   location?: string;
+  location_id?: string;
   status?: PropertyStatus;
   is_featured?: boolean;
 }
 
 
 export interface PropertyQuery {
-  page: number;
-  size: number;
+  page?: number;
+  size?: number;
   search?: PropertySearch;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 

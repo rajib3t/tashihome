@@ -820,14 +820,14 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
   }
 
   private loadCities(): void {
-    this.cityService.getCities({ page: 1, size: 100 }).pipe(take(1)).subscribe({
+    this.cityService.admin.getCities({ page: 1, size: 100 }).pipe(take(1)).subscribe({
       next: (response) => this.cities.set(response.data),
       error: () => this.cities.set([]),
     });
   }
 
   private loadAmenities(): void {
-    this.amenityService.getAmenities({ page: 1, size: 100 }).pipe(take(1)).subscribe({
+    this.amenityService.admin.getAmenities({ page: 1, size: 100 }).pipe(take(1)).subscribe({
       next: (response) => this.amenities.set(response.data),
       error: () => this.amenities.set([]),
     });
@@ -849,7 +849,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
 
   private loadLocations(cityId: string): void {
     this.loadingLocations.set(true);
-    this.locationService.getLocations({ page: 1, size: 100, search: { city_id: cityId } }).pipe(take(1)).subscribe({
+    this.locationService.admin.getLocations({ page: 1, size: 100, search: { city_id: cityId } }).pipe(take(1)).subscribe({
       next: (response) => {
         this.locations.set(response.data);
         this.loadingLocations.set(false);

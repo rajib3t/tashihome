@@ -118,7 +118,7 @@ export class CityManagement {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.cityService.getCities(query)
+    this.cityService.admin.getCities(query)
       .pipe(
         finalize(() => this.isLoading.set(false)),
         catchError((error) => {
@@ -205,7 +205,7 @@ export class CityManagement {
       payload.append('image_url', formData.city_image);
     }
 
-    this.cityService.createCity(payload).subscribe({
+    this.cityService.admin.createCity(payload).subscribe({
       next: (response) => {
         this.isCreating.set(false);
         this.closeCreateModal();
@@ -350,7 +350,7 @@ export class CityManagement {
     this.isEditing.set(true);
     this.editErrorMessage.set(null);
 
-    this.cityService.updateCity(city.id, payload as any)
+    this.cityService.admin.updateCity(city.id, payload as any)
       .pipe(
         finalize(() => this.isEditing.set(false)),
         catchError((error) => {
@@ -388,7 +388,7 @@ export class CityManagement {
     this.isUpdatingStatus.set(true);
     this.statusErrorMessage.set(null);
 
-    this.cityService.statusUpdate(city.id, nextStatus)
+    this.cityService.admin.statusUpdate(city.id, nextStatus)
       .pipe(
         finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {

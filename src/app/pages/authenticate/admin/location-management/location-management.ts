@@ -52,7 +52,7 @@ export class LocationManagement {
   readonly pageSize = signal(10);
   readonly totalItems = signal(0);
   ngOnInit() {
-    this.cityService.getCities({
+    this.cityService.admin.getCities({
       page: 1,
       size: 100,
       search: {
@@ -113,7 +113,7 @@ const filters = this.searchForm.getRawValue();
   this.isLoading.set(true);
   this.errorMessage.set('');
 
-  this.locationService.getLocations(query)
+  this.locationService.admin.getLocations(query)
         .pipe(
           finalize(() => this.isLoading.set(false)),
           catchError((error) => {
@@ -192,7 +192,7 @@ openEditModal(location: LocationResponse) {
     this.isUpdatingStatus.set(true);
     this.statusErrorMessage.set(null);
 
-    this.locationService.statusUpdate(location.id, nextStatus)
+    this.locationService.admin.statusUpdate(location.id, nextStatus)
       .pipe(
         finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {
@@ -246,7 +246,7 @@ openEditModal(location: LocationResponse) {
       city_id: this.createLocationForm.value.cityId || '',
     };
 
-    this.locationService.createLocation(payload)
+    this.locationService.admin.createLocation(payload)
       .subscribe({
         next: (response) => {
           this.isCreating.set(false);
@@ -298,7 +298,7 @@ openEditModal(location: LocationResponse) {
     this.isEditing.set(true);
     this.editErrorMessage.set(null);
 
-    this.locationService.updateLocation(location.id, payload)
+    this.locationService.admin.updateLocation(location.id, payload)
       .pipe(
         finalize(() => this.isEditing.set(false)),
         catchError((error) => {

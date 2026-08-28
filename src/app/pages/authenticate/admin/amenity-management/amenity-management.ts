@@ -99,7 +99,7 @@ export class AmenityManagement {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.amenityService.getAmenities(query)
+    this.amenityService.admin.getAmenities(query)
       .pipe(
         finalize(() => this.isLoading.set(false)),
         catchError((error) => {
@@ -175,7 +175,7 @@ export class AmenityManagement {
       payload.append('icon', formData.icon as File);
     }
 
-    this.amenityService.create(payload).subscribe({
+    this.amenityService.admin.create(payload).subscribe({
       next: () => {
         this.isCreating.set(false);
         this.closeCreateModal();
@@ -210,7 +210,7 @@ export class AmenityManagement {
       payload.append('icon', formData.icon);
     }
 
-    this.amenityService.update(amenity.id, payload)
+    this.amenityService.admin.update(amenity.id, payload)
       .pipe(
         finalize(() => this.isEditing.set(false)),
         catchError((error) => {
@@ -238,7 +238,7 @@ export class AmenityManagement {
     this.isUpdatingStatus.set(true);
     this.statusErrorMessage.set(null);
 
-    this.amenityService.statusUpdate(amenity.id, nextStatus)
+    this.amenityService.admin.statusUpdate(amenity.id, nextStatus)
       .pipe(
         finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {

@@ -124,7 +124,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       size: 4,
     }
 
-    this.cityService.getPublicCities(cityQuery).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((response) => {
+    this.cityService.public.getCities(cityQuery).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((response) => {
       this.cities.set(response?.data || []);
       this.cdr.markForCheck();
     })
