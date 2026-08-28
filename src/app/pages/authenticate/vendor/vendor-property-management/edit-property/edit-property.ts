@@ -50,7 +50,7 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly PROPERTY_TYPES_LABELS = PROPERTY_TYPES_LABELS;
-  readonly wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media', 'Settings'];
+  readonly wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media'];
   currentStep = 0;
 
   readonly citySearchTerm = signal('');
@@ -199,11 +199,6 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     this.isSaving.set(true);
     this.propertyService.vendor.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
       next: () => {
-        if (this.pendingStepBeforeSave === 3) {
-          this.uploadPropertyMediaAndContinue();
-          return;
-        }
-
         this.isSaving.set(false);
         this.pendingStepBeforeSave = null;
       },
@@ -546,7 +541,8 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
       );
     }
 
-    return !!this.propertyForm.get('status')?.valid;
+    // Steps 1 (Amenities & Facilities) and 3 (Media) have no required field validation
+    return true;
   }
 
   private isSalePriceValid(): boolean {
@@ -731,6 +727,10 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
 
     this.propertyService.vendor.uploadMedia(this.propertyId, formData).subscribe({
       next: () => {
+        // Clear files after upload to prevent re-uploading on final submit
+        this.galleryFiles.set([]);
+        this.featureImageFile.set(null);
+        this.coverImageFile.set(null);
         this.isSaving.set(false);
         this.pendingStepBeforeSave = null;
         if (navigateAfterUpload) {

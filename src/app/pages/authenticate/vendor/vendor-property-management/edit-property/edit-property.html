@@ -285,7 +285,7 @@
               <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 @for (image of galleryPreviews(); track image; let i = $index) {
                   <div class="group relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-                    <img [src]="assetUrl + image" [alt]="'Gallery image ' + (i + 1)" class="h-28 w-full object-cover" />
+                    <img [src]="image.startsWith('data:') || image.startsWith('blob:') || image.startsWith('http') ? image : assetUrl + image" [alt]="'Gallery image ' + (i + 1)" class="h-28 w-full object-cover" />
                     <button
                       type="button"
                       class="absolute top-2 right-2 inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-rose-600/90 text-white shadow-md transition hover:bg-rose-700 focus:outline-none"
@@ -330,23 +330,7 @@
         </div>
       }
 
-      @if (currentStep === 4) {
-        <div class="grid gap-5 md:grid-cols-2">
-          <label class="space-y-2 md:col-span-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Publish status</span>
-            <select formControlName="status" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
-              <option value="draft">Draft</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </label>
 
-          <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 md:col-span-2">
-            <input type="checkbox" formControlName="is_featured" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
-            <span class="font-medium">Featured Property</span>
-          </label>
-        </div>
-      }
 
       <div class="flex items-center justify-between border-t border-slate-200 pt-6 dark:border-slate-700">
         <button
