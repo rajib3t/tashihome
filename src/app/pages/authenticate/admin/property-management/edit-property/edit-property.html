@@ -340,7 +340,7 @@
               <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 @for (image of galleryPreviews(); track image; let i = $index) {
                   <div class="group relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-                    <img [src]="assetUrl + image" [alt]="'Gallery image ' + (i + 1)" class="h-28 w-full object-cover" />
+                    <img [src]="image.startsWith('data:') || image.startsWith('blob:') || image.startsWith('http') ? image : assetUrl + image" [alt]="'Gallery image ' + (i + 1)" class="h-28 w-full object-cover" />
                     <button
                       type="button"
                       class="absolute top-2 right-2 inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-rose-600/90 text-white shadow-md transition hover:bg-rose-700 focus:outline-none"

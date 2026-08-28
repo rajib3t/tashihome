@@ -787,6 +787,10 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
 
     this.propertyService.admin.uploadMedia(this.propertyId, formData).subscribe({
       next: () => {
+        // Clear files after upload to prevent re-uploading on final submit
+        this.galleryFiles.set([]);
+        this.featureImageFile.set(null);
+        this.coverImageFile.set(null);
         this.isSaving.set(false);
         this.pendingStepBeforeSave = null;
         if (navigateAfterUpload) {
