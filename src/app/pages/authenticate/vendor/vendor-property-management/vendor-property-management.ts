@@ -85,7 +85,7 @@ export class VendorPropertyManagement implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.propertyService.getProperties({
+    this.propertyService.vendor.getProperties({
       page: this.currentPage(),
       size: this.pageSize(),
       search,

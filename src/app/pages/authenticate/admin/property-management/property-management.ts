@@ -85,7 +85,7 @@ export class PropertyManagement {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.propertyService.getProperties({
+    this.propertyService.admin.getProperties({
       page: this.currentPage(),
       size: this.pageSize(),
       search,

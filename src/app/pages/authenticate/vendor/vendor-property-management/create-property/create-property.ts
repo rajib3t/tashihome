@@ -454,7 +454,7 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
 
     const payload = this.buildCreatePayload();
 
-    this.propertyService.createProperty(payload).subscribe({
+    this.propertyService.vendor.createProperty(payload).subscribe({
       next: (property) => {
         this.createdPropertyId = property.data?.id ?? null;
         this.isSaving.set(false);

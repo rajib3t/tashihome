@@ -143,7 +143,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     };
 
     this.propertyService
-      .getPublicProperties(query)
+      .public.getProperties(query)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError((error) => {

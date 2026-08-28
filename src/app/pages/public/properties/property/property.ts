@@ -48,7 +48,7 @@ export class Property {
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
     if (slug) {
-      this.propertyService.getPublicPropertyBySlug(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      this.propertyService.public.getPropertyBySlug(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           this.propertyData.set(res.data);
           this.galleryImages.set(this.buildGalleryImages(res.data));

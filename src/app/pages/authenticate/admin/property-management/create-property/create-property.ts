@@ -506,7 +506,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
 
     const payload = this.buildCreatePayload();
 
-    this.propertyService.createProperty(payload).subscribe({
+    this.propertyService.admin.createProperty(payload).subscribe({
       next: (property) => {
         this.createdPropertyId = property.data?.id ?? null;
         this.isSaving.set(false);

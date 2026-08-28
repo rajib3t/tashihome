@@ -224,7 +224,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     this.pendingStepBeforeSave = this.currentStep;
     this.currentStep = nextStep;
     this.isSaving.set(true);
-    this.propertyService.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
+    this.propertyService.admin.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
       next: () => {
         if (this.pendingStepBeforeSave === 3) {
           this.uploadPropertyMediaAndContinue();
@@ -260,7 +260,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     }
 
     this.isSaving.set(true);
-    this.propertyService.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
+    this.propertyService.admin.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
       next: () => {
         this.uploadPropertyMediaAndContinue(true);
       },
@@ -484,7 +484,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
       this.existingGalleryAssets.update((arr) => arr.filter((_, i) => i !== existingIndex));
 
       if (this.propertyId && asset.id) {
-        this.propertyService.deletePropertyAsset(this.propertyId, asset.id).subscribe({
+        this.propertyService.admin.deleteAsset(this.propertyId, asset.id).subscribe({
           error: (err) => console.error('Failed to delete gallery asset from server:', err),
         });
       }
@@ -609,7 +609,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
   }
 
   private loadProperty(id: string): void {
-    this.propertyService.getPropertyById(id).subscribe({
+    this.propertyService.admin.getPropertyById(id).subscribe({
       next: (response) => {
         const property = response.data;
         this.propertyId = property.id;
@@ -785,7 +785,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
       return;
     }
 
-    this.propertyService.uploadPropertyMedia(this.propertyId, formData).subscribe({
+    this.propertyService.admin.uploadMedia(this.propertyId, formData).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.pendingStepBeforeSave = null;
