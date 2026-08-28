@@ -256,7 +256,7 @@ openEditModal(location: LocationResponse) {
         },
         error: (error) => {
           this.isCreating.set(false);
-          const err = this.locationService.apiService.extractApiErrorMessage(error);
+          const err = this.locationService.extractApiErrorMessage(error);
           this.createErrorMessage.set(err || 'Failed to create location');
         }
       });
@@ -302,7 +302,8 @@ openEditModal(location: LocationResponse) {
       .pipe(
         finalize(() => this.isEditing.set(false)),
         catchError((error) => {
-          this.editErrorMessage.set(error?.error?.message || error?.message || 'Unable to update location.');
+          const err = this.locationService.extractApiErrorMessage(error);
+          this.editErrorMessage.set(err || 'Unable to update location.');
           return of(null);
         })
       )

@@ -120,7 +120,7 @@ export class FacilityManagement {
           this.isLoading.set(true);
           this.errorMessage.set('');
   
-          this.facilityService.getFacilities(query)
+          this.facilityService.admin.getFacilities(query)
                 .pipe(
                   finalize(() => this.isLoading.set(false)),
                   catchError((error) => {
@@ -196,7 +196,7 @@ export class FacilityManagement {
       payload.append('icon', formData.icon as File);
     }
 
-    this.facilityService.create(payload).subscribe({
+    this.facilityService.admin.create(payload).subscribe({
        next: (response) => {
         this.isCreating.set(false);
         this.closeCreateModal();
@@ -204,7 +204,7 @@ export class FacilityManagement {
       },
       error: (err) => {
         this.isCreating.set(false);
-        const error = this.facilityService.apiService.extractApiErrorMessage(err);
+        const error = this.facilityService.extractApiErrorMessage(err);
         this.createErrorMessage.set(error || 'Failed to create facility');
       },
     })
@@ -231,7 +231,7 @@ export class FacilityManagement {
       payload.append('icon', formData.icon);
     }
 
-    this.facilityService.update(facility.id, payload).pipe(
+    this.facilityService.admin.update(facility.id, payload).pipe(
       finalize(() => this.isEditing.set(false)),
       catchError((error) => {
         this.editErrorMessage.set(error?.error?.message || error?.message || 'Unable to update facility.');
@@ -257,7 +257,7 @@ export class FacilityManagement {
     this.isUpdatingStatus.set(true);
     this.statusErrorMessage.set(null);
 
-    this.facilityService.statusUpdate(facility.id, nextStatus)
+    this.facilityService.admin.statusUpdate(facility.id, nextStatus)
       .pipe(
         finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {

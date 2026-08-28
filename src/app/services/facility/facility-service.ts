@@ -1,69 +1,84 @@
-import { inject, Service } from '@angular/core';
-import { catchError, map, Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
 import { ApiService } from '../api/api-service';
 import { Facility, FacilityQuery } from './facility-model';
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class FacilityService {
-    public readonly apiService = inject(ApiService)
+  private readonly apiService = inject(ApiService);
 
+  public extractApiErrorMessage(error: any): string | null {
+    return this.apiService.extractApiErrorMessage(error);
+  }
+  private buildQueryParams(params: FacilityQuery = {}): Record<string, string | number> {
+    const search = params.search ?? {};
+    const queryParams: Record<string, string | number> = {
+      page: params.page ?? 1,
+      size: params.size ?? 10,
+    };
 
-     public create(data: FormData): Observable<ApiResponse<Facility>> {
-        return this.apiService.protectedPost<ApiResponse<Facility>>('/admin/facilities/', data).pipe(
-            map(response => response.data),
-            catchError(this.apiService.passthroughError)
-        )
-    }
+    const name = search.name?.trim();
+    const status = search.status?.trim();
 
+    if (name) queryParams['name'] = name;
+    if (status) queryParams['status'] = status;
+    if (params.sortBy?.trim()) queryParams['sortBy'] = params.sortBy.trim();
+    if (params.sortOrder) queryParams['sortOrder'] = params.sortOrder;
 
-    public getFacilities(params:FacilityQuery ): Observable<PaginatedResponse<Facility>> {
-        const search = params.search ?? {};
-        const queryParams: Record<string, string | number> = {
-            page: params.page ?? 1,
-            size: params.size ?? 10,
-        };
+    return queryParams;
+  }
 
-        const name = search.name?.trim();
-        
-        const status = search.status?.trim();
+  // ================= ADMIN APIs =================
+  public readonly admin = {
+    create: (data: FormData): Observable<ApiResponse<Facility>> => {
+      return this.apiService.protectedPost<ApiResponse<Facility>>('/admin/facilities/', data).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
 
-        if (name) {
-            queryParams['name'] = name;
-        }
+    getFacilities: (params: FacilityQuery = {}): Observable<PaginatedResponse<Facility>> => {
+      const queryParams = this.buildQueryParams(params);
+      return this.apiService.protectedGet<PaginatedResponse<Facility>>('/admin/facilities/', { params: queryParams }).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
 
-        
+    getFacilityById: (id: string): Observable<ApiResponse<Facility>> => {
+      return this.apiService.protectedGet<ApiResponse<Facility>>(`/admin/facilities/${id}`).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
 
-        if (status) {
-            queryParams['status'] = status;
-        }
+    update: (id: string, data: FormData): Observable<ApiResponse<Facility>> => {
+      return this.apiService.protectedPut<ApiResponse<Facility>>(`/admin/facilities/${id}`, data).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
 
-        if (params.sortBy?.trim()) {
-            queryParams['sortBy'] = params.sortBy.trim();
-        }
+    statusUpdate: (id: string, status: string): Observable<ApiResponse<Facility>> => {
+      return this.apiService.protectedPatch<ApiResponse<Facility>>(`/admin/facilities/${id}/${status}`, { status }).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+  };
 
-        if (params.sortOrder) {
-            queryParams['sortOrder'] = params.sortOrder;
-        }
+  // ================= VENDOR APIs =================
+  public readonly vendor = {
+    getFacilities: (params: FacilityQuery = {}): Observable<PaginatedResponse<Facility>> => {
+      const queryParams = this.buildQueryParams(params);
+      return this.apiService.get<PaginatedResponse<Facility>>('/vendor/facilities/', { params: queryParams }).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
 
-        return this.apiService.protectedGet<PaginatedResponse<Facility>>('/admin/facilities/', { params: queryParams }).pipe(
-            map(response => response.data),
-            catchError(this.apiService.passthroughError)
-        )
-    }
-
-    public update(id: string, data: FormData): Observable<ApiResponse<Facility>> {
-        return this.apiService.protectedPut<ApiResponse<Facility>>(`/admin/facilities/${id}`, data).pipe(
-            map(response => response.data),
-            catchError(this.apiService.passthroughError)
-        )
-    }
-
-    public statusUpdate(id: string, status: string): Observable<ApiResponse<Facility>> {
-        return this.apiService.protectedPatch<ApiResponse<Facility>>(`/admin/facilities/${id}/${status}`, { status }).pipe(
-            map(response => response.data),
-            catchError(this.apiService.passthroughError)
-        )
-    }
     
+  };
 }

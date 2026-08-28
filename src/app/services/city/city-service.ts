@@ -9,6 +9,9 @@ import { CityQuery, CityRequest, City } from './city-model';
 export class CityService {
   private readonly apiService = inject(ApiService);
 
+  public extractApiErrorMessage(error: any): string | null {
+    return this.apiService.extractApiErrorMessage(error);
+  }
   // ================= ADMIN APIs =================
   public readonly admin = {
     createCity: (city: FormData): Observable<ApiResponse<City>> => {

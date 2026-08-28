@@ -214,7 +214,7 @@ export class CityManagement {
       },
       error: (err) => {
         this.isCreating.set(false);
-        this.createErrorMessage.set(err?.error?.message || 'Failed to create city');
+        this.createErrorMessage.set(this.cityService.extractApiErrorMessage(err)|| 'Failed to create city');
       },
     });
   }
@@ -354,7 +354,7 @@ export class CityManagement {
       .pipe(
         finalize(() => this.isEditing.set(false)),
         catchError((error) => {
-          this.editErrorMessage.set(error?.error?.message || error?.message || 'Unable to update city.');
+          this.editErrorMessage.set( this.cityService.extractApiErrorMessage(error)|| 'Unable to update city.');
           return of(null);
         })
       )
@@ -393,7 +393,7 @@ export class CityManagement {
         finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {
           this.statusErrorMessage.set(
-            error?.error?.message || error?.message || `Unable to ${nextStatus === 'active' ? 'enable' : 'disable'} city.`
+            this.cityService.extractApiErrorMessage(error) || `Unable to ${nextStatus === 'active' ? 'enable' : 'disable'} city.`
           );
           return of(null);
         })

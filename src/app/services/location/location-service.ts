@@ -7,8 +7,11 @@ import { LocationQuery, LocationRequest, LocationResponse } from './location-mod
 
 @Injectable({ providedIn: 'root' })
 export class LocationService {
-  public readonly apiService = inject(ApiService);
+  private readonly apiService = inject(ApiService);
 
+  public extractApiErrorMessage(error: any): string | null {
+    return this.apiService.extractApiErrorMessage(error);
+  }
   private buildQueryParams(params: LocationQuery = {}, isPublic = false): Record<string, string | number | boolean> {
     const search = params.search ?? {};
     const queryParams: Record<string, string | number | boolean> = {

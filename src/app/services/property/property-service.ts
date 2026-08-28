@@ -49,6 +49,9 @@ function buildPropertyQueryParams(query?: PropertyQuery): Record<string, string 
 export class PropertyService {
   private readonly apiService = inject(ApiService);
 
+  public extractApiErrorMessage(error: any): string | null {
+    return this.apiService.extractApiErrorMessage(error);
+  }
   // ================= ADMIN APIs =================
   public readonly admin = {
     getProperties: (query?: PropertyQuery): Observable<PaginatedResponse<PropertyData>> => {

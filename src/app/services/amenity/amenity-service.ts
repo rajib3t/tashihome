@@ -7,8 +7,11 @@ import { Amenity, AmenityQuery } from './amenity-model';
 
 @Injectable({ providedIn: 'root' })
 export class AmenityService {
-  public readonly apiService = inject(ApiService);
+  private readonly apiService = inject(ApiService);
 
+  public extractApiErrorMessage(error: any): string | null {
+    return this.apiService.extractApiErrorMessage(error);
+  }
   private buildQueryParams(params: AmenityQuery = {}): Record<string, string | number> {
     const search = params.search ?? {};
     const queryParams: Record<string, string | number> = {

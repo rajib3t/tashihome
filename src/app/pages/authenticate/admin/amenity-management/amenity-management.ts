@@ -183,7 +183,7 @@ export class AmenityManagement {
       },
       error: (err) => {
         this.isCreating.set(false);
-        const error = this.amenityService.apiService.extractApiErrorMessage(err);
+        const error = this.amenityService.extractApiErrorMessage(err);
         this.createErrorMessage.set(error || 'Failed to create amenity');
       },
     });
@@ -214,7 +214,7 @@ export class AmenityManagement {
       .pipe(
         finalize(() => this.isEditing.set(false)),
         catchError((error) => {
-          this.editErrorMessage.set(error?.error?.message || error?.message || 'Unable to update amenity.');
+          this.editErrorMessage.set(this.amenityService.extractApiErrorMessage(error) || 'Unable to update amenity.');
           return of(null);
         })
       )
@@ -243,7 +243,7 @@ export class AmenityManagement {
         finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {
           this.statusErrorMessage.set(
-            error?.error?.message || error?.message || `Unable to ${nextStatus === 'active' ? 'enable' : 'disable'} amenity.`
+            this.amenityService.extractApiErrorMessage(error) || `Unable to ${nextStatus === 'active' ? 'enable' : 'disable'} amenity.`
           );
           return of(null);
         })

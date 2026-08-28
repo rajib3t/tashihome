@@ -94,7 +94,7 @@ export class RoomTypeManagement {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.roomTypeService.getRoomTypes(query)
+    this.roomTypeService.admin.getRoomTypes(query)
       .pipe(
         finalize(() => this.isLoading.set(false)),
         catchError((error) => {
@@ -161,7 +161,7 @@ export class RoomTypeManagement {
 
     const payload = this.createForm.getRawValue();
 
-    this.roomTypeService.create({
+    this.roomTypeService.admin.create({
       name: payload.name || '',
       capacity: Number(payload.capacity) || 0,
     }).subscribe({
@@ -172,7 +172,7 @@ export class RoomTypeManagement {
       },
       error: (err) => {
         this.isCreating.set(false);
-        const error = this.roomTypeService.apiService.extractApiErrorMessage(err);
+        const error = this.roomTypeService.extractApiErrorMessage(err);
         this.createErrorMessage.set(error || 'Failed to create room type');
       },
     });
@@ -193,7 +193,7 @@ export class RoomTypeManagement {
     this.editErrorMessage.set(null);
 
     const payload = this.editForm.getRawValue();
-    this.roomTypeService.update(roomType.id, {
+    this.roomTypeService.admin.update(roomType.id, {
       name: payload.name || '',
       capacity: Number(payload.capacity) || 0,
     })
@@ -224,7 +224,7 @@ export class RoomTypeManagement {
     this.isUpdatingStatus.set(true);
     this.statusErrorMessage.set(null);
 
-    this.roomTypeService.statusUpdate(roomType.id, nextStatus)
+    this.roomTypeService.admin.statusUpdate(roomType.id, nextStatus)
       .pipe(
         finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {

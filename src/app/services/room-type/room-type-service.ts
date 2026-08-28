@@ -1,21 +1,17 @@
-import { inject, Service } from '@angular/core';
-import { catchError, map, Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
 import { ApiService } from '../api/api-service';
 import { RoomType, RoomTypeQuery, RoomTypeRequest } from './room-type-model';
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class RoomTypeService {
-  public readonly apiService = inject(ApiService);
-
-  public create(data: RoomTypeRequest): Observable<ApiResponse<RoomType>> {
-    return this.apiService.protectedPost<ApiResponse<RoomType>>('/admin/room-types/', data).pipe(
-      map(response => response.data),
-      catchError(this.apiService.passthroughError)
-    );
+  private readonly apiService = inject(ApiService);
+  public extractApiErrorMessage(error: any): string | null {
+    return this.apiService.extractApiErrorMessage(error);
   }
-
-  public getRoomTypes(params: RoomTypeQuery): Observable<PaginatedResponse<RoomType>> {
+  private buildQueryParams(params: RoomTypeQuery = {}): Record<string, string | number> {
     const search = params.search ?? {};
     const queryParams: Record<string, string | number> = {
       page: params.page ?? 1,
@@ -25,39 +21,63 @@ export class RoomTypeService {
     const name = search.name?.trim();
     const status = search.status?.trim();
 
-    if (name) {
-      queryParams['name'] = name;
-    }
+    if (name) queryParams['name'] = name;
+    if (status) queryParams['status'] = status;
+    if (params.sortBy?.trim()) queryParams['sortBy'] = params.sortBy.trim();
+    if (params.sortOrder) queryParams['sortOrder'] = params.sortOrder;
 
-    if (status) {
-      queryParams['status'] = status;
-    }
-
-    if (params.sortBy?.trim()) {
-      queryParams['sortBy'] = params.sortBy.trim();
-    }
-
-    if (params.sortOrder) {
-      queryParams['sortOrder'] = params.sortOrder;
-    }
-
-    return this.apiService.protectedGet<PaginatedResponse<RoomType>>('/admin/room-types/', { params: queryParams }).pipe(
-      map(response => response.data),
-      catchError(this.apiService.passthroughError)
-    );
+    return queryParams;
   }
 
-  public update(id: string, data: RoomTypeRequest): Observable<ApiResponse<RoomType>> {
-    return this.apiService.protectedPut<ApiResponse<RoomType>>(`/admin/room-types/${id}`, data).pipe(
-      map(response => response.data),
-      catchError(this.apiService.passthroughError)
-    );
-  }
+  // ================= ADMIN APIs =================
+  public readonly admin = {
+    create: (data: RoomTypeRequest): Observable<ApiResponse<RoomType>> => {
+      return this.apiService.protectedPost<ApiResponse<RoomType>>('/admin/room-types/', data).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
 
-  public statusUpdate(id: string, status: string): Observable<ApiResponse<RoomType>> {
-    return this.apiService.protectedPatch<ApiResponse<RoomType>>(`/admin/room-types/${id}/${status}`, { status }).pipe(
-      map(response => response.data),
-      catchError(this.apiService.passthroughError)
-    );
-  }
+    getRoomTypes: (params: RoomTypeQuery = {}): Observable<PaginatedResponse<RoomType>> => {
+      const queryParams = this.buildQueryParams(params);
+      return this.apiService.protectedGet<PaginatedResponse<RoomType>>('/admin/room-types/', { params: queryParams }).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    getRoomTypeById: (id: string): Observable<ApiResponse<RoomType>> => {
+      return this.apiService.protectedGet<ApiResponse<RoomType>>(`/admin/room-types/${id}`).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    update: (id: string, data: RoomTypeRequest): Observable<ApiResponse<RoomType>> => {
+      return this.apiService.protectedPut<ApiResponse<RoomType>>(`/admin/room-types/${id}`, data).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    statusUpdate: (id: string, status: string): Observable<ApiResponse<RoomType>> => {
+      return this.apiService.protectedPatch<ApiResponse<RoomType>>(`/admin/room-types/${id}/${status}`, { status }).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+  };
+
+  // ================= VENDOR APIs =================
+  public readonly vendor = {
+    getRoomTypes: (params: RoomTypeQuery = {}): Observable<PaginatedResponse<RoomType>> => {
+      const queryParams = this.buildQueryParams(params);
+      return this.apiService.get<PaginatedResponse<RoomType>>('/vendor/room-types/', { params: queryParams }).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    
+  };
 }

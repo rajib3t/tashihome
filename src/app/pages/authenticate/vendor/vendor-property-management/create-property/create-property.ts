@@ -527,14 +527,14 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
   }
 
   private loadFacilities(): void {
-    this.facilityService.getFacilities({ page: 1, size: 100 }).pipe(take(1)).subscribe({
+    this.facilityService.vendor.getFacilities({ page: 1, size: 100 }).pipe(take(1)).subscribe({
       next: (response) => this.facilities.set(response.data),
       error: () => this.facilities.set([]),
     });
   }
 
   private loadRoomTypes(): void {
-    this.roomTypeService.getRoomTypes({ page: 1, size: 100 }).pipe(take(1)).subscribe({
+    this.roomTypeService.vendor.getRoomTypes({ page: 1, size: 100 }).pipe(take(1)).subscribe({
       next: (response) => this.roomTypes.set(response.data),
       error: () => this.roomTypes.set([]),
     });
