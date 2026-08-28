@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Story } from './story';
 
 describe('Story', () => {
@@ -9,7 +11,11 @@ describe('Story', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Story],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Story);
@@ -21,4 +27,3 @@ describe('Story', () => {
     expect(component).toBeTruthy();
   });
 });
-

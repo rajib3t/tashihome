@@ -71,6 +71,8 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   private parallaxCleanupFn?: () => void;
   private reduceMotion = false;
 
+  selectedCityId: string = '';
+
   newsletterEmail: string = '';
   newsletterSubmitted: boolean = false;
 
@@ -99,6 +101,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       .subscribe((event) => {
         if (event.urlAfterRedirects === '/' || event.urlAfterRedirects.startsWith('/?')) {
           this.loadProperties();
+          this.loadCities();
           if (isPlatformBrowser(this.platformId)) {
             window.scrollTo({ top: 0, behavior: 'auto' });
           }
@@ -114,27 +117,57 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     return included.length > 0 ? included.slice(0, 3) : ['Family stay'];
   }
 
+  public onCitySelect(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.selectedCityId = target.value;
+  }
+
+  public filterStays(): void {
+    this.loadProperties(this.selectedCityId || undefined);
+    this.scrollToStays();
+  }
+
+  public onCityCardClick(cityId?: string): void {
+    if (!cityId) return;
+    this.selectedCityId = cityId;
+    this.filterStays();
+  }
+
   private loadCities(): void {
     const query: CitySearch = {
-      is_featured: true
-    }
+      is_featured: true,
+    };
     const cityQuery: CityQuery = {
       search: query,
       page: 1,
-      size: 4,
-    }
+      size: 8,
+    };
 
-    this.cityService.public.getCities(cityQuery).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((response) => {
-      this.cities.set(response?.data || []);
-      this.cdr.markForCheck();
-    })
-
+    this.cityService.public
+      .getCities(cityQuery)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError((error) => {
+          console.warn('Could not load public cities:', error);
+          return of({ data: [], total: 0, page: 1, size: 8 });
+        })
+      )
+      .subscribe((response) => {
+        const data = response?.data || [];
+        this.cities.set(data);
+        this.cdr.markForCheck();
+        this.refreshRevealObserver();
+      });
   }
 
-  private loadProperties(): void {
+  private loadProperties(cityId?: string): void {
     const search: PropertySearch = {
       is_featured: true,
     };
+
+    if (cityId) {
+      search.city_id = cityId;
+    }
 
     const query: PropertyQuery = {
       page: 1,

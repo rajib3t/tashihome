@@ -50,9 +50,11 @@
       <div class="md:border-r md:border-ink/10 md:pr-4">
         <p class="eyebrow text-moss">Region</p>
         <select id="region-select"
+          [(ngModel)]="selectedCityId"
+          (change)="onCitySelect($event)"
           class="mt-1 w-full bg-transparent font-display text-lg focus:outline-none cursor-pointer">
-          <option>Any hill state</option>
-          @for(city of cities();track city.id) {
+          <option value="">Any hill state</option>
+          @for(city of cities(); track city.id) {
           <option [value]="city.id">{{ city.name }}</option>
           }
         </select>
@@ -67,7 +69,7 @@
         <input type="text" placeholder="2 guests"
           class="mt-1 w-full bg-transparent font-display text-lg placeholder:text-ink/40 focus:outline-none" />
       </div>
-      <button id="search-btn" (click)="scrollToStays()"
+      <button id="search-btn" (click)="filterStays()"
         class="btn-anim btn-shine w-full md:w-auto bg-pine hover:bg-ink text-cloud font-semibold text-sm px-8 py-4 rounded-full transition-colors whitespace-nowrap cursor-pointer shadow-lg shadow-pine/30">
         Find a stay
       </button>
@@ -193,26 +195,25 @@
     </div>
 
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
-      <!-- Experiences -->
+      <!-- Experiences / Featured Public Cities -->
       @for (item of cities(); track $index) {
       <div
-        class="reveal exp-card glass-card-dark rounded-2xl overflow-hidden border border-white/20 shadow-xl flex flex-col group">
+        (click)="onCityCardClick(item.id)"
+        class="reveal exp-card glass-card-dark rounded-2xl overflow-hidden border border-white/20 shadow-xl flex flex-col group cursor-pointer">
         <div class="h-40 relative overflow-hidden">
-          <img [src]="assetUrl + item.image_url" alt="Tea plucking at dawn"
+          <img [src]="item.image_url ? (assetUrl + item.image_url) : '/images/exp-tea.jpg'" [alt]="item.name || 'Himalayan region'"
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
           <span
             class="absolute bottom-3 left-3 text-[10px] font-bold text-cloud bg-ochre/90 backdrop-blur-sm px-3 py-1 rounded-full shadow">{{item.name}}</span>
         </div>
         <div class="p-6 flex-1 flex flex-col bg-pine/30">
-          <h3 class="font-display text-2xl text-cloud group-hover:text-ochre transition-colors">{{item.tag_line}}
+          <h3 class="font-display text-2xl text-cloud group-hover:text-ochre transition-colors">{{item.tag_line || item.name}}
           </h3>
-          <p class="text-sm text-cloud/75 mt-2.5 leading-relaxed flex-1">{{item.short_description}}</p>
+          <p class="text-sm text-cloud/75 mt-2.5 leading-relaxed flex-1">{{item.short_description || 'Immersive homestays and seasonal traditions rooted in hill life.'}}</p>
         </div>
       </div>
       }
-
-
     </div>
   </div>
 </section>

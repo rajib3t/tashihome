@@ -43,10 +43,14 @@
           </span>
         </div>
 
-        <div class="inline-flex items-center gap-2 text-xs md:text-sm text-cloud/70">
-          <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
-          Darjeeling • Kalimpong • Kurseong • Mirik • The Dooars
-        </div>
+        @if (cities().length > 0) {
+          <div class="inline-flex flex-wrap items-center gap-2 text-xs md:text-sm text-cloud/70">
+            <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+            @for (city of cities(); track city.id; let last = $last) {
+              <span>{{ city.name }}</span>@if (!last) {<span class="text-cloud/40">•</span>}
+            }
+          </div>
+        }
       </div>
     </div>
   </div>
@@ -294,103 +298,108 @@
   </div>
 </section>
 
-<!-- ============ LAUNCH REGIONS (NORTH BENGAL EXPLORER) ============ -->
-<section class="py-24 md:py-32 bg-pine text-cloud relative overflow-hidden"
-  style="background: url('/images/experiences-bg.jpg') center/cover no-repeat;">
-  <!-- Dark teal/pine atmospheric overlay -->
-  <div class="absolute inset-0 bg-gradient-to-b from-pine/95 via-pine/85 to-pine/95"></div>
+<!-- ============ LAUNCH REGIONS (FEATURED CITIES FROM API) ============ -->
+@if (cities().length > 0) {
+  <section class="py-24 md:py-32 bg-pine text-cloud relative overflow-hidden"
+    style="background: url('/images/experiences-bg.jpg') center/cover no-repeat;">
+    <!-- Dark teal/pine atmospheric overlay -->
+    <div class="absolute inset-0 bg-gradient-to-b from-pine/95 via-pine/85 to-pine/95"></div>
 
-  <!-- Ambient glow orbs -->
-  <div class="pointer-events-none absolute top-10 left-10 w-96 h-96 bg-moss/20 rounded-full blur-[110px]"></div>
-  <div class="pointer-events-none absolute bottom-10 right-10 w-96 h-96 bg-ochre/15 rounded-full blur-[110px]"></div>
+    <!-- Ambient glow orbs -->
+    <div class="pointer-events-none absolute top-10 left-10 w-96 h-96 bg-moss/20 rounded-full blur-[110px]"></div>
+    <div class="pointer-events-none absolute bottom-10 right-10 w-96 h-96 bg-ochre/15 rounded-full blur-[110px]"></div>
 
-  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
-    <div class="text-center max-w-3xl mx-auto reveal">
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-mist border border-white/20 backdrop-blur-md mb-4">
-        <span class="w-1.5 h-1.5 rounded-full bg-ochre animate-pulse"></span>
-        <p class="eyebrow text-mist text-[10px] m-0">Going Live August 15th</p>
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+      <div class="text-center max-w-3xl mx-auto reveal">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-mist border border-white/20 backdrop-blur-md mb-4">
+          <span class="w-1.5 h-1.5 rounded-full bg-ochre animate-pulse"></span>
+          <p class="eyebrow text-mist text-[10px] m-0">Going Live August 15th</p>
+        </div>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-cloud">
+          Featured North Bengal Circuits
+        </h2>
+        <p class="text-cloud/80 text-base md:text-lg mt-3">
+          Starting with carefully selected family homestays across the region’s most beloved landscapes.
+        </p>
       </div>
-      <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-cloud">
-        The Five North Bengal Launch Circuits
-      </h2>
-      <p class="text-cloud/80 text-base md:text-lg mt-3">
-        Starting with carefully selected family homestays across the region’s most beloved landscapes.
-      </p>
-    </div>
 
-    <!-- Region selector pills -->
-    <div class="flex flex-wrap justify-center gap-2 md:gap-3 mt-10 reveal">
-      @for (reg of regions; track reg.name; let idx = $index) {
-        <button
-          type="button"
-          (click)="selectRegion(idx)"
-          class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer border"
-          [ngClass]="activeRegionIndex() === idx 
-            ? 'bg-ochre text-cloud border-ochre shadow-lg shadow-ochre/30 scale-105' 
-            : 'bg-white/10 text-cloud/80 border-white/20 hover:bg-white/20 hover:text-cloud'"
-        >
-          {{ reg.name }}
-        </button>
+      <!-- Region selector pills from Public City API -->
+      <div class="flex flex-wrap justify-center gap-2 md:gap-3 mt-10 reveal">
+        @for (reg of cities(); track reg.id; let idx = $index) {
+          <button
+            type="button"
+            (click)="selectRegion(idx)"
+            class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer border"
+            [ngClass]="activeRegionIndex() === idx 
+              ? 'bg-ochre text-cloud border-ochre shadow-lg shadow-ochre/30 scale-105' 
+              : 'bg-white/10 text-cloud/80 border-white/20 hover:bg-white/20 hover:text-cloud'"
+          >
+            {{ reg.name }}
+          </button>
+        }
+      </div>
+
+      <!-- Active Region Showcase Card -->
+      @if (cities()[activeRegionIndex()]; as current) {
+        <div class="mt-10 reveal max-w-4xl mx-auto bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-10 shadow-2xl">
+          <div class="grid md:grid-cols-12 gap-8 items-center">
+            <div class="md:col-span-7 space-y-4">
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="px-3.5 py-1 rounded-full text-xs font-semibold border backdrop-blur-md bg-ochre/20 text-ochre border-ochre/30">
+                  {{ current.tag_line || current.name }}
+                </span>
+                <span class="text-xs text-mist font-medium">✨ Featured Region</span>
+              </div>
+
+              <h3 class="font-display text-3xl sm:text-4xl text-cloud">
+                {{ current.name }}
+              </h3>
+              @if (current.tag_line) {
+                <p class="text-sm font-semibold text-ochre">
+                  {{ current.tag_line }}
+                </p>
+              }
+              <p class="text-sm md:text-base text-cloud/85 leading-relaxed">
+                {{ current.short_description || 'Authentic family-run homestays and untouched natural trails in ' + current.name + '.' }}
+              </p>
+            </div>
+
+            <div class="md:col-span-5 flex flex-col justify-center">
+              <div class="rounded-2xl overflow-hidden relative shadow-lg border border-white/20 aspect-[4/3] mb-4">
+                <img
+                  [src]="current.image_url ? (assetUrl + current.image_url) : '/images/exp-tea.jpg'"
+                  [alt]="current.name"
+                  class="w-full h-full object-cover"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                <span class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-semibold text-pine shadow">
+                  📍 {{ current.name }}
+                </span>
+              </div>
+
+              <div class="rounded-2xl p-4 bg-black/25 border border-white/15 space-y-3 text-center">
+                <div class="stamp w-12 h-12 mx-auto grid place-items-center text-ochre bg-ochre/10 rounded-full">
+                  <span class="font-display text-xs font-bold text-center">AUG<br>15</span>
+                </div>
+                <h4 class="font-display text-lg text-cloud">Founding Partner Stays</h4>
+                <p class="text-xs text-cloud/70 leading-relaxed">
+                  Family-hosted rooms in {{ current.name }} now being onboarded ahead of launch.
+                </p>
+                <a
+                  routerLink="/"
+                  fragment="stays"
+                  class="btn-anim inline-block w-full bg-ochre hover:bg-ochreD text-cloud text-xs font-semibold py-2.5 px-4 rounded-full transition-colors"
+                >
+                  Browse Stays in {{ current.name }}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       }
     </div>
-
-    <!-- Active Region Showcase Card -->
-    <div class="mt-10 reveal max-w-4xl mx-auto bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-10 shadow-2xl">
-      @let current = regions[activeRegionIndex()];
-      <div class="grid md:grid-cols-12 gap-8 items-center">
-        <div class="md:col-span-7 space-y-4">
-          <div class="flex flex-wrap items-center gap-3">
-            <span class="px-3.5 py-1 rounded-full text-xs font-semibold border backdrop-blur-md" [ngClass]="current.badgeColor">
-              {{ current.tag }}
-            </span>
-            <span class="text-xs text-mist font-medium">Elev. {{ current.elevation }}</span>
-          </div>
-
-          <h3 class="font-display text-3xl sm:text-4xl text-cloud">
-            {{ current.name }}
-          </h3>
-          <p class="text-sm font-semibold text-ochre">
-            {{ current.tagline }}
-          </p>
-          <p class="text-sm md:text-base text-cloud/85 leading-relaxed">
-            {{ current.description }}
-          </p>
-
-          <div class="pt-4 border-t border-white/15">
-            <p class="eyebrow text-mist text-[10px] mb-2">What you will experience</p>
-            <div class="flex flex-wrap gap-2">
-              @for (h of current.highlights; track h) {
-                <span class="inline-flex items-center gap-1.5 text-xs bg-white/10 text-cloud px-3 py-1.5 rounded-lg border border-white/10">
-                  <span class="w-1.5 h-1.5 rounded-full bg-ochre"></span>
-                  {{ h }}
-                </span>
-              }
-            </div>
-          </div>
-        </div>
-
-        <div class="md:col-span-5 flex flex-col justify-center">
-          <div class="rounded-2xl p-6 bg-black/25 border border-white/15 space-y-4 text-center">
-            <div class="stamp w-16 h-16 mx-auto grid place-items-center text-ochre bg-ochre/10 rounded-full">
-              <span class="font-display text-sm font-bold text-center">AUG<br>15</span>
-            </div>
-            <h4 class="font-display text-xl text-cloud">Founding Partner Stays</h4>
-            <p class="text-xs text-cloud/70 leading-relaxed">
-              Family-hosted rooms now being onboarded ahead of our grand launch.
-            </p>
-            <a
-              routerLink="/"
-              fragment="stays"
-              class="btn-anim inline-block w-full bg-ochre hover:bg-ochreD text-cloud text-xs font-semibold py-3 px-4 rounded-full transition-colors"
-            >
-              Browse Available Stays
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
+}
 
 <!-- ============ FOUNDING PARTNERS / HOST SPOTLIGHT ============ -->
 <section class="py-24 md:py-32 bg-cloud relative overflow-hidden">
@@ -503,17 +512,15 @@
       </a>
     </div>
 
-    <div class="mt-12 pt-8 border-t border-ink/10 flex flex-wrap items-center justify-center gap-6 text-xs text-ink/60">
-      <span>🏔️ Darjeeling Hills</span>
-      <span>•</span>
-      <span>🌿 Kalimpong Ridges</span>
-      <span>•</span>
-      <span>🌸 Kurseong Trails</span>
-      <span>•</span>
-      <span>🍊 Mirik Orchards</span>
-      <span>•</span>
-      <span>🌲 Dooars Corridors</span>
-    </div>
+    @if (cities().length > 0) {
+      <div class="mt-12 pt-8 border-t border-ink/10 flex flex-wrap items-center justify-center gap-6 text-xs text-ink/60">
+        @for (city of cities(); track city.id; let last = $last) {
+          <span>🏔️ {{ city.name }}</span>
+          @if (!last) {
+            <span class="text-ink/30">•</span>
+          }
+        }
+      </div>
+    }
   </div>
 </section>
-

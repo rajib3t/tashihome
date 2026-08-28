@@ -32,11 +32,12 @@ export function isSettingEnabled(value: unknown): boolean {
   templateUrl: './public.html',
   styleUrl: './public.css',
 })
-export class Public implements OnInit {
+export class Public implements OnInit, OnDestroy {
   public readonly settingService = inject(SettingsService);
   public readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   public readonly settingsData = computed(() => this.settingService.settingsData());
+  public readonly currentUrl = signal<string>(this.router.url);
   public readonly isComingSoonEnabled = computed(() => {
     const url = this.currentUrl();
     if (

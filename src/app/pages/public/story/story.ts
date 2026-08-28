@@ -4,25 +4,20 @@ import {
   AfterViewInit,
   OnDestroy,
   ElementRef,
-  Inject,
   PLATFORM_ID,
   NgZone,
   inject,
   signal,
+  ChangeDetectorRef,
+  DestroyRef,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-
-interface RegionStory {
-  name: string;
-  tag: string;
-  tagline: string;
-  description: string;
-  elevation: string;
-  highlights: string[];
-  gradient: string;
-  badgeColor: string;
-}
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, of } from 'rxjs';
+import { CityService } from '../../../services/city/city-service';
+import { City, CityQuery } from '../../../services/city/city-model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-story',
@@ -31,75 +26,21 @@ interface RegionStory {
   styleUrl: './story.css',
 })
 export class Story implements OnInit, AfterViewInit, OnDestroy {
+  public readonly assetUrl = environment.assetUrl;
   public readonly router = inject(Router);
+  public readonly cityService = inject(CityService);
   private readonly el = inject(ElementRef);
   private readonly zone = inject(NgZone);
-  @Inject(PLATFORM_ID) private platformId = inject(PLATFORM_ID);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  public cities = signal<City[]>([]);
+  public activeRegionIndex = signal<number>(0);
 
   private revealObserver?: IntersectionObserver;
   private canvasCleanup?: () => void;
   private reduceMotion = false;
-
-  // Active region tab
-  public activeRegionIndex = signal<number>(0);
-
-  public regions: RegionStory[] = [
-    {
-      name: 'Darjeeling',
-      tag: 'Queen of the Hills',
-      tagline: 'Misty tea estates & Kangchenjunga dawns',
-      description:
-        'Wake up to vintage steam whistles, panoramic vistas of Mount Kangchenjunga, and century-old tea gardens. Homestays here are run by multi-generational local families offering warm fireplaces and garden-fresh morning flushes.',
-      elevation: '6,700 ft',
-      highlights: ['Tea garden family cottages', 'Views of Kangchenjunga', 'Home-cooked Gorkha cuisine'],
-      gradient: 'from-[#0C4550]/90 to-[#126A7A]/80',
-      badgeColor: 'bg-ochre/20 text-ochre border-ochre/30',
-    },
-    {
-      name: 'Kalimpong',
-      tag: 'Ridge of Orchids & Monasteries',
-      tagline: 'Quiet pine forests & gentle valleys',
-      description:
-        'A quieter, slower pace perched along the Teesta valley. Kalimpong’s homestays are known for sprawling organic nursery gardens, fresh artisan cheese, and views stretching across Sikkim into Bhutan.',
-      elevation: '4,100 ft',
-      highlights: ['Flower nursery farmstays', 'Artisan Kalimpong cheese & sourdough', 'Monastery ridge walks'],
-      gradient: 'from-[#0F5461]/90 to-[#347E92]/80',
-      badgeColor: 'bg-moss/20 text-moss border-moss/30',
-    },
-    {
-      name: 'Kurseong',
-      tag: 'Land of White Orchids',
-      tagline: 'Pine-scented clouds & heritage plantations',
-      description:
-        'Tucked along rolling tea slopes and cedar groves, Kurseong offers peaceful hillside retreats far from the tourist rush. Stay with planters and local families who know every secret forest trail.',
-      elevation: '4,860 ft',
-      highlights: ['Centuries-old tea trails', 'Quiet mountain forest walks', 'Traditional wood-fired dinners'],
-      gradient: 'from-[#1B2A2C]/90 to-[#0C4550]/80',
-      badgeColor: 'bg-ochre/20 text-ochre border-ochre/30',
-    },
-    {
-      name: 'Mirik',
-      tag: 'Orchard Valley & Lake',
-      tagline: 'Cardamom groves & tranquil waters',
-      description:
-        'Framed by Sumendu Lake and fragrant orange orchards, Mirik offers tranquil valleys and cardamom plantations. Homestay families share home-ground spices, orchard walks, and serene lake-view mornings.',
-      elevation: '4,900 ft',
-      highlights: ['Lakeside & orchard stays', 'Cardamom & orange harvest walks', 'Stargazing mountain terraces'],
-      gradient: 'from-[#126A7A]/90 to-[#479FB5]/80',
-      badgeColor: 'bg-moss/20 text-moss border-moss/30',
-    },
-    {
-      name: 'The Dooars',
-      tag: 'Wild Foothills & Tea Corridors',
-      tagline: 'Where the Himalayan foothills meet lush forests',
-      description:
-        'The verdant gateway to the Eastern Himalaya, where emerald tea estates meet tropical wildlife sanctuaries. Experience eco-cottages on tea borders and village stays hosted by indigenous forest communities.',
-      elevation: '300 - 1,200 ft',
-      highlights: ['Tea border eco-cottages', 'Wildlife sanctuary trailheads', 'Indigenous cultural evenings'],
-      gradient: 'from-[#0C4550]/90 to-[#0F5461]/80',
-      badgeColor: 'bg-ochre/20 text-ochre border-ochre/30',
-    },
-  ];
 
   public pillars = [
     {
@@ -163,6 +104,7 @@ export class Story implements OnInit, AfterViewInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
+    this.loadCities();
   }
 
   ngAfterViewInit(): void {
@@ -183,6 +125,37 @@ export class Story implements OnInit, AfterViewInit, OnDestroy {
 
   selectRegion(index: number): void {
     this.activeRegionIndex.set(index);
+  }
+
+  private loadCities(): void {
+    const cityQuery: CityQuery = {
+      search: {
+        is_featured: true,
+      },
+      page: 1,
+      size: 10,
+    };
+
+    this.cityService.public
+      .getCities(cityQuery)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError((error) => {
+          console.warn('Could not load public featured cities for story page:', error);
+          return of({ data: [], total: 0, page: 1, size: 10 });
+        })
+      )
+      .subscribe((response) => {
+        const data = response?.data || [];
+        this.cities.set(data);
+        this.cdr.markForCheck();
+        this.refreshRevealObserver();
+      });
+  }
+
+  private refreshRevealObserver(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    queueMicrotask(() => this.initRevealObserver());
   }
 
   private initRevealObserver(): void {
@@ -333,4 +306,3 @@ export class Story implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 }
-
