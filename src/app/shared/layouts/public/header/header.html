@@ -13,11 +13,12 @@
       </app-logo>
     </a>
 
-    <nav class="hidden md:flex items-center gap-9 text-sm font-medium transition-colors" [ngClass]="isScrolled ? 'text-ink' : 'text-cloud'">
-      <a href="#stays" class="hover:text-ochre transition-colors">Stays</a>
-      <a href="#experiences" class="hover:text-ochre transition-colors">Experiences</a>
-      <a href="#hosts" class="hover:text-ochre transition-colors">Hosts</a>
-      <a href="#how" class="hover:text-ochre transition-colors">How it works</a>
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium transition-colors" [ngClass]="isScrolled ? 'text-ink' : 'text-cloud'">
+      <a routerLink="/" fragment="stays" class="hover:text-ochre transition-colors">Stays</a>
+      <a routerLink="/our-story" class="hover:text-ochre transition-colors">Our Story</a>
+      <a routerLink="/" fragment="experiences" class="hover:text-ochre transition-colors">Experiences</a>
+      <a routerLink="/" fragment="hosts" class="hover:text-ochre transition-colors">Hosts</a>
+      <a routerLink="/" fragment="how" class="hover:text-ochre transition-colors">How it works</a>
     </nav>
 
     <div class="flex items-center gap-3">
@@ -34,7 +35,8 @@
         </a>
       </ng-template>
       <a
-        href="#stays"
+        routerLink="/"
+        fragment="stays"
         class="btn-anim hidden sm:inline-block bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
       >
         Browse stays
@@ -56,10 +58,11 @@
 
   <!-- mobile menu -->
   <div *ngIf="isMenuOpen" id="mobile-menu" class="md:hidden bg-pine text-cloud px-6 pb-6 pt-2 space-y-4 shadow-xl border-t border-cloud/10">
-    <a href="#stays" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Stays</a>
-    <a href="#experiences" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Experiences</a>
-    <a href="#hosts" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Hosts</a>
-    <a href="#how" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">How it works</a>
+    <a routerLink="/" fragment="stays" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Stays</a>
+    <a routerLink="/our-story" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Our Story</a>
+    <a routerLink="/" fragment="experiences" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Experiences</a>
+    <a routerLink="/" fragment="hosts" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Hosts</a>
+    <a routerLink="/" fragment="how" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">How it works</a>
     <ng-container *ngIf="isAuthenticated(); else mobileLoginTemplate">
       <a (click)="navigateToProfile(); closeMenu()" class="block text-sm font-medium hover:text-ochre">Profile</a>
       <button type="button" (click)="signOut(); closeMenu()" class="block text-sm font-medium hover:text-ochre">Sign out</button>
@@ -67,7 +70,7 @@
     <ng-template #mobileLoginTemplate>
       <a routerLink="/login" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Login</a>
     </ng-template>
-    <a href="#stays" (click)="closeMenu()" class="inline-block bg-ochre text-cloud text-sm font-semibold px-5 py-2.5 rounded-full">
+    <a routerLink="/" fragment="stays" (click)="closeMenu()" class="inline-block bg-ochre text-cloud text-sm font-semibold px-5 py-2.5 rounded-full">
       Browse stays
     </a>
   </div>

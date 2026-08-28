@@ -1,0 +1,519 @@
+<!-- ============ BRAND STORY HERO ============ -->
+<section
+  class="relative bg-pine text-cloud overflow-hidden pt-36 pb-28 md:pt-44 md:pb-36"
+  style="background: url('/images/hero-himalaya.jpg') center/cover no-repeat;"
+>
+  <!-- Deep atmospheric gradient overlays for rich contrast and brand tone -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black/75 via-pine/70 to-pine/95"></div>
+
+  <!-- Interactive misty particles & drifting stardust canvas -->
+  <canvas id="storyMistCanvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+
+  <!-- Ambient glowing orbs -->
+  <div class="pointer-events-none absolute -top-24 right-0 w-[42rem] h-[42rem] bg-moss/20 rounded-full blur-[130px] animate-mist-a"></div>
+  <div class="pointer-events-none absolute bottom-0 left-0 w-[34rem] h-[34rem] bg-ochre/15 rounded-full blur-[130px] animate-mist-b"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10">
+    <div class="max-w-4xl">
+      <!-- Breadcrumb / Tag -->
+      <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-6 reveal">
+        <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
+        <p class="eyebrow text-mist text-[11px] tracking-wider m-0">Tashihomes — Founding Story</p>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.02] tracking-tight reveal">
+        Where <em class="hero-accent font-accent not-italic text-ochre">home</em> begins<br class="hidden sm:inline"> in the misty hills.
+      </h1>
+
+      <p class="mt-8 max-w-2xl text-cloud/85 text-lg md:text-xl font-light leading-relaxed reveal">
+        North Bengal has always been one of India’s most quietly beautiful escapes — misty tea gardens, pine-covered hills, and homestays run by families who’ve hosted travelers for generations.
+      </p>
+
+      <!-- Launch Milestone Badge Pill -->
+      <div class="mt-10 flex flex-wrap items-center gap-4 reveal">
+        <div class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 px-5 py-2.5 rounded-full">
+          <span class="stamp w-7 h-7 shrink-0 grid place-items-center text-ochre bg-ochre/10 rounded-full">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </span>
+          <span class="text-xs md:text-sm font-medium tracking-wide">
+            Going live on <strong class="text-ochre font-semibold">August 15th</strong>
+          </span>
+        </div>
+
+        <div class="inline-flex items-center gap-2 text-xs md:text-sm text-cloud/70">
+          <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+          Darjeeling • Kalimpong • Kurseong • Mirik • The Dooars
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decorative mountain silhouette -->
+  <div class="absolute bottom-0 inset-x-0 pointer-events-none opacity-80">
+    <svg viewBox="0 0 1440 120" class="w-full h-auto" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 60L180 30L360 80L540 20L720 70L900 15L1080 65L1260 35L1440 75V120H0V60Z" fill="#F3FAFB" />
+    </svg>
+  </div>
+</section>
+
+<!-- ============ THE PROBLEM & GENESIS (NARRATIVE) ============ -->
+<section class="py-20 md:py-32 bg-cloud relative overflow-hidden">
+  <!-- Subtle topo line background -->
+  <div class="pointer-events-none absolute inset-0 opacity-40 bg-topo-pattern"></div>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+      
+      <!-- Narrative Left Column -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ochre/15 text-ochreD border border-ochre/30 reveal">
+          <span class="w-1.5 h-1.5 rounded-full bg-ochre"></span>
+          <p class="eyebrow text-ochreD text-[10px] m-0">The Gap We Saw</p>
+        </div>
+
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-ink leading-tight reveal">
+          For an experience meant to feel like "home," finding one felt anything but trustworthy.
+        </h2>
+
+        <div class="prose prose-lg text-ink/75 space-y-5 text-base md:text-lg leading-relaxed reveal">
+          <p>
+            Unlike hotels, homestays in North Bengal have largely stayed word-of-mouth — a phone number passed along by a friend, a DM to an Instagram page with no way to verify if the photos are real, or a booking confirmed only after days of back-and-forth, sometimes falling through at the last minute.
+          </p>
+          <p>
+            At the same time, homestay owners — many of them families who’ve been hosting for years — had no real platform of their own. They relied entirely on repeat guests and referrals, with no way to reach the growing number of travelers actively looking for exactly what they offered.
+          </p>
+        </div>
+
+        <!-- Quote Block -->
+        <div class="reveal p-6 sm:p-8 rounded-2xl bg-white border-l-4 border-ochre shadow-lg shadow-black/5 mt-8">
+          <p class="font-accent text-xl md:text-2xl text-pine italic leading-snug">
+            "That gap is what led to Tashihomes — North Bengal’s first dedicated homestay booking platform, built to bring structure and trust to both sides."
+          </p>
+          <div class="mt-4 flex items-center gap-3 text-xs text-ink/60 font-semibold tracking-wider uppercase">
+            <span class="w-2 h-2 rounded-full bg-moss"></span>
+            The Tashihomes Founding Vision
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Right Column: Postcard / Polaroid Showcase -->
+      <div class="lg:col-span-5 space-y-6 reveal">
+        <div class="relative mx-auto max-w-md">
+          <!-- Ambient Glow behind polaroid -->
+          <div class="absolute -inset-4 bg-gradient-to-tr from-moss/20 to-ochre/20 rounded-3xl blur-2xl"></div>
+
+          <!-- Featured host / scenery card -->
+          <div class="relative bg-white rounded-3xl p-5 shadow-2xl border border-ink/10 card-tilt">
+            <div class="rounded-2xl overflow-hidden aspect-[4/3] relative">
+              <img
+                src="/images/host-spotlight.jpg"
+                alt="Generational Homestay family in North Bengal"
+                class="w-full h-full object-cover"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+              <span class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-semibold text-pine shadow">
+                📍 Eastern Himalayan Ridges
+              </span>
+            </div>
+            
+            <div class="pt-5 pb-2 px-2">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-semibold text-moss uppercase tracking-widest">Generational Hospitality</span>
+                <span class="text-xs font-bold text-ochre">EST. GENERATIONS</span>
+              </div>
+              <p class="font-display text-xl text-ink">
+                Built for the families who keep the kettle warm.
+              </p>
+              <p class="text-xs text-ink/65 mt-2 leading-relaxed">
+                Families who wake up before dawn to boil spring water, harvest fresh tea leaves, and prepare warm hearths for travelers.
+              </p>
+            </div>
+          </div>
+
+          <!-- Small Floating Trust Badge -->
+          <div class="absolute -bottom-6 -right-4 bg-pine text-cloud p-4 rounded-2xl shadow-xl border border-white/20 flex items-center gap-3.5 max-w-[240px]">
+            <div class="w-10 h-10 rounded-xl bg-ochre/20 text-ochre grid place-items-center shrink-0">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-cloud leading-tight">North Bengal First</p>
+              <p class="text-[10px] text-cloud/70 mt-0.5">100% Dedicated to verified homestays</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE BEFORE & AFTER (OLD WAY vs TASHI WAY) ============ -->
+<section class="py-24 md:py-32 bg-cloud2 relative overflow-hidden border-y border-ink/5">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center max-w-3xl mx-auto reveal">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-moss/10 text-moss border border-moss/20 mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+        <p class="eyebrow text-moss text-[10px] m-0">The Evolution</p>
+      </div>
+      <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-ink">
+        Replacing Word-of-Mouth Chaos with Trust
+      </h2>
+      <p class="text-ink/70 text-base md:text-lg mt-3">
+        How Tashihomes transforms how travelers discover authentic homestays and how hosts welcome guests.
+      </p>
+    </div>
+
+    <!-- Interactive Comparison Cards -->
+    <div class="grid md:grid-cols-2 gap-8 mt-16">
+      
+      <!-- The Old Way (Past) -->
+      <div class="reveal bg-white/70 backdrop-blur-md rounded-3xl p-8 border border-red-200/60 shadow-sm relative overflow-hidden">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-2xl bg-red-100 text-red-600 grid place-items-center shrink-0">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-display text-2xl text-ink">The Word-of-Mouth Past</h3>
+            <p class="text-xs text-red-600/80 font-medium">Uncertain, fragmented, and vulnerable</p>
+          </div>
+        </div>
+
+        <ul class="space-y-4 text-sm text-ink/75">
+          <li class="flex items-start gap-3">
+            <span class="text-red-500 font-bold shrink-0 mt-0.5">✕</span>
+            <span><strong>Unverified photos & listings:</strong> Relying on obscure social media posts with no guarantee that rooms look as advertised.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-red-500 font-bold shrink-0 mt-0.5">✕</span>
+            <span><strong>Days of back-and-forth:</strong> Inconsistent phone calls, lost WhatsApp messages, and unclear pricing details.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-red-500 font-bold shrink-0 mt-0.5">✕</span>
+            <span><strong>Fragile confirmations:</strong> Bookings that fall through at the last minute with no cancellation safeguards or deposits.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-red-500 font-bold shrink-0 mt-0.5">✕</span>
+            <span><strong>Hosts left invisible:</strong> Generational homestays unable to reach new travelers beyond old repeat guest networks.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- The Tashihomes Standard (Present & Future) -->
+      <div class="reveal bg-pine text-cloud rounded-3xl p-8 border border-white/20 shadow-xl relative overflow-hidden">
+        <!-- Ambient Glow -->
+        <div class="pointer-events-none absolute -top-12 -right-12 w-48 h-48 bg-ochre/20 rounded-full blur-[60px]"></div>
+
+        <div class="flex items-center gap-3 mb-6 relative z-10">
+          <div class="w-10 h-10 rounded-2xl bg-ochre/20 text-ochre border border-ochre/30 grid place-items-center shrink-0">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-display text-2xl text-cloud">The Tashihomes Standard</h3>
+            <p class="text-xs text-ochre font-medium">Verified, authentic, and seamless</p>
+          </div>
+        </div>
+
+        <ul class="space-y-4 text-sm text-cloud/85 relative z-10">
+          <li class="flex items-start gap-3">
+            <span class="text-ochre font-bold shrink-0 mt-0.5">✓</span>
+            <span><strong class="text-cloud">100% In-Person Verified:</strong> Every homestay is physically inspected, with genuine unedited photos of rooms and surrounds.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-ochre font-bold shrink-0 mt-0.5">✓</span>
+            <span><strong class="text-cloud">Direct & Transparent:</strong> Instant clarity on amenities, food options, local guidance, and honest transparent pricing.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-ochre font-bold shrink-0 mt-0.5">✓</span>
+            <span><strong class="text-cloud">Locked-in Peace of Mind:</strong> Secure deposit protection to confirm the room; settle the rest in person with hosts.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-ochre font-bold shrink-0 mt-0.5">✓</span>
+            <span><strong class="text-cloud">Founding Partner Support:</strong> Equipping host families with visibility, fair terms, and respect for their home traditions.</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOUR PILLARS OF OUR PLATFORM ============ -->
+<section class="py-24 md:py-32 bg-white relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 reveal">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-ochre/10 text-ochreD border border-ochre/25 mb-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-ochre"></span>
+          <p class="eyebrow text-ochreD text-[10px] m-0">Our Core Pillars</p>
+        </div>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-ink">
+          Built to bring structure &amp; trust
+        </h2>
+      </div>
+      <p class="max-w-md text-ink/70 text-sm md:text-base leading-relaxed">
+        We bridge the gap between discerning travelers seeking real warmth and families offering authentic Himalayan hospitality.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+      @for (pillar of pillars; track pillar.number) {
+        <div class="reveal p-8 rounded-3xl bg-cloud/60 border border-ink/10 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-pine text-ochre font-display text-2xl grid place-items-center mb-6 group-hover:bg-ochre group-hover:text-pine transition-colors">
+              {{ pillar.number }}
+            </div>
+            <h3 class="font-display text-2xl text-ink group-hover:text-pine transition-colors">
+              {{ pillar.title }}
+            </h3>
+            <p class="text-xs font-semibold text-moss uppercase tracking-wider mt-1">
+              {{ pillar.subtitle }}
+            </p>
+            <p class="text-sm text-ink/75 mt-4 leading-relaxed">
+              {{ pillar.description }}
+            </p>
+          </div>
+          
+          <div class="mt-6 pt-4 border-t border-ink/10 flex items-center gap-2 text-xs font-semibold text-pine">
+            <span>Guaranteed by Tashihomes</span>
+            <svg class="w-3.5 h-3.5 text-ochre" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ============ LAUNCH REGIONS (NORTH BENGAL EXPLORER) ============ -->
+<section class="py-24 md:py-32 bg-pine text-cloud relative overflow-hidden"
+  style="background: url('/images/experiences-bg.jpg') center/cover no-repeat;">
+  <!-- Dark teal/pine atmospheric overlay -->
+  <div class="absolute inset-0 bg-gradient-to-b from-pine/95 via-pine/85 to-pine/95"></div>
+
+  <!-- Ambient glow orbs -->
+  <div class="pointer-events-none absolute top-10 left-10 w-96 h-96 bg-moss/20 rounded-full blur-[110px]"></div>
+  <div class="pointer-events-none absolute bottom-10 right-10 w-96 h-96 bg-ochre/15 rounded-full blur-[110px]"></div>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center max-w-3xl mx-auto reveal">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-mist border border-white/20 backdrop-blur-md mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-ochre animate-pulse"></span>
+        <p class="eyebrow text-mist text-[10px] m-0">Going Live August 15th</p>
+      </div>
+      <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-cloud">
+        The Five North Bengal Launch Circuits
+      </h2>
+      <p class="text-cloud/80 text-base md:text-lg mt-3">
+        Starting with carefully selected family homestays across the region’s most beloved landscapes.
+      </p>
+    </div>
+
+    <!-- Region selector pills -->
+    <div class="flex flex-wrap justify-center gap-2 md:gap-3 mt-10 reveal">
+      @for (reg of regions; track reg.name; let idx = $index) {
+        <button
+          type="button"
+          (click)="selectRegion(idx)"
+          class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer border"
+          [ngClass]="activeRegionIndex() === idx 
+            ? 'bg-ochre text-cloud border-ochre shadow-lg shadow-ochre/30 scale-105' 
+            : 'bg-white/10 text-cloud/80 border-white/20 hover:bg-white/20 hover:text-cloud'"
+        >
+          {{ reg.name }}
+        </button>
+      }
+    </div>
+
+    <!-- Active Region Showcase Card -->
+    <div class="mt-10 reveal max-w-4xl mx-auto bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-10 shadow-2xl">
+      @let current = regions[activeRegionIndex()];
+      <div class="grid md:grid-cols-12 gap-8 items-center">
+        <div class="md:col-span-7 space-y-4">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="px-3.5 py-1 rounded-full text-xs font-semibold border backdrop-blur-md" [ngClass]="current.badgeColor">
+              {{ current.tag }}
+            </span>
+            <span class="text-xs text-mist font-medium">Elev. {{ current.elevation }}</span>
+          </div>
+
+          <h3 class="font-display text-3xl sm:text-4xl text-cloud">
+            {{ current.name }}
+          </h3>
+          <p class="text-sm font-semibold text-ochre">
+            {{ current.tagline }}
+          </p>
+          <p class="text-sm md:text-base text-cloud/85 leading-relaxed">
+            {{ current.description }}
+          </p>
+
+          <div class="pt-4 border-t border-white/15">
+            <p class="eyebrow text-mist text-[10px] mb-2">What you will experience</p>
+            <div class="flex flex-wrap gap-2">
+              @for (h of current.highlights; track h) {
+                <span class="inline-flex items-center gap-1.5 text-xs bg-white/10 text-cloud px-3 py-1.5 rounded-lg border border-white/10">
+                  <span class="w-1.5 h-1.5 rounded-full bg-ochre"></span>
+                  {{ h }}
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-5 flex flex-col justify-center">
+          <div class="rounded-2xl p-6 bg-black/25 border border-white/15 space-y-4 text-center">
+            <div class="stamp w-16 h-16 mx-auto grid place-items-center text-ochre bg-ochre/10 rounded-full">
+              <span class="font-display text-sm font-bold text-center">AUG<br>15</span>
+            </div>
+            <h4 class="font-display text-xl text-cloud">Founding Partner Stays</h4>
+            <p class="text-xs text-cloud/70 leading-relaxed">
+              Family-hosted rooms now being onboarded ahead of our grand launch.
+            </p>
+            <a
+              routerLink="/"
+              fragment="stays"
+              class="btn-anim inline-block w-full bg-ochre hover:bg-ochreD text-cloud text-xs font-semibold py-3 px-4 rounded-full transition-colors"
+            >
+              Browse Available Stays
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOUNDING PARTNERS / HOST SPOTLIGHT ============ -->
+<section class="py-24 md:py-32 bg-cloud relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      
+      <!-- Image / Stamp Grid -->
+      <div class="reveal relative">
+        <div class="rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/3] relative">
+          <img
+            src="/images/exp-tea.jpg"
+            alt="Misty tea gardens and hill living in North Bengal"
+            class="w-full h-full object-cover"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+        </div>
+
+        <!-- Floating Host Pledge Card -->
+        <div class="absolute -bottom-6 -left-4 sm:left-6 bg-white rounded-2xl p-6 shadow-xl border border-ink/10 max-w-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-moss/10 text-moss grid place-items-center font-display text-xl font-bold shrink-0">
+              🤝
+            </div>
+            <div>
+              <p class="font-display text-lg text-ink m-0">The Host Partner Pledge</p>
+              <p class="text-xs text-ink/60 mt-0.5">Fair terms • Direct payouts • Local pride</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text Details -->
+      <div class="reveal space-y-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-pine/10 text-pine border border-pine/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+          <p class="eyebrow text-pine text-[10px] m-0">Empowering Local Families</p>
+        </div>
+
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-ink leading-tight">
+          Onboarding North Bengal's finest homestays as Founding Partners.
+        </h2>
+
+        <p class="text-ink/80 text-base md:text-lg leading-relaxed">
+          Before opening our doors on August 15th, our on-ground team is traversing the hills — walking up village paths, sipping tea with families, and onboarding generational hosts as founding partners.
+        </p>
+
+        <div class="space-y-3.5 pt-2">
+          <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white border border-ink/10 shadow-xs">
+            <span class="w-6 h-6 rounded-full bg-moss/15 text-moss grid place-items-center text-xs font-bold shrink-0 mt-0.5">1</span>
+            <p class="text-sm text-ink/80 m-0"><strong>In-Person Photography:</strong> We take genuine, unedited photos of your space, rooms, hearth, and surroundings.</p>
+          </div>
+          <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white border border-ink/10 shadow-xs">
+            <span class="w-6 h-6 rounded-full bg-moss/15 text-moss grid place-items-center text-xs font-bold shrink-0 mt-0.5">2</span>
+            <p class="text-sm text-ink/80 m-0"><strong>Fair, Dignified Terms:</strong> Keep what you earn. We celebrate your hospitality with transparent fees and zero exploitation.</p>
+          </div>
+          <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white border border-ink/10 shadow-xs">
+            <span class="w-6 h-6 rounded-full bg-moss/15 text-moss grid place-items-center text-xs font-bold shrink-0 mt-0.5">3</span>
+            <p class="text-sm text-ink/80 m-0"><strong>Direct Guest Vetting:</strong> Connect directly with respectful, conscious travelers looking for an authentic family stay.</p>
+          </div>
+        </div>
+
+        <div class="pt-4 flex flex-wrap items-center gap-4">
+          <a
+            routerLink="/register"
+            class="btn-anim inline-block bg-pine hover:bg-ink text-cloud font-semibold text-sm px-7 py-3.5 rounded-full transition-colors shadow-lg shadow-pine/20"
+          >
+            Become a Founding Host Partner
+          </a>
+          <a
+            href="mailto:info@tashihomes.in"
+            class="text-sm font-semibold text-moss hover:text-pine transition-colors inline-flex items-center gap-1.5"
+          >
+            Contact Host Relations →
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOUNDER'S NOTE & INVITATION ============ -->
+<section class="py-24 md:py-32 bg-cloud2 relative overflow-hidden border-t border-ink/5">
+  <div class="max-w-4xl mx-auto px-6 text-center reveal">
+    <div class="stamp w-20 h-20 mx-auto grid place-items-center text-ochre bg-ochre/10 rounded-full mb-8">
+      <span class="font-display text-2xl font-bold">TH</span>
+    </div>
+
+    <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-ink leading-tight">
+      "Our goal is simple: becoming the trusted first stop for anyone looking to experience North Bengal the way it’s meant to be experienced."
+    </h2>
+
+    <p class="mt-6 text-lg md:text-xl text-ink/75 font-accent italic">
+      Authentic, verified, and welcoming.
+    </p>
+
+    <div class="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a
+        routerLink="/"
+        fragment="stays"
+        class="btn-anim w-full sm:w-auto bg-ochre hover:bg-ochreD text-cloud font-semibold text-sm px-8 py-4 rounded-full transition-colors shadow-lg shadow-ochre/25 text-center"
+      >
+        Explore North Bengal Stays
+      </a>
+      <a
+        routerLink="/register"
+        class="w-full sm:w-auto bg-white hover:bg-cloud text-pine border border-pine/20 font-semibold text-sm px-8 py-4 rounded-full transition-colors text-center shadow-xs"
+      >
+        Join as a Founding Host
+      </a>
+    </div>
+
+    <div class="mt-12 pt-8 border-t border-ink/10 flex flex-wrap items-center justify-center gap-6 text-xs text-ink/60">
+      <span>🏔️ Darjeeling Hills</span>
+      <span>•</span>
+      <span>🌿 Kalimpong Ridges</span>
+      <span>•</span>
+      <span>🌸 Kurseong Trails</span>
+      <span>•</span>
+      <span>🍊 Mirik Orchards</span>
+      <span>•</span>
+      <span>🌲 Dooars Corridors</span>
+    </div>
+  </div>
+</section>
+

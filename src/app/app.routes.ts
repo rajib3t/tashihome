@@ -21,6 +21,7 @@ import { CreateProperty } from './pages/authenticate/admin/property-management/c
 import { EditProperty } from './pages/authenticate/admin/property-management/edit-property/edit-property';
 import { Property } from './pages/public/properties/property/property';
 import { Properties } from './pages/public/properties/properties';
+import { Story } from './pages/public/story/story';
 import { Register } from './pages/public/register/register';
 import { ActivateAccount } from './pages/public/activate-account/activate-account';
 import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
@@ -78,6 +79,21 @@ export const routes: Routes = [
             {
                 path: 'home',
                 redirectTo: '',
+                pathMatch: 'full',
+            },
+            {
+                path: 'our-story',
+                component: Story,
+                title: 'Our Story - Tashihomes',
+            },
+            {
+                path: 'story',
+                redirectTo: 'our-story',
+                pathMatch: 'full',
+            },
+            {
+                path: 'brand-story',
+                redirectTo: 'our-story',
                 pathMatch: 'full',
             },
             {

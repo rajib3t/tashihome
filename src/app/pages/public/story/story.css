@@ -1,0 +1,9 @@
+/* Story Page Specific Styles */
+:host {
+  display: block;
+}
+
+.prose p {
+  margin-bottom: 1.25rem;
+}
+

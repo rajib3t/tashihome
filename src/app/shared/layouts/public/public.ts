@@ -40,7 +40,13 @@ export class Public implements OnInit {
   public readonly currentUrl = signal(this.router.url);
   public readonly isComingSoonEnabled = computed(() => {
     const url = this.currentUrl();
-    if (url === '/login' || url.startsWith('/stay/')) {
+    if (
+      url === '/login' ||
+      url.startsWith('/stay/') ||
+      url === '/our-story' ||
+      url === '/story' ||
+      url === '/brand-story'
+    ) {
       return false;
     }
     return isSettingEnabled(this.settingsData()?.['is_enabled_coming_soon']);
@@ -48,6 +54,7 @@ export class Public implements OnInit {
   private routerSubscription: { unsubscribe: () => void } | null = null;
   menuItems: { label: string; route: string }[] = [
     { label: 'Home', route: '/' },
+    { label: 'Our Story', route: '/our-story' },
     { label: 'Login', route: '/login' },
   ];
 
