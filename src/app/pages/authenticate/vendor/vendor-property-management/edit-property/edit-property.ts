@@ -19,6 +19,7 @@ import {
   PropertyAsset,
   PropertyData,
   PropertyRequest,
+  PropertyRoomTypeRequest,
   PropertyUpdateRequest,
 } from '../../../../../services/property/property.model';
 import { PropertyService } from '../../../../../services/property/property-service';
@@ -122,7 +123,7 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     documents: this.formBuilder.control<string[]>([]),
     amenity_ids: this.formBuilder.control<string[]>([]),
     facility_ids: this.formBuilder.control<string[]>([]),
-    room_type_ids: this.formBuilder.control<string[]>([]),
+    room_types: this.formBuilder.control<PropertyRoomTypeRequest[]>([]),
     food_option_ids: this.formBuilder.control<string[]>([]),
     lat: [null as number | null],
     lon: [null as number | null],
@@ -499,7 +500,7 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     return salePrice >= pricePerNight;
   }
 
-  toggleSelection(controlName: 'amenity_ids' | 'facility_ids' | 'room_type_ids' | 'food_option_ids', id: string): void {
+  toggleSelection(controlName: 'amenity_ids' | 'facility_ids' | 'food_option_ids', id: string): void {
     const control = this.propertyForm.get(controlName);
     if (!control) {
       return;
@@ -516,9 +517,103 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     control.setValue(current);
   }
 
-  isSelectionChecked(controlName: 'amenity_ids' | 'facility_ids' | 'room_type_ids' | 'food_option_ids', id: string): boolean {
+  isSelectionChecked(controlName: 'amenity_ids' | 'facility_ids' | 'food_option_ids', id: string): boolean {
     const control = this.propertyForm.get(controlName);
     return Array.isArray(control?.value) && control.value.includes(id);
+  }
+
+  getRoomTypeRows(): PropertyRoomTypeRequest[] {
+    return (this.propertyForm.get('room_types')?.value as PropertyRoomTypeRequest[] | null) ?? [];
+  }
+
+  isRoomTypeOptionDisabled(roomTypeId: string, currentRowRoomTypeId: string): boolean {
+    if (roomTypeId === currentRowRoomTypeId) {
+      return false;
+    }
+    const currentRows = this.getRoomTypeRows();
+    return currentRows.some((row) => row.room_type_id === roomTypeId);
+  }
+
+  addRoomTypeRow(): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) {
+      return;
+    }
+
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    const usedIds = new Set(current.map((r) => r.room_type_id));
+    const available = this.roomTypes().find((rt) => !usedIds.has(rt.id));
+
+    current.push({
+      room_type_id: available ? available.id : (this.roomTypes()[0]?.id ?? ''),
+      total_units: 1,
+    });
+
+    control.setValue(current);
+    this.propertyForm.markAsDirty();
+  }
+
+  removeRoomTypeRow(index: number): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) {
+      return;
+    }
+
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    if (index >= 0 && index < current.length) {
+      current.splice(index, 1);
+      control.setValue(current);
+      this.propertyForm.markAsDirty();
+    }
+  }
+
+  onRoomTypeRowChange(index: number, newRoomTypeId: string): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) {
+      return;
+    }
+
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    if (index >= 0 && index < current.length) {
+      current[index] = { ...current[index], room_type_id: newRoomTypeId };
+      control.setValue(current);
+      this.propertyForm.markAsDirty();
+    }
+  }
+
+  onRoomTypeRowUnitsInput(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const val = parseInt(input.value, 10);
+    this.updateRoomTypeRowUnits(index, isNaN(val) ? 1 : val);
+  }
+
+  updateRoomTypeRowUnits(index: number, units: number): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) {
+      return;
+    }
+
+    const safeUnits = Math.max(1, Math.floor(units || 1));
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    if (index >= 0 && index < current.length) {
+      current[index] = { ...current[index], total_units: safeUnits };
+      control.setValue(current);
+      this.propertyForm.markAsDirty();
+    }
+  }
+
+  incrementRoomTypeRowUnits(index: number): void {
+    const currentRows = this.getRoomTypeRows();
+    if (index >= 0 && index < currentRows.length) {
+      this.updateRoomTypeRowUnits(index, (currentRows[index].total_units || 1) + 1);
+    }
+  }
+
+  decrementRoomTypeRowUnits(index: number): void {
+    const currentRows = this.getRoomTypeRows();
+    if (index >= 0 && index < currentRows.length && currentRows[index].total_units > 1) {
+      this.updateRoomTypeRowUnits(index, currentRows[index].total_units - 1);
+    }
   }
 
   private isCurrentStepValid(): boolean {
@@ -564,9 +659,45 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
   }
 
   private patchPropertyForm(property: PropertyData): void {
-    const amenityIds = property.property_amenities?.map((item) => item.amenity.id) ?? [];
-    const facilityIds = property.property_facilities?.map((item) => item.facility.id) ?? [];
-    const roomTypeIds = property.property_room_types?.map((item) => item.room_type.id) ?? [];
+    const amenityIds = property.property_amenities?.map((item) => item.amenity?.id ?? (item as any).amenity_id ?? item.id).filter(Boolean) ?? [];
+    const facilityIds = property.property_facilities?.map((item) => item.facility?.id ?? (item as any).facility_id ?? item.id).filter(Boolean) ?? [];
+
+    const roomTypes: PropertyRoomTypeRequest[] = [];
+    if (property.property_room_types && Array.isArray(property.property_room_types) && property.property_room_types.length > 0) {
+      for (const item of property.property_room_types) {
+        const id = item.room_type?.id || (item as any).room_type_id || (typeof item === 'string' ? item : (item as any).id);
+        const units = Number(item.total_units || (item as any).units || (item as any).count || 1);
+        if (id) {
+          roomTypes.push({
+            room_type_id: String(id),
+            total_units: units > 0 ? units : 1,
+          });
+        }
+      }
+    } else if ((property as any).room_types && Array.isArray((property as any).room_types) && (property as any).room_types.length > 0) {
+      for (const item of (property as any).room_types) {
+        if (typeof item === 'string') {
+          roomTypes.push({ room_type_id: item, total_units: 1 });
+        } else if (item && typeof item === 'object') {
+          const id = item.room_type_id || item.room_type?.id || item.id;
+          const units = Number(item.total_units || item.units || item.count || 1);
+          if (id) {
+            roomTypes.push({
+              room_type_id: String(id),
+              total_units: units > 0 ? units : 1,
+            });
+          }
+        }
+      }
+    } else if ((property as any).room_type_ids && Array.isArray((property as any).room_type_ids) && (property as any).room_type_ids.length > 0) {
+      for (const id of (property as any).room_type_ids) {
+        if (id) {
+          roomTypes.push({ room_type_id: String(id), total_units: 1 });
+        }
+      }
+    } else if (property.room_type?.id) {
+      roomTypes.push({ room_type_id: String(property.room_type.id), total_units: 1 });
+    }
     const foodOptionIds = property.property_food_options?.filter((item) => item.is_included).map((item) => item.name) ?? [];
 
     this.propertyForm.patchValue({
@@ -582,7 +713,7 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
       status: this.normalizePropertyStatus(property.status),
       amenity_ids: amenityIds,
       facility_ids: facilityIds,
-      room_type_ids: roomTypeIds,
+      room_types: roomTypes,
       food_option_ids: foodOptionIds,
       lat: property.latitude ?? null,
       lon: property.longitude ?? null,
@@ -664,6 +795,13 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
   private buildUpdatePayload(): PropertyUpdateRequest {
     const raw = this.propertyForm.getRawValue();
     const authUser = this.authService.authUser();
+    const roomTypes: PropertyRoomTypeRequest[] = ((raw.room_types as PropertyRoomTypeRequest[] | null) ?? [])
+      .filter((rt) => !!rt.room_type_id?.trim())
+      .map((rt) => ({
+        room_type_id: rt.room_type_id.trim(),
+        total_units: Math.max(1, Number(rt.total_units) || 1),
+      }));
+
     return {
       vendor_id: String(this.currentVendorId || authUser?.id || ''),
       name: String(raw.name ?? '').trim(),
@@ -679,7 +817,7 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
       status: this.normalizePropertyStatus(raw.status),
       amenity_ids: [...(raw.amenity_ids ?? [])],
       facility_ids: [...(raw.facility_ids ?? [])],
-      room_type_ids: [...(raw.room_type_ids ?? [])],
+      room_types: roomTypes,
       food_option_ids: [...(raw.food_option_ids ?? [])],
       lat: raw.lat,
       lon: raw.lon,

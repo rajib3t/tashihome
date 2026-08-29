@@ -43,6 +43,11 @@ export const PROPERTY_TYPES_LABELS: Record<string, string> = {
 export type PropertyType = (typeof PROPERTY_TYPES)[number];
 export type PropertyStatus = 'draft' | 'active' | 'inactive';
 
+export interface PropertyRoomTypeRequest {
+  room_type_id: string;
+  total_units: number;
+}
+
 export interface PropertyRequest {
   vendor_id: string;
   name: string;
@@ -63,7 +68,8 @@ export interface PropertyRequest {
   documents: string[];
   amenity_ids: string[];
   facility_ids: string[];
-  room_type_ids: string[];
+  room_types?: PropertyRoomTypeRequest[];
+  room_type_ids?: string[];
   food_option_ids: string[];
   lat?: number | null;
   lon?: number | null;
@@ -117,6 +123,7 @@ export interface PropertyItem {
   documents?: string[];
   amenity_ids?: string[];
   facility_ids?: string[];
+  room_types?: PropertyRoomTypeRequest[];
   room_type_ids?: string[];
   food_option_ids?: string[];
 }
@@ -140,6 +147,14 @@ export interface PropertyFormValue {
   galleryImages: string;
   featureImage: string;
   coverImage: string;
+  documents?: string[];
+  amenity_ids?: string[];
+  facility_ids?: string[];
+  room_types?: PropertyRoomTypeRequest[];
+  room_type_ids?: string[];
+  food_option_ids?: string[];
+  lat?: number | null;
+  lon?: number | null;
 }
 export interface PropertySearch {
   name?: string;
@@ -249,6 +264,7 @@ export interface PropertyFoodOption {
 export interface PropertyRoomType {
   id: string;
   room_type: RoomType;
+  total_units?: number;
 }
 
 export interface Amenity {

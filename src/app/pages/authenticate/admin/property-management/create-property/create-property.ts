@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CreatePropertyRequest, PROPERTY_TYPES, PropertyRequest, PROPERTY_TYPES_LABELS } from '../../../../../services/property/property.model';
+import { CreatePropertyRequest, PROPERTY_TYPES, PropertyRequest, PROPERTY_TYPES_LABELS, PropertyRoomTypeRequest } from '../../../../../services/property/property.model';
 import { PropertyService } from '../../../../../services/property/property-service';
 import { Card } from '../../../../../shared/components/ui/card/card';
 import { UploadImage } from '../../../../../shared/components/common/upload-image/upload-image';
@@ -118,7 +118,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     documents: this.formBuilder.control<string[]>([]),
     amenity_ids: this.formBuilder.control<string[]>([]),
     facility_ids: this.formBuilder.control<string[]>([]),
-    room_type_ids: this.formBuilder.control<string[]>([]),
+    room_types: this.formBuilder.control<PropertyRoomTypeRequest[]>([]),
     food_option_ids: this.formBuilder.control<string[]>([]),
     lat: [null as number | null],
     lon: [null as number | null],
@@ -444,7 +444,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     this.coverImagePreview.set(preview);
   }
 
-  toggleSelection(controlName: 'amenity_ids' | 'facility_ids' | 'room_type_ids' | 'food_option_ids', id: string): void {
+  toggleSelection(controlName: 'amenity_ids' | 'facility_ids' | 'food_option_ids', id: string): void {
     const control = this.propertyForm.get(controlName);
     if (!control) {
       return;
@@ -462,7 +462,7 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     control.setValue(current);
   }
 
-  isSelectionChecked(controlName: 'amenity_ids' | 'facility_ids' | 'room_type_ids' | 'food_option_ids', id: string): boolean {
+  isSelectionChecked(controlName: 'amenity_ids' | 'facility_ids' | 'food_option_ids', id: string): boolean {
     const control = this.propertyForm.get(controlName);
     return Array.isArray(control?.value) && control.value.includes(id);
   }
