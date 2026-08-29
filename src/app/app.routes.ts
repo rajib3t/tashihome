@@ -86,7 +86,7 @@ export const routes: Routes = [
             {
                 path: 'our-story',
                 component: Story,
-                title: 'Our Story - Tashihomes',
+                title: 'Our Story',
             },
             {
                 path: 'story',
@@ -101,7 +101,7 @@ export const routes: Routes = [
             {
                 path: 'stays',
                 component: Properties,
-                title: 'Stays - Tashihomes',
+                title: 'Stays',
             },
 
             {
