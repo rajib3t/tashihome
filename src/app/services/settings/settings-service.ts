@@ -3,6 +3,7 @@ import { ApiService } from '../api/api-service';
 import { catchError, finalize, map, Observable, tap, throwError } from 'rxjs';
 import { ApiResponse } from '../api/api-response.model';
 import { SettingItem } from './setting.model';
+import { environment } from '../../../environments/environment';
 
 
 
@@ -30,6 +31,7 @@ const normalizeSettingsPayload = (value: unknown) => {
 @Service()
 export class SettingsService {
     public readonly apiService = inject(ApiService);
+    public readonly assetUrl = environment.assetUrl;
 
     #settingsData = signal<Record<string, string | null>>({});
     #publicSettingsRequest: Observable<unknown> | null = null;
@@ -46,6 +48,7 @@ export class SettingsService {
         return;
       }
 
+      
       const resolvedHref = faviconUrl?.trim()
         ? this.resolveAssetUrl(faviconUrl.trim())
         : '/favicon.ico';
@@ -60,14 +63,24 @@ export class SettingsService {
 
       link.type = 'image/x-icon';
       link.href = resolvedHref;
+      
     }
 
-    private resolveAssetUrl(url: string) {
+    public resolveAssetUrl(url: string): string {
+      if (!url) {
+        return '';
+      }
+
       if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) {
+        console.log('Favicon URL is absolute or data/blob URL, using as is:', url);
         return url;
       }
 
-      return new URL(url, document.baseURI).toString();
+      const base = environment.assetUrl
+        ? (environment.assetUrl.endsWith('/') ? environment.assetUrl : `${environment.assetUrl}/`)
+        : '';
+      const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+      return `${base}${cleanPath}`;
     }
 
     saveSettings(formData: FormData): Observable<ApiResponse<SettingItem[]>> {
