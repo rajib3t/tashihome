@@ -35,6 +35,7 @@ import { Dashboard } from './pages/authenticate/vendor/dashboard/dashboard';
 import { VendorPropertyManagement } from './pages/authenticate/vendor/vendor-property-management/vendor-property-management';
 import { CreateVendorProperty } from './pages/authenticate/vendor/vendor-property-management/create-property/create-property';
 import { EditVendorProperty } from './pages/authenticate/vendor/vendor-property-management/edit-property/edit-property';
+import { Checkout } from './pages/public/checkout/checkout';
 
 
 export const routes: Routes = [
@@ -113,6 +114,21 @@ export const routes: Routes = [
                 path: 'stay/:slug',
                 component: Property,
                 title: 'Property Detail',
+            },
+            {
+                path: 'checkout',
+                component: Checkout,
+                title: 'Checkout & Reserve',
+            },
+            {
+                path: 'checkout/:slug',
+                component: Checkout,
+                title: 'Checkout & Reserve',
+            },
+            {
+                path: 'stay/:slug/checkout',
+                component: Checkout,
+                title: 'Checkout & Reserve',
             }
         ]
     },

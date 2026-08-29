@@ -30,6 +30,18 @@ export const serverRoutes: ServerRoute[] = [
     path: 'stay/:slug',
     renderMode: RenderMode.Client
   },
+  {
+    path: 'checkout',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'checkout/:slug',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'stay/:slug/checkout',
+    renderMode: RenderMode.Client
+  },
 
   // ── Authenticated routes — must be Client-side only ───────────────
   // These pages gate on localStorage tokens; SSR/Prerender always

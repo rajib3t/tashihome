@@ -337,11 +337,150 @@
     <!-- Tab 3: Your trips -->
     @else if (activeTab() === 'trips') {
       <div class="profile-panel">
-        <h2 class="font-display text-2xl text-ink">Your trips</h2>
-        <p class="mt-2 text-sm text-ink/60">Your upcoming and completed bookings will appear here.</p>
-        <a routerLink="/stays" class="mt-6 inline-flex rounded-full bg-ochre px-6 py-2.5 text-sm font-semibold text-cloud hover:bg-ochreD transition-colors">
-          Browse stays
-        </a>
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="font-display text-2xl text-ink">Your trips</h2>
+            <p class="mt-1 text-sm text-ink/60">View your confirmed bookings and homestay reservations.</p>
+          </div>
+          <a routerLink="/stays" class="hidden sm:inline-flex rounded-full bg-ochre px-5 py-2 text-xs font-semibold text-cloud hover:bg-ochreD transition-colors">
+            Browse more stays
+          </a>
+        </div>
+
+        @if (paymentSuccessMessage()) {
+          <div class="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>{{ paymentSuccessMessage() }}</span>
+          </div>
+        }
+        @if (paymentErrorMessage()) {
+          <div class="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-medium flex items-center gap-2">
+            <svg class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke-width="2" />
+              <line x1="12" y1="8" x2="12" y2="12" stroke-width="2" />
+              <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2" />
+            </svg>
+            <span>{{ paymentErrorMessage() }}</span>
+          </div>
+        }
+
+        @if (cancelSuccessMessage()) {
+          <div class="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium">
+            {{ cancelSuccessMessage() }}
+          </div>
+        }
+        @if (cancelErrorMessage()) {
+          <div class="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-medium">
+            {{ cancelErrorMessage() }}
+          </div>
+        }
+
+        @if (isLoadingBookings()) {
+          <div class="py-12 flex items-center justify-center gap-2 text-ink/60 text-sm">
+            <div class="w-5 h-5 border-2 border-ochre border-t-transparent rounded-full animate-spin"></div>
+            <span>Loading your trips...</span>
+          </div>
+        } @else if (userBookings().length > 0) {
+          <div class="space-y-4">
+            @for (booking of userBookings(); track (booking.id || $index)) {
+              <div class="p-5 rounded-2xl border border-ink/10 bg-cloud/20 hover:bg-cloud/40 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                  @if (booking.property?.feature_image?.file_url || booking.property?.cover_image?.file_url) {
+                    <img
+                      [src]="assetUrl + (booking.property?.feature_image?.file_url || booking.property?.cover_image?.file_url)"
+                      [alt]="booking.property?.name || 'Stay'"
+                      class="w-16 h-16 rounded-xl object-cover" />
+                  } @else {
+                    <div class="w-16 h-16 rounded-xl bg-pine/10 grid place-items-center text-pine shrink-0">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2" />
+                      </svg>
+                    </div>
+                  }
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="font-display text-lg text-ink font-semibold">
+                        {{ booking.property?.name || 'Homestay Stay' }}
+                      </h3>
+                      <span
+                        class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                        [class.bg-emerald-100]="booking.status === 'confirmed' || booking.payment_status === 'paid'"
+                        [class.text-emerald-800]="booking.status === 'confirmed' || booking.payment_status === 'paid'"
+                        [class.bg-amber-100]="booking.status === 'pending' || booking.payment_status === 'pending'"
+                        [class.text-amber-800]="booking.status === 'pending' || booking.payment_status === 'pending'"
+                        [class.bg-red-100]="booking.status === 'cancelled'"
+                        [class.text-red-800]="booking.status === 'cancelled'">
+                        {{ (booking.status === 'pending' || booking.payment_status === 'pending') && booking.status !== 'cancelled' ? 'Pending Payment' : (booking.status || 'Confirmed') }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-ink/60 mt-1">
+                      {{ booking.check_in_date | date:'mediumDate' }} — {{ booking.check_out_date | date:'mediumDate' }}
+                      · {{ booking.num_guests }} guest{{ (booking.num_guests || 1) > 1 ? 's' : '' }} · {{ booking.num_rooms }} room{{ (booking.num_rooms || 1) > 1 ? 's' : '' }}
+                    </p>
+                    <p class="text-xs text-ink/40 mt-0.5">
+                      Ref: {{ booking.booking_number || booking.reference_number || booking.id }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-2.5">
+                  <p class="font-display text-xl text-pine font-bold">
+                    ₹{{ (booking.total_amount || 0) | number }}
+                  </p>
+                  <div class="flex items-center gap-2.5">
+                    @if ((booking.status === 'pending' || booking.payment_status === 'pending') && booking.status !== 'cancelled') {
+                      <button
+                        type="button"
+                        (click)="payBookingNow(booking)"
+                        [disabled]="isCompletingPayment() === booking.id"
+                        class="cursor-pointer inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-pine text-cloud text-xs font-semibold hover:bg-pineL transition-colors shadow-sm disabled:opacity-50">
+                        @if (isCompletingPayment() === booking.id) {
+                          <div class="w-3.5 h-3.5 border-2 border-cloud border-t-transparent rounded-full animate-spin"></div>
+                          <span>Opening...</span>
+                        } @else {
+                          <span>Pay Now</span>
+                        }
+                      </button>
+                    }
+
+                    @if (booking.property?.slug) {
+                      <a
+                        [routerLink]="['/stay', booking.property?.slug]"
+                        class="text-xs font-semibold text-ochreD hover:underline">
+                        View Stay
+                      </a>
+                    }
+                    @if (booking.status !== 'cancelled') {
+                      <button
+                        type="button"
+                        (click)="openCancelBookingModal(booking)"
+                        class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline cursor-pointer">
+                        Cancel
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="py-12 text-center max-w-sm mx-auto">
+            <div class="w-16 h-16 rounded-full bg-cloud2 mx-auto grid place-items-center text-pine mb-4">
+              <svg class="w-7 h-7 text-mossD" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <p class="font-display text-xl text-ink">No trips booked yet</p>
+            <p class="text-xs text-ink/60 mt-1.5 leading-relaxed">
+              When you reserve a homestay in the hills, your upcoming and past bookings will appear here.
+            </p>
+            <a routerLink="/stays" class="mt-6 inline-flex rounded-full bg-ochre px-6 py-2.5 text-xs font-semibold text-cloud hover:bg-ochreD transition-colors shadow-md shadow-ochre/20">
+              Explore stays
+            </a>
+          </div>
+        }
       </div>
     }
 
@@ -398,6 +537,72 @@
           Removing...
         } @else {
           Remove
+        }
+      </button>
+    </div>
+  </div>
+</app-modal>
+
+<!-- Cancel Booking Modal -->
+<app-modal [isOpen]="isCancelModalOpen()" (close)="closeCancelBookingModal()">
+  <div class="p-6">
+    <div class="flex items-center gap-3 text-red-600 mb-4">
+      <div class="p-2.5 rounded-full bg-red-100">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+          <line x1="15" y1="9" x2="9" y2="15" stroke-width="2"></line>
+          <line x1="9" y1="9" x2="15" y2="15" stroke-width="2"></line>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-ink">Cancel Reservation</h3>
+        <p class="text-xs text-ink/50 mt-0.5">
+          {{ selectedBookingToCancel()?.property?.name || 'Homestay' }} · {{ selectedBookingToCancel()?.check_in_date | date:'mediumDate' }}
+        </p>
+      </div>
+    </div>
+
+    @if (cancelErrorMessage()) {
+      <div class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium">
+        {{ cancelErrorMessage() }}
+      </div>
+    }
+
+    <p class="text-sm text-ink/70 mb-4">
+      Are you sure you want to cancel this booking? Any refundable deposits will be processed according to the cancellation policy.
+    </p>
+
+    <div class="mb-6">
+      <label for="cancel-reason-input" class="block text-xs font-semibold uppercase tracking-wider text-ink/60 mb-1.5">
+        Reason for cancellation (optional)
+      </label>
+      <textarea
+        id="cancel-reason-input"
+        rows="2"
+        [value]="cancelReason()"
+        (input)="cancelReason.set($any($event.target).value)"
+        placeholder="Change in travel plans, emergency, etc..."
+        class="w-full rounded-xl border border-ink/15 bg-cloud/30 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-red-400 focus:bg-white resize-none"></textarea>
+    </div>
+
+    <div class="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        (click)="closeCancelBookingModal()"
+        [disabled]="isCancellingBooking()"
+        class="cursor-pointer px-4 py-2 text-sm font-medium rounded-full border border-ink/20 text-ink hover:bg-cloud transition-colors">
+        Keep Reservation
+      </button>
+      <button
+        type="button"
+        (click)="confirmCancelBooking()"
+        [disabled]="isCancellingBooking()"
+        class="cursor-pointer inline-flex items-center px-5 py-2 text-sm font-medium rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50">
+        @if (isCancellingBooking()) {
+          <div class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+          Cancelling...
+        } @else {
+          Confirm Cancellation
         }
       </button>
     </div>

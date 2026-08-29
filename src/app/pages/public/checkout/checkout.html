@@ -1,0 +1,533 @@
+<!-- ============ HERO HEADER / BREADCRUMB ============ -->
+<section class="relative bg-pine pt-28 pb-14 md:pb-20 text-cloud overflow-hidden">
+  <div class="pointer-events-none absolute -top-20 -right-20 w-96 h-96 bg-moss/20 rounded-full blur-[110px]"></div>
+  <div class="pointer-events-none absolute -bottom-20 -left-20 w-80 h-80 bg-ochre/15 rounded-full blur-[100px]"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex items-center gap-2 text-xs sm:text-sm text-cloud/70 mb-4">
+      <a routerLink="/" class="hover:text-ochre transition-colors">Home</a>
+      <span>/</span>
+      <a [routerLink]="['/stay', property()?.slug || '']" class="hover:text-ochre transition-colors truncate max-w-xs">
+        {{ property()?.name || 'Stay' }}
+      </a>
+      <span>/</span>
+      <span class="text-ochre font-medium">Checkout</span>
+    </div>
+
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <span class="stamp inline-flex items-center gap-1.5 text-ochre text-[10px] font-semibold px-3 py-1 mb-2">
+          SECURE RESERVATION
+        </span>
+        <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-cloud">
+          {{ isBookingComplete() ? 'Booking Confirmed!' : 'Review & Confirm Your Stay' }}
+        </h1>
+      </div>
+      @if (!isBookingComplete() && property()?.slug) {
+        <a [routerLink]="['/stay', property()?.slug]" class="inline-flex items-center gap-1.5 text-xs sm:text-sm text-cloud/80 hover:text-ochre transition-colors">
+          ← Back to property details
+        </a>
+      }
+    </div>
+  </div>
+
+  <!-- Hand-drawn ridgeline bottom seam -->
+  <svg class="absolute -bottom-px left-0 w-full h-[36px] md:h-[48px] text-cloud2" viewBox="0 0 1440 48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 48 L0 26 L180 8 L360 30 L540 6 L720 28 L900 10 L1080 32 L1260 12 L1440 24 L1440 48 Z" fill="currentColor" />
+  </svg>
+</section>
+
+<!-- ============ MAIN CONTENT AREA ============ -->
+<section class="relative bg-cloud2/40 py-12 md:py-16 min-h-[70vh]">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+
+    <!-- ============ SUCCESS STATE ============ -->
+    @if (isBookingComplete()) {
+      <div class="max-w-3xl mx-auto space-y-8 animate-[fadeIn_.3s_ease-out]">
+        <!-- Confirmation Banner Card -->
+        <div class="p-8 md:p-10 rounded-3xl bg-white border border-emerald-200/80 shadow-2xl shadow-emerald-900/10 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-48 h-48 bg-emerald-50 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+
+          <div class="flex items-start gap-4 sm:gap-6 relative">
+            @if (confirmedBooking()?.status === 'confirmed' || confirmedBooking()?.payment_status === 'paid') {
+              <div class="w-14 h-14 rounded-2xl bg-emerald-500 text-white grid place-items-center shrink-0 shadow-lg shadow-emerald-500/30">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <span class="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-2">
+                  Reservation Confirmed
+                </span>
+                <h2 class="font-display text-2xl sm:text-3xl text-ink">Pack your bags, you're going to the hills!</h2>
+                <p class="text-sm text-ink/70 mt-1.5 leading-relaxed">
+                  Payment is complete and confirmed. Your host <strong>{{ property()?.vendor?.full_name || 'Host' }}</strong> has been notified and is preparing for your arrival.
+                </p>
+              </div>
+            } @else {
+              <div class="w-14 h-14 rounded-2xl bg-amber-500 text-white grid place-items-center shrink-0 shadow-lg shadow-amber-500/30">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke-width="2" />
+                  <polyline points="12 6 12 12 16 14" stroke-width="2" />
+                </svg>
+              </div>
+              <div>
+                <span class="inline-block px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider mb-2">
+                  Booking Created · Payment Pending
+                </span>
+                <h2 class="font-display text-2xl sm:text-3xl text-ink">Booking Reserved</h2>
+                <p class="text-sm text-ink/70 mt-1.5 leading-relaxed">
+                  Your booking has been created. You can complete your online payment anytime from your <strong>Your trips</strong> list to finalize the reservation.
+                </p>
+              </div>
+            }
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-ink/10 grid sm:grid-cols-2 gap-4 text-sm">
+            <div class="p-4 rounded-2xl bg-cloud/50 border border-ink/5">
+              <p class="text-[10px] eyebrow text-ink/50">Booking Reference</p>
+              <p class="font-mono text-base font-bold text-pine mt-1">
+                {{ confirmedBooking()?.booking_number || confirmedBooking()?.reference_number || confirmedBooking()?.id || 'CONFIRMED' }}
+              </p>
+            </div>
+            <div class="p-4 rounded-2xl bg-cloud/50 border border-ink/5">
+              <p class="text-[10px] eyebrow text-ink/50">Payment Status</p>
+              <p
+                class="text-base font-bold mt-1 capitalize"
+                [class.text-emerald-700]="confirmedBooking()?.payment_status === 'paid' || confirmedBooking()?.status === 'confirmed'"
+                [class.text-amber-700]="confirmedBooking()?.payment_status !== 'paid' && confirmedBooking()?.status !== 'confirmed'">
+                {{ confirmedBooking()?.payment_status === 'paid' || confirmedBooking()?.status === 'confirmed' ? 'Paid Online (Razorpay)' : 'Pending Payment' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reservation Details Summary -->
+        <div class="p-6 md:p-8 rounded-3xl bg-white border border-ink/10 shadow-lg shadow-pine/5 space-y-6">
+          <div class="flex items-center gap-4">
+            @if (property()?.feature_image?.file_url || property()?.cover_image?.file_url) {
+              <img
+                [src]="assetUrl + (property()?.feature_image?.file_url || property()?.cover_image?.file_url)"
+                [alt]="property()?.name || 'Stay image'"
+                class="w-20 h-20 rounded-2xl object-cover" />
+            }
+            <div>
+              <h3 class="font-display text-xl text-ink">{{ property()?.name }}</h3>
+              <p class="text-xs text-ink/60 mt-0.5">{{ property()?.city?.name }}{{ property()?.location?.name ? ', ' + property()?.location?.name : '' }}</p>
+              <p class="text-xs text-mossD font-medium mt-1">Room: {{ selectedRoomType()?.name || 'Standard Homestay Room' }}</p>
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-3 gap-4 pt-4 border-t border-ink/10 text-sm">
+            <div>
+              <p class="text-xs text-ink/45 font-medium">Check-in</p>
+              <p class="font-semibold text-ink mt-0.5">{{ checkInDate() | date:'mediumDate' }}</p>
+              <p class="text-[11px] text-ink/50">From 12:00 PM</p>
+            </div>
+            <div>
+              <p class="text-xs text-ink/45 font-medium">Check-out</p>
+              <p class="font-semibold text-ink mt-0.5">{{ checkOutDate() | date:'mediumDate' }}</p>
+              <p class="text-[11px] text-ink/50">By 10:00 AM</p>
+            </div>
+            <div>
+              <p class="text-xs text-ink/45 font-medium">Guests &amp; Rooms</p>
+              <p class="font-semibold text-ink mt-0.5">{{ numGuests() }} Guest{{ numGuests() > 1 ? 's' : '' }}</p>
+              <p class="text-[11px] text-ink/50">{{ numRooms() }} Room{{ numRooms() > 1 ? 's' : '' }} · {{ calculateNights() }} Night{{ calculateNights() > 1 ? 's' : '' }}</p>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-ink/10 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-xs text-ink/50">Total Amount</p>
+              <p class="text-2xl font-display font-bold text-pine">
+                {{ property()?.currency ?? '₹' }}{{ (confirmedBooking()?.total_amount ?? getBaseTotal()) | number }}
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                (click)="printConfirmation()"
+                class="px-5 py-2.5 rounded-full border border-ink/20 hover:border-ink text-ink text-xs font-semibold transition-colors cursor-pointer inline-flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Print Voucher
+              </button>
+              <a
+                routerLink="/user"
+                class="px-6 py-2.5 rounded-full bg-pine hover:bg-pine2 text-cloud text-xs font-semibold transition-colors shadow-md shadow-pine/20">
+                View in Your Trips
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ============ CHECKOUT FORM & SIDEBAR ============ -->
+    @else {
+      <div class="grid lg:grid-cols-[1fr_390px] gap-10 lg:gap-12 items-start">
+
+        <!-- LEFT COLUMN: Forms & Options -->
+        <div class="space-y-8 min-w-0">
+
+          <!-- Trip summary bar & Date adjustments -->
+          <div class="p-6 md:p-8 rounded-3xl bg-white border border-ink/10 shadow-lg shadow-pine/5">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-display text-2xl text-ink">Your stay details</h2>
+              @if (isAvailable() === true) {
+                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
+                  <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Available
+                </span>
+              }
+            </div>
+
+            <div class="grid sm:grid-cols-3 gap-4 text-sm bg-cloud/50 p-4 rounded-2xl border border-ink/5">
+              <div>
+                <p class="text-[10px] eyebrow text-ink/40">Check-in</p>
+                <p class="font-semibold text-ink mt-0.5">{{ checkInDate() | date:'mediumDate' }}</p>
+                <p class="text-[11px] text-ink/50">12:00 PM</p>
+              </div>
+              <div>
+                <p class="text-[10px] eyebrow text-ink/40">Check-out</p>
+                <p class="font-semibold text-ink mt-0.5">{{ checkOutDate() | date:'mediumDate' }}</p>
+                <p class="text-[11px] text-ink/50">10:00 AM</p>
+              </div>
+              <div>
+                <p class="text-[10px] eyebrow text-ink/40">Guests &amp; Rooms</p>
+                <p class="font-semibold text-ink mt-0.5">{{ numGuests() }} Guest{{ numGuests() > 1 ? 's' : '' }}</p>
+                <p class="text-[11px] text-ink/50">{{ numRooms() }} Room{{ numRooms() > 1 ? 's' : '' }} · {{ calculateNights() }} Night{{ calculateNights() > 1 ? 's' : '' }}</p>
+              </div>
+            </div>
+
+            @if (selectedRoomType()) {
+              <div class="mt-4 flex items-center gap-2 text-xs text-ink/70">
+                <span class="font-medium text-ink">Room Category:</span>
+                <span class="px-2.5 py-0.5 rounded-full bg-moss/10 text-mossD font-semibold border border-moss/20">
+                  {{ selectedRoomType()?.name }}
+                </span>
+                <span>· Max {{ selectedRoomType()?.capacity }} guests per room</span>
+              </div>
+            }
+          </div>
+
+          <!-- Guest Contact Form -->
+          <div class="p-6 md:p-8 rounded-3xl bg-white border border-ink/10 shadow-lg shadow-pine/5">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="font-display text-2xl text-ink">Guest Information</h2>
+                <p class="text-xs sm:text-sm text-ink/60 mt-0.5">We will send confirmation and stay directions to this contact.</p>
+              </div>
+              @if (!authService.isAuthenticated()) {
+                <button
+                  type="button"
+                  (click)="isLoginModalOpen.set(true)"
+                  class="text-xs font-semibold text-ochreD hover:underline cursor-pointer">
+                  Already a member? Sign in
+                </button>
+              }
+            </div>
+
+            <form [formGroup]="guestForm" class="space-y-5">
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="checkout-full-name" class="block text-xs font-semibold uppercase tracking-wider text-ink/60 mb-1.5">
+                    Full Name <span class="text-ochre">*</span>
+                  </label>
+                  <input
+                    id="checkout-full-name"
+                    type="text"
+                    formControlName="full_name"
+                    placeholder="e.g. Sonam Dorji"
+                    class="w-full rounded-xl border border-ink/15 bg-cloud/30 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-ochre focus:bg-white"
+                    [class.border-red-400]="guestForm.controls['full_name'].invalid && guestForm.controls['full_name'].touched" />
+                  @if (guestForm.controls['full_name'].invalid && guestForm.controls['full_name'].touched) {
+                    <p class="mt-1 text-xs text-red-600">Full name is required.</p>
+                  }
+                </div>
+
+                <div>
+                  <label for="checkout-phone" class="block text-xs font-semibold uppercase tracking-wider text-ink/60 mb-1.5">
+                    Phone Number <span class="text-ochre">*</span>
+                  </label>
+                  <input
+                    id="checkout-phone"
+                    type="tel"
+                    formControlName="phone"
+                    placeholder="+91 98765 43210"
+                    class="w-full rounded-xl border border-ink/15 bg-cloud/30 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-ochre focus:bg-white"
+                    [class.border-red-400]="guestForm.controls['phone'].invalid && guestForm.controls['phone'].touched" />
+                  @if (guestForm.controls['phone'].invalid && guestForm.controls['phone'].touched) {
+                    <p class="mt-1 text-xs text-red-600">Valid phone number is required.</p>
+                  }
+                </div>
+              </div>
+
+              <div>
+                <label for="checkout-email" class="block text-xs font-semibold uppercase tracking-wider text-ink/60 mb-1.5">
+                  Email Address <span class="text-ochre">*</span>
+                </label>
+                <input
+                  id="checkout-email"
+                  type="email"
+                  formControlName="email"
+                  placeholder="your.email@example.com"
+                  class="w-full rounded-xl border border-ink/15 bg-cloud/30 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-ochre focus:bg-white"
+                  [class.border-red-400]="guestForm.controls['email'].invalid && guestForm.controls['email'].touched" />
+                @if (guestForm.controls['email'].invalid && guestForm.controls['email'].touched) {
+                  <p class="mt-1 text-xs text-red-600">Please provide a valid email address.</p>
+                }
+              </div>
+
+              <div>
+                <label for="checkout-requests" class="block text-xs font-semibold uppercase tracking-wider text-ink/60 mb-1.5">
+                  Special Requests / Host Note (Optional)
+                </label>
+                <textarea
+                  id="checkout-requests"
+                  rows="3"
+                  formControlName="special_requests"
+                  placeholder="Let your host know about arrival time, dietary preferences, or specific homestay arrangements..."
+                  class="w-full rounded-xl border border-ink/15 bg-cloud/30 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-ochre focus:bg-white resize-none"></textarea>
+              </div>
+            </form>
+          </div>
+
+          <!-- Payment Method Card -->
+          <div class="p-6 md:p-8 rounded-3xl bg-white border border-ink/10 shadow-lg shadow-pine/5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="font-display text-2xl text-ink">Payment Method</h2>
+                <p class="text-xs sm:text-sm text-ink/60 mt-0.5">Secure payment processed via Razorpay</p>
+              </div>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider">
+                <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                100% Encrypted
+              </span>
+            </div>
+
+            <div class="p-5 rounded-2xl border border-ochre/40 bg-ochre/5 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-pine text-cloud grid place-items-center font-display font-bold text-sm shadow-sm">
+                    R
+                  </div>
+                  <div>
+                    <p class="font-semibold text-sm text-ink">Razorpay Payment Gateway</p>
+                    <p class="text-xs text-ink/60 mt-0.5">Instant booking confirmation with zero convenience fee</p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-pine text-cloud uppercase tracking-wider">Online</span>
+              </div>
+
+              <div class="pt-3 border-t border-ochre/15 flex flex-wrap items-center gap-2 text-[11px] text-ink/70">
+                <span class="px-2 py-0.5 rounded-md bg-white/80 border border-ink/10 font-medium">UPI (GPay / PhonePe / Paytm)</span>
+                <span class="px-2 py-0.5 rounded-md bg-white/80 border border-ink/10 font-medium">Credit &amp; Debit Cards</span>
+                <span class="px-2 py-0.5 rounded-md bg-white/80 border border-ink/10 font-medium">Net Banking</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Alert if any -->
+          @if (bookingError()) {
+            <div class="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-start gap-3 animate-[fadeIn_.2s_ease-out]">
+              <svg class="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                <line x1="12" y1="8" x2="12" y2="12" stroke-width="2"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2"></line>
+              </svg>
+              <div>
+                <p class="font-bold">Reservation could not be completed</p>
+                <p class="text-xs text-red-700 mt-0.5">{{ bookingError() }}</p>
+              </div>
+            </div>
+          }
+
+          <!-- Terms Checkbox & Confirm Button -->
+          <div class="p-6 rounded-3xl bg-white border border-ink/10 shadow-lg shadow-pine/5 space-y-4">
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                [formControl]="$any(guestForm.controls['terms_agreed'])"
+                class="mt-0.5 h-4 w-4 rounded border-ink/20 text-ochre focus:ring-ochre" />
+              <span class="text-xs text-ink/70 leading-relaxed">
+                I agree to the Tashi Home booking conditions, homestay house rules, and cancellation policy.
+              </span>
+            </label>
+
+            <button
+              type="button"
+              (click)="onConfirmBooking()"
+              [disabled]="isSubmitting() || isProcessingPayment() || guestForm.invalid"
+              class="btn-anim group w-full py-4 rounded-full bg-ochre hover:bg-ochreD text-cloud text-base font-semibold transition-all shadow-xl shadow-ochre/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+              @if (isSubmitting() || isProcessingPayment()) {
+                <div class="w-5 h-5 border-2 border-cloud border-t-transparent rounded-full animate-spin"></div>
+                <span>{{ isProcessingPayment() ? 'Opening secure payment gateway...' : 'Confirming reservation...' }}</span>
+              } @else {
+                <span>Confirm &amp; Reserve ({{ property()?.currency ?? '₹' }}{{ getBaseTotal() | number }})</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="transition-transform group-hover:translate-x-1">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              }
+            </button>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Sticky Order Summary -->
+        <div class="sticky top-28 space-y-6">
+          <div class="rounded-3xl border border-white/90 glass-property-card-solid shadow-2xl shadow-pine/15 p-6 overflow-hidden relative">
+            <span class="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full bg-ochre/10 blur-2xl"></span>
+
+            <!-- Property Thumbnail & Info -->
+            <div class="flex gap-4 pb-5 border-b border-ink/10">
+              @if (property()?.feature_image?.file_url || property()?.cover_image?.file_url) {
+                <img
+                  [src]="assetUrl + (property()?.feature_image?.file_url || property()?.cover_image?.file_url)"
+                  [alt]="property()?.name || 'Stay'"
+                  class="w-20 h-20 rounded-2xl object-cover shrink-0" />
+              } @else {
+                <div class="w-20 h-20 rounded-2xl bg-pine/10 grid place-items-center shrink-0">
+                  <svg class="w-8 h-8 text-pine/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2" />
+                  </svg>
+                </div>
+              }
+              <div class="min-w-0">
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-mossD">Homestay</span>
+                <h3 class="font-display text-lg text-ink truncate mt-0.5">{{ property()?.name }}</h3>
+                <p class="text-xs text-ink/60 truncate">{{ property()?.city?.name }}{{ property()?.location?.name ? ', ' + property()?.location?.name : '' }}</p>
+                <p class="text-xs text-ochre font-medium mt-1 flex items-center gap-1">★ 4.9 · Host Verified</p>
+              </div>
+            </div>
+
+            <!-- Pricing Breakdown -->
+            <div class="py-5 border-b border-ink/10 space-y-3 text-sm text-ink/75">
+              <div class="flex justify-between">
+                <span>
+                  {{ property()?.currency ?? '₹' }}{{ getRatePerNight() | number }} × {{ calculateNights() }} night{{ calculateNights() > 1 ? 's' : '' }}
+                  @if (numRooms() > 1) { ({{ numRooms() }} rooms) }
+                </span>
+                <span class="font-medium text-ink">
+                  {{ property()?.currency ?? '₹' }}{{ getBaseTotal() | number }}
+                </span>
+              </div>
+
+              @if (getDepositAmount() > 0) {
+                <div class="flex justify-between text-xs text-ink/60">
+                  <span>Deposit Required</span>
+                  <span class="font-medium text-ink">{{ property()?.currency ?? '₹' }}{{ getDepositAmount() | number }}</span>
+                </div>
+              }
+
+              <div class="flex justify-between text-xs text-ink/60">
+                <span>Service Fee &amp; Taxes</span>
+                <span class="text-emerald-700 font-medium">Included</span>
+              </div>
+            </div>
+
+            <!-- Total -->
+            <div class="pt-4 flex items-baseline justify-between text-ink">
+              <div>
+                <p class="text-sm font-semibold">Total Payable</p>
+                <p class="text-[11px] text-ink/50">Includes all local taxes</p>
+              </div>
+              <p class="font-display text-3xl text-pine font-bold">
+                {{ property()?.currency ?? '₹' }}{{ getBaseTotal() | number }}
+              </p>
+            </div>
+
+            <!-- Host guarantee pill -->
+            <div class="mt-5 p-3 rounded-2xl bg-cloud/80 border border-ink/5 flex items-center gap-2.5 text-xs text-ink/70">
+              <svg class="w-5 h-5 text-mossD shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span>100% verified homestay stay with direct host coordination.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</section>
+
+<!-- ============ QUICK LOGIN MODAL (For unauthenticated guests) ============ -->
+@if (isLoginModalOpen()) {
+  <div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="relative w-full max-w-md bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-ink/10 animate-[fadeIn_.2s_ease-out]">
+      <button
+        type="button"
+        (click)="closeLoginModal()"
+        class="absolute top-4 right-4 text-ink/40 hover:text-ink transition-colors cursor-pointer p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="text-center mb-6">
+        <span class="stamp inline-block text-ochre text-[10px] font-semibold px-3 py-1 mb-2">SIGN IN</span>
+        <h3 class="font-display text-2xl text-ink">Sign in to complete booking</h3>
+        <p class="text-xs text-ink/60 mt-1">Access your homestay reservations anytime from your profile.</p>
+      </div>
+
+      @if (loginErrorMessage()) {
+        <div class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium">
+          {{ loginErrorMessage() }}
+        </div>
+      }
+
+      <form [formGroup]="inlineLoginForm" (ngSubmit)="onInlineLogin()" class="space-y-4">
+        <div>
+          <label for="login-email" class="block text-xs font-semibold uppercase tracking-wider text-ink/60 mb-1.5">
+            Email
+          </label>
+          <input
+            id="login-email"
+            type="email"
+            formControlName="email"
+            placeholder="you@example.com"
+            class="w-full rounded-xl border border-ink/15 bg-cloud/30 px-4 py-2.5 text-sm text-ink outline-none focus:border-ochre focus:bg-white" />
+        </div>
+
+        <div>
+          <label for="login-pwd" class="block text-xs font-semibold uppercase tracking-wider text-ink/60 mb-1.5">
+            Password
+          </label>
+          <input
+            id="login-pwd"
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            class="w-full rounded-xl border border-ink/15 bg-cloud/30 px-4 py-2.5 text-sm text-ink outline-none focus:border-ochre focus:bg-white" />
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="isLoggingIn() || inlineLoginForm.invalid"
+          class="w-full py-3 rounded-full bg-pine hover:bg-pine2 text-cloud text-sm font-semibold transition-colors shadow-md shadow-pine/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2">
+          @if (isLoggingIn()) {
+            <div class="w-4 h-4 border-2 border-cloud border-t-transparent rounded-full animate-spin"></div>
+            <span>Signing in...</span>
+          } @else {
+            <span>Sign In &amp; Continue</span>
+          }
+        </button>
+
+        <div class="text-center pt-2 text-xs text-ink/60">
+          <span>Don't have an account? </span>
+          <a routerLink="/register" (click)="closeLoginModal()" class="text-ochre font-semibold hover:underline">
+            Register now
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+

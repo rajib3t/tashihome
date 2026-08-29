@@ -9,6 +9,11 @@ import { UserBasicProfileResponse } from '../../../../services/user/user.model';
 import { Avatar } from '../../../../shared/components/users/avatar/avatar';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { environment } from '../../../../../environments/environment';
+import { BookingService } from '../../../../services/booking/booking-service';
+import { BookingData, RazorpayVerifyRequest } from '../../../../services/booking/booking.model';
+import { RazorpayService } from '../../../../services/booking/razorpay-service';
+import { SettingsService } from '../../../../services/settings/settings-service';
+
 
 export type ProfileTab = 'trips' | 'saved' | 'reviews' | 'account' | 'security';
 
@@ -28,14 +33,22 @@ export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
+  public readonly bookingService = inject(BookingService);
+  private readonly razorpayService = inject(RazorpayService);
+  private readonly settingsService = inject(SettingsService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
+
+
 
   public readonly assetUrl = environment.assetUrl;
 
   public readonly authUser = this.authService.authUser;
   public readonly user = signal<UserBasicProfileResponse | null>(null);
   public readonly activeTab = signal<ProfileTab>('account');
+
+  public readonly userBookings = signal<BookingData[]>([]);
+  public readonly isLoadingBookings = signal<boolean>(false);
 
   public readonly isLoading = signal<boolean>(false);
   public readonly isUpdatingInfo = signal<boolean>(false);
@@ -57,6 +70,19 @@ export class Profile implements OnInit {
   public readonly showConfirmPassword = signal<boolean>(false);
 
   public readonly isDeleteModalOpen = signal<boolean>(false);
+
+  // Booking Cancellation State
+  public readonly selectedBookingToCancel = signal<BookingData | null>(null);
+  public readonly isCancelModalOpen = signal<boolean>(false);
+  public readonly isCancellingBooking = signal<boolean>(false);
+  public readonly cancelReason = signal<string>('');
+  public readonly cancelSuccessMessage = signal<string | null>(null);
+  public readonly cancelErrorMessage = signal<string | null>(null);
+
+  // Booking Payment State
+  public readonly isCompletingPayment = signal<string | null>(null);
+  public readonly paymentSuccessMessage = signal<string | null>(null);
+  public readonly paymentErrorMessage = signal<string | null>(null);
 
   public readonly infoForm = this.fb.group({
     full_name: ['', [Validators.required, Validators.minLength(2)]],
@@ -82,6 +108,26 @@ export class Profile implements OnInit {
     this.infoErrorMessage.set(null);
     this.passwordSuccessMessage.set(null);
     this.passwordErrorMessage.set(null);
+
+    if (tab === 'trips') {
+      this.loadUserBookings();
+    }
+  }
+
+  public loadUserBookings(): void {
+    this.isLoadingBookings.set(true);
+    this.bookingService.getUserBookings()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+          this.userBookings.set(list);
+          this.isLoadingBookings.set(false);
+        },
+        error: () => {
+          this.isLoadingBookings.set(false);
+        }
+      });
   }
 
   public loadProfile(): void {
@@ -267,6 +313,182 @@ export class Profile implements OnInit {
           this.imageErrorMessage.set(err || 'Failed to remove profile image.');
         },
       });
+  }
+
+  public openCancelBookingModal(booking: BookingData): void {
+    this.selectedBookingToCancel.set(booking);
+    this.cancelReason.set('');
+    this.cancelSuccessMessage.set(null);
+    this.cancelErrorMessage.set(null);
+    this.isCancelModalOpen.set(true);
+  }
+
+  public closeCancelBookingModal(): void {
+    this.isCancelModalOpen.set(false);
+    this.selectedBookingToCancel.set(null);
+    this.cancelReason.set('');
+    this.cancelErrorMessage.set(null);
+  }
+
+  public confirmCancelBooking(): void {
+    const booking = this.selectedBookingToCancel();
+    if (!booking?.id) return;
+
+    this.isCancellingBooking.set(true);
+    this.cancelErrorMessage.set(null);
+
+    this.bookingService
+      .cancelBooking(booking.id, {
+        reason: this.cancelReason().trim() || undefined,
+        cancellation_reason: this.cancelReason().trim() || undefined,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isCancellingBooking.set(false);
+          this.closeCancelBookingModal();
+
+          // Update booking in local list
+          const updatedList = this.userBookings().map((b) =>
+            b.id === booking.id
+              ? { ...b, status: 'cancelled', cancellation_reason: this.cancelReason() }
+              : b
+          );
+          this.userBookings.set(updatedList);
+          this.cancelSuccessMessage.set('Booking has been cancelled successfully.');
+        },
+        error: (err) => {
+          this.isCancellingBooking.set(false);
+          const msg = this.bookingService.extractApiErrorMessage(err);
+          this.cancelErrorMessage.set(msg || 'Failed to cancel booking. Please try again.');
+        },
+      });
+  }
+
+  public payBookingNow(booking: BookingData): void {
+    if (!booking?.id) return;
+
+    this.isCompletingPayment.set(booking.id);
+    this.paymentSuccessMessage.set(null);
+    this.paymentErrorMessage.set(null);
+
+    // Load Razorpay SDK lazily (only on user action)
+    this.razorpayService.load().then((loaded) => {
+      if (!loaded) {
+        this.isCompletingPayment.set(null);
+        this.paymentErrorMessage.set('Unable to load payment gateway. Please check your internet connection.');
+        return;
+      }
+
+      this.bookingService
+        .createRazorpayOrder(booking.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res) => {
+            const order = res.data;
+            this.openPaymentModal(booking, order);
+          },
+          error: () => {
+            // Fallback order
+            this.openPaymentModal(booking, {});
+          },
+        });
+    });
+  }
+
+  private openPaymentModal(booking: BookingData, orderData: any): void {
+    if (!isPlatformBrowser(this.platformId) || typeof window === 'undefined') {
+      this.isCompletingPayment.set(null);
+      return;
+    }
+
+    const RazorpayConstructor = (window as any).Razorpay;
+    if (!RazorpayConstructor) {
+      this.isCompletingPayment.set(null);
+      this.paymentErrorMessage.set('Payment gateway is initializing. Please try again in a moment.');
+      return;
+    }
+
+    const authUser = this.authUser() || this.user() || this.authService.getUser();
+    const guestPhone = (authUser?.phone || booking.guest?.phone || '').toString().trim();
+    const guestName = (authUser?.full_name || booking.guest?.full_name || '').toString().trim();
+    const guestEmail = (authUser?.email || booking.guest?.email || '').toString().trim();
+
+    const totalAmount = booking.total_amount || 0;
+    const amountInPaise = orderData?.amount ?? (totalAmount * 100);
+
+    const settings = this.settingsService.settingsData();
+    const appName = settings['app_name'] || 'Tashi Home';
+    const appLogoPath = settings['app_logo'] || '';
+    const appLogoUrl = appLogoPath ? this.settingsService.resolveAssetUrl(appLogoPath) : '';
+
+    const options = {
+      key: orderData?.key || orderData?.key_id || orderData?.razorpay_key || 'rzp_test_key',
+      amount: amountInPaise,
+      currency: orderData?.currency || booking.currency || 'INR',
+      name: appName,
+      image: appLogoUrl || undefined,
+      description: `Complete Booking Payment - ${booking.property?.name || 'Stay'}`,
+      order_id: orderData?.order_id || orderData?.id || undefined,
+      prefill: {
+        name: guestName,
+        email: guestEmail,
+        contact: guestPhone,
+        phone: guestPhone,
+      },
+      notes: {
+        phone: guestPhone,
+        email: guestEmail,
+      },
+      theme: {
+        color: '#0C4550',
+      },
+      handler: (response: any) => {
+        const verifyData: RazorpayVerifyRequest = {
+          razorpay_order_id: response.razorpay_order_id || orderData?.order_id || '',
+          razorpay_payment_id: response.razorpay_payment_id || '',
+          razorpay_signature: response.razorpay_signature || '',
+        };
+
+        this.bookingService
+          .verifyRazorpayPayment(booking.id, verifyData)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.isCompletingPayment.set(null);
+              // Update local state to confirmed & paid
+              const updatedList = this.userBookings().map((b) =>
+                b.id === booking.id
+                  ? { ...b, status: 'confirmed', payment_status: 'paid' }
+                  : b
+              );
+              this.userBookings.set(updatedList);
+              this.paymentSuccessMessage.set(
+                `Payment successful! Your booking for "${booking.property?.name || 'Homestay'}" is now confirmed.`
+              );
+            },
+            error: (err) => {
+              this.isCompletingPayment.set(null);
+              const errTxt = this.bookingService.extractApiErrorMessage(err);
+              this.paymentErrorMessage.set(errTxt || 'Payment verification failed. Please contact support.');
+            },
+          });
+      },
+      modal: {
+        ondismiss: () => {
+          this.isCompletingPayment.set(null);
+        },
+      },
+    };
+
+    try {
+      const rzp = new RazorpayConstructor(options);
+      rzp.open();
+    } catch (e) {
+      console.error('Failed to open Razorpay modal:', e);
+      this.isCompletingPayment.set(null);
+      this.paymentErrorMessage.set('Could not open payment window. Please try again.');
+    }
   }
 
   public getProfileImageUrl(): string | undefined {

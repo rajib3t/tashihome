@@ -1,0 +1,182 @@
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { ApiService } from '../api/api-service';
+import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
+import {
+  BookingData,
+  BookingPaymentRequest,
+  BookingPayment,
+  BookingQuery,
+  CancelBookingRequest,
+  CheckAvailabilityRequest,
+  CheckAvailabilityResponseData,
+  CreateBookingRequest,
+  RazorpayOrderResponse,
+  RazorpayVerifyRequest,
+} from './booking.model';
+
+function buildBookingQueryParams(query?: BookingQuery): Record<string, string | number> {
+  const params: Record<string, string | number> = {
+    page: query?.page ?? 1,
+    size: query?.size ?? 10,
+    sort_by: query?.sort_by ?? 'created_at',
+    sort_order: query?.sort_order ?? 'desc',
+  };
+
+  if (query?.status?.trim()) {
+    params['status'] = query.status.trim();
+  }
+
+  return params;
+}
+
+@Injectable({ providedIn: 'root' })
+export class BookingService {
+  private readonly apiService = inject(ApiService);
+
+  public extractApiErrorMessage(error: any): string | null {
+    return this.apiService.extractApiErrorMessage(error);
+  }
+
+  /**
+   * Check room/property availability for selected dates, room type, rooms, and guests
+   * Endpoint: POST /api/v1/user/bookings/check-availability
+   */
+  public checkAvailability(
+    payload: CheckAvailabilityRequest
+  ): Observable<ApiResponse<CheckAvailabilityResponseData>> {
+    return this.apiService
+      .post<ApiResponse<CheckAvailabilityResponseData>>(
+        '/user/bookings/check-availability',
+        payload
+      )
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Create a new booking
+   * Endpoint: POST /api/v1/user/bookings/
+   */
+  public createBooking(
+    payload: CreateBookingRequest
+  ): Observable<ApiResponse<BookingData>> {
+    return this.apiService
+      .protectedPost<ApiResponse<BookingData>>('/user/bookings/', payload)
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Cancel a booking
+   * Endpoint: POST /api/v1/user/bookings/{booking_id}/cancel
+   */
+  public cancelBooking(
+    bookingId: string,
+    payload: CancelBookingRequest = {}
+  ): Observable<ApiResponse<BookingData>> {
+    return this.apiService
+      .protectedPost<ApiResponse<BookingData>>(
+        `/user/bookings/${encodeURIComponent(bookingId)}/cancel`,
+        payload
+      )
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Record a payment (internal, gateway, cash, etc.)
+   * Endpoint: POST /api/v1/user/bookings/{booking_id}/payments
+   */
+  public recordPayment(
+    bookingId: string,
+    payload: BookingPaymentRequest
+  ): Observable<ApiResponse<BookingPayment>> {
+    return this.apiService
+      .protectedPost<ApiResponse<BookingPayment>>(
+        `/user/bookings/${encodeURIComponent(bookingId)}/payments`,
+        payload
+      )
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Create a Razorpay Order for a specific booking
+   * Endpoint: POST /api/v1/user/bookings/{booking_id}/razorpay/order
+   */
+  public createRazorpayOrder(
+    bookingId: string
+  ): Observable<ApiResponse<RazorpayOrderResponse>> {
+    return this.apiService
+      .protectedPost<ApiResponse<RazorpayOrderResponse>>(
+        `/user/bookings/${encodeURIComponent(bookingId)}/razorpay/order`,
+        {}
+      )
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Verify Razorpay Payment signature after successful payment popup
+   * Endpoint: POST /api/v1/user/bookings/{booking_id}/razorpay/verify
+   */
+  public verifyRazorpayPayment(
+    bookingId: string,
+    payload: RazorpayVerifyRequest
+  ): Observable<ApiResponse<any>> {
+    return this.apiService
+      .protectedPost<ApiResponse<any>>(
+        `/user/bookings/${encodeURIComponent(bookingId)}/razorpay/verify`,
+        payload
+      )
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Fetch paginated bookings of the authenticated user
+   * Endpoint: GET /api/v1/user/bookings/?page=1&size=10&sort_by=created_at&sort_order=desc
+   */
+  public getUserBookings(
+    query?: BookingQuery
+  ): Observable<PaginatedResponse<BookingData>> {
+    const params = buildBookingQueryParams(query);
+    return this.apiService
+      .protectedGet<PaginatedResponse<BookingData>>('/user/bookings/', { params })
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Fetch specific booking details by ID
+   * Endpoint: GET /api/v1/user/bookings/{booking_id}
+   */
+  public getBookingById(
+    bookingId: string
+  ): Observable<ApiResponse<BookingData>> {
+    return this.apiService
+      .protectedGet<ApiResponse<BookingData>>(
+        `/user/bookings/${encodeURIComponent(bookingId)}`
+      )
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+}
