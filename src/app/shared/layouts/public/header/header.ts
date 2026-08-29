@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Logo } from '../../../components/common/logo/logo';
 import { Avatar } from '../../../components/users/avatar/avatar';
 import { AuthService } from '../../../../services/auth/auth-service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-public-header',
@@ -14,6 +15,7 @@ import { AuthService } from '../../../../services/auth/auth-service';
 export class HeaderPublic {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  readonly assetUrl = environment.assetUrl;
 
   @Input() menuItems: { label: string; route: string }[] = [
     { label: 'Stays', route: '#stays' },
@@ -26,6 +28,17 @@ export class HeaderPublic {
   isScrolled = false;
   readonly authUser = this.authService.authUser;
   isAuthenticated = computed(() => !!this.authService.authUser());
+
+  get userAvatarUrl(): string | undefined {
+    const url = this.authUser()?.is_profile_image_url;
+    if (!url) return undefined;
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('blob:')) {
+      return url;
+    }
+    const base = this.assetUrl.endsWith('/') ? this.assetUrl : `${this.assetUrl}/`;
+    const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+    return `${base}${cleanPath}`;
+  }
 
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
@@ -47,8 +60,8 @@ export class HeaderPublic {
 
   navigateToProfile(): void {
     const role = this.authService.authUser()?.role?.toLowerCase();
-    if (role === 'admin') this.router.navigate(['/admin']);
-    else if (role === 'vendor') this.router.navigate(['/vendor']);
+    if (role === 'admin') this.router.navigate(['/admin/profile']);
+    else if (role === 'vendor') this.router.navigate(['/vendor/profile']);
     else if (role === 'user') this.router.navigate(['/user']);
     else this.router.navigate(['/login']);
   }

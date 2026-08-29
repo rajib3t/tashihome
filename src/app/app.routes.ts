@@ -28,6 +28,8 @@ import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
 import { PasswordReset } from './pages/public/password-reset/password-reset';
 import { User as UserLayout } from './shared/layouts/authenticate/user/user';
 import { Profile } from './pages/authenticate/user/profile/profile';
+import { AdminProfile } from './pages/authenticate/admin/profile/profile';
+import { VendorProfile } from './pages/authenticate/vendor/profile/profile';
 import { Vendor } from './shared/layouts/authenticate/vendor/vendor';
 import { Dashboard } from './pages/authenticate/vendor/dashboard/dashboard';
 import { VendorPropertyManagement } from './pages/authenticate/vendor/vendor-property-management/vendor-property-management';
@@ -130,6 +132,11 @@ export const routes: Routes = [
                         title: 'Admin Dashboard',
                     },
                     {
+                        path: 'profile',
+                        component: AdminProfile,
+                        title: 'Admin Profile',
+                    },
+                    {
                         path: 'setting',
                         component: Setting,
                         title: 'Application Setting',
@@ -202,6 +209,11 @@ export const routes: Routes = [
                         title:'Vendor Dashboard'
                     },
                     {
+                        path: 'profile',
+                        component: VendorProfile,
+                        title: 'Vendor Profile'
+                    },
+                    {
                         path:'property-management',
                         component:VendorPropertyManagement,
                         title:'Vendor Property Management'
@@ -232,6 +244,11 @@ export const routes: Routes = [
                         path: '',
                         component: Profile,
                         title: 'Your Profile',
+                    },
+                    {
+                        path: 'profile',
+                        redirectTo: '',
+                        pathMatch: 'full',
                     }
                 ]
             }

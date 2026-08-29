@@ -8,10 +8,28 @@ export interface User {
     status: string;
     role: UserRole;
     is_profile_image_url: string;
+    is_subscribed?: boolean;
     created_at: string;
+    updated_at?: string;
 }
 
 export type UserRole = 'user' | 'admin' | 'vendor';
+
+export interface UserBasicProfileResponse extends User {}
+
+export interface UpdateProfileInfoDTO {
+    full_name: string;
+    phone: string;
+    is_subscribed?: boolean;
+}
+
+export interface UpdatePasswordDTO {
+    current_password?: string;
+    old_password?: string;
+    password?: string;
+    new_password?: string;
+    confirm_password?: string;
+}
 
 
 export interface VendorAddress {

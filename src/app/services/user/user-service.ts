@@ -2,7 +2,7 @@ import { inject, Service } from '@angular/core';
 import { ApiService } from '../api/api-service';
 import { catchError, map, Observable , throwError} from 'rxjs';
 import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
-import { RegisterUserRequest, RegisterUserResponse, RequestVendor, User, VendorDetail, VendorQuery, VendorUpdateRequest } from './user.model';
+import { RegisterUserRequest, RegisterUserResponse, RequestVendor, UpdatePasswordDTO, UpdateProfileInfoDTO, User, UserBasicProfileResponse, VendorDetail, VendorQuery, VendorUpdateRequest } from './user.model';
 
 @Service()
 export class UserService {
@@ -14,6 +14,43 @@ export class UserService {
       map(response => response.data),
       catchError(this.apiService.passthroughError)
     )
+  }
+
+  public getProfile(): Observable<ApiResponse<UserBasicProfileResponse>> {
+    return this.apiService.protectedGet<ApiResponse<UserBasicProfileResponse>>('/profile/').pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public updateProfileInfo(data: UpdateProfileInfoDTO): Observable<ApiResponse<UserBasicProfileResponse>> {
+    return this.apiService.protectedPut<ApiResponse<UserBasicProfileResponse>>('/profile/info', data).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public updatePassword(data: UpdatePasswordDTO): Observable<ApiResponse<UserBasicProfileResponse>> {
+    return this.apiService.protectedPut<ApiResponse<UserBasicProfileResponse>>('/profile/password', data).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public uploadProfileImage(file: File): Observable<ApiResponse<UserBasicProfileResponse>> {
+    const formData = new FormData();
+    formData.append('profile_image', file);
+    return this.apiService.protectedUpload<ApiResponse<UserBasicProfileResponse>>('/profile/image', formData).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public deleteProfileImage(): Observable<ApiResponse<UserBasicProfileResponse>> {
+    return this.apiService.protectedDelete<ApiResponse<UserBasicProfileResponse>>('/profile/image').pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
   }
 
   

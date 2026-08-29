@@ -243,6 +243,15 @@ export class AuthService {
         }
     }
 
+    public updateCurrentUser(user: User) {
+        this.#authUser.set(user);
+        this.setUser(user);
+        this.broadcastAuthChange({
+            type: 'USER_UPDATED',
+            user
+        });
+    }
+
     public getUser(): User | null {
         if (typeof window === 'undefined') {
             return null;

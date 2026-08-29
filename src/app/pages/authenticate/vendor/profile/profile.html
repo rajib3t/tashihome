@@ -1,0 +1,356 @@
+<app-page-breadcrumb pageTitle="Vendor Profile"></app-page-breadcrumb>
+
+@if (isLoading()) {
+  <div class="flex items-center justify-center min-h-[400px]">
+    <div class="flex flex-col items-center gap-3">
+      <div class="h-10 w-10 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Loading vendor profile...</p>
+    </div>
+  </div>
+} @else {
+  <div class="space-y-6">
+    <!-- Header / Overview Card -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <!-- Avatar with uploadable enabled -->
+        <div class="flex flex-col items-center gap-2">
+          <app-avatar
+            [name]="user()?.full_name || 'Vendor'"
+            [src]="getProfileImageUrl()"
+            [size]="90"
+            [rounded]="true"
+            [uploadable]="true"
+            (imageUpload)="uploadImage($event)">
+          </app-avatar>
+
+          @if (user()?.is_profile_image_url) {
+            <button
+              type="button"
+              (click)="openDeleteModal()"
+              class="cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Remove Photo</span>
+            </button>
+          }
+        </div>
+
+        <!-- User Info Details -->
+        <div class="flex-1 text-center sm:text-left space-y-2">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center justify-center sm:justify-start gap-2.5 flex-wrap">
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                  {{ user()?.full_name || 'Vendor Profile' }}
+                </h1>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 uppercase tracking-wide">
+                  {{ user()?.role || 'Vendor' }}
+                </span>
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize"
+                  [ngClass]="{
+                    'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400': user()?.status === 'active',
+                    'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400': user()?.status !== 'active'
+                  }">
+                  {{ user()?.status || 'Active' }}
+                </span>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {{ user()?.email }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Alert Badges for Image Upload -->
+          @if (isUploadingImage()) {
+            <div class="p-3 text-sm rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex items-center gap-2">
+              <div class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+              <span>Uploading profile image...</span>
+            </div>
+          }
+          @if (imageSuccessMessage()) {
+            <div class="p-3 text-sm rounded-lg bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400 border border-green-200 dark:border-green-800">
+              {{ imageSuccessMessage() }}
+            </div>
+          }
+          @if (imageErrorMessage()) {
+            <div class="p-3 text-sm rounded-lg bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border border-red-200 dark:border-red-800">
+              {{ imageErrorMessage() }}
+            </div>
+          }
+
+          <div class="pt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs text-gray-500 dark:text-gray-400">
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-gray-700 dark:text-gray-300">Phone:</span>
+              <span>{{ user()?.phone || 'Not provided' }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-gray-700 dark:text-gray-300">Vendor since:</span>
+              <span>{{ user()?.created_at ? (user()?.created_at | date:'mediumDate') : 'N/A' }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-gray-700 dark:text-gray-300">Newsletter:</span>
+              <span [class.text-green-600]="user()?.is_subscribed" [class.dark:text-green-400]="user()?.is_subscribed">
+                {{ user()?.is_subscribed ? 'Subscribed' : 'Not subscribed' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forms Grid: Info and Password -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Edit Profile Information Card -->
+      <app-card title="Personal Information" desc="Update your name, contact phone and subscription preferences.">
+        @if (infoSuccessMessage()) {
+          <div class="mb-4 p-3 text-sm rounded-lg bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400 border border-green-200 dark:border-green-800">
+            {{ infoSuccessMessage() }}
+          </div>
+        }
+        @if (infoErrorMessage()) {
+          <div class="mb-4 p-3 text-sm rounded-lg bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border border-red-200 dark:border-red-800">
+            {{ infoErrorMessage() }}
+          </div>
+        }
+
+        <form [formGroup]="infoForm" (ngSubmit)="onUpdateInfo()" class="space-y-4">
+          <!-- Full Name -->
+          <div>
+            <label for="vendor_full_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Full Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="vendor_full_name"
+              type="text"
+              formControlName="full_name"
+              placeholder="Your full name"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-800 dark:bg-gray-900 dark:text-white"
+              [class.border-red-500]="infoForm.controls.full_name.invalid && infoForm.controls.full_name.touched" />
+            @if (infoForm.controls.full_name.invalid && infoForm.controls.full_name.touched) {
+              <p class="mt-1 text-xs text-red-500">Full name is required (minimum 2 characters).</p>
+            }
+          </div>
+
+          <!-- Email (Read-Only) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Email Address
+            </label>
+            <input
+              type="email"
+              [value]="user()?.email"
+              disabled
+              class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500 outline-none cursor-not-allowed dark:border-gray-800 dark:bg-white/[0.02] dark:text-gray-400" />
+            <p class="mt-1 text-xs text-gray-400">Email cannot be changed directly.</p>
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label for="vendor_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Phone Number <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="vendor_phone"
+              type="tel"
+              formControlName="phone"
+              placeholder="+1234567890"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-800 dark:bg-gray-900 dark:text-white"
+              [class.border-red-500]="infoForm.controls.phone.invalid && infoForm.controls.phone.touched" />
+            @if (infoForm.controls.phone.invalid && infoForm.controls.phone.touched) {
+              <p class="mt-1 text-xs text-red-500">Phone number is required.</p>
+            }
+          </div>
+
+          <!-- Subscription Toggle -->
+          <div class="pt-2">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                formControlName="is_subscribed"
+                class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800" />
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Subscribe to vendor newsletters and platform announcements
+              </span>
+            </label>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-4 flex justify-end">
+            <button
+              type="submit"
+              [disabled]="isUpdatingInfo()"
+              class="cursor-pointer inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (isUpdatingInfo()) {
+                <div class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                Saving...
+              } @else {
+                Save Changes
+              }
+            </button>
+          </div>
+        </form>
+      </app-card>
+
+      <!-- Security / Change Password Card -->
+      <app-card title="Change Password" desc="Ensure your vendor account is using a secure password.">
+        @if (passwordSuccessMessage()) {
+          <div class="mb-4 p-3 text-sm rounded-lg bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400 border border-green-200 dark:border-green-800">
+            {{ passwordSuccessMessage() }}
+          </div>
+        }
+        @if (passwordErrorMessage()) {
+          <div class="mb-4 p-3 text-sm rounded-lg bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border border-red-200 dark:border-red-800">
+            {{ passwordErrorMessage() }}
+          </div>
+        }
+
+        <form [formGroup]="passwordForm" (ngSubmit)="onUpdatePassword()" class="space-y-4">
+          <!-- Current Password -->
+          <div>
+            <label for="vendor_current_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Current Password <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <input
+                id="vendor_current_password"
+                [type]="showCurrentPassword() ? 'text' : 'password'"
+                formControlName="current_password"
+                placeholder="Enter current password"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 pr-10 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-800 dark:bg-gray-900 dark:text-white"
+                [class.border-red-500]="passwordForm.controls.current_password.invalid && passwordForm.controls.current_password.touched" />
+              <button
+                type="button"
+                (click)="showCurrentPassword.set(!showCurrentPassword())"
+                class="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                @if (showCurrentPassword()) {
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+                } @else {
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                }
+              </button>
+            </div>
+            @if (passwordForm.controls.current_password.invalid && passwordForm.controls.current_password.touched) {
+              <p class="mt-1 text-xs text-red-500">Current password is required.</p>
+            }
+          </div>
+
+          <!-- New Password -->
+          <div>
+            <label for="vendor_new_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              New Password <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <input
+                id="vendor_new_password"
+                [type]="showNewPassword() ? 'text' : 'password'"
+                formControlName="new_password"
+                placeholder="Enter new password (min. 8 chars)"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 pr-10 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-800 dark:bg-gray-900 dark:text-white"
+                [class.border-red-500]="passwordForm.controls.new_password.invalid && passwordForm.controls.new_password.touched" />
+              <button
+                type="button"
+                (click)="showNewPassword.set(!showNewPassword())"
+                class="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                @if (showNewPassword()) {
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+                } @else {
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                }
+              </button>
+            </div>
+            @if (passwordForm.controls.new_password.invalid && passwordForm.controls.new_password.touched) {
+              <p class="mt-1 text-xs text-red-500">New password must be at least 8 characters.</p>
+            }
+          </div>
+
+          <!-- Confirm Password -->
+          <div>
+            <label for="vendor_confirm_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Confirm New Password <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <input
+                id="vendor_confirm_password"
+                [type]="showConfirmPassword() ? 'text' : 'password'"
+                formControlName="confirm_password"
+                placeholder="Re-enter new password"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 pr-10 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-800 dark:bg-gray-900 dark:text-white"
+                [class.border-red-500]="passwordForm.controls.confirm_password.invalid && passwordForm.controls.confirm_password.touched" />
+              <button
+                type="button"
+                (click)="showConfirmPassword.set(!showConfirmPassword())"
+                class="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                @if (showConfirmPassword()) {
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+                } @else {
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                }
+              </button>
+            </div>
+            @if (passwordForm.controls.confirm_password.invalid && passwordForm.controls.confirm_password.touched) {
+              <p class="mt-1 text-xs text-red-500">Please confirm your new password.</p>
+            }
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-4 flex justify-end">
+            <button
+              type="submit"
+              [disabled]="isUpdatingPassword()"
+              class="cursor-pointer inline-flex items-center justify-center rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (isUpdatingPassword()) {
+                <div class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                Updating Password...
+              } @else {
+                Update Password
+              }
+            </button>
+          </div>
+        </form>
+      </app-card>
+
+    </div>
+  </div>
+}
+
+<!-- Delete Profile Image Modal -->
+<app-modal [isOpen]="isDeleteModalOpen()" (close)="closeDeleteModal()">
+  <div class="p-6">
+    <div class="flex items-center gap-3 text-red-600 dark:text-red-400 mb-4">
+      <div class="p-2 rounded-full bg-red-100 dark:bg-red-950/50">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white">Delete Profile Image</h3>
+    </div>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+      Are you sure you want to remove your profile image? This action cannot be undone.
+    </p>
+    <div class="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        (click)="closeDeleteModal()"
+        [disabled]="isDeletingImage()"
+        class="cursor-pointer px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors">
+        Cancel
+      </button>
+      <button
+        type="button"
+        (click)="confirmDeleteImage()"
+        [disabled]="isDeletingImage()"
+        class="cursor-pointer inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50">
+        @if (isDeletingImage()) {
+          <div class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+          Removing...
+        } @else {
+          Delete Image
+        }
+      </button>
+    </div>
+  </div>
+</app-modal>

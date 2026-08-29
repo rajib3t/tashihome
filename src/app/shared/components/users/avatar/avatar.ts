@@ -24,6 +24,7 @@ export class Avatar implements OnDestroy {
       this.revokePreviewObjectUrl();
     }
     this.#src.set(val);
+    this.imageError.set(false);
   }
 
   @Input() size = 40;

@@ -2,42 +2,39 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { AuthService } from '../../../../services/auth/auth-service';
-import { UserService } from '../../../../services/user/user-service';
-import { UserBasicProfileResponse } from '../../../../services/user/user.model';
-import { Avatar } from '../../../../shared/components/users/avatar/avatar';
+import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
+import { Card } from '../../../../shared/components/ui/card/card';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
+import { Avatar } from '../../../../shared/components/users/avatar/avatar';
+import { UserService } from '../../../../services/user/user-service';
+import { AuthService } from '../../../../services/auth/auth-service';
+import { UserBasicProfileResponse } from '../../../../services/user/user.model';
 import { environment } from '../../../../../environments/environment';
 
-export type ProfileTab = 'trips' | 'saved' | 'reviews' | 'account' | 'security';
-
 @Component({
-  selector: 'app-profile',
+  selector: 'app-admin-profile',
   imports: [
     CommonModule,
-    RouterLink,
-    Avatar,
+    PageBreadcrumb,
+    Card,
     Modal,
+    Avatar,
     ReactiveFormsModule,
   ],
-  styleUrl: './profile.css',
   templateUrl: './profile.html',
+  styleUrl: './profile.css',
 })
-export class Profile implements OnInit {
+export class AdminProfile implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
+  private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
 
   public readonly assetUrl = environment.assetUrl;
 
-  public readonly authUser = this.authService.authUser;
   public readonly user = signal<UserBasicProfileResponse | null>(null);
-  public readonly activeTab = signal<ProfileTab>('account');
-
-  public readonly isLoading = signal<boolean>(false);
+  public readonly isLoading = signal<boolean>(true);
   public readonly isUpdatingInfo = signal<boolean>(false);
   public readonly isUpdatingPassword = signal<boolean>(false);
   public readonly isUploadingImage = signal<boolean>(false);
@@ -76,14 +73,6 @@ export class Profile implements OnInit {
     }
   }
 
-  public selectTab(tab: ProfileTab): void {
-    this.activeTab.set(tab);
-    this.infoSuccessMessage.set(null);
-    this.infoErrorMessage.set(null);
-    this.passwordSuccessMessage.set(null);
-    this.passwordErrorMessage.set(null);
-  }
-
   public loadProfile(): void {
     this.isLoading.set(true);
     this.userService.getProfile()
@@ -102,7 +91,7 @@ export class Profile implements OnInit {
           }
           this.isLoading.set(false);
         },
-        error: () => {
+        error: (error) => {
           const cached = this.authService.getUser();
           if (cached) {
             this.user.set(cached as UserBasicProfileResponse);
@@ -113,6 +102,8 @@ export class Profile implements OnInit {
             });
           }
           this.isLoading.set(false);
+          const err = this.userService.apiService.extractApiErrorMessage(error);
+          this.infoErrorMessage.set(err || 'Failed to load profile details.');
         },
       });
   }
@@ -143,12 +134,12 @@ export class Profile implements OnInit {
             this.authService.updateCurrentUser(updated);
           }
           this.isUpdatingInfo.set(false);
-          this.infoSuccessMessage.set('Profile details updated successfully.');
+          this.infoSuccessMessage.set('Profile information updated successfully.');
         },
         error: (error) => {
           this.isUpdatingInfo.set(false);
           const err = this.userService.apiService.extractApiErrorMessage(error);
-          this.infoErrorMessage.set(err || 'Failed to update personal information.');
+          this.infoErrorMessage.set(err || 'Failed to update profile information.');
         },
       });
   }
@@ -182,13 +173,13 @@ export class Profile implements OnInit {
       .subscribe({
         next: () => {
           this.isUpdatingPassword.set(false);
-          this.passwordSuccessMessage.set('Password has been changed securely.');
+          this.passwordSuccessMessage.set('Password changed successfully.');
           this.passwordForm.reset();
         },
         error: (error) => {
           this.isUpdatingPassword.set(false);
           const err = this.userService.apiService.extractApiErrorMessage(error);
-          this.passwordErrorMessage.set(err || 'Failed to update password. Please check your current password.');
+          this.passwordErrorMessage.set(err || 'Failed to change password. Please verify your current password.');
         },
       });
   }
@@ -270,7 +261,7 @@ export class Profile implements OnInit {
   }
 
   public getProfileImageUrl(): string | undefined {
-    const url = this.user()?.is_profile_image_url || this.authUser()?.is_profile_image_url;
+    const url = this.user()?.is_profile_image_url;
     if (!url) return undefined;
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('blob:')) {
       return url;
@@ -280,3 +271,4 @@ export class Profile implements OnInit {
     return `${base}${cleanPath}`;
   }
 }
+
