@@ -16,6 +16,8 @@ import { AmenityManagement } from './pages/authenticate/admin/amenity-management
 import { RoomTypeManagement } from './pages/authenticate/admin/room-type-management/room-type-management';
 import { VendorManagement } from './pages/authenticate/admin/vendor-management/vendor-management';
 import { EditVendor } from './pages/authenticate/admin/vendor-management/edit-vendor/edit-vendor';
+import { CustomerManagement } from './pages/authenticate/admin/customer-management/customer-management';
+import { EditCustomer } from './pages/authenticate/admin/customer-management/edit-customer/edit-customer';
 import { PropertyManagement } from './pages/authenticate/admin/property-management/property-management';
 import { CreateProperty } from './pages/authenticate/admin/property-management/create-property/create-property';
 import { EditProperty } from './pages/authenticate/admin/property-management/edit-property/edit-property';
@@ -202,6 +204,21 @@ export const routes: Routes = [
                         path: 'property-management/:id/edit',
                         component: EditProperty,
                         title: 'Edit Property'
+                    },
+                    {
+                        path: 'customer-management',
+                        component: CustomerManagement,
+                        title: 'Customer Management'
+                    },
+                    {
+                        path: 'customer-management/:id/edit',
+                        component: EditCustomer,
+                        title: 'Edit Customer'
+                    },
+                    {
+                        path: 'user-management',
+                        redirectTo: 'customer-management',
+                        pathMatch: 'full'
                     },
                     {
                         path: 'vendor-management',

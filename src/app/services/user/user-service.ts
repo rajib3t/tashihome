@@ -1,8 +1,8 @@
 import { inject, Service } from '@angular/core';
 import { ApiService } from '../api/api-service';
-import { catchError, map, Observable , throwError} from 'rxjs';
+import { catchError, map, Observable } from 'rxjs';
 import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
-import { RegisterUserRequest, RegisterUserResponse, RequestVendor, UpdatePasswordDTO, UpdateProfileInfoDTO, User, UserBasicProfileResponse, VendorDetail, VendorQuery, VendorUpdateRequest } from './user.model';
+import { AdminCreateUserDTO, AdminUpdateUserDTO, RegisterUserRequest, RegisterUserResponse, RequestVendor, UpdatePasswordDTO, UpdateProfileInfoDTO, User, UserBasicProfileResponse, UserQuery, VendorDetail, VendorQuery, VendorUpdateRequest } from './user.model';
 
 @Service()
 export class UserService {
@@ -176,6 +176,136 @@ export class UserService {
     );
   }
 
+  // ================= ADMIN USER MANAGEMENT =================
+
+  public getUsers(params: UserQuery): Observable<PaginatedResponse<User>> {
+    const search = params.search ?? {};
+    const queryParams: Record<string, string | number> = {
+      page: params.page ?? 1,
+      size: params.size ?? 10,
+    };
+
+    const name = (search.full_name || search.name)?.trim();
+    const email = search.email?.trim();
+    const phone = search.phone?.trim();
+    const status = search.status?.trim();
+    const role = search.role?.trim();
+
+    if (name) {
+      queryParams['full_name'] = name;
+    }
+
+    if (email) {
+      queryParams['email'] = email;
+    }
+
+    if (phone) {
+      queryParams['phone'] = phone;
+    }
+
+    if (status) {
+      queryParams['status'] = status;
+    }
+
+    if (role) {
+      queryParams['role'] = role;
+    }
+
+    if (params.sortBy?.trim()) {
+      queryParams['sort_by'] = params.sortBy.trim();
+    }
+
+    if (params.sortOrder) {
+      queryParams['sort_order'] = params.sortOrder;
+    }
+
+    return this.apiService.protectedGet<PaginatedResponse<User>>('/admin/users/', { params: queryParams }).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public getUserById(userId: string): Observable<ApiResponse<User>> {
+    return this.apiService.protectedGet<ApiResponse<User>>(`/admin/users/${userId}`).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public createUser(userData: AdminCreateUserDTO): Observable<ApiResponse<User>> {
+    const payload = {
+      ...userData,
+      
+    };
+    return this.apiService.protectedPost<ApiResponse<User>>('/admin/users/', payload).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public updateUser(userId: string, userData: AdminUpdateUserDTO): Observable<ApiResponse<User>> {
+    return this.apiService.protectedPut<ApiResponse<User>>(`/admin/users/${userId}`, userData).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public statusUpdateUser(id: string, status: string): Observable<ApiResponse<User>> {
+    return this.apiService.protectedPatch<ApiResponse<User>>(`/admin/users/change/${id}/${status}`, { status }).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public updateUserProfileImage(userId: string, imageFile: File): Observable<ApiResponse<User>> {
+    const formData = new FormData();
+    formData.append('profile_image', imageFile);
+
+    return this.apiService.protectedUploadPatch<ApiResponse<User>>(`/admin/users/${userId}/profile-image`, formData).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  public sendUserPasswordReset(userId: string, confirm: string = 'CONFIRM'): Observable<ApiResponse<any>> {
+    return this.apiService.protectedPost<ApiResponse<any>>(`/admin/users/${userId}/password-reset`, { confirm }).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
+
+  // ================= ADMIN CUSTOMER MANAGEMENT (ALIASES) =================
+
+  public getCustomers(params: UserQuery): Observable<PaginatedResponse<User>> {
+    return this.getUsers(params);
+  }
+
+  public getCustomerById(customerId: string): Observable<ApiResponse<User>> {
+    return this.getUserById(customerId);
+  }
+
+  public createCustomer(customerData: AdminCreateUserDTO): Observable<ApiResponse<User>> {
+    return this.createUser({
+      ...customerData,
+     
+    });
+  }
+
+  public updateCustomer(customerId: string, customerData: AdminUpdateUserDTO): Observable<ApiResponse<User>> {
+    return this.updateUser(customerId, customerData);
+  }
+
+  public statusUpdateCustomer(id: string, status: string): Observable<ApiResponse<User>> {
+    return this.statusUpdateUser(id, status);
+  }
+
+  public updateCustomerProfileImage(customerId: string, imageFile: File): Observable<ApiResponse<User>> {
+    return this.updateUserProfileImage(customerId, imageFile);
+  }
+
+  public sendCustomerPasswordReset(customerId: string, confirm: string = 'CONFIRM'): Observable<ApiResponse<any>> {
+    return this.sendUserPasswordReset(customerId, confirm);
+  }
 
   public registerUser(userData: RegisterUserRequest): Observable<ApiResponse<RegisterUserResponse>> {
     return this.apiService.post<ApiResponse<RegisterUserResponse>>('/auth/register', userData).pipe(

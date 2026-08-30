@@ -1,0 +1,330 @@
+<app-page-breadcrumb pageTitle="Edit Customer" homelink="/admin"></app-page-breadcrumb>
+
+<div class="space-y-6">
+    <!-- Header with Back Button and Quick Actions -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <a
+            routerLink="/admin/customer-management"
+            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            <span>Back to Customers</span>
+        </a>
+
+        <div class="flex items-center gap-3">
+            <button
+                type="button"
+                (click)="openPasswordResetModal()"
+                class="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-700 transition hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/40"
+            >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                </svg>
+                <span>Reset Password</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert Notifications -->
+    @if (errorMessage()) {
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+            {{ errorMessage() }}
+        </div>
+    }
+
+    @if (successMessage()) {
+        <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300">
+            <span>{{ successMessage() }}</span>
+            <button type="button" (click)="successMessage.set(null)" class="cursor-pointer font-bold text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-white">✕</button>
+        </div>
+    }
+
+    @if (passwordResetSuccess()) {
+        <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300">
+            <span>{{ passwordResetSuccess() }}</span>
+            <button type="button" (click)="passwordResetSuccess.set(null)" class="cursor-pointer font-bold text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-white">✕</button>
+        </div>
+    }
+
+    @if (isLoading()) {
+        <app-card title="Loading Customer..." desc="Please wait while customer data is being loaded.">
+            <div class="flex items-center justify-center py-12">
+                <svg class="h-8 w-8 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+        </app-card>
+    } @else {
+        <div class="grid gap-6 lg:grid-cols-3">
+            <!-- Customer Summary & Avatar Upload Card -->
+            <div class="lg:col-span-1">
+                <app-card title="Customer Summary" desc="Customer profile photo and key account details.">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="relative group">
+                            <app-avatar
+                                [name]="customer()?.full_name || 'Customer'"
+                                [size]="100"
+                                [rounded]="true"
+                                [src]="customerImagePreview()"
+                                backgroundColor="bg-primary">
+                            </app-avatar>
+
+                            <label
+                                for="profile-image-input"
+                                class="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-md transition hover:scale-110 hover:opacity-90"
+                                title="Upload new photo"
+                            >
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </label>
+                            <input
+                                id="profile-image-input"
+                                type="file"
+                                accept="image/*"
+                                class="hidden"
+                                (change)="onFileSelected($event)"
+                            />
+                        </div>
+
+                        @if (isImageUploading()) {
+                            <p class="mt-2 text-xs text-primary animate-pulse font-medium">Uploading image...</p>
+                        }
+
+                        @if (imageUploadError()) {
+                            <p class="mt-2 text-xs text-red-600 dark:text-red-400">{{ imageUploadError() }}</p>
+                        }
+
+                        <h3 class="mt-4 text-lg font-bold text-slate-800 dark:text-slate-100">
+                            {{ customer()?.full_name }}
+                        </h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">{{ customer()?.email }}</p>
+
+                        <div class="mt-3 flex flex-wrap justify-center gap-2">
+                            @if (customer()?.status === 'active') {
+                                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-300">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-green-600"></span>
+                                    Active
+                                </span>
+                            } @else {
+                                <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/20 dark:text-red-300">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-red-600"></span>
+                                    Inactive
+                                </span>
+                            }
+                        </div>
+
+                        <div class="mt-6 w-full border-t border-slate-200 pt-4 text-left text-xs text-slate-600 dark:border-slate-800 dark:text-slate-300 space-y-2.5">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Customer ID:</span>
+                                <span class="font-mono text-[11px] select-all">{{ customer()?.id }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Phone:</span>
+                                <span>{{ customer()?.phone || '—' }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Newsletter:</span>
+                                <span>{{ customer()?.is_subscribed ? 'Subscribed' : 'Not Subscribed' }}</span>
+                            </div>
+                            @if (customer()?.created_at) {
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Joined:</span>
+                                    <span>{{ customer()?.created_at | date:'mediumDate' }}</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </app-card>
+            </div>
+
+            <!-- Edit Details Form Card -->
+            <div class="lg:col-span-2">
+                <app-card title="Edit Customer Details" desc="Update customer contact details and account status.">
+                    <form [formGroup]="customerForm" (ngSubmit)="onSubmitUpdate()" novalidate>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="mb-2">
+                                <label for="edit-fullname" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name *</label>
+                                <input
+                                    id="edit-fullname"
+                                    type="text"
+                                    formControlName="full_name"
+                                    placeholder="Full name"
+                                    [class.border-red-500]="fullNameControl.invalid && fullNameControl.touched"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                />
+                                @if (fullNameControl.invalid && fullNameControl.touched) {
+                                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                                        @if (fullNameControl.errors?.['required']) {
+                                            Full name is required.
+                                        } @else if (fullNameControl.errors?.['minlength']) {
+                                            Must be at least 3 characters.
+                                        } @else if (fullNameControl.errors?.['maxlength']) {
+                                            Cannot exceed 50 characters.
+                                        }
+                                    </p>
+                                }
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="edit-email" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Email *</label>
+                                <input
+                                    id="edit-email"
+                                    type="email"
+                                    formControlName="email"
+                                    placeholder="Email address"
+                                    [class.border-red-500]="emailControl.invalid && emailControl.touched"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                />
+                                @if (emailControl.invalid && emailControl.touched) {
+                                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                                        @if (emailControl.errors?.['required']) {
+                                            Email is required.
+                                        } @else if (emailControl.errors?.['email']) {
+                                            Please enter a valid email address.
+                                        }
+                                    </p>
+                                }
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="edit-phone" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Phone *</label>
+                                <input
+                                    id="edit-phone"
+                                    type="tel"
+                                    formControlName="phone"
+                                    placeholder="10-digit phone number"
+                                    [class.border-red-500]="phoneControl.invalid && phoneControl.touched"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                />
+                                @if (phoneControl.invalid && phoneControl.touched) {
+                                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                                        @if (phoneControl.errors?.['required']) {
+                                            Phone number is required.
+                                        } @else if (phoneControl.errors?.['pattern']) {
+                                            Please enter a valid 10-digit phone number.
+                                        }
+                                    </p>
+                                }
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="edit-status" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Status *</label>
+                                <select
+                                    id="edit-status"
+                                    formControlName="status"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 mb-6">
+                            <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    formControlName="is_subscribed"
+                                    class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                                />
+                                <span>Subscribed to newsletter and promotions</span>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-3 border-t border-slate-200 pt-4 dark:border-slate-800">
+                            <a
+                                routerLink="/admin/customer-management"
+                                class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                            >
+                                Cancel
+                            </a>
+                            <button
+                                type="submit"
+                                [disabled]="isSaving() || customerForm.invalid"
+                                class="cursor-pointer inline-flex items-center rounded-lg border border-transparent bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {{ isSaving() ? 'Saving Changes...' : 'Save Changes' }}
+                            </button>
+                        </div>
+                    </form>
+                </app-card>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Password Reset Modal -->
+<app-modal [isOpen]="isPasswordResetModalOpen()" (close)="closePasswordResetModal()" className="max-w-[480px] m-4">
+    <div class="relative w-full max-w-[480px] rounded-3xl bg-white p-6 dark:bg-gray-900">
+        <div class="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                Send Password Reset Link
+            </h2>
+        </div>
+
+        <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">
+            Are you sure you want to send a password reset link to
+            <span class="font-semibold text-gray-900 dark:text-white">{{ customer()?.full_name }}</span>
+            ({{ customer()?.email }})?
+        </p>
+
+        <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            To confirm, please type <span class="font-bold text-amber-600 dark:text-amber-400">CONFIRM</span> below:
+        </p>
+
+        @if (passwordResetError()) {
+            <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+                {{ passwordResetError() }}
+            </div>
+        }
+
+        <form [formGroup]="passwordResetForm" (ngSubmit)="submitPasswordReset()" class="mt-4" novalidate>
+            <div class="mb-4">
+                <label for="edit-reset-confirm" class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Confirmation Text
+                </label>
+                <input
+                    id="edit-reset-confirm"
+                    type="text"
+                    formControlName="confirm"
+                    placeholder="Type CONFIRM to confirm"
+                    autocomplete="off"
+                    [class.border-red-500]="resetConfirmControl.invalid && resetConfirmControl.touched"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                />
+                @if (resetConfirmControl.invalid && resetConfirmControl.touched) {
+                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                        @if (resetConfirmControl.errors?.['required']) {
+                            Please type CONFIRM to proceed.
+                        } @else if (resetConfirmControl.errors?.['pattern']) {
+                            You must type exactly "CONFIRM".
+                        }
+                    </p>
+                }
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <button
+                    type="button"
+                    (click)="closePasswordResetModal()"
+                    class="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    [disabled]="isSendingPasswordReset() || passwordResetForm.invalid"
+                    class="cursor-pointer rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {{ isSendingPasswordReset() ? 'Sending Link...' : 'Send Link' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</app-modal>
+

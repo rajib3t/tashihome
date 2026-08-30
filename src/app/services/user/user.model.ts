@@ -102,3 +102,45 @@ export interface RegisterUserResponse {
     phone: string;
 }
 
+export interface AdminCreateUserDTO {
+    full_name: string;
+    email: string;
+    phone: string;
+    password?: string;
+    
+    status: string;
+    is_subscribed?: boolean;
+}
+
+export interface AdminUpdateUserDTO {
+    full_name?: string;
+    email?: string;
+    phone?: string;
+    
+    status?: string;
+    is_subscribed?: boolean;
+}
+
+export interface UserSearch {
+    name?: string;
+    full_name?: string;
+    email?: string;
+    phone?: string;
+    status?: string;
+    role?: string;
+}
+
+export interface UserQuery {
+    page?: number;
+    size?: number;
+    search?: UserSearch;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+}
+
+export type Customer = User;
+export type CustomerSearch = UserSearch;
+export type CustomerQuery = UserQuery;
+export type AdminCreateCustomerDTO = AdminCreateUserDTO;
+export type AdminUpdateCustomerDTO = AdminUpdateUserDTO;
+
