@@ -151,8 +151,8 @@ export class RefundManagement implements OnInit, OnDestroy {
     this.isActionModalOpen.set(true);
   }
 
-  closeAction(): void {
-    if (this.isSubmitting()) return;
+  closeAction(force = false): void {
+    if (this.isSubmitting() && !force) return;
     this.isActionModalOpen.set(false);
     this.refundToAction.set(null);
     this.pendingAction.set(null);
@@ -180,6 +180,7 @@ export class RefundManagement implements OnInit, OnDestroy {
           })
         )
         .subscribe((response) => {
+          this.isSubmitting.set(false);
           if (!response) return;
 
           const gateway = response.data?.razorpay_status
@@ -196,7 +197,8 @@ export class RefundManagement implements OnInit, OnDestroy {
             );
           }
 
-          this.closeAction();
+          this.closeAction(true);
+          this.closeDetail();
           this.loadRefunds();
         });
     } else {
@@ -212,6 +214,7 @@ export class RefundManagement implements OnInit, OnDestroy {
           })
         )
         .subscribe((response) => {
+          this.isSubmitting.set(false);
           if (!response) return;
 
           this.showSuccess(
@@ -224,7 +227,8 @@ export class RefundManagement implements OnInit, OnDestroy {
             );
           }
 
-          this.closeAction();
+          this.closeAction(true);
+          this.closeDetail();
           this.loadRefunds();
         });
     }
