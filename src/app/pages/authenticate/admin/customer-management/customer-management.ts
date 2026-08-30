@@ -74,7 +74,6 @@ export class CustomerManagement {
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-    status: ['active', [Validators.required]],
     is_subscribed: [false],
   });
 
@@ -98,9 +97,7 @@ export class CustomerManagement {
     return this.createForm.get('password')!;
   }
 
-  get createStatusControl() {
-    return this.createForm.get('status')!;
-  }
+
 
   get resetConfirmControl() {
     return this.passwordResetForm.get('confirm')!;
@@ -117,7 +114,7 @@ export class CustomerManagement {
       email: filters.email?.trim() || undefined,
       phone: filters.phone?.trim() || undefined,
       status: filters.status?.trim() || undefined,
-      role: 'user',
+     
     };
 
     const query: CustomerQuery = {
@@ -186,7 +183,6 @@ export class CustomerManagement {
       email: '',
       phone: '',
       password: '',
-      status: 'active',
       is_subscribed: false,
     });
     this.createErrorMessage.set(null);
@@ -215,8 +211,7 @@ export class CustomerManagement {
       email: formVal.email?.trim() || '',
       phone: formVal.phone?.trim() || '',
       password: formVal.password?.trim() || '',
-    
-      status: formVal.status || 'active',
+
       is_subscribed: !!formVal.is_subscribed,
     };
 

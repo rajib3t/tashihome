@@ -56,7 +56,6 @@ export class EditCustomer {
     full_name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-    status: ['active', [Validators.required]],
     is_subscribed: [false],
   });
 
@@ -76,9 +75,7 @@ export class EditCustomer {
     return this.customerForm.get('phone')!;
   }
 
-  get statusControl() {
-    return this.customerForm.get('status')!;
-  }
+ 
 
   get resetConfirmControl() {
     return this.passwordResetForm.get('confirm')!;
@@ -114,7 +111,7 @@ export class EditCustomer {
               full_name: customer.full_name,
               email: customer.email,
               phone: customer.phone,
-              status: customer.status,
+              
               is_subscribed: !!customer.is_subscribed,
             });
             this.customerImagePreview.set(
@@ -194,8 +191,7 @@ export class EditCustomer {
       full_name: formVal.full_name?.trim() || '',
       email: formVal.email?.trim() || '',
       phone: formVal.phone?.trim() || '',
-      
-      status: formVal.status || 'active',
+   
       is_subscribed: !!formVal.is_subscribed,
     };
 

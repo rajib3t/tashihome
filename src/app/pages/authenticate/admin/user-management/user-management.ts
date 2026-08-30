@@ -223,7 +223,7 @@ export class UserManagement {
       phone: formVal.phone?.trim() || '',
       password: formVal.password?.trim() || '',
     
-      status: formVal.status || 'active',
+
       is_subscribed: !!formVal.is_subscribed,
     };
 

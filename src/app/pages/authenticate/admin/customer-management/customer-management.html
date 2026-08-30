@@ -41,8 +41,7 @@
                     class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 />  
             </label>
-
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+             <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
                 <span class="mb-2 block">Status</span>
                 <select
                     formControlName="status"
@@ -53,6 +52,7 @@
                     <option value="inactive">Inactive</option>
                 </select>
             </label>
+            
 
             <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
                 <button
@@ -310,17 +310,7 @@
                         }
                     </div>
 
-                    <div class="mb-2 sm:col-span-2">
-                        <label for="create-status" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Status *</label>
-                        <select
-                            id="create-status"
-                            formControlName="status"
-                            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
+                    
                 </div>
 
                 <div class="mt-3 mb-4">

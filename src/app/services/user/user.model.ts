@@ -108,7 +108,7 @@ export interface AdminCreateUserDTO {
     phone: string;
     password?: string;
     
-    status: string;
+
     is_subscribed?: boolean;
 }
 
@@ -117,7 +117,7 @@ export interface AdminUpdateUserDTO {
     email?: string;
     phone?: string;
     
-    status?: string;
+
     is_subscribed?: boolean;
 }
 

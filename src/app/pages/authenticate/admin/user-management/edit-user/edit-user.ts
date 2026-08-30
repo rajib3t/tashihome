@@ -201,7 +201,7 @@ export class EditUser {
       email: formVal.email?.trim() || '',
       phone: formVal.phone?.trim() || '',
       
-      status: formVal.status || 'active',
+     
       is_subscribed: !!formVal.is_subscribed,
     };
 
