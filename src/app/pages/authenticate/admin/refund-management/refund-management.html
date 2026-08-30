@@ -1,0 +1,648 @@
+<app-page-breadcrumb pageTitle="Refund Management" homelink="/admin"></app-page-breadcrumb>
+
+<div class="space-y-5">
+  <!-- ─── Metric KPI Cards ────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+    <!-- Total Requests -->
+    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Requests</span>
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </span>
+      </div>
+      <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{ metrics().total }}</p>
+    </div>
+
+    <!-- Pending Review -->
+    <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-4 shadow-xs dark:border-amber-500/20 dark:bg-amber-500/5">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium uppercase tracking-wider text-amber-700 dark:text-amber-400">Pending Review</span>
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </span>
+      </div>
+      <p class="mt-2 text-2xl font-bold text-amber-800 dark:text-amber-300">{{ metrics().pending }}</p>
+    </div>
+
+    <!-- Approved (Ready) -->
+    <div class="rounded-xl border border-blue-200 bg-blue-50/50 p-4 shadow-xs dark:border-blue-500/20 dark:bg-blue-500/5">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium uppercase tracking-wider text-blue-700 dark:text-blue-400">Approved (Ready)</span>
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </span>
+      </div>
+      <p class="mt-2 text-2xl font-bold text-blue-800 dark:text-blue-300">{{ metrics().approved }}</p>
+    </div>
+
+    <!-- Processed Amount -->
+    <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-xs dark:border-emerald-500/20 dark:bg-emerald-500/5">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Processed ({{ metrics().processed }})</span>
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </span>
+      </div>
+      <p class="mt-2 text-2xl font-bold text-emerald-800 dark:text-emerald-300">{{ formatCurrency(metrics().totalProcessedAmount) }}</p>
+    </div>
+  </div>
+
+  <!-- ─── Main Content Card ────────────────────────────────────────────────── -->
+  <app-card title="Refund Management" desc="Track, review, and process homestay booking refunds.">
+    <!-- Filter & Search Controls -->
+    <div class="space-y-4">
+      <!-- Status Tabs -->
+      <div class="flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 dark:border-slate-800">
+        <button
+          type="button"
+          (click)="onStatusTabChange('')"
+          [class]="activeStatusTab() === ''
+            ? 'bg-primary text-white font-medium'
+            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'"
+          class="cursor-pointer rounded-lg px-3 py-1.5 text-xs transition"
+        >
+          All
+        </button>
+
+        <button
+          type="button"
+          (click)="onStatusTabChange('pending')"
+          [class]="activeStatusTab() === 'pending'
+            ? 'bg-amber-600 text-white font-medium'
+            : 'bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20'"
+          class="cursor-pointer inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs transition"
+        >
+          <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+          Pending
+        </button>
+
+        <button
+          type="button"
+          (click)="onStatusTabChange('approved')"
+          [class]="activeStatusTab() === 'approved'
+            ? 'bg-blue-600 text-white font-medium'
+            : 'bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20'"
+          class="cursor-pointer inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs transition"
+        >
+          <span class="h-1.5 w-1.5 rounded-full bg-blue-400"></span>
+          Approved
+        </button>
+
+        <button
+          type="button"
+          (click)="onStatusTabChange('processed')"
+          [class]="activeStatusTab() === 'processed'
+            ? 'bg-emerald-600 text-white font-medium'
+            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20'"
+          class="cursor-pointer inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs transition"
+        >
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          Processed
+        </button>
+
+        <button
+          type="button"
+          (click)="onStatusTabChange('rejected')"
+          [class]="activeStatusTab() === 'rejected'
+            ? 'bg-rose-600 text-white font-medium'
+            : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20'"
+          class="cursor-pointer inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs transition"
+        >
+          <span class="h-1.5 w-1.5 rounded-full bg-rose-400"></span>
+          Rejected
+        </button>
+      </div>
+
+      <!-- Search & Filters -->
+      <form [formGroup]="searchForm" class="flex flex-wrap items-center justify-between gap-3" (ngSubmit)="onSearch()">
+        <div class="flex flex-1 flex-wrap items-center gap-3 min-w-[280px]">
+          <!-- Booking Reference input -->
+          <div class="relative flex-1 min-w-[200px] max-w-sm">
+            <input
+              type="text"
+              formControlName="booking_id"
+              placeholder="Search by Booking Reference / ID…"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </div>
+
+          <!-- Status Dropdown -->
+          <select
+            formControlName="status"
+            class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          >
+            <option value="">All Statuses</option>
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ status | titlecase }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+          <button
+            type="submit"
+            class="cursor-pointer inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-medium text-white shadow-xs transition hover:opacity-90"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Search</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="onReset()"
+            class="cursor-pointer rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            Reset
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Feedback Alerts -->
+    @if (errorMessage()) {
+      <div class="mt-4 flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs text-red-700 dark:border-red-800/50 dark:bg-red-900/20 dark:text-red-400">
+        <span>{{ errorMessage() }}</span>
+        <button type="button" (click)="dismissAlert()" class="cursor-pointer text-red-500 hover:text-red-700 text-sm">&times;</button>
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="mt-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-900/20 dark:text-emerald-300">
+        <span>{{ successMessage() }}</span>
+        <button type="button" (click)="dismissAlert()" class="cursor-pointer text-emerald-500 hover:text-emerald-700 text-sm">&times;</button>
+      </div>
+    }
+
+    <!-- ─── Compact Table ──────────────────────────────────────────────────── -->
+    <div class="mt-5 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+      <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+        <thead class="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-900/80 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+          <tr>
+            <th class="py-3 pl-4 pr-2 w-10">SL</th>
+            <th class="py-3 px-3">Booking & Guest</th>
+            <th class="py-3 px-3">Refund & Reason</th>
+            <th class="py-3 px-3">Payment Info</th>
+            <th class="py-3 px-3">Status</th>
+            <th class="py-3 pl-3 pr-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800/60 dark:bg-slate-900">
+          @if (isLoading()) {
+            <tr>
+              <td colspan="6" class="py-12 text-center text-slate-500 dark:text-slate-400">
+                <div class="inline-flex items-center gap-2 text-xs">
+                  <svg class="h-4 w-4 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Loading refunds…</span>
+                </div>
+              </td>
+            </tr>
+          } @else if (!refunds().length) {
+            <tr>
+              <td colspan="6" class="py-12 text-center">
+                <div class="flex flex-col items-center justify-center">
+                  <p class="text-sm font-medium text-slate-700 dark:text-slate-300">No refund requests found</p>
+                  <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">No records match the current filter criteria.</p>
+                  <button
+                    type="button"
+                    (click)="onReset()"
+                    class="cursor-pointer mt-3 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (refund of refunds(); track refund.id; let i = $index) {
+              <tr class="transition-colors hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
+                <!-- SL -->
+                <td class="py-3.5 pl-4 pr-2 text-slate-400 text-xs">
+                  {{ getSerialNumber(i) }}
+                </td>
+
+                <!-- Booking & Guest -->
+                <td class="py-3.5 px-3">
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-900 dark:text-white">
+                      <span>{{ refund.booking?.booking_reference || refund.booking?.id || '—' }}</span>
+                      @if (refund.booking?.booking_reference || refund.booking?.id) {
+                        <button
+                          type="button"
+                          (click)="copyToClipboard(refund.booking?.booking_reference || refund.booking?.id, 'bk-' + refund.id)"
+                          title="Copy reference"
+                          class="cursor-pointer text-slate-400 hover:text-primary transition"
+                        >
+                          @if (copiedId() === 'bk-' + refund.id) {
+                            <span class="text-[10px] font-sans font-semibold text-emerald-600">✓</span>
+                          } @else {
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          }
+                        </button>
+                      }
+                    </div>
+                    <div class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                      <span class="font-medium truncate max-w-[140px]">{{ refund.requester?.full_name || 'Guest' }}</span>
+                      <span class="text-slate-400 text-[10px]">({{ refund.requester?.email || '—' }})</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Refund Amount & Reason -->
+                <td class="py-3.5 px-3">
+                  <div class="space-y-0.5">
+                    <span class="font-bold text-slate-900 dark:text-white text-xs">
+                      {{ formatCurrency(refund.amount, refund.payment?.currency) }}
+                    </span>
+                    <p class="line-clamp-1 max-w-[180px] text-[11px] text-slate-500 dark:text-slate-400" [title]="refund.reason">
+                      {{ refund.reason || 'No reason specified' }}
+                    </p>
+                  </div>
+                </td>
+
+                <!-- Payment Info -->
+                <td class="py-3.5 px-3">
+                  <div class="space-y-0.5">
+                    <div class="flex items-center gap-1 text-xs">
+                      <span class="font-medium capitalize text-slate-800 dark:text-slate-200">{{ refund.payment?.gateway || 'Razorpay' }}</span>
+                      <span class="text-slate-400 text-[10px]">({{ formatCurrency(refund.payment?.amount, refund.payment?.currency) }})</span>
+                    </div>
+                    <p class="font-mono text-[10px] text-slate-400 truncate max-w-[130px]" [title]="refund.payment?.transaction_id">
+                      {{ refund.payment?.transaction_id || '—' }}
+                    </p>
+                  </div>
+                </td>
+
+                <!-- Status & Date -->
+                <td class="py-3.5 px-3">
+                  <div class="space-y-1">
+                    <span [class]="statusClass(refund.status)" class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize">
+                      <span [class]="statusDotClass(refund.status)" class="h-1.5 w-1.5 rounded-full"></span>
+                      {{ refund.status }}
+                    </span>
+                    <p class="text-[10px] text-slate-400 whitespace-nowrap">
+                      {{ formatDateTime(refund.created_at) }}
+                    </p>
+                  </div>
+                </td>
+
+                <!-- Actions -->
+                <td class="py-3.5 pl-3 pr-4 text-right whitespace-nowrap">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <!-- View Details -->
+                    <button
+                      type="button"
+                      (click)="openDetail(refund)"
+                      title="View Details"
+                      class="cursor-pointer rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-primary"
+                    >
+                      View
+                    </button>
+
+                    <!-- Pending Actions -->
+                    @if (refund.status === 'pending') {
+                      <button
+                        type="button"
+                        (click)="openAction(refund, 'approved')"
+                        title="Approve Refund"
+                        class="cursor-pointer rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        type="button"
+                        (click)="openAction(refund, 'rejected')"
+                        title="Reject Refund"
+                        class="cursor-pointer rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 transition hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
+                      >
+                        Reject
+                      </button>
+                    }
+
+                    <!-- Approved Action -->
+                    @if (refund.status === 'approved') {
+                      <button
+                        type="button"
+                        (click)="openAction(refund, 'process')"
+                        title="Process Razorpay Refund"
+                        class="cursor-pointer inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-xs font-medium text-white shadow-xs transition hover:opacity-90"
+                      >
+                        <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span>Process</span>
+                      </button>
+                    }
+
+                    <!-- Processed Badge -->
+                    @if (refund.status === 'processed') {
+                      <span class="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Settled
+                      </span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4">
+      <app-pagination
+        [meta]="meta"
+        (pageChange)="onPageChange($event)"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </div>
+  </app-card>
+</div>
+
+<!-- ─── Details Modal ─────────────────────────────────────────────────────── -->
+<app-modal [isOpen]="isDetailModalOpen()" (close)="closeDetail()" className="max-w-xl mx-4">
+  @if (selectedRefund(); as refund) {
+    <div class="p-5 sm:p-6">
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-primary">Refund Request</span>
+          <h2 class="mt-0.5 text-xl font-bold text-slate-900 dark:text-white">
+            {{ formatCurrency(refund.amount, refund.payment?.currency) }}
+          </h2>
+          <p class="text-xs text-slate-400">Request ID: <span class="font-mono">{{ refund.id }}</span></p>
+        </div>
+        <span [class]="statusClass(refund.status)" class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize">
+          <span [class]="statusDotClass(refund.status)" class="h-1.5 w-1.5 rounded-full"></span>
+          {{ refund.status }}
+        </span>
+      </div>
+
+      <!-- Financial Snapshot -->
+      <div class="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60 sm:grid-cols-4 text-xs">
+        <div>
+          <span class="text-slate-400 text-[10px] uppercase">Refund Amount</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ formatCurrency(refund.amount, refund.payment?.currency) }}</p>
+        </div>
+        <div>
+          <span class="text-slate-400 text-[10px] uppercase">Paid Total</span>
+          <p class="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{{ formatCurrency(refund.payment?.amount, refund.payment?.currency) }}</p>
+        </div>
+        <div>
+          <span class="text-slate-400 text-[10px] uppercase">Gateway</span>
+          <p class="font-semibold capitalize text-slate-800 dark:text-slate-200 mt-0.5">{{ refund.payment?.gateway || 'Razorpay' }}</p>
+        </div>
+        <div>
+          <span class="text-slate-400 text-[10px] uppercase">Payment Status</span>
+          <p class="font-semibold capitalize text-slate-800 dark:text-slate-200 mt-0.5">{{ refund.payment?.status || '—' }}</p>
+        </div>
+      </div>
+
+      <!-- Key Details -->
+      <div class="mt-4 space-y-3 text-xs">
+        <!-- Booking & Gateway Ref -->
+        <div class="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-3 dark:border-slate-800 sm:grid-cols-2">
+          <div>
+            <span class="text-[10px] font-semibold uppercase text-slate-400">Booking Reference</span>
+            <div class="mt-1 flex items-center gap-1.5">
+              <span class="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                {{ refund.booking?.booking_reference || refund.booking?.id || '—' }}
+              </span>
+              @if (refund.booking?.booking_reference || refund.booking?.id) {
+                <button
+                  type="button"
+                  (click)="copyToClipboard(refund.booking?.booking_reference || refund.booking?.id, 'm-bk')"
+                  class="cursor-pointer text-slate-400 hover:text-primary"
+                >
+                  @if (copiedId() === 'm-bk') {
+                    <span class="text-[10px] text-emerald-600 font-semibold">✓</span>
+                  } @else {
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+
+          <div>
+            <span class="text-[10px] font-semibold uppercase text-slate-400">Transaction ID</span>
+            <div class="mt-1 flex items-center gap-1.5">
+              <span class="font-mono text-xs text-slate-700 dark:text-slate-300">
+                {{ refund.payment?.transaction_id || '—' }}
+              </span>
+              @if (refund.payment?.transaction_id) {
+                <button
+                  type="button"
+                  (click)="copyToClipboard(refund.payment?.transaction_id, 'm-tx')"
+                  class="cursor-pointer text-slate-400 hover:text-primary"
+                >
+                  @if (copiedId() === 'm-tx') {
+                    <span class="text-[10px] text-emerald-600 font-semibold">✓</span>
+                  } @else {
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Requester & Approver -->
+        <div class="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-3 dark:border-slate-800 sm:grid-cols-2">
+          <div>
+            <span class="text-[10px] font-semibold uppercase text-slate-400">Requester</span>
+            <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ refund.requester?.full_name || 'Guest' }}</p>
+            <p class="text-slate-500">{{ refund.requester?.email || '—' }}</p>
+            <p class="mt-0.5 text-[10px] text-slate-400">{{ formatDateTime(refund.created_at) }}</p>
+          </div>
+
+          <div>
+            <span class="text-[10px] font-semibold uppercase text-slate-400">Approver</span>
+            @if (refund.approver) {
+              <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ refund.approver.full_name }}</p>
+              <p class="text-slate-500">{{ refund.approver.email }}</p>
+              <p class="mt-0.5 text-[10px] text-slate-400">{{ formatDateTime(refund.approved_at) }}</p>
+            } @else {
+              <p class="mt-1 text-slate-400 italic">Not yet approved</p>
+            }
+          </div>
+        </div>
+
+        <!-- Refund Reason -->
+        <div class="rounded-xl border border-slate-100 p-3 dark:border-slate-800">
+          <span class="text-[10px] font-semibold uppercase text-slate-400">Reason</span>
+          <div class="mt-1.5 rounded-lg bg-slate-50 p-2.5 text-slate-700 dark:bg-slate-800/40 dark:text-slate-200">
+            <p class="whitespace-pre-wrap leading-relaxed">{{ refund.reason || 'No specific reason given.' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
+        <button
+          type="button"
+          (click)="closeDetail()"
+          class="cursor-pointer rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        >
+          Close
+        </button>
+
+        <div class="flex items-center gap-2">
+          @if (refund.status === 'pending') {
+            <button
+              type="button"
+              (click)="openAction(refund, 'rejected')"
+              class="cursor-pointer rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
+            >
+              Reject
+            </button>
+            <button
+              type="button"
+              (click)="openAction(refund, 'approved')"
+              class="cursor-pointer rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 shadow-xs"
+            >
+              Approve
+            </button>
+          }
+
+          @if (refund.status === 'approved') {
+            <button
+              type="button"
+              (click)="openAction(refund, 'process')"
+              class="cursor-pointer inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1.5 text-xs font-medium text-white shadow-xs hover:opacity-90"
+            >
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span>Process Razorpay Refund</span>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</app-modal>
+
+<!-- ─── Action Confirmation Modal ─────────────────────────────────────────── -->
+<app-modal [isOpen]="isActionModalOpen()" (close)="closeAction()" className="max-w-md mx-4">
+  @if (refundToAction(); as refund) {
+    <div class="p-5 sm:p-6">
+      <div class="flex items-center gap-2.5">
+        @if (pendingAction() === 'process') {
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+        } @else if (pendingAction() === 'approved') {
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        } @else {
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+        }
+
+        <div>
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-primary">Confirmation</p>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">{{ actionLabel(pendingAction()!) }}</h2>
+        </div>
+      </div>
+
+      <div class="mt-3 text-xs text-slate-600 dark:text-slate-300">
+        @if (pendingAction() === 'process') {
+          <div class="space-y-2">
+            <p>
+              Initiate Razorpay refund payout of
+              <strong class="text-slate-900 dark:text-white">{{ formatCurrency(refund.amount, refund.payment?.currency) }}</strong>
+              for booking <span class="font-mono font-semibold">{{ refund.booking?.booking_reference || refund.booking?.id }}</span>?
+            </p>
+            <div class="rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-800 dark:border-amber-800/40 dark:bg-amber-900/20 dark:text-amber-300">
+              ⚠️ This will transfer funds via Razorpay gateway and cannot be undone.
+            </div>
+          </div>
+        } @else if (pendingAction() === 'approved') {
+          <p>
+            Approve this refund request for
+            <strong class="text-slate-900 dark:text-white">{{ formatCurrency(refund.amount, refund.payment?.currency) }}</strong>?
+          </p>
+        } @else {
+          <p>
+            Reject this refund request for
+            <strong class="text-slate-900 dark:text-white">{{ formatCurrency(refund.amount, refund.payment?.currency) }}</strong>?
+          </p>
+        }
+      </div>
+
+      @if (actionError()) {
+        <div class="mt-3 rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs text-red-700 dark:border-red-800/40 dark:bg-red-900/20 dark:text-red-300">
+          {{ actionError() }}
+        </div>
+      }
+
+      <div class="mt-5 flex justify-end gap-2">
+        <button
+          type="button"
+          (click)="closeAction()"
+          [disabled]="isSubmitting()"
+          class="cursor-pointer rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          (click)="confirmAction()"
+          [disabled]="isSubmitting()"
+          [class]="pendingAction() === 'rejected'
+            ? 'bg-rose-600 hover:bg-rose-700'
+            : pendingAction() === 'approved'
+              ? 'bg-emerald-600 hover:bg-emerald-700'
+              : 'bg-primary hover:opacity-90'"
+          class="cursor-pointer inline-flex items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-medium text-white shadow-xs transition disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          @if (isSubmitting()) {
+            <svg class="h-3.5 w-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Processing…</span>
+          } @else {
+            <span>{{ actionLabel(pendingAction()!) }}</span>
+          }
+        </button>
+      </div>
+    </div>
+  }
+</app-modal>
+

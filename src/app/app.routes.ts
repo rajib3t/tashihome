@@ -40,6 +40,7 @@ import { EditVendorProperty } from './pages/authenticate/vendor/vendor-property-
 import { Checkout } from './pages/public/checkout/checkout';
 import { AdminBookingManagement } from './pages/authenticate/admin/booking-management/booking-management';
 import { VendorBookingManagement } from './pages/authenticate/vendor/booking-management/booking-management';
+import { RefundManagement } from './pages/authenticate/admin/refund-management/refund-management';
 
 export const routes: Routes = [
     {
@@ -234,6 +235,11 @@ export const routes: Routes = [
                         path: 'booking-management',
                         component: AdminBookingManagement,
                         title: 'Booking Management'
+                    },
+                    {
+                        path: 'refund-management',
+                        component: RefundManagement,
+                        title: 'Refund Management'
                     }
                 ]
             },
