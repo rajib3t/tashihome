@@ -131,6 +131,8 @@ export interface BookingRefundRequest {
 export type BookingStatus =
   | 'pending'
   | 'confirmed'
+  | 'check_in'
+  | 'check_out'
   | 'cancelled'
   | 'completed'
   | 'failed'
@@ -174,4 +176,9 @@ export interface BookingQuery {
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
   status?: string;
+  payment_status?: string;
+  check_in_date?: string;
+  check_out_date?: string;
+  booking_reference?: string;
+  [key: string]: any;
 }

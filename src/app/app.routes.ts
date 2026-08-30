@@ -36,7 +36,8 @@ import { VendorPropertyManagement } from './pages/authenticate/vendor/vendor-pro
 import { CreateVendorProperty } from './pages/authenticate/vendor/vendor-property-management/create-property/create-property';
 import { EditVendorProperty } from './pages/authenticate/vendor/vendor-property-management/edit-property/edit-property';
 import { Checkout } from './pages/public/checkout/checkout';
-
+import { AdminBookingManagement } from './pages/authenticate/admin/booking-management/booking-management';
+import { VendorBookingManagement } from './pages/authenticate/vendor/booking-management/booking-management';
 
 export const routes: Routes = [
     {
@@ -211,6 +212,11 @@ export const routes: Routes = [
                         path: 'vendor-management/:id/edit',
                         component: EditVendor,
                         title: 'Edit Vendor'
+                    },
+                    {
+                        path: 'booking-management',
+                        component: AdminBookingManagement,
+                        title: 'Booking Management'
                     }
                 ]
             },
@@ -243,6 +249,11 @@ export const routes: Routes = [
                         path:'property-management/:id/edit',
                         component:EditVendorProperty,
                         title:'Edit Property'
+                    },
+                    {
+                        path: 'booking-management',
+                        component: VendorBookingManagement,
+                        title: 'Booking Management'
                     }
                 ]
             },

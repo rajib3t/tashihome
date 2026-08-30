@@ -8,6 +8,7 @@ import {
   BookingPaymentRequest,
   BookingPayment,
   BookingQuery,
+  BookingStatus,
   CancelBookingRequest,
   CheckAvailabilityRequest,
   CheckAvailabilityResponseData,
@@ -26,6 +27,18 @@ function buildBookingQueryParams(query?: BookingQuery): Record<string, string | 
 
   if (query?.status?.trim()) {
     params['status'] = query.status.trim();
+  }
+  if (query?.payment_status?.trim()) {
+    params['payment_status'] = query.payment_status.trim();
+  }
+  if (query?.check_in_date?.trim()) {
+    params['check_in_date'] = query.check_in_date.trim();
+  }
+  if (query?.check_out_date?.trim()) {
+    params['check_out_date'] = query.check_out_date.trim();
+  }
+  if (query?.booking_reference?.trim()) {
+    params['booking_reference'] = query.booking_reference.trim();
   }
 
   return params;
@@ -179,4 +192,106 @@ export class BookingService {
         catchError(this.apiService.passthroughError)
       );
   }
+
+  // ── Admin sub-service ────────────────────────────────────────────────────────
+  public readonly admin = {
+    /**
+     * Fetch paginated bookings for admin
+     * Endpoint: GET /api/v1/admin/bookings/
+     */
+    getBookings: (query?: BookingQuery): Observable<PaginatedResponse<BookingData>> => {
+      const params = buildBookingQueryParams(query);
+      return this.apiService
+        .protectedGet<PaginatedResponse<BookingData>>('/admin/bookings/', { params })
+        .pipe(
+          map((res) => res.data),
+          catchError(this.apiService.passthroughError)
+        );
+    },
+
+    /**
+     * Fetch booking detail by ID for admin
+     * Endpoint: GET /api/v1/admin/bookings/{booking_id}
+     */
+    getBookingById: (bookingId: string): Observable<ApiResponse<BookingData>> => {
+      return this.apiService
+        .protectedGet<ApiResponse<BookingData>>(
+          `/admin/bookings/${encodeURIComponent(bookingId)}`
+        )
+        .pipe(
+          map((res) => res.data),
+          catchError(this.apiService.passthroughError)
+        );
+    },
+
+    /**
+     * Update booking status for admin
+     * Endpoint: PATCH /api/v1/admin/bookings/{booking_id}/status
+     */
+    updateBookingStatus: (
+      bookingId: string,
+      status: BookingStatus
+    ): Observable<ApiResponse<BookingData>> => {
+      return this.apiService
+        .protectedPatch<ApiResponse<BookingData>>(
+          `/admin/bookings/${encodeURIComponent(bookingId)}/status`,
+          { status }
+        )
+        .pipe(
+          map((res) => res.data),
+          catchError(this.apiService.passthroughError)
+        );
+    },
+  };
+
+  // ── Vendor sub-service ───────────────────────────────────────────────────────
+  public readonly vendor = {
+    /**
+     * Fetch paginated bookings for vendor's properties
+     * Endpoint: GET /api/v1/vendor/bookings/
+     */
+    getBookings: (query?: BookingQuery): Observable<PaginatedResponse<BookingData>> => {
+      const params = buildBookingQueryParams(query);
+      return this.apiService
+        .protectedGet<PaginatedResponse<BookingData>>('/vendor/bookings/', { params })
+        .pipe(
+          map((res) => res.data),
+          catchError(this.apiService.passthroughError)
+        );
+    },
+
+    /**
+     * Fetch booking detail by ID for vendor
+     * Endpoint: GET /api/v1/vendor/bookings/{booking_id}
+     */
+    getBookingById: (bookingId: string): Observable<ApiResponse<BookingData>> => {
+      return this.apiService
+        .protectedGet<ApiResponse<BookingData>>(
+          `/vendor/bookings/${encodeURIComponent(bookingId)}`
+        )
+        .pipe(
+          map((res) => res.data),
+          catchError(this.apiService.passthroughError)
+        );
+    },
+
+    /**
+     * Update booking status for vendor
+     * Endpoint: PATCH /api/v1/vendor/bookings/{booking_id}/status
+     */
+    updateBookingStatus: (
+      bookingId: string,
+      status: BookingStatus
+    ): Observable<ApiResponse<BookingData>> => {
+      return this.apiService
+        .protectedPatch<ApiResponse<BookingData>>(
+          `/vendor/bookings/${encodeURIComponent(bookingId)}/status`,
+          { status }
+        )
+        .pipe(
+          map((res) => res.data),
+          catchError(this.apiService.passthroughError)
+        );
+    },
+  };
 }
