@@ -177,10 +177,10 @@
 </div>
 
 <!-- ─── Detail Modal ─────────────────────────────────────────────────────────── -->
-<app-modal [isOpen]="isDetailModalOpen()" (close)="closeDetail()" className="max-w-3xl mx-4">
+<app-modal [isOpen]="isDetailModalOpen()" (close)="closeDetail()" className="booking-detail-dialog max-w-3xl mx-4">
   @if (selectedBooking(); as b) {
     <div class="p-6 md:p-8">
-      <h2 class="mb-6 text-xl font-bold text-slate-900 dark:text-white">Booking Details</h2>
+      <div class="booking-detail-title mb-6"><p class="text-xs font-semibold uppercase tracking-wider text-primary">Reservation overview</p><h2 class="mt-1 text-xl font-bold text-slate-900 dark:text-white">Booking Details</h2></div>
 
       <!-- Property banner -->
       @if (getPrimaryImage(b); as img) {
@@ -188,7 +188,7 @@
       }
 
       <!-- Reference & Dates -->
-      <div class="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <div class="booking-detail-grid mb-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <div>
           <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Reference</p>
           <p class="font-mono text-sm font-semibold text-slate-800 dark:text-slate-100">{{ b.booking_reference || b.id }}</p>

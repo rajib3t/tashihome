@@ -336,13 +336,16 @@ export class Profile implements OnInit {
     const booking = this.selectedBookingToCancel();
     if (!booking?.id) return;
 
+    // Preserve this before closing the modal, which intentionally clears the input state.
+    const cancellationReason = this.cancelReason().trim();
+
     this.isCancellingBooking.set(true);
     this.cancelErrorMessage.set(null);
 
     this.bookingService
       .cancelBooking(booking.id, {
-        reason: this.cancelReason().trim() || undefined,
-        cancellation_reason: this.cancelReason().trim() || undefined,
+        reason: cancellationReason || undefined,
+        cancellation_reason: cancellationReason || undefined,
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -353,7 +356,7 @@ export class Profile implements OnInit {
           // Update booking in local list
           const updatedList = this.userBookings().map((b) =>
             b.id === booking.id
-              ? { ...b, status: 'cancelled', cancellation_reason: this.cancelReason() }
+              ? { ...b, status: 'cancelled', cancellation_reason: cancellationReason }
               : b
           );
           this.userBookings.set(updatedList);

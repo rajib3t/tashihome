@@ -1,6 +1,6 @@
 <!-- Only render if open -->
 @if (isOpen) {
-<div class="fixed inset-0 z-[99999] flex items-center justify-center overflow-y-auto">
+<div class="fixed inset-0 z-[99999] flex items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" role="dialog" aria-modal="true">
   <!-- Backdrop -->
   @if (!isFullscreen) {
   <div
@@ -11,7 +11,7 @@
   <!-- Modal Content -->
   <div
     [ngClass]="[
-      isFullscreen ? 'w-full h-full' : 'relative w-full rounded-3xl bg-white dark:bg-gray-900',
+      isFullscreen ? 'w-full h-full' : 'relative my-auto max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-3xl bg-white shadow-2xl dark:bg-gray-900 sm:max-h-[calc(100dvh-3rem)]',
       className
     ]"
     (click)="onContentClick($event)"
