@@ -609,41 +609,21 @@
 
           <!-- Check-in / Check-out Date Pickers -->
           <div class="grid grid-cols-2 gap-2.5 mt-5">
-            <div
-              class="rounded-xl border border-ink/15 bg-white/75 p-2.5 hover:border-ochre/40 focus-within:border-ochre transition-colors">
-              <label for="prop-checkin" class="text-[10px] eyebrow text-ink/50 flex items-center gap-1">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" class="text-mossD">
-                  <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8" />
-                  <path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                </svg>
-                Check-in
-              </label>
-              <input
-                id="prop-checkin"
-                type="date"
-                [min]="minCheckInDate"
-                [ngModel]="checkInDate()"
-                (ngModelChange)="onCheckInChange($event)"
-                class="w-full mt-1 bg-transparent text-xs sm:text-sm font-medium text-ink outline-none cursor-pointer" />
-            </div>
+            <app-date-input
+              [min]="minCheckInDate"
+              [ngModel]="checkInDate()"
+              (ngModelChange)="onCheckInChange($event)"
+              label="Check-in"
+              variant="property"
+            ></app-date-input>
 
-            <div
-              class="rounded-xl border border-ink/15 bg-white/75 p-2.5 hover:border-ochre/40 focus-within:border-ochre transition-colors">
-              <label for="prop-checkout" class="text-[10px] eyebrow text-ink/50 flex items-center gap-1">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" class="text-mossD">
-                  <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8" />
-                  <path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                </svg>
-                Check-out
-              </label>
-              <input
-                id="prop-checkout"
-                type="date"
-                [min]="getMinCheckOutDate()"
-                [ngModel]="checkOutDate()"
-                (ngModelChange)="onCheckOutChange($event)"
-                class="w-full mt-1 bg-transparent text-xs sm:text-sm font-medium text-ink outline-none cursor-pointer" />
-            </div>
+            <app-date-input
+              [min]="getMinCheckOutDate()"
+              [ngModel]="checkOutDate()"
+              (ngModelChange)="onCheckOutChange($event)"
+              label="Check-out"
+              variant="property"
+            ></app-date-input>
 
             <!-- Room Type Selector -->
             @if ((propertyData()?.property_room_types ?? []).length > 0) {

@@ -416,11 +416,11 @@
                       </span>
                     </div>
                     <p class="text-xs text-ink/60 mt-1">
-                      {{ booking.check_in_date | date:'mediumDate' }} — {{ booking.check_out_date | date:'mediumDate' }}
+                      {{ booking.check_in_date | appDate }} — {{ booking.check_out_date | appDate }}
                       · {{ booking.num_guests }} guest{{ (booking.num_guests || 1) > 1 ? 's' : '' }} · {{ booking.num_rooms }} room{{ (booking.num_rooms || 1) > 1 ? 's' : '' }}
                     </p>
                     <p class="text-xs text-ink/40 mt-0.5">
-                      Ref: {{ booking.booking_number || booking.reference_number || booking.id }}
+                      Ref: {{ booking.booking_reference || booking.id }}
                     </p>
                   </div>
                 </div>
@@ -557,7 +557,7 @@
       <div>
         <h3 class="text-lg font-bold text-ink">Cancel Reservation</h3>
         <p class="text-xs text-ink/50 mt-0.5">
-          {{ selectedBookingToCancel()?.property?.name || 'Homestay' }} · {{ selectedBookingToCancel()?.check_in_date | date:'mediumDate' }}
+          {{ selectedBookingToCancel()?.property?.name || 'Homestay' }} · {{ selectedBookingToCancel()?.check_in_date | appDate }}
         </p>
       </div>
     </div>

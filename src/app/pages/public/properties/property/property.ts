@@ -1,7 +1,6 @@
 import { Component, DestroyRef, ElementRef, inject, PLATFORM_ID, signal, HostListener, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
-import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PropertyService } from '../../../../services/property/property-service';
@@ -9,6 +8,7 @@ import { PropertyAsset, PropertyData } from '../../../../services/property/prope
 import { BookingService } from '../../../../services/booking/booking-service';
 import { CheckAvailabilityResponseData } from '../../../../services/booking/booking.model';
 import { environment } from '../../../../../environments/environment';
+import { DateInput } from '../../../../shared/components/ui/date-input/date-input';
 
 function toDateString(d: Date): string {
   const year = d.getFullYear();
@@ -19,7 +19,7 @@ function toDateString(d: Date): string {
 
 @Component({
   selector: 'app-property',
-  imports: [CommonModule, DecimalPipe, FormsModule],
+  imports: [CommonModule, FormsModule, DateInput],
   templateUrl: './property.html',
   styleUrl: './property.css',
 })

@@ -28,6 +28,87 @@ const normalizeSettingsPayload = (value: unknown) => {
   return {} as Record<string, string | null>;
 };
 
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const MONTH_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+
+export function applyDateFormat(
+  dateInput: string | Date | number | null | undefined,
+  formatPattern: string = 'DD/MM/YYYY'
+): string {
+  if (!dateInput) return '—';
+
+  let date: Date;
+  if (typeof dateInput === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateInput.trim())) {
+    const [y, m, d] = dateInput.trim().split('-').map(Number);
+    date = new Date(y, m - 1, d);
+  } else {
+    date = new Date(dateInput);
+  }
+
+  if (Number.isNaN(date.getTime())) {
+    return String(dateInput);
+  }
+
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+
+  const YYYY = String(year);
+  const YY = String(year).slice(-2);
+  const MMMM = MONTH_NAMES[month];
+  const MMM = MONTH_SHORT[month];
+  const MM = String(month + 1).padStart(2, '0');
+  const M = String(month + 1);
+  const DD = String(day).padStart(2, '0');
+  const D = String(day);
+
+  return formatPattern
+    .replace(/\bYYYY\b/g, YYYY)
+    .replace(/\bYY\b/g, YY)
+    .replace(/\bMMMM\b/g, MMMM)
+    .replace(/\bMMM\b/g, MMM)
+    .replace(/\bMM\b/g, MM)
+    .replace(/\bM\b/g, M)
+    .replace(/\bDD\b/g, DD)
+    .replace(/\bD\b/g, D);
+}
+
+export function applyDateTimeFormat(
+  dateInput: string | Date | number | null | undefined,
+  dateFormatPattern: string = 'DD/MM/YYYY',
+  timeFormatPattern: string = '12h'
+): string {
+  if (!dateInput) return '—';
+
+  const date = new Date(dateInput);
+  if (Number.isNaN(date.getTime())) {
+    return String(dateInput);
+  }
+
+  const formattedDate = applyDateFormat(date, dateFormatPattern);
+
+  const hours24 = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  let formattedTime = '';
+  if (timeFormatPattern === '24h') {
+    formattedTime = `${String(hours24).padStart(2, '0')}:${minutes}`;
+  } else {
+    const ampm = hours24 >= 12 ? 'PM' : 'AM';
+    const hours12 = hours24 % 12 || 12;
+    formattedTime = `${String(hours12).padStart(2, '0')}:${minutes} ${ampm}`;
+  }
+
+  return `${formattedDate}, ${formattedTime}`;
+}
+
 @Service()
 export class SettingsService {
     public readonly apiService = inject(ApiService);
@@ -36,6 +117,24 @@ export class SettingsService {
     #settingsData = signal<Record<string, string | null>>({});
     #publicSettingsRequest: Observable<unknown> | null = null;
     settingsData = computed(() => this.#settingsData());
+    dateFormat = computed(() => this.#settingsData()['app_date_format'] || 'DD/MM/YYYY');
+    timeFormat = computed(() => this.#settingsData()['app_time_format'] || '12h');
+    timezone = computed(() => this.#settingsData()['app_timezone'] || 'Asia/Kolkata');
+
+    public formatDate(dateInput: string | Date | number | null | undefined, customFormat?: string): string {
+      const pattern = customFormat || this.#settingsData()['app_date_format'] || 'DD/MM/YYYY';
+      return applyDateFormat(dateInput, pattern);
+    }
+
+    public formatDateTime(
+      dateInput: string | Date | number | null | undefined,
+      customDateFormat?: string,
+      customTimeFormat?: string
+    ): string {
+      const datePattern = customDateFormat || this.#settingsData()['app_date_format'] || 'DD/MM/YYYY';
+      const timePattern = customTimeFormat || this.#settingsData()['app_time_format'] || '12h';
+      return applyDateTimeFormat(dateInput, datePattern, timePattern);
+    }
 
     setSettingsData(data: any) {
       const normalized = normalizeSettingsPayload(data);

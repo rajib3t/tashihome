@@ -13,6 +13,7 @@ import { BookingService } from '../../../../services/booking/booking-service';
 import { BookingData, RazorpayVerifyRequest } from '../../../../services/booking/booking.model';
 import { RazorpayService } from '../../../../services/booking/razorpay-service';
 import { SettingsService } from '../../../../services/settings/settings-service';
+import { AppDatePipe } from '../../../../pipes/app-date-pipe/app-date-pipe';
 
 
 export type ProfileTab = 'trips' | 'saved' | 'reviews' | 'account' | 'security';
@@ -25,6 +26,7 @@ export type ProfileTab = 'trips' | 'saved' | 'reviews' | 'account' | 'security';
     Avatar,
     Modal,
     ReactiveFormsModule,
+    AppDatePipe,
   ],
   styleUrl: './profile.css',
   templateUrl: './profile.html',

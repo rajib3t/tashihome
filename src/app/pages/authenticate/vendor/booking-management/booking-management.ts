@@ -4,11 +4,13 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { catchError, finalize, of } from 'rxjs';
 import { BookingData, BookingQuery, BookingStatus } from '../../../../services/booking/booking.model';
 import { BookingService } from '../../../../services/booking/booking-service';
+import { SettingsService } from '../../../../services/settings/settings-service';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
 import { Card } from '../../../../shared/components/ui/card/card';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 import { PaginationMeta } from '../../../../services/api/api-response.model';
+import { DateInput } from '../../../../shared/components/ui/date-input/date-input';
 
 const ALL_STATUS_OPTIONS: { value: BookingStatus; label: string }[] = [
   { value: 'pending',   label: 'Pending' },
@@ -29,12 +31,14 @@ const ALL_STATUS_OPTIONS: { value: BookingStatus; label: string }[] = [
     Card,
     Modal,
     Pagination,
+    DateInput,
   ],
   templateUrl: './booking-management.html',
   styleUrl: './booking-management.css',
 })
 export class VendorBookingManagement {
   private readonly bookingService = inject(BookingService);
+  private readonly settingsService = inject(SettingsService);
   private readonly fb = inject(FormBuilder);
 
   // ── list state ──────────────────────────────────────────────────────────────
@@ -310,19 +314,12 @@ export class VendorBookingManagement {
     }).format(value ?? 0);
   }
 
-  formatDate(dateStr: string | undefined | null): string {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      year: 'numeric', month: 'short', day: '2-digit',
-    });
+  formatDate(dateStr: string | Date | number | undefined | null): string {
+    return this.settingsService.formatDate(dateStr);
   }
 
-  formatDateTime(dateStr: string | undefined | null): string {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleString('en-IN', {
-      year: 'numeric', month: 'short', day: '2-digit',
-      hour: '2-digit', minute: '2-digit',
-    });
+  formatDateTime(dateStr: string | Date | number | undefined | null): string {
+    return this.settingsService.formatDateTime(dateStr);
   }
 
   getPrimaryImage(booking: BookingData): string | null {
