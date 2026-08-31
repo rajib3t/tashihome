@@ -1,0 +1,674 @@
+<!-- ============ BECOME A HOST HERO ============ -->
+<section
+  class="relative bg-pine text-cloud overflow-hidden pt-36 pb-28 md:pt-44 md:pb-36"
+  style="background: url('/images/hero-himalaya.jpg') center/cover no-repeat;"
+>
+  <!-- Deep atmospheric gradient overlays -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-pine/75 to-pine/95"></div>
+
+  <!-- Interactive misty particles & canvas -->
+  <canvas id="becomeHostMistCanvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+
+  <!-- Ambient glowing orbs -->
+  <div class="pointer-events-none absolute -top-24 right-0 w-[42rem] h-[42rem] bg-moss/20 rounded-full blur-[130px] animate-mist-a"></div>
+  <div class="pointer-events-none absolute bottom-0 left-0 w-[34rem] h-[34rem] bg-ochre/15 rounded-full blur-[130px] animate-mist-b"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10">
+    <div class="max-w-4xl">
+      <!-- Breadcrumb / Tag -->
+      <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-6 reveal">
+        <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
+        <p class="eyebrow text-mist text-[11px] tracking-wider m-0">Tashihomes Host Program</p>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.02] tracking-tight reveal">
+        Open your <em class="hero-accent font-accent not-italic text-ochre">hearth</em> to the world.
+      </h1>
+
+      <p class="mt-8 max-w-2xl text-cloud/85 text-lg md:text-xl font-light leading-relaxed reveal">
+        Join North Bengal and Sikkim's dedicated homestay community. We visit your home in person, photograph your rooms authentically, and connect you with travelers who value genuine mountain hospitality.
+      </p>
+
+      <!-- Badges / CTAs -->
+      <div class="mt-10 flex flex-wrap items-center gap-4 reveal">
+        <a
+          href="#application-form-section"
+          class="btn-anim inline-flex items-center gap-2 bg-ochre hover:bg-ochreD text-cloud text-sm md:text-base font-semibold px-8 py-3.5 rounded-full transition-all shadow-xl shadow-ochre/25"
+        >
+          <span>Apply to become a host</span>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </a>
+
+        <div class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 px-5 py-3 rounded-full text-xs md:text-sm text-cloud/90">
+          <span class="w-2 h-2 rounded-full bg-moss"></span>
+          <span>Zero listing fee • In-person curation • Direct settlements</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decorative mountain silhouette -->
+  <div class="absolute bottom-0 inset-x-0 pointer-events-none opacity-80">
+    <svg viewBox="0 0 1440 120" class="w-full h-auto" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 60L180 30L360 80L540 20L720 70L900 15L1080 65L1260 35L1440 75V120H0V60Z" fill="#F3FAFB" />
+    </svg>
+  </div>
+</section>
+
+<!-- ============ WHY HOST WITH TASHIHOMES ============ -->
+<section class="py-20 md:py-28 bg-cloud relative overflow-hidden">
+  <div class="pointer-events-none absolute inset-0 opacity-40 bg-topo-pattern"></div>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-moss/10 text-moss mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+        <p class="eyebrow text-moss text-[10px] tracking-wider m-0">The Host Advantage</p>
+      </div>
+      <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-ink leading-tight">
+        Designed for Himalayan families, not commercial hotel chains.
+      </h2>
+      <p class="mt-4 text-ink/70 text-base md:text-lg">
+        We handle the digital complexities and marketing so you can focus on what you do best — welcoming guests with warm tea and local food.
+      </p>
+    </div>
+
+    <!-- 4 Benefits Cards Grid -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      @for (benefit of benefits; track benefit.number) {
+        <div class="reveal bg-white rounded-2xl p-7 border border-ink/10 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-5">
+              <span class="font-display text-2xl font-bold text-ochre">{{ benefit.number }}</span>
+              <div class="w-10 h-10 rounded-full bg-pine/5 text-pine flex items-center justify-center">
+                @if (benefit.icon === 'sparkles') {
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                } @else if (benefit.icon === 'camera') {
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                } @else if (benefit.icon === 'wallet') {
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                } @else {
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                }
+              </div>
+            </div>
+            <h3 class="font-display text-xl text-ink font-semibold">{{ benefit.title }}</h3>
+            <p class="text-xs font-semibold text-moss uppercase tracking-wider mt-1">{{ benefit.subtitle }}</p>
+            <p class="text-sm text-ink/75 mt-3 leading-relaxed">{{ benefit.description }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ============ APPLICATION FORM SECTION ============ -->
+<section id="application-form-section" class="py-20 md:py-32 bg-white relative">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+      
+      <!-- Left Info Column -->
+      <div class="lg:col-span-5 space-y-8 reveal">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-ochre/15 text-ochreD mb-4">
+            <span class="w-1.5 h-1.5 rounded-full bg-ochre"></span>
+            <p class="eyebrow text-ochreD text-[10px] tracking-wider m-0">Quick Application</p>
+          </div>
+          <h2 class="font-display text-3xl sm:text-4xl text-ink leading-tight">
+            Tell us about your homestay in 2 minutes.
+          </h2>
+          <p class="mt-4 text-ink/75 text-base leading-relaxed">
+            Fill out the form below. Once received, our regional team will get in touch to introduce themselves and arrange a convenient in-person visit.
+          </p>
+        </div>
+
+        <!-- Onboarding Promise Card -->
+        <div class="bg-[#F3FAFB] rounded-2xl p-6 border border-ink/10 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-moss/20 text-moss flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-ink text-sm">The Tashihomes Host Pledge</h3>
+              <p class="text-xs text-ink/60">Respect • Authenticity • Fair Earnings</p>
+            </div>
+          </div>
+          <ul class="space-y-2.5 text-xs sm:text-sm text-ink/75 border-t border-ink/10 pt-3">
+            <li class="flex items-start gap-2">
+              <span class="text-moss font-bold">✓</span>
+              <span>100% Free listing with no hidden subscription or platform fees.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-moss font-bold">✓</span>
+              <span>Free on-site photo curation by our professional visual team.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-moss font-bold">✓</span>
+              <span>You control room prices, meal tariffs, and calendar dates.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-moss font-bold">✓</span>
+              <span>WhatsApp coordinator support across Darjeeling &amp; Sikkim.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Direct Contact Card -->
+        <div class="p-6 rounded-2xl bg-pine text-cloud space-y-3">
+          <p class="text-xs font-semibold uppercase tracking-wider text-ochre">Prefer to talk right now?</p>
+          <p class="text-sm text-cloud/80 leading-relaxed">
+            Our host onboarding specialists are available on phone &amp; WhatsApp:
+          </p>
+          <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <a
+              href="tel:+918100357588"
+              class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-cloud text-xs font-semibold py-2.5 px-4 rounded-xl border border-white/20 transition-colors"
+            >
+              <svg class="w-4 h-4 text-ochre" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              <span>+91 81003 57588</span>
+            </a>
+            <a
+              href="mailto:info@tashihomes.in"
+              class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-cloud text-xs font-semibold py-2.5 px-4 rounded-xl border border-white/20 transition-colors"
+            >
+              <svg class="w-4 h-4 text-moss" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span>info&#64;tashihomes.in</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Form / Success Column -->
+      <div class="lg:col-span-7 reveal">
+        @if (isSuccess()) {
+          <!-- ============ SUCCESS STATE ============ -->
+          <div class="bg-[#F3FAFB] border-2 border-moss/40 rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-xl animate-fade-in">
+            <div class="w-20 h-20 mx-auto rounded-full bg-moss/20 text-moss flex items-center justify-center">
+              <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+
+            <div>
+              <span class="inline-block px-3 py-1 bg-moss/10 text-moss text-xs font-semibold uppercase tracking-wider rounded-full mb-2">
+                Application Received
+              </span>
+              <h3 class="font-display text-3xl sm:text-4xl text-ink">Welcome to the family!</h3>
+              <p class="mt-3 text-ink/75 text-base max-w-md mx-auto leading-relaxed">
+                Thank you for applying to host with Tashihomes. We're excited to partner with <strong class="text-pine">{{ submittedData()?.property_name }}</strong> in {{ submittedData()?.city }}.
+              </p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 text-left border border-ink/10 max-w-lg mx-auto space-y-3 text-sm">
+              <h4 class="font-semibold text-ink text-xs uppercase tracking-wider text-moss">What happens next?</h4>
+              <div class="space-y-2 text-ink/80 text-xs sm:text-sm">
+                <p>1. <strong>Verification Call:</strong> Our coordinator will contact {{ submittedData()?.full_name }} via phone/WhatsApp ({{ submittedData()?.phone }}) within 24-48 hours.</p>
+                <p>2. <strong>Tea &amp; Photoshoot:</strong> We'll set a convenient time to visit your property and take professional photographs.</p>
+                <p>3. <strong>Going Live:</strong> Once verified, your listing goes live to hundreds of conscious travelers.</p>
+              </div>
+            </div>
+
+            <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                type="button"
+                (click)="resetApplication()"
+                class="btn-anim w-full sm:w-auto bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-6 py-3 rounded-full transition-colors"
+              >
+                Submit another inquiry
+              </button>
+              <a
+                routerLink="/stays"
+                class="btn-anim w-full sm:w-auto bg-white hover:bg-ink/5 text-ink text-sm font-semibold px-6 py-3 rounded-full border border-ink/15 transition-colors"
+              >
+                Explore existing stays
+              </a>
+            </div>
+          </div>
+        } @else {
+          <!-- ============ FORM STATE ============ -->
+          <div class="bg-white rounded-3xl p-6 sm:p-10 border border-ink/10 shadow-xl shadow-black/5">
+            <div class="border-b border-ink/10 pb-6 mb-8">
+              <h3 class="font-display text-2xl sm:text-3xl text-ink">Host Partner Application</h3>
+              <p class="text-xs sm:text-sm text-ink/60 mt-1">Please provide accurate details so we can reach you quickly.</p>
+            </div>
+
+            <!-- Error Banner -->
+            @if (errorMessage()) {
+              <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-start gap-3">
+                <svg class="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p class="font-semibold text-xs uppercase tracking-wide">Please check your submission</p>
+                  <p class="mt-0.5 text-xs">{{ errorMessage() }}</p>
+                </div>
+              </div>
+            }
+
+            <form [formGroup]="hostForm" (ngSubmit)="onSubmit()" class="space-y-6">
+              
+              <!-- Section 1: Contact Details -->
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-pine mb-4 flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-pine text-cloud text-[10px] grid place-items-center">1</span>
+                  <span>Primary Host Details</span>
+                </h4>
+
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <!-- Full Name -->
+                  <div>
+                    <label class="block text-xs font-semibold text-ink mb-1.5" for="full_name">
+                      Full Name <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="full_name"
+                      type="text"
+                      formControlName="full_name"
+                      placeholder="e.g. Tenzin Bhutia"
+                      class="w-full px-4 py-2.5 rounded-xl border text-sm text-ink bg-[#FDFEFE] focus:outline-none focus:ring-2 focus:ring-pine/30 transition-all"
+                      [ngClass]="isFieldInvalid('full_name') ? 'border-red-400 bg-red-50/30' : 'border-ink/20'"
+                    />
+                    @if (isFieldInvalid('full_name')) {
+                      <p class="text-red-600 text-xs mt-1">Please enter your full name.</p>
+                    }
+                  </div>
+
+                  <!-- Phone / WhatsApp -->
+                  <div>
+                    <label class="block text-xs font-semibold text-ink mb-1.5" for="phone">
+                      Phone / WhatsApp Number <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="phone"
+                      type="tel"
+                      formControlName="phone"
+                      placeholder="e.g. +91 98765 43210"
+                      class="w-full px-4 py-2.5 rounded-xl border text-sm text-ink bg-[#FDFEFE] focus:outline-none focus:ring-2 focus:ring-pine/30 transition-all"
+                      [ngClass]="isFieldInvalid('phone') ? 'border-red-400 bg-red-50/30' : 'border-ink/20'"
+                    />
+                    @if (isFieldInvalid('phone')) {
+                      <p class="text-red-600 text-xs mt-1">Please enter a valid contact number.</p>
+                    }
+                  </div>
+
+                  <!-- Email Address -->
+                  <div>
+                    <label class="block text-xs font-semibold text-ink mb-1.5" for="email">
+                      Email Address <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      formControlName="email"
+                      placeholder="e.g. tenzin@example.com"
+                      class="w-full px-4 py-2.5 rounded-xl border text-sm text-ink bg-[#FDFEFE] focus:outline-none focus:ring-2 focus:ring-pine/30 transition-all"
+                      [ngClass]="isFieldInvalid('email') ? 'border-red-400 bg-red-50/30' : 'border-ink/20'"
+                    />
+                    @if (isFieldInvalid('email')) {
+                      <p class="text-red-600 text-xs mt-1">Please enter a valid email address.</p>
+                    }
+                  </div>
+
+                  <!-- Company / Business Name -->
+                  <div>
+                    <label class="block text-xs font-semibold text-ink mb-1.5" for="company_name">
+                      Company / Organization Name <span class="text-ink/40 font-normal">(Optional)</span>
+                    </label>
+                    <input
+                      id="company_name"
+                      type="text"
+                      formControlName="company_name"
+                      placeholder="e.g. Himalayan Hospitality LLP"
+                      class="w-full px-4 py-2.5 rounded-xl border border-ink/20 text-sm text-ink bg-[#FDFEFE] focus:outline-none focus:ring-2 focus:ring-pine/30 transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 2: Homestay & Property Details -->
+              <div class="border-t border-ink/10 pt-6">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-pine mb-4 flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-pine text-cloud text-[10px] grid place-items-center">2</span>
+                  <span>Homestay Information</span>
+                </h4>
+
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <!-- Property Name -->
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-ink mb-1.5" for="property_name">
+                      Homestay / Property Name <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="property_name"
+                      type="text"
+                      formControlName="property_name"
+                      placeholder="e.g. Kanchenjunga View Pine Homestay"
+                      class="w-full px-4 py-2.5 rounded-xl border text-sm text-ink bg-[#FDFEFE] focus:outline-none focus:ring-2 focus:ring-pine/30 transition-all"
+                      [ngClass]="isFieldInvalid('property_name') ? 'border-red-400 bg-red-50/30' : 'border-ink/20'"
+                    />
+                    @if (isFieldInvalid('property_name')) {
+                      <p class="text-red-600 text-xs mt-1">Please enter your property name.</p>
+                    }
+                  </div>
+
+                  <!-- Property Type -->
+                  <div>
+                    <label class="block text-xs font-semibold text-ink mb-1.5" for="property_type">
+                      Property Type <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <select
+                        id="property_type"
+                        formControlName="property_type"
+                        class="w-full px-4 py-2.5 rounded-xl border border-ink/20 text-sm text-ink bg-[#FDFEFE] focus:outline-none focus:ring-2 focus:ring-pine/30 appearance-none transition-all pr-10"
+                      >
+                        <option value="home_stay">Home Stay</option>
+                        <option value="cottage">Cottage</option>
+                        <option value="cabin">Cabin</option>
+                        <option value="villa">Villa</option>
+                        <option value="guest_house">Guest House</option>
+                        <option value="farm_stay">Farm Stay</option>
+                        <option value="bed_and_breakfast">Bed &amp; Breakfast</option>
+                        <option value="resort">Resort / Eco Lodge</option>
+                        <option value="chalet">Chalet</option>
+                        <option value="hotel">Other</option>
+                      </select>
+                      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-ink/50">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Expected Rooms -->
+                  <div>
+                    <label class="block text-xs font-semibold text-ink mb-1.5" for="expected_rooms">
+                      Number of Guest Rooms <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="expected_rooms"
+                      type="number"
+                      min="1"
+                      max="100"
+                      formControlName="expected_rooms"
+                      placeholder="e.g. 2"
+                      class="w-full px-4 py-2.5 rounded-xl border text-sm text-ink bg-[#FDFEFE] focus:outline-none focus:ring-2 focus:ring-pine/30 transition-all"
+                      [ngClass]="isFieldInvalid('expected_rooms') ? 'border-red-400 bg-red-50/30' : 'border-ink/20'"
+                    />
+                    @if (isFieldInvalid('expected_rooms')) {
+                      <p class="text-red-600 text-xs mt-1">Please specify at least 1 room.</p>
+                    }
+                  </div>
+
+                  <!-- City / Region -->
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-ink mb-1.5" for="city">
+                      City / Region <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="city"
+                      type="text"
+                      list="city-suggestions"
+                      formControlName="city"
+                      placeholder="e.g. Darjeeling, Kalimpong, Gangtok, Sittong..."
+                      class="w-full px-4 py-2.5 rounded-xl border text-sm text-ink bg-[#FDFEFE] focus:outline-none focus:ring-2 focus:ring-pine/30 transition-all"
+                      [ngClass]="isFieldInvalid('city') ? 'border-red-400 bg-red-50/30' : 'border-ink/20'"
+                    />
+                    <datalist id="city-suggestions">
+                      @for (c of citiesList(); track c) {
+                        <option [value]="c"></option>
+                      }
+                    </datalist>
+
+                    <!-- Popular Quick Pills -->
+                    <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                      <span class="text-[11px] text-ink/50 mr-1">Popular:</span>
+                      @for (quickCity of popularCities.slice(0, 6); track quickCity) {
+                        <button
+                          type="button"
+                          (click)="selectCitySuggestion(quickCity)"
+                          class="text-[11px] px-2 py-0.5 rounded-md bg-ink/5 hover:bg-ochre/15 hover:text-ochreD text-ink/70 transition-colors"
+                        >
+                          {{ quickCity }}
+                        </button>
+                      }
+                    </div>
+
+                    @if (isFieldInvalid('city')) {
+                      <p class="text-red-600 text-xs mt-1">Please provide the city or region.</p>
+                    }
+                  </div>
+
+                  <!-- Full Address -->
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-ink mb-1.5" for="address">
+                      Property Address &amp; Nearest Landmark <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="address"
+                      type="text"
+                      formControlName="address"
+                      placeholder="e.g. Upper Lebong Road, Near Lloyd Botanical Garden, Darjeeling - 734101"
+                      class="w-full px-4 py-2.5 rounded-xl border text-sm text-ink bg-[#FDFEFE] focus:outline-none focus:ring-2 focus:ring-pine/30 transition-all"
+                      [ngClass]="isFieldInvalid('address') ? 'border-red-400 bg-red-50/30' : 'border-ink/20'"
+                    />
+                    @if (isFieldInvalid('address')) {
+                      <p class="text-red-600 text-xs mt-1">Please provide a descriptive address.</p>
+                    }
+                  </div>
+
+                  <!-- Notes / Story -->
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-ink mb-1.5" for="notes">
+                      Tell us about your home, food, or mountain views <span class="text-ink/40 font-normal">(Optional)</span>
+                    </label>
+                    <textarea
+                      id="notes"
+                      rows="3"
+                      formControlName="notes"
+                      placeholder="e.g. We have an organic vegetable garden, unobstructed views of Mt. Kanchenjunga, and serve traditional Sikkimese thukpa and momos..."
+                      class="w-full px-4 py-2.5 rounded-xl border border-ink/20 text-sm text-ink bg-[#FDFEFE] focus:outline-none focus:ring-2 focus:ring-pine/30 transition-all resize-none"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Terms Checkbox -->
+              <div class="border-t border-ink/10 pt-4">
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    formControlName="agree_terms"
+                    class="mt-1 w-4 h-4 rounded border-ink/30 text-ochre focus:ring-ochre"
+                  />
+                  <span class="text-xs text-ink/75 leading-relaxed">
+                    I confirm that I am the owner or authorized representative of this property. I agree to the <a routerLink="/our-story" class="text-pine underline hover:text-ochre">Tashihomes Community &amp; Host Guidelines</a>.
+                  </span>
+                </label>
+                @if (isFieldInvalid('agree_terms')) {
+                  <p class="text-red-600 text-xs mt-1 pl-7">Please accept the host guidelines to continue.</p>
+                }
+              </div>
+
+              <!-- Submit Button -->
+              <div class="pt-2">
+                <button
+                  type="submit"
+                  [disabled]="isSubmitting()"
+                  class="btn-anim w-full bg-ochre hover:bg-ochreD disabled:opacity-60 text-cloud text-sm sm:text-base font-semibold py-3.5 px-6 rounded-full transition-all shadow-lg shadow-ochre/25 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  @if (isSubmitting()) {
+                    <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Submitting Application...</span>
+                  } @else {
+                    <span>Submit Host Application</span>
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  }
+                </button>
+              </div>
+
+              <div class="text-center">
+                <p class="text-[11px] text-ink/50">
+                  🔒 Your information is confidential and will only be used to process your homestay listing.
+                </p>
+              </div>
+            </form>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW ONBOARDING WORKS ============ -->
+<section class="py-20 md:py-28 bg-[#F3FAFB] relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-pine/10 text-pine mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-pine"></span>
+        <p class="eyebrow text-pine text-[10px] tracking-wider m-0">Simple 3-Step Journey</p>
+      </div>
+      <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-ink">From application to your first guest</h2>
+      <p class="mt-3 text-ink/70 text-sm sm:text-base">We keep onboarding frictionless and personal.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      @for (step of steps; track step.step) {
+        <div class="reveal bg-white rounded-2xl p-8 border border-ink/10 shadow-sm relative flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-ochre/15 text-ochreD font-display text-2xl font-bold grid place-items-center mb-6">
+              {{ step.step }}
+            </div>
+            <h3 class="font-display text-xl text-ink font-semibold mb-3">{{ step.title }}</h3>
+            <p class="text-sm text-ink/70 leading-relaxed">{{ step.description }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOST TESTIMONIALS ============ -->
+<section class="py-20 md:py-28 bg-pine text-cloud relative overflow-hidden">
+  <div class="pointer-events-none absolute top-0 right-0 w-96 h-96 bg-moss/10 rounded-full blur-3xl"></div>
+  <div class="pointer-events-none absolute bottom-0 left-0 w-96 h-96 bg-ochre/10 rounded-full blur-3xl"></div>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cloud/10 text-mist border border-cloud/20 backdrop-blur-md mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-ochre"></span>
+        <p class="eyebrow text-mist text-[10px] tracking-wider m-0">From Our Hosts</p>
+      </div>
+      <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-cloud">Loved by mountain families</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      @for (t of testimonials; track t.host) {
+        <div class="reveal glass-card-dark rounded-2xl p-8 border border-white/15 flex flex-col justify-between">
+          <div>
+            <div class="text-ochre text-2xl mb-4 font-serif">“</div>
+            <p class="text-cloud/85 text-sm sm:text-base leading-relaxed italic">
+              {{ t.quote }}
+            </p>
+          </div>
+
+          <div class="flex items-center gap-4 mt-8 pt-6 border-t border-white/10">
+            <div class="w-11 h-11 rounded-full bg-ochre/20 text-ochre font-bold text-xs grid place-items-center border border-ochre/30">
+              {{ t.initials }}
+            </div>
+            <div>
+              <p class="font-semibold text-cloud text-sm">{{ t.host }}</p>
+              <p class="text-xs text-mist">{{ t.location }} • {{ t.rooms }}</p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ACCORDION ============ -->
+<section class="py-20 md:py-28 bg-cloud relative overflow-hidden">
+  <div class="pointer-events-none absolute inset-0 opacity-30 bg-topo-pattern"></div>
+
+  <div class="max-w-4xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-moss/10 text-moss mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+        <p class="eyebrow text-moss text-[10px] tracking-wider m-0">Got Questions?</p>
+      </div>
+      <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-ink">Frequently asked questions</h2>
+    </div>
+
+    <div class="space-y-4">
+      @for (faq of faqs; track faq.question; let idx = $index) {
+        <div class="reveal bg-white rounded-2xl border border-ink/10 overflow-hidden shadow-sm transition-all">
+          <button
+            type="button"
+            (click)="toggleFaq(idx)"
+            class="w-full p-6 text-left flex items-center justify-between gap-4 font-semibold text-ink text-base sm:text-lg cursor-pointer hover:bg-[#F3FAFB]/60 transition-colors"
+          >
+            <span>{{ faq.question }}</span>
+            <span
+              class="w-8 h-8 rounded-full bg-ink/5 text-ink flex items-center justify-center shrink-0 transition-transform duration-300"
+              [class.rotate-180]="activeFaqIndex() === idx"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </button>
+
+          @if (activeFaqIndex() === idx) {
+            <div class="px-6 pb-6 text-sm text-ink/75 leading-relaxed border-t border-ink/5 pt-4 animate-fade-in">
+              {{ faq.answer }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOTTOM CTA BANNER ============ -->
+<section class="py-16 bg-pine text-cloud relative overflow-hidden border-t border-white/10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 text-center relative z-10 space-y-6 reveal">
+    <h2 class="font-display text-3xl sm:text-4xl md:text-5xl">Ready to list your Himalayan homestay?</h2>
+    <p class="text-cloud/80 max-w-xl mx-auto text-sm sm:text-base">
+      Join the fastest growing network of curated homestays in North Bengal &amp; Sikkim.
+    </p>
+    <div>
+      <a
+        href="#application-form-section"
+        class="btn-anim inline-block bg-ochre hover:bg-ochreD text-cloud text-sm sm:text-base font-semibold py-3.5 px-8 rounded-full transition-all shadow-xl shadow-ochre/25"
+      >
+        Start your application now
+      </a>
+    </div>
+  </div>
+</section>
+

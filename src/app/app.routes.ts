@@ -4,7 +4,7 @@ import { Home } from './pages/public/home/home';
 import { Login } from './pages/public/login/login';
 import { authGuard, guestGuard } from './guards/auth/auth-guard';
 import { Authenticate } from './shared/layouts/authenticate/authenticate';
-import { adminGuard, userGuard, vendorGuard } from './guards/auth/role-guard';
+import { adminGuard, adminOnlyGuard, staffGuard, userGuard, vendorGuard } from './guards/auth/role-guard';
 import { Admin } from './shared/layouts/authenticate/admin/admin';
 import { AdminDashboard } from './pages/authenticate/admin/admin-dashboard/admin-dashboard';
 import { Setting } from './pages/authenticate/admin/setting/setting';
@@ -25,6 +25,7 @@ import { Property } from './pages/public/properties/property/property';
 import { Properties } from './pages/public/properties/properties';
 import { Search } from './pages/public/search/search';
 import { Story } from './pages/public/story/story';
+import { BecomeHost } from './pages/public/become-host/become-host';
 import { Register } from './pages/public/register/register';
 import { ActivateAccount } from './pages/public/activate-account/activate-account';
 import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
@@ -42,6 +43,7 @@ import { Checkout } from './pages/public/checkout/checkout';
 import { AdminBookingManagement } from './pages/authenticate/admin/booking-management/booking-management';
 import { VendorBookingManagement } from './pages/authenticate/vendor/booking-management/booking-management';
 import { RefundManagement } from './pages/authenticate/admin/refund-management/refund-management';
+import { HostManagement } from './pages/authenticate/admin/host-management/host-management';
 
 export const routes: Routes = [
     {
@@ -102,6 +104,16 @@ export const routes: Routes = [
             {
                 path: 'brand-story',
                 redirectTo: 'our-story',
+                pathMatch: 'full',
+            },
+            {
+                path: 'become-a-host',
+                component: BecomeHost,
+                title: 'Become a Host',
+            },
+            {
+                path: 'become-host',
+                redirectTo: 'become-a-host',
                 pathMatch: 'full',
             },
             {
@@ -238,12 +250,23 @@ export const routes: Routes = [
                         title: 'Edit Vendor'
                     },
                     {
+                        path: 'host-management',
+                        component: HostManagement,
+                        title: 'Host Applications'
+                    },
+                    {
+                        path: 'host-requests',
+                        redirectTo: 'host-management',
+                        pathMatch: 'full'
+                    },
+                    {
                         path: 'booking-management',
                         component: AdminBookingManagement,
                         title: 'Booking Management'
                     },
                     {
                         path: 'refund-management',
+                        canActivate: [adminOnlyGuard],
                         component: RefundManagement,
                         title: 'Refund Management'
                     }

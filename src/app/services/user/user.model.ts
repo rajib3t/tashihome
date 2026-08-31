@@ -13,7 +13,7 @@ export interface User {
     updated_at?: string;
 }
 
-export type UserRole = 'user' | 'admin' | 'vendor';
+export type UserRole = 'user' | 'admin' | 'vendor' | 'staff';
 
 export interface UserBasicProfileResponse extends User {}
 

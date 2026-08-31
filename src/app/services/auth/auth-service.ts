@@ -167,7 +167,7 @@ export class AuthService {
 
         if (isGuestRoute) {
             const role = (user?.role || this.authUser()?.role)?.toLowerCase();
-            if (role === 'admin') {
+            if (role === 'admin' || role === 'staff') {
                 this.router.navigate(['/admin']);
             } else if (role === 'vendor') {
                 this.router.navigate(['/vendor']);

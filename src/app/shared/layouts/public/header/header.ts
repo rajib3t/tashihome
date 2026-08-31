@@ -60,7 +60,7 @@ export class HeaderPublic {
 
   navigateToProfile(): void {
     const role = this.authService.authUser()?.role?.toLowerCase();
-    if (role === 'admin') this.router.navigate(['/admin/profile']);
+    if (role === 'admin' || role === 'staff') this.router.navigate(['/admin/profile']);
     else if (role === 'vendor') this.router.navigate(['/vendor/profile']);
     else if (role === 'user') this.router.navigate(['/user']);
     else this.router.navigate(['/login']);

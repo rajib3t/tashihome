@@ -27,7 +27,7 @@ export const roleGuard = (allowedRoles: UserRole[]): CanActivateFn => {
           return true;
         }
 
-        if (userRole === 'admin') {
+        if (userRole === 'admin' || userRole === 'staff') {
           return router.parseUrl('/admin');
         }
         if (userRole === 'vendor') {
@@ -39,7 +39,10 @@ export const roleGuard = (allowedRoles: UserRole[]): CanActivateFn => {
   };
 };
 
-export const adminGuard: CanActivateFn = roleGuard(['admin']);
+export const adminGuard: CanActivateFn = roleGuard(['admin', 'staff']);
+export const adminOnlyGuard: CanActivateFn = roleGuard(['admin']);
+export const staffGuard: CanActivateFn = roleGuard(['staff']);
+export const adminOrStaffGuard: CanActivateFn = roleGuard(['admin', 'staff']);
 export const vendorGuard: CanActivateFn = roleGuard(['vendor']);
 export const userGuard: CanActivateFn = roleGuard(['user']);
 
@@ -67,8 +70,8 @@ export const profileGuard: CanActivateFn = (route, state) => {
         return true;
       }
 
-      // Admin should go to admin dashboard
-      if (userRole === 'admin') {
+      // Admin or staff should go to admin dashboard
+      if (userRole === 'admin' || userRole === 'staff') {
         return router.parseUrl('/admin');
       }
 

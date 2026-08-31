@@ -69,7 +69,7 @@ export class Login implements AfterViewInit {
         console.log('Login response:', response);
         if (response.status === 'success' || response.status === 200) {
           const userRole = response.data.user.role?.toLowerCase();
-          if (userRole === 'admin') {
+          if (userRole === 'admin' || userRole === 'staff') {
             this.router.navigate(['/admin']);
           } else if (userRole === 'user') {
             this.router.navigate(['/profile']);
@@ -95,6 +95,7 @@ export class Login implements AfterViewInit {
     console.log('Redirecting based on role:', role);
     switch (role) {
       case 'admin':
+      case 'staff':
         console.log('Navigating to /admin');
         this.router.navigate(['/admin']).then(
           (success) => console.log('Navigation to /admin successful:', success),

@@ -99,6 +99,11 @@ export class Admin {
         path:'/admin/vendor-management'
       },
       {
+        icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M19 11v6"/><path d="M22 14h-6"/></svg>`,
+        name: 'Host Requests',
+        path: '/admin/host-management'
+      },
+      {
         icon:'<svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 11.5V8a2 2 0 0 0-2-2h-3.5l-2-3H8.5l-2 3H3a2 2 0 0 0-2 2v3.5a1.5 1.5 0 0 0 1.5 1.5h.5V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.5h.5A1.5 1.5 0 0 0 21 11.5ZM7 19v-7h10v7H7Zm11-8.5V8H6v2.5h12ZM9.5 9.5h1.5v1H9.5v-1Zm3.5 0h1.5v1H13v-1Z"/><path fill="none" d="M0 0h24v24H0z"/></svg>',
         name:'Properties',
         path:'/admin/property-management'
@@ -108,12 +113,15 @@ export class Admin {
         name: 'Bookings',
         path: '/admin/booking-management'
       },
-      {
-        icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path d="M7 7V4h10v3M8 12h8M12 9v6"/></svg>`,
-        name: 'Refunds',
-        path: '/admin/refund-management'
-      },
-     
+      ...(role !== 'staff'
+        ? [
+            {
+              icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path d="M7 7V4h10v3M8 12h8M12 9v6"/></svg>`,
+              name: 'Refunds',
+              path: '/admin/refund-management',
+            },
+          ]
+        : []),
     ];
 
 

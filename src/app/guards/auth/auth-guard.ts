@@ -21,7 +21,7 @@ export const authGuard: CanActivateFn = (route, state) => {
       }
 
       const role = authService.authUser()?.role?.toLowerCase();
-      if (role === 'admin' && !state.url.startsWith('/admin')) {
+      if ((role === 'admin' || role === 'staff') && !state.url.startsWith('/admin')) {
         return router.parseUrl('/admin');
       }
       if (role === 'vendor' && !state.url.startsWith('/vendor')) {
@@ -58,7 +58,7 @@ export const guestGuard: CanActivateFn = () => {
 
       // Already logged in → redirect to role dashboard
       const role = authService.authUser()?.role?.toLowerCase();
-      if (role === 'admin')  return router.parseUrl('/admin');
+      if (role === 'admin' || role === 'staff') return router.parseUrl('/admin');
       if (role === 'vendor') return router.parseUrl('/vendor');
       return router.parseUrl('/user');
     })

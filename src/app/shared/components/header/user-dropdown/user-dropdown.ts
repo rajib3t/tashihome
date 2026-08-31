@@ -28,7 +28,7 @@ export class UserDropdown {
 
   get profileUrl(): string {
     const role = this.authUser()?.role?.toLowerCase();
-    if (role === 'admin') return '/admin/profile';
+    if (role === 'admin' || role === 'staff') return '/admin/profile';
     if (role === 'vendor') return '/vendor/profile';
     return '/user';
   }
