@@ -48,6 +48,7 @@ function toDateString(d: Date): string {
 })
 export class Checkout implements OnInit {
   public readonly assetUrl = environment.assetUrl;
+  public readonly isPaymentDisabled = !!environment.disablePayment;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
@@ -325,6 +326,11 @@ export class Checkout implements OnInit {
 
   public onConfirmBooking(): void {
     this.bookingError.set(null);
+
+    if (this.isPaymentDisabled) {
+      this.bookingError.set('Online payments and bookings are currently disabled.');
+      return;
+    }
 
     if (this.guestForm.invalid) {
       this.guestForm.markAllAsTouched();

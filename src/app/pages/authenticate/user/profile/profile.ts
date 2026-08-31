@@ -44,6 +44,7 @@ export class Profile implements OnInit {
 
 
   public readonly assetUrl = environment.assetUrl;
+  public readonly isPaymentDisabled = !!environment.disablePayment;
 
   public readonly authUser = this.authService.authUser;
   public readonly user = signal<UserBasicProfileResponse | null>(null);
@@ -372,6 +373,10 @@ export class Profile implements OnInit {
 
   public payBookingNow(booking: BookingData): void {
     if (!booking?.id) return;
+    if (this.isPaymentDisabled) {
+      this.paymentErrorMessage.set('Online payment is currently disabled.');
+      return;
+    }
 
     this.isCompletingPayment.set(booking.id);
     this.paymentSuccessMessage.set(null);
