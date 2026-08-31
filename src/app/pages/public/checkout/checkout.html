@@ -77,7 +77,11 @@
                 </span>
                 <h2 class="font-display text-2xl sm:text-3xl text-ink">Booking Reserved</h2>
                 <p class="text-sm text-ink/70 mt-1.5 leading-relaxed">
-                  Your booking has been created. You can complete your online payment anytime from your <strong>Your trips</strong> list to finalize the reservation.
+                  @if (isPaymentDisabled) {
+                    Your booking has been reserved. Online payment is currently disabled on the platform. Please settle your booking payment directly with your host upon arrival.
+                  } @else {
+                    Your booking has been created. You can complete your online payment anytime from your <strong>Your trips</strong> list to finalize the reservation.
+                  }
                 </p>
               </div>
             }
@@ -302,15 +306,15 @@
               <div>
                 <h2 class="font-display text-2xl text-ink">Payment Method</h2>
                 <p class="text-xs sm:text-sm text-ink/60 mt-0.5">
-                  {{ isPaymentDisabled ? 'Online payment is currently unavailable' : 'Secure payment processed via Razorpay' }}
+                  {{ isPaymentDisabled ? 'Pay directly at the homestay upon arrival' : 'Secure payment processed via Razorpay' }}
                 </p>
               </div>
               @if (isPaymentDisabled) {
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold uppercase tracking-wider">
-                  <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pine/10 border border-pine/20 text-pine text-xs font-bold uppercase tracking-wider">
+                  <svg class="w-3.5 h-3.5 text-pine" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  Disabled
+                  Pay on Arrival
                 </span>
               } @else {
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider">
@@ -323,15 +327,25 @@
             </div>
 
             @if (isPaymentDisabled) {
-              <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-900 text-sm flex items-start gap-3">
-                <svg class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div>
-                  <p class="font-bold">Online Checkout Currently Disabled</p>
-                  <p class="text-xs text-amber-800 mt-0.5 leading-relaxed">
-                    Online booking and payments are temporarily disabled on this environment. Please reach out directly to arrange your stay.
-                  </p>
+              <div class="p-5 rounded-2xl border border-pine/20 bg-pine/5 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-pine text-cloud grid place-items-center font-display font-bold text-sm shadow-sm">
+                      <svg class="w-5 h-5 text-cloud" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="font-semibold text-sm text-ink">Pay at Homestay / Cash on Arrival</p>
+                      <p class="text-xs text-ink/60 mt-0.5">Reserve instantly without advance online payment. Settle directly with the host at check-in.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-3 border-t border-pine/10 flex flex-wrap items-center gap-2 text-[11px] text-ink/70">
+                  <span class="px-2 py-0.5 rounded-md bg-white/80 border border-ink/10 font-medium">Cash / UPI at Property</span>
+                  <span class="px-2 py-0.5 rounded-md bg-white/80 border border-ink/10 font-medium">Instant Reservation</span>
+                  <span class="px-2 py-0.5 rounded-md bg-white/80 border border-ink/10 font-medium">Zero Prepayment Fee</span>
                 </div>
               </div>
             } @else {
@@ -388,14 +402,9 @@
             <button
               type="button"
               (click)="onConfirmBooking()"
-              [disabled]="isPaymentDisabled || isSubmitting() || isProcessingPayment() || guestForm.invalid"
-              class="btn-anim group w-full py-4 rounded-full bg-ochre hover:bg-ochreD text-cloud text-base font-semibold transition-all shadow-xl shadow-ochre/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
-              @if (isPaymentDisabled) {
-                <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                </svg>
-                <span>Payments Disabled</span>
-              } @else if (isSubmitting() || isProcessingPayment()) {
+              [disabled]="isSubmitting() || isProcessingPayment() || guestForm.invalid"
+              class="btn-anim group w-full py-4 rounded-full bg-ochre hover:bg-ochreD text-cloud text-base font-semibold transition-all shadow-xl shadow-ochre/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (isSubmitting() || isProcessingPayment()) {
                 <div class="w-5 h-5 border-2 border-cloud border-t-transparent rounded-full animate-spin"></div>
                 <span>{{ isProcessingPayment() ? 'Opening secure payment gateway...' : 'Confirming reservation...' }}</span>
               } @else {
@@ -407,7 +416,7 @@
             </button>
             @if (isPaymentDisabled) {
               <p class="text-center text-xs text-ink/50">
-                Online payment is disabled in this environment.
+                No advance payment required. Settle directly with host upon check-in.
               </p>
             }
           </div>

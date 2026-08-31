@@ -327,11 +327,6 @@ export class Checkout implements OnInit {
   public onConfirmBooking(): void {
     this.bookingError.set(null);
 
-    if (this.isPaymentDisabled) {
-      this.bookingError.set('Online payments and bookings are currently disabled.');
-      return;
-    }
-
     if (this.guestForm.invalid) {
       this.guestForm.markAllAsTouched();
       return;
@@ -383,12 +378,12 @@ export class Checkout implements OnInit {
           const booking = res.data;
           const bookingId = booking?.id || (booking as any)?.booking_id;
 
-          if (!bookingId) {
+          if (!bookingId || this.isPaymentDisabled) {
             this.showBookingSuccess(booking);
             return;
           }
 
-          // Always proceed with Razorpay online payment
+          // If online payment is enabled, proceed with Razorpay
           this.initiateRazorpayPayment(bookingId, booking);
         },
         error: (err) => {
@@ -408,7 +403,7 @@ export class Checkout implements OnInit {
     this.razorpayService.load().then((loaded) => {
       if (!loaded) {
         this.isProcessingPayment.set(false);
-        this.bookingError.set('Unable to load payment gateway. Please check your internet connection and try again.');
+        this.showBookingSuccess(booking);
         return;
       }
 
@@ -418,11 +413,18 @@ export class Checkout implements OnInit {
         .subscribe({
           next: (res) => {
             const order = res.data;
-            this.openRazorpayModal(bookingId, booking, order);
+            if (order && (order.order_id || (order as any).id)) {
+              this.openRazorpayModal(bookingId, booking, order);
+            } else {
+              this.isProcessingPayment.set(false);
+              this.showBookingSuccess(booking);
+            }
           },
           error: (err) => {
-            console.warn('Razorpay order creation fallback:', err);
-            this.openRazorpayModal(bookingId, booking, {});
+            console.warn('Razorpay order creation response (payment disabled or unavailable):', err);
+            this.isProcessingPayment.set(false);
+            // Even if online payment gateway is disabled on the backend, the reservation was created
+            this.showBookingSuccess(booking);
           },
         });
     });
@@ -434,6 +436,13 @@ export class Checkout implements OnInit {
     orderData: any
   ): void {
     if (!isPlatformBrowser(this.platformId) || typeof window === 'undefined') {
+      this.showBookingSuccess(booking);
+      return;
+    }
+
+    if (!orderData?.order_id && !orderData?.id && !orderData?.key && !orderData?.key_id && !orderData?.razorpay_key) {
+      console.warn('Razorpay order details not available, displaying booking reservation');
+      this.isProcessingPayment.set(false);
       this.showBookingSuccess(booking);
       return;
     }

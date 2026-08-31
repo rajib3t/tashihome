@@ -396,11 +396,17 @@ export class Profile implements OnInit {
         .subscribe({
           next: (res) => {
             const order = res.data;
-            this.openPaymentModal(booking, order);
+            if (order && (order.order_id || (order as any).id)) {
+              this.openPaymentModal(booking, order);
+            } else {
+              this.isCompletingPayment.set(null);
+              this.paymentErrorMessage.set('Payment processing is currently unavailable.');
+            }
           },
-          error: () => {
-            // Fallback order
-            this.openPaymentModal(booking, {});
+          error: (err) => {
+            this.isCompletingPayment.set(null);
+            const msg = this.bookingService.extractApiErrorMessage(err);
+            this.paymentErrorMessage.set(msg || 'Payment processing is currently disabled.');
           },
         });
     });
@@ -409,6 +415,12 @@ export class Profile implements OnInit {
   private openPaymentModal(booking: BookingData, orderData: any): void {
     if (!isPlatformBrowser(this.platformId) || typeof window === 'undefined') {
       this.isCompletingPayment.set(null);
+      return;
+    }
+
+    if (!orderData?.order_id && !orderData?.id && !orderData?.key && !orderData?.key_id && !orderData?.razorpay_key) {
+      this.isCompletingPayment.set(null);
+      this.paymentErrorMessage.set('Payment processing is currently unavailable.');
       return;
     }
 
