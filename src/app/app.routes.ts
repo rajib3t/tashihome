@@ -46,6 +46,7 @@ import { RefundManagement } from './pages/authenticate/admin/refund-management/r
 import { HostManagement } from './pages/authenticate/admin/host-management/host-management';
 import { StaffManagement } from './pages/authenticate/admin/staff-management/staff-management';
 import { EditStaff } from './pages/authenticate/admin/staff-management/edit-staff/edit-staff';
+import { PayoutManagement } from './pages/authenticate/admin/payout-management/payout-management';
 
 export const routes: Routes = [
     {
@@ -288,6 +289,27 @@ export const routes: Routes = [
                         canActivate: [adminOnlyGuard],
                         component: RefundManagement,
                         title: 'Refund Management'
+                    },
+                    {
+                        path: 'finance/refunds',
+                        redirectTo: 'refund-management',
+                        pathMatch: 'full'
+                    },
+                    {
+                        path: 'finance/payouts',
+                        canActivate: [adminOnlyGuard],
+                        component: PayoutManagement,
+                        title: 'Payout Management'
+                    },
+                    {
+                        path: 'payout-management',
+                        redirectTo: 'finance/payouts',
+                        pathMatch: 'full'
+                    },
+                    {
+                        path: 'payouts',
+                        redirectTo: 'finance/payouts',
+                        pathMatch: 'full'
                     }
                 ]
             },

@@ -3,7 +3,7 @@
         <app-sidebar [navItems]="navItems"></app-sidebar>
         <app-backdrop></app-backdrop>
     </div>
-    <div class="flex-1 transition-all duration-300 ease-in-out" [ngClass]="{
+    <div class="flex-1 min-w-0 max-w-full transition-all duration-300 ease-in-out" [ngClass]="{
         'xl:ml-72.5': (isExpanded$ | async) || (isHovered$ | async),
         'xl:ml-22.5': !(isExpanded$ | async) && !(isHovered$ | async),
         'ml-0': (isMobileOpen$ | async)
@@ -11,7 +11,7 @@
         <!-- app header start -->
         <app-header (logOut)="onLogout()"></app-header>
         <!-- app header end -->
-        <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+        <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6 min-w-0 w-full">
             <router-outlet></router-outlet>
         </div>
     </div>

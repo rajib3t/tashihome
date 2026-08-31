@@ -1,5 +1,12 @@
-/* Admin Dashboard Specific Styles */
 :host {
   display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
+/* Custom table scrollbar */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}

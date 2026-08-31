@@ -1,0 +1,1306 @@
+<app-page-breadcrumb
+  pageTitle="Payout Management"
+  homelink="/admin"
+  [breadcrumbs]="[
+    { label: 'Finance' },
+    { label: 'Payouts' }
+  ]"
+></app-page-breadcrumb>
+
+<div class="space-y-5 max-w-full overflow-hidden">
+  <!-- Metric KPI Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <!-- Total Disbursed -->
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Disbursed</span>
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </span>
+      </div>
+      <p class="mt-2 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{{ formatCurrency(metrics().totalDisbursed) }}</p>
+      <p class="mt-1 flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+        <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        <span>Settled in Host Accounts</span>
+      </p>
+    </div>
+
+    <!-- Pending Payouts -->
+    <div class="rounded-2xl border border-amber-200 bg-amber-50/40 p-4.5 shadow-xs dark:border-amber-500/20 dark:bg-amber-500/5">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">Pending Payouts</span>
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </span>
+      </div>
+      <p class="mt-2 text-xl sm:text-2xl font-bold text-amber-800 dark:text-amber-300">{{ formatCurrency(metrics().pendingAmount) }}</p>
+      <p class="mt-1 text-[11px] font-medium text-amber-700 dark:text-amber-400">
+        {{ metrics().pendingCount }} Payout{{ metrics().pendingCount === 1 ? '' : 's' }} awaiting disbursement
+      </p>
+    </div>
+
+    <!-- In Processing -->
+    <div class="rounded-2xl border border-blue-200 bg-blue-50/40 p-4.5 shadow-xs dark:border-blue-500/20 dark:bg-blue-500/5">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-400">In Processing</span>
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">
+          <svg class="h-5 w-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </span>
+      </div>
+      <p class="mt-2 text-xl sm:text-2xl font-bold text-blue-800 dark:text-blue-300">{{ formatCurrency(metrics().processingAmount) }}</p>
+      <p class="mt-1 text-[11px] font-medium text-blue-700 dark:text-blue-400">
+        {{ metrics().processingCount }} In RazorpayX Queue
+      </p>
+    </div>
+
+    <!-- Failed / Action Required -->
+    <div class="rounded-2xl border border-rose-200 bg-rose-50/40 p-4.5 shadow-xs dark:border-rose-500/20 dark:bg-rose-500/5">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-rose-700 dark:text-rose-400">Failed / Action Req</span>
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </span>
+      </div>
+      <p class="mt-2 text-xl sm:text-2xl font-bold text-rose-800 dark:text-rose-300">{{ formatCurrency(metrics().failedAmount) }}</p>
+      <p class="mt-1 text-[11px] font-medium text-rose-700 dark:text-rose-400">
+        {{ metrics().failedCount }} Need Attention
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Management Card -->
+  <app-card title="Vendor Settlements" desc="Track, calculate eligible dues, manage bank accounts, and disburse payouts.">
+    <!-- Header Actions & Filter Controls -->
+    <div class="space-y-4">
+      <!-- Quick Status Filter Pills & Top Buttons -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3.5 dark:border-slate-800">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            (click)="onStatusTabChange('')"
+            [class]="activeStatusTab() === ''
+              ? 'bg-blue-600 text-white font-medium shadow-xs'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'"
+            class="cursor-pointer rounded-lg px-3 py-1.5 text-xs transition"
+          >
+            All
+          </button>
+
+          <button
+            type="button"
+            (click)="onStatusTabChange('pending')"
+            [class]="activeStatusTab() === 'pending'
+              ? 'bg-amber-600 text-white font-medium shadow-xs'
+              : 'bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20'"
+            class="cursor-pointer inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+            Pending
+          </button>
+
+          <button
+            type="button"
+            (click)="onStatusTabChange('processing')"
+            [class]="activeStatusTab() === 'processing'
+              ? 'bg-blue-600 text-white font-medium shadow-xs'
+              : 'bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20'"
+            class="cursor-pointer inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-blue-400"></span>
+            In Processing
+          </button>
+
+          <button
+            type="button"
+            (click)="onStatusTabChange('paid')"
+            [class]="activeStatusTab() === 'paid'
+              ? 'bg-emerald-600 text-white font-medium shadow-xs'
+              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20'"
+            class="cursor-pointer inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            Paid
+          </button>
+
+          <button
+            type="button"
+            (click)="onStatusTabChange('failed')"
+            [class]="activeStatusTab() === 'failed'
+              ? 'bg-rose-600 text-white font-medium shadow-xs'
+              : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20'"
+            class="cursor-pointer inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-rose-400"></span>
+            Failed / Action Req
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            (click)="refreshList()"
+            [disabled]="isLoading()"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-xs disabled:opacity-60 cursor-pointer"
+          >
+            <svg
+              class="w-3.5 h-3.5 text-slate-500 transition-transform duration-500"
+              [class.animate-spin]="isLoading()"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Refresh</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="openCreateModal()"
+            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Create Payout</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search & Date Filters Form -->
+      <form [formGroup]="searchForm" (ngSubmit)="onSearch()" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-3">
+        <!-- Search Keyword -->
+        <div class="sm:col-span-2 md:col-span-1 lg:col-span-4 relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            formControlName="search"
+            placeholder="Search vendor, ID, or UTR…"
+            class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          />
+        </div>
+
+        <!-- Status Filter Dropdown -->
+        <div class="lg:col-span-2">
+          <select
+            formControlName="status"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          >
+            <option value="">All Statuses</option>
+            @for (st of availableStatuses; track st) {
+              <option [value]="st">{{ statusLabel(st) }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Period Start -->
+        <div class="lg:col-span-2">
+          <input
+            type="date"
+            formControlName="period_start"
+            title="Period Start"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          />
+        </div>
+
+        <!-- Period End -->
+        <div class="lg:col-span-2">
+          <input
+            type="date"
+            formControlName="period_end"
+            title="Period End"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          />
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="sm:col-span-2 md:col-span-3 lg:col-span-2 flex items-center gap-2">
+          <button
+            type="submit"
+            class="flex-1 cursor-pointer inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-medium text-white shadow-xs transition hover:bg-blue-700"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Filter</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="onReset()"
+            class="cursor-pointer rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            Clear
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Feedback Alerts -->
+    @if (errorMessage()) {
+      <div class="mt-4 flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs text-rose-700 dark:border-rose-800/50 dark:bg-rose-900/20 dark:text-rose-400">
+        <span>{{ errorMessage() }}</span>
+        <button type="button" (click)="dismissAlert()" class="cursor-pointer text-rose-500 hover:text-rose-700 text-sm">&times;</button>
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="mt-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-900/20 dark:text-emerald-300">
+        <span>{{ successMessage() }}</span>
+        <button type="button" (click)="dismissAlert()" class="cursor-pointer text-emerald-500 hover:text-emerald-700 text-sm">&times;</button>
+      </div>
+    }
+
+    <!-- Payouts Table Container (isolated horizontal scroll) -->
+    <div class="mt-5 w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+      <div class="w-full overflow-x-auto">
+        <table class="min-w-[860px] w-full text-left text-xs text-slate-700 dark:text-slate-300">
+          <thead class="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-900/80 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+            <tr>
+              <th class="py-3 pl-4 pr-2 w-10">SL</th>
+              <th class="py-3 px-3">Vendor</th>
+              <th class="py-3 px-3">Settlement Period</th>
+              <th class="py-3 px-3 text-right">Gross (₹)</th>
+              <th class="py-3 px-3 text-right">Comm (₹)</th>
+              <th class="py-3 px-3 text-right">Net Amount</th>
+              <th class="py-3 px-3 text-center">Status</th>
+              <th class="py-3 px-3">Gateway / UTR</th>
+              <th class="py-3 pl-3 pr-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800/60 dark:bg-slate-900">
+            @if (isLoading()) {
+              <!-- Skeleton Loader Rows -->
+              @for (n of [1,2,3,4,5]; track n) {
+                <tr class="animate-pulse">
+                  <td class="py-3 pl-4 pr-2"><div class="h-3.5 w-5 bg-slate-200 dark:bg-slate-800 rounded"></div></td>
+                  <td class="py-3 px-3">
+                    <div class="h-3.5 w-28 bg-slate-200 dark:bg-slate-800 rounded mb-1"></div>
+                    <div class="h-3 w-40 bg-slate-100 dark:bg-slate-850 rounded"></div>
+                  </td>
+                  <td class="py-3 px-3"><div class="h-3.5 w-24 bg-slate-200 dark:bg-slate-800 rounded"></div></td>
+                  <td class="py-3 px-3 text-right"><div class="h-3.5 w-14 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
+                  <td class="py-3 px-3 text-right"><div class="h-3.5 w-12 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
+                  <td class="py-3 px-3 text-right"><div class="h-3.5 w-16 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
+                  <td class="py-3 px-3 text-center"><div class="h-5 w-16 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto"></div></td>
+                  <td class="py-3 px-3"><div class="h-3.5 w-20 bg-slate-200 dark:bg-slate-800 rounded"></div></td>
+                  <td class="py-3 pl-3 pr-4 text-right"><div class="h-7 w-20 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
+                </tr>
+              }
+            } @else if (!payouts().length) {
+              <!-- Empty State -->
+              <tr>
+                <td colspan="9" class="py-12 text-center">
+                  <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
+                    <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mb-2">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <p class="text-sm font-medium text-slate-700 dark:text-slate-300">No payout records found</p>
+                    <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">No records match the selected filter criteria.</p>
+                    <button
+                      type="button"
+                      (click)="openCreateModal()"
+                      class="mt-3 cursor-pointer inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Generate New Payout
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @else {
+              <!-- Data Rows -->
+              @for (payout of payouts(); track payout.public_id || $index; let idx = $index) {
+                <tr class="transition-colors hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
+                  <!-- SL -->
+                  <td class="py-3.5 pl-4 pr-2 text-slate-400 text-xs font-mono">
+                    {{ getSerialNumber(idx) }}
+                  </td>
+
+                  <!-- Vendor -->
+                  <td class="py-3.5 px-3">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-bold text-xs flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-800/40">
+                        {{ payout.vendor?.full_name?.charAt(0) || 'V' }}
+                      </div>
+                      <div class="min-w-0">
+                        <p class="font-medium text-slate-900 dark:text-white truncate max-w-[160px]" [title]="payout.vendor?.full_name || 'Vendor'">
+                          {{ payout.vendor?.full_name || 'Unknown Vendor' }}
+                        </p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[160px]" [title]="payout.vendor?.email || ''">
+                          {{ payout.vendor?.email || '—' }}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Settlement Period -->
+                  <td class="py-3.5 px-3 whitespace-nowrap">
+                    <div class="text-xs font-medium text-slate-700 dark:text-slate-300">
+                      {{ formatDate(payout.period_start) }} &ndash; {{ formatDate(payout.period_end) }}
+                    </div>
+                  </td>
+
+                  <!-- Gross Amount -->
+                  <td class="py-3.5 px-3 text-right text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                    {{ formatCurrency(payout.gross_amount) }}
+                  </td>
+
+                  <!-- Commission -->
+                  <td class="py-3.5 px-3 text-right text-xs text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                    -{{ formatCurrency(payout.commission_amount) }}
+                  </td>
+
+                  <!-- Net Amount -->
+                  <td class="py-3.5 px-3 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                    {{ formatCurrency(payout.amount, payout.currency) }}
+                  </td>
+
+                  <!-- Status Badge -->
+                  <td class="py-3.5 px-3 text-center whitespace-nowrap">
+                    <span
+                      class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border"
+                      [ngClass]="statusBadgeClass(payout.status)"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full" [ngClass]="statusDotClass(payout.status)"></span>
+                      {{ statusLabel(payout.status) }}
+                    </span>
+                  </td>
+
+                  <!-- Gateway Ref / UTR -->
+                  <td class="py-3.5 px-3 text-xs">
+                    @if (payout.utr) {
+                      <div class="flex items-center gap-1 font-mono text-emerald-700 dark:text-emerald-400 font-medium">
+                        <span class="truncate max-w-[120px]" [title]="payout.utr">UTR: {{ payout.utr }}</span>
+                        <button
+                          type="button"
+                          (click)="copyToClipboard(payout.utr, 'utr-' + payout.public_id)"
+                          class="cursor-pointer text-slate-400 hover:text-primary transition shrink-0"
+                          title="Copy UTR"
+                        >
+                          @if (copiedKey() === 'utr-' + payout.public_id) {
+                            <span class="text-[10px] text-emerald-600 font-bold">✓</span>
+                          } @else {
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                          }
+                        </button>
+                      </div>
+                    } @else if (payout.razorpay_payout_id) {
+                      <div class="font-mono text-slate-500 dark:text-slate-400 truncate max-w-[120px]" [title]="payout.razorpay_payout_id">
+                        {{ payout.razorpay_payout_id }}
+                      </div>
+                    } @else {
+                      <span class="text-slate-400 italic">Not Disbursed</span>
+                    }
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="py-3.5 pl-3 pr-4 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1.5">
+                      <!-- Pending actions -->
+                      @if (payout.status === 'pending') {
+                        <button
+                          type="button"
+                          (click)="openActionModal(payout, 'process')"
+                          class="cursor-pointer px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
+                          title="Disburse via RazorpayX"
+                        >
+                          ⚡ Pay
+                        </button>
+                        <button
+                          type="button"
+                          (click)="openActionModal(payout, 'cancel')"
+                          class="cursor-pointer px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-200 text-slate-600 hover:text-rose-600 dark:text-slate-300 text-xs font-medium transition"
+                          title="Cancel Payout"
+                        >
+                          Cancel
+                        </button>
+                      }
+
+                      <!-- Processing action -->
+                      @if (payout.status === 'processing') {
+                        <button
+                          type="button"
+                          (click)="openActionModal(payout, 'sync')"
+                          class="cursor-pointer px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-semibold hover:bg-blue-100 transition"
+                          title="Sync with Razorpay"
+                        >
+                          🔄 Sync
+                        </button>
+                      }
+
+                      <!-- Failed actions -->
+                      @if (payout.status === 'failed') {
+                        <button
+                          type="button"
+                          (click)="openActionModal(payout, 'retry')"
+                          class="cursor-pointer px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition"
+                          title="Retry Payout"
+                        >
+                          ⚡ Retry
+                        </button>
+                        <button
+                          type="button"
+                          (click)="openActionModal(payout, 'sync')"
+                          class="cursor-pointer px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium hover:bg-slate-50 transition"
+                        >
+                          Sync
+                        </button>
+                      }
+
+                      <!-- Paid action: Receipt -->
+                      @if (payout.status === 'paid') {
+                        <button
+                          type="button"
+                          (click)="openReceipt(payout)"
+                          class="cursor-pointer p-1.5 rounded-lg text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition"
+                          title="Print Receipt"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                          </svg>
+                        </button>
+                      }
+
+                      <!-- View Details -->
+                      <button
+                        type="button"
+                        (click)="openDetailDrawer(payout)"
+                        class="cursor-pointer rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4">
+      <app-pagination
+        [meta]="meta"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </div>
+  </app-card>
+</div>
+
+<!-- ========================================================================= -->
+<!-- CREATE PAYOUT / DUES CALCULATOR MODAL                                     -->
+<!-- ========================================================================= -->
+<app-modal [isOpen]="isCreateModalOpen()" (close)="closeCreateModal()" className="max-w-2xl mx-4">
+  <div class="p-5 sm:p-6 space-y-5">
+    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3.5">
+      <div>
+        <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Generate Vendor Payout</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Calculate completed bookings dues and disburse vendor settlements.
+        </p>
+      </div>
+    </div>
+
+    @if (createPayoutError()) {
+      <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-xs flex items-center justify-between">
+        <span>{{ createPayoutError() }}</span>
+        <button (click)="createPayoutError.set('')" class="cursor-pointer text-rose-500 hover:text-rose-700 p-1">&times;</button>
+      </div>
+    }
+
+    <form [formGroup]="createPayoutForm" class="space-y-4">
+      <!-- Step 1: Select Vendor & Settlement Period -->
+      <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+          <span class="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center text-[10px]">1</span>
+          Select Vendor & Period
+        </h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Vendor Selection -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Vendor *</label>
+            <select
+              formControlName="vendor_id"
+              (change)="onVendorSelected()"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+            >
+              <option value="">-- Select Vendor --</option>
+              @for (v of vendors(); track v.id) {
+                <option [value]="v.id">{{ v.full_name || v.email }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Commission Rate -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Commission Rate (%) *</label>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              max="100"
+              formControlName="commission_percentage"
+              (input)="onCommissionPercentageInput()"
+              placeholder="e.g. 10.0"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <!-- Period Start -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Period Start Date *</label>
+            <input
+              type="date"
+              formControlName="period_start"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <!-- Period End -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Period End Date *</label>
+            <input
+              type="date"
+              formControlName="period_end"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+            />
+          </div>
+        </div>
+
+        <!-- Calculate Dues Trigger -->
+        <div class="pt-1">
+          <button
+            type="button"
+            (click)="calculateDues()"
+            [disabled]="isCalculatingDues() || !createPayoutForm.get('vendor_id')?.value"
+            class="cursor-pointer w-full py-2 px-3 rounded-xl bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 text-xs font-bold transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+          >
+            @if (isCalculatingDues()) {
+              <svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+              <span>Calculating eligible bookings…</span>
+            } @else {
+              <span>⚡ Calculate Eligible Dues</span>
+            }
+          </button>
+        </div>
+
+        @if (duesCalculationError()) {
+          <p class="text-xs text-rose-600 font-medium">{{ duesCalculationError() }}</p>
+        }
+
+        <!-- Earnings Calculation Preview Card -->
+        @if (duesCalculation(); as dues) {
+          <div class="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-800/60 space-y-1.5 text-xs">
+            <div class="flex items-center justify-between font-semibold text-blue-900 dark:text-blue-200 border-b border-blue-200/60 dark:border-blue-800/40 pb-1.5">
+              <span>CALCULATION PREVIEW</span>
+              <span>{{ dues.completed_bookings_count }} Bookings</span>
+            </div>
+            <div class="grid grid-cols-2 gap-y-1 text-slate-700 dark:text-slate-300">
+              <span>Gross Booking Volume:</span>
+              <span class="text-right font-medium">{{ formatCurrency(dues.gross_booking_amount) }}</span>
+
+              <span>Platform Fee ({{ dues.commission_percentage }}%):</span>
+              <span class="text-right font-medium text-rose-600 dark:text-rose-400">-{{ formatCurrency(dues.commission_amount) }}</span>
+
+              <span>Already Disbursed:</span>
+              <span class="text-right font-medium">-{{ formatCurrency(dues.already_disbursed_amount) }}</span>
+
+              <div class="col-span-2 border-t border-blue-200 dark:border-blue-800/60 my-0.5"></div>
+
+              <span class="font-bold text-slate-900 dark:text-white">Net Payable Amount:</span>
+              <span class="text-right font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(dues.pending_payable_amount) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Step 2: Payout Details & Destination Account -->
+      <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+          <span class="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center text-[10px]">2</span>
+          Payout Details & Account
+        </h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Gross Amount -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Gross Bookings (₹)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              formControlName="gross_amount"
+              (input)="onGrossAmountInput()"
+              placeholder="0.00"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <!-- Commission Amount -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Commission (₹)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              formControlName="commission_amount"
+              placeholder="0.00"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 text-xs focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <!-- Net Disbursement Amount -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Net Disbursement (₹) *</label>
+            <input
+              type="number"
+              step="0.01"
+              min="1"
+              formControlName="amount"
+              (input)="onNetAmountInput()"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-bold focus:border-blue-500 outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+          <!-- Payment Mode -->
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Mode *</label>
+            <div class="grid grid-cols-4 gap-1.5">
+              @for (mode of paymentModes; track mode) {
+                <label
+                  class="cursor-pointer flex items-center justify-center py-2 rounded-xl border text-xs font-semibold transition text-center"
+                  [ngClass]="createPayoutForm.get('mode')?.value === mode
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'"
+                >
+                  <input
+                    type="radio"
+                    formControlName="mode"
+                    [value]="mode"
+                    class="sr-only"
+                  />
+                  {{ mode }}
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Destination Bank Account -->
+          <div class="sm:col-span-2">
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Destination Account *</label>
+              <button
+                type="button"
+                (click)="openBankModalFromCreate()"
+                class="cursor-pointer text-[11px] text-blue-600 hover:text-blue-700 dark:text-blue-400 font-semibold"
+              >
+                + Add / Change Bank Account
+              </button>
+            </div>
+
+            @if (isLoadingBankAccounts()) {
+              <p class="text-xs text-slate-400">Loading bank accounts…</p>
+            } @else if (vendorBankAccounts().length === 0) {
+              <div class="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-800 dark:text-amber-300 text-xs flex items-center justify-between">
+                <span>No bank account or UPI VPA found.</span>
+                <button
+                  type="button"
+                  (click)="openBankModalFromCreate()"
+                  class="cursor-pointer px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs"
+                >
+                  Add Now
+                </button>
+              </div>
+            } @else {
+              <select
+                formControlName="bank_account_id"
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+              >
+                @for (acc of vendorBankAccounts(); track acc.public_id) {
+                  <option [value]="acc.public_id">
+                    @if (acc.account_type === 'bank_account') {
+                      {{ acc.bank_name || 'Bank' }} (A/C: ****{{ acc.account_number?.slice(-4) }}, IFSC: {{ acc.ifsc_code }}) {{ acc.is_primary ? '[Primary]' : '' }}
+                    } @else {
+                      UPI: {{ acc.upi_id }} {{ acc.is_primary ? '[Primary]' : '' }}
+                    }
+                  </option>
+                }
+              </select>
+            }
+          </div>
+
+          <!-- Notes -->
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Notes / Reference</label>
+            <input
+              type="text"
+              formControlName="notes"
+              placeholder="e.g. Regular Settlement for August 2026"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <button
+          type="button"
+          (click)="closeCreateModal()"
+          [disabled]="isCreatingPayout()"
+          class="cursor-pointer px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 text-xs font-semibold transition"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          (click)="submitCreatePayout(false)"
+          [disabled]="isCreatingPayout()"
+          class="cursor-pointer px-3.5 py-2 rounded-xl border border-blue-600 text-blue-600 hover:bg-blue-50 text-xs font-semibold transition"
+        >
+          Save as Pending
+        </button>
+
+        <button
+          type="button"
+          (click)="submitCreatePayout(true)"
+          [disabled]="isCreatingPayout()"
+          class="cursor-pointer inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
+        >
+          @if (isCreatingPayout()) {
+            <svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            <span>Processing…</span>
+          } @else {
+            <span>⚡ Disburse Now</span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</app-modal>
+
+<!-- ========================================================================= -->
+<!-- PAYOUT DETAILS & TIMELINE DRAWER MODAL                                    -->
+<!-- ========================================================================= -->
+<app-modal [isOpen]="isDetailDrawerOpen()" (close)="closeDetailDrawer()" className="max-w-2xl mx-4">
+  @if (selectedPayout(); as payout) {
+    <div class="p-5 sm:p-6 space-y-4">
+      <!-- Header -->
+      <div class="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3.5">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-blue-600">Payout Details</span>
+          <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5">
+            {{ formatCurrency(payout.amount, payout.currency) }}
+          </h3>
+          <p class="text-xs text-slate-400">Ref ID: <span class="font-mono">{{ payout.public_id }}</span></p>
+        </div>
+
+        <button
+          type="button"
+          (click)="syncDetailPayout()"
+          [disabled]="isSyncingDetail()"
+          class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 text-xs font-medium shadow-xs"
+        >
+          <svg
+            class="w-3.5 h-3.5"
+            [class.animate-spin]="isSyncingDetail()"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>Sync Gateway</span>
+        </button>
+      </div>
+
+      <!-- Status Banner -->
+      <div class="p-3.5 rounded-xl border flex items-center justify-between text-xs" [ngClass]="statusBadgeClass(payout.status)">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full" [ngClass]="statusDotClass(payout.status)"></span>
+          <div>
+            <p class="font-bold uppercase tracking-wide">Status: {{ statusLabel(payout.status) }}</p>
+            @if (payout.paid_at) {
+              <p class="text-[11px] opacity-80 mt-0.5">Paid at: {{ formatDateTime(payout.paid_at) }}</p>
+            } @else if (payout.failure_reason) {
+              <p class="text-[11px] font-medium text-rose-700 dark:text-rose-300 mt-0.5">Reason: {{ payout.failure_reason }}</p>
+            }
+          </div>
+        </div>
+        <span class="font-mono font-bold text-sm">{{ payout.mode }}</span>
+      </div>
+
+      <!-- Vendor Details -->
+      <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1 text-xs">
+        <p class="font-bold uppercase tracking-wider text-slate-400 text-[10px]">👤 Vendor Details</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-700 dark:text-slate-300 pt-1">
+          <div><span class="font-semibold">Name:</span> {{ payout.vendor?.full_name || '—' }}</div>
+          <div><span class="font-semibold">Email:</span> {{ payout.vendor?.email || '—' }}</div>
+          <div><span class="font-semibold">Phone:</span> {{ payout.vendor?.phone || '—' }}</div>
+          <div><span class="font-semibold">Vendor ID:</span> <span class="font-mono text-slate-500">{{ payout.vendor?.public_id || '—' }}</span></div>
+        </div>
+      </div>
+
+      <!-- Destination Account -->
+      <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1 text-xs">
+        <p class="font-bold uppercase tracking-wider text-slate-400 text-[10px]">🏦 Destination Account</p>
+        @if (payout.bank_account; as bank) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-700 dark:text-slate-300 pt-1">
+            <div><span class="font-semibold">Holder:</span> {{ bank.account_holder_name }}</div>
+            <div><span class="font-semibold">Type:</span> {{ bank.account_type === 'bank_account' ? 'Bank Account' : 'UPI VPA' }}</div>
+            @if (bank.account_type === 'bank_account') {
+              <div><span class="font-semibold">Bank:</span> {{ bank.bank_name || '—' }}</div>
+              <div><span class="font-semibold">A/C:</span> <span class="font-mono">••••{{ bank.account_number ? bank.account_number.slice(-4) : '—' }}</span></div>
+              <div><span class="font-semibold">IFSC:</span> <span class="font-mono">{{ bank.ifsc_code || '—' }}</span></div>
+            } @else {
+              <div><span class="font-semibold">UPI ID:</span> <span class="font-mono">{{ bank.upi_id }}</span></div>
+            }
+          </div>
+        } @else {
+          <p class="text-slate-400 italic">No specific account attached.</p>
+        }
+      </div>
+
+      <!-- Gateway Tracking -->
+      <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1 text-xs">
+        <p class="font-bold uppercase tracking-wider text-slate-400 text-[10px]">💳 Gateway Tracking</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-700 dark:text-slate-300 pt-1">
+          <div><span class="font-semibold">Razorpay ID:</span> <span class="font-mono text-slate-500">{{ payout.razorpay_payout_id || 'Pending' }}</span></div>
+          <div>
+            <span class="font-semibold">Bank UTR:</span>
+            <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400 ml-1">{{ payout.utr || '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Breakdown -->
+      <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1.5 text-xs">
+        <p class="font-bold uppercase tracking-wider text-slate-400 text-[10px]">📊 Financial Breakdown</p>
+        <div class="space-y-1 pt-1 text-slate-700 dark:text-slate-300">
+          <div class="flex justify-between">
+            <span>Period:</span>
+            <span class="font-medium">{{ formatDate(payout.period_start) }} &ndash; {{ formatDate(payout.period_end) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Gross Volume:</span>
+            <span class="font-medium">{{ formatCurrency(payout.gross_amount) }}</span>
+          </div>
+          <div class="flex justify-between text-rose-600 dark:text-rose-400">
+            <span>Platform Commission:</span>
+            <span class="font-medium">-{{ formatCurrency(payout.commission_amount) }}</span>
+          </div>
+          <div class="border-t border-slate-200 dark:border-slate-700 pt-1 flex justify-between font-bold text-slate-900 dark:text-white">
+            <span>Net Disbursed:</span>
+            <span class="text-emerald-600 dark:text-emerald-400">{{ formatCurrency(payout.amount, payout.currency) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      @if (payout.notes) {
+        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs">
+          <p class="font-bold uppercase tracking-wider text-slate-400 text-[10px]">📝 Notes</p>
+          <p class="text-slate-700 dark:text-slate-300 mt-0.5">{{ payout.notes }}</p>
+        </div>
+      }
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+        <button
+          type="button"
+          (click)="closeDetailDrawer()"
+          class="cursor-pointer px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 text-xs font-semibold transition"
+        >
+          Close
+        </button>
+
+        @if (payout.status === 'paid') {
+          <button
+            type="button"
+            (click)="openReceipt(payout)"
+            class="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition shadow-xs"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            <span>Print Receipt</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+</app-modal>
+
+<!-- ========================================================================= -->
+<!-- VENDOR BANK ACCOUNT MANAGEMENT MODAL                                      -->
+<!-- ========================================================================= -->
+<app-modal [isOpen]="isBankModalOpen()" (close)="closeBankModal()" className="max-w-lg mx-4">
+  <div class="p-5 sm:p-6 space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+      <div>
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Add Vendor Payout Account</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          For {{ bankModalVendorName() }}
+        </p>
+      </div>
+    </div>
+
+    @if (bankAccountError()) {
+      <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-xs">
+        {{ bankAccountError() }}
+      </div>
+    }
+
+    <form [formGroup]="bankAccountForm" (ngSubmit)="submitBankAccount()" class="space-y-3.5">
+      <!-- Account Type Selection -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Account Type *</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            (click)="onAccountTypeChange('bank_account')"
+            class="cursor-pointer flex items-center justify-center gap-1.5 p-2.5 rounded-xl border text-xs font-semibold transition"
+            [ngClass]="bankAccountForm.get('account_type')?.value === 'bank_account'
+              ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+              : 'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'"
+          >
+            <span>🏦 Bank Account</span>
+          </button>
+          <button
+            type="button"
+            (click)="onAccountTypeChange('vpa')"
+            class="cursor-pointer flex items-center justify-center gap-1.5 p-2.5 rounded-xl border text-xs font-semibold transition"
+            [ngClass]="bankAccountForm.get('account_type')?.value === 'vpa'
+              ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+              : 'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'"
+          >
+            <span>📱 UPI VPA</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Account Holder Name -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Account Holder Name *</label>
+        <input
+          type="text"
+          formControlName="account_holder_name"
+          placeholder="Name matching bank records"
+          class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+        />
+      </div>
+
+      @if (bankAccountForm.get('account_type')?.value === 'bank_account') {
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Bank Name</label>
+          <input
+            type="text"
+            formControlName="bank_name"
+            placeholder="e.g. HDFC Bank"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Account Number *</label>
+          <input
+            type="password"
+            formControlName="account_number"
+            placeholder="Enter bank account number"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Confirm Account Number *</label>
+          <input
+            type="text"
+            formControlName="confirm_account_number"
+            placeholder="Re-enter bank account number"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">IFSC Code *</label>
+            <input
+              type="text"
+              formControlName="ifsc_code"
+              placeholder="HDFC0001234"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs uppercase font-mono focus:border-blue-500 outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Branch Name</label>
+            <input
+              type="text"
+              formControlName="branch_name"
+              placeholder="Branch"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs focus:border-blue-500 outline-none"
+            />
+          </div>
+        </div>
+      } @else {
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">UPI ID (VPA) *</label>
+          <input
+            type="text"
+            formControlName="upi_id"
+            placeholder="username@okhdfcbank"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-mono focus:border-blue-500 outline-none"
+          />
+        </div>
+      }
+
+      <!-- Primary checkbox -->
+      <label class="flex items-center gap-2 pt-1 cursor-pointer">
+        <input
+          type="checkbox"
+          formControlName="is_primary"
+          class="w-4 h-4 rounded text-blue-600"
+        />
+        <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Set as Primary Payout Account</span>
+      </label>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <button
+          type="button"
+          (click)="closeBankModal()"
+          [disabled]="isSavingBankAccount()"
+          class="cursor-pointer px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 text-xs font-semibold transition"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          [disabled]="isSavingBankAccount()"
+          class="cursor-pointer inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
+        >
+          @if (isSavingBankAccount()) {
+            <span>Saving…</span>
+          } @else {
+            <span>Save Account</span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</app-modal>
+
+<!-- ========================================================================= -->
+<!-- ACTION CONFIRMATION MODAL                                                 -->
+<!-- ========================================================================= -->
+<app-modal [isOpen]="isActionModalOpen()" (close)="closeActionModal()" className="max-w-md mx-4">
+  @if (actionPayout(); as payout) {
+    <div class="p-5 sm:p-6 space-y-4 text-center">
+      <div
+        class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto"
+        [ngClass]="{
+          'bg-blue-50 text-blue-600 dark:bg-blue-900/40': actionType() === 'process' || actionType() === 'sync',
+          'bg-rose-50 text-rose-600 dark:bg-rose-900/40': actionType() === 'cancel' || actionType() === 'retry'
+        }"
+      >
+        @if (actionType() === 'process' || actionType() === 'retry') {
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        } @else if (actionType() === 'sync') {
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        } @else {
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        }
+      </div>
+
+      <div>
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">
+          @if (actionType() === 'process') { Confirm Payout Disbursement }
+          @else if (actionType() === 'retry') { Retry Payout Disbursement }
+          @else if (actionType() === 'sync') { Sync Live Gateway Status }
+          @else if (actionType() === 'cancel') { Cancel Payout Request }
+        </h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          @if (actionType() === 'process' || actionType() === 'retry') {
+            Transfer <strong>{{ formatCurrency(payout.amount, payout.currency) }}</strong> to <strong>{{ payout.vendor?.full_name || 'Vendor' }}</strong> via {{ payout.mode }}?
+          } @else if (actionType() === 'sync') {
+            Fetch latest settlement status and bank UTR from Razorpay.
+          } @else if (actionType() === 'cancel') {
+            Cancel payout record of {{ formatCurrency(payout.amount) }}? This cannot be undone.
+          }
+        </p>
+      </div>
+
+      @if (actionErrorMessage()) {
+        <div class="p-2.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-xs text-left">
+          {{ actionErrorMessage() }}
+        </div>
+      }
+
+      <div class="flex items-center justify-center gap-2 pt-2">
+        <button
+          type="button"
+          (click)="closeActionModal()"
+          [disabled]="isProcessingAction()"
+          class="cursor-pointer px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 text-xs font-semibold"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          (click)="confirmAction()"
+          [disabled]="isProcessingAction()"
+          class="cursor-pointer inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-white text-xs font-semibold shadow-xs"
+          [ngClass]="actionType() === 'cancel' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-blue-600 hover:bg-blue-700'"
+        >
+          @if (isProcessingAction()) {
+            <span>Processing…</span>
+          } @else {
+            <span>Confirm</span>
+          }
+        </button>
+      </div>
+    </div>
+  }
+</app-modal>
+
+<!-- ========================================================================= -->
+<!-- PRINTABLE RECEIPT MODAL                                                   -->
+<!-- ========================================================================= -->
+<app-modal [isOpen]="isReceiptModalOpen()" (close)="closeReceipt()" className="max-w-2xl mx-4">
+  @if (receiptPayout(); as payout) {
+    <div class="p-6 sm:p-8 space-y-5 text-slate-900 dark:text-slate-100" id="printable-payout-receipt">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">TASHI HOMESTAY</h2>
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Vendor Settlement Voucher</p>
+        </div>
+        <div class="text-right">
+          <span class="inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold uppercase">PAID & SETTLED</span>
+          <p class="text-[10px] font-mono text-slate-500 mt-1 truncate max-w-[160px]">Ref: {{ payout.public_id }}</p>
+        </div>
+      </div>
+
+      <!-- Info Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div>
+          <p class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-0.5">Vendor / Beneficiary</p>
+          <p class="font-bold text-sm text-slate-900 dark:text-white">{{ payout.vendor?.full_name || 'Vendor' }}</p>
+          <p class="text-slate-600 dark:text-slate-400">{{ payout.vendor?.email }}</p>
+          <p class="text-slate-600 dark:text-slate-400">{{ payout.vendor?.phone || '' }}</p>
+        </div>
+
+        <div class="sm:text-right">
+          <p class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-0.5">Settlement Details</p>
+          <p><span class="font-semibold">Period:</span> {{ formatDate(payout.period_start) }} &ndash; {{ formatDate(payout.period_end) }}</p>
+          <p><span class="font-semibold">Paid Date:</span> {{ formatDateTime(payout.paid_at || payout.updated_at) }}</p>
+          <p><span class="font-semibold">Mode:</span> {{ payout.mode }}</p>
+          @if (payout.utr) {
+            <p class="font-mono font-bold text-emerald-600 dark:text-emerald-400">UTR: {{ payout.utr }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Destination Bank -->
+      @if (payout.bank_account; as bank) {
+        <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+          <p class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-0.5">Destination Account</p>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-slate-800 dark:text-slate-200">
+            <span>{{ bank.bank_name || 'Bank' }} &bull; A/C: ****{{ bank.account_number ? bank.account_number.slice(-4) : '—' }} &bull; IFSC: {{ bank.ifsc_code }}</span>
+            <span>Holder: {{ bank.account_holder_name }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Financial Table -->
+      <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden text-xs">
+        <table class="w-full text-left">
+          <thead class="bg-slate-100 dark:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300">
+            <tr>
+              <th class="px-3.5 py-2">Description</th>
+              <th class="px-3.5 py-2 text-right">Amount (INR)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+            <tr>
+              <td class="px-3.5 py-2.5">Gross Completed Booking Volume</td>
+              <td class="px-3.5 py-2.5 text-right font-medium">{{ formatCurrency(payout.gross_amount) }}</td>
+            </tr>
+            <tr>
+              <td class="px-3.5 py-2.5 text-rose-600">Less: Platform Commission</td>
+              <td class="px-3.5 py-2.5 text-right font-medium text-rose-600">-{{ formatCurrency(payout.commission_amount) }}</td>
+            </tr>
+            <tr class="bg-slate-50 dark:bg-slate-800/40 font-bold text-xs">
+              <td class="px-3.5 py-2.5">Net Disbursed to Host</td>
+              <td class="px-3.5 py-2.5 text-right text-emerald-600 dark:text-emerald-400">{{ formatCurrency(payout.amount, payout.currency) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Notes & Footer -->
+      @if (payout.notes) {
+        <p class="text-xs text-slate-500 italic">"{{ payout.notes }}"</p>
+      }
+
+      <div class="pt-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs text-slate-400">
+        <p class="text-[11px]">Computer-generated receipt issued by Tashi Homestay Finance Portal.</p>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            (click)="printReceipt()"
+            class="cursor-pointer px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs"
+          >
+            🖨️ Print
+          </button>
+          <button
+            type="button"
+            (click)="closeReceipt()"
+            class="cursor-pointer px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-slate-700 dark:text-slate-300 font-semibold text-xs"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</app-modal>

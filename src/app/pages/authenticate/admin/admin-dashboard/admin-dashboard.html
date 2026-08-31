@@ -1,23 +1,30 @@
 <app-page-breadcrumb pageTitle="Admin Dashboard" homelink="/admin"></app-page-breadcrumb>
 
-<div class="space-y-6">
+<div class="space-y-6 max-w-full overflow-hidden">
 
   <!-- ─── Top Control & Greeting Bar ─────────────────────────────────────────── -->
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <div>
-      <h1 class="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">Platform Overview</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-        Real-time metrics, booking trends, occupancy, and business performance.
-      </p>
+    <div class="flex items-center gap-3">
+      <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-primary/20">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">Platform Command Center</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Real-time metrics, host payouts, booking trends, occupancy, and system health.
+        </p>
+      </div>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-2.5">
       <!-- Timeframe Selector -->
       <div class="relative inline-flex items-center">
         <select
           [value]="selectedMonths()"
           (change)="onMonthsChange(+$any($event.target).value)"
-          class="cursor-pointer rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          class="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-xs outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
         >
           @for (opt of monthOptions; track opt.value) {
             <option [value]="opt.value">{{ opt.label }}</option>
@@ -30,12 +37,12 @@
         type="button"
         (click)="refresh()"
         [disabled]="isLoading()"
-        class="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        class="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 shadow-xs transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         title="Refresh data"
       >
         <svg
           [class.animate-spin]="isLoading()"
-          class="h-4 w-4 text-slate-600 dark:text-slate-300"
+          class="h-3.5 w-3.5 text-slate-500 transition-transform duration-500"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -46,15 +53,26 @@
         </svg>
         <span>Refresh</span>
       </button>
+
+      <!-- Manage Payouts CTA -->
+      <a
+        routerLink="/admin/finance/payouts"
+        class="cursor-pointer inline-flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition"
+      >
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+        <span>Payouts Hub</span>
+      </a>
     </div>
   </div>
 
   <!-- ─── Error Alert ───────────────────────────────────────────────────────── -->
   @if (errorMessage()) {
-    <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+    <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-700 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <svg class="h-5 w-5 flex-shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg class="h-4 w-4 shrink-0 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span>{{ errorMessage() }}</span>
@@ -62,13 +80,15 @@
         <button
           type="button"
           (click)="refresh()"
-          class="cursor-pointer rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700"
-        >Retry</button>
+          class="cursor-pointer rounded-lg bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700 transition"
+        >
+          Retry
+        </button>
       </div>
     </div>
   }
 
-  <!-- ─── Loading Skeleton ─────────────────────────────────────────────────── -->
+  <!-- ─── Loading Skeletons ─────────────────────────────────────────────────── -->
   @if (isLoading() && !dashboardData()) {
     <div class="space-y-6">
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -76,7 +96,10 @@
           <div class="h-32 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/50"></div>
         }
       </div>
-      <div class="h-80 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/50"></div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 h-72 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/50"></div>
+        <div class="h-72 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/50"></div>
+      </div>
     </div>
   }
 
@@ -85,609 +108,776 @@
 
     <!-- ─── Occupancy & Operations Banner ──────────────────────────────────── -->
     @if (data.occupancy_today || (data.users_summary && data.users_summary.pending_hosts > 0)) {
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Today Check-ins -->
-        <div class="flex items-center gap-4 rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-500/10 to-indigo-500/5 p-4 dark:border-indigo-900/50 dark:from-indigo-500/20 dark:to-transparent">
-          <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-500 text-white shadow-md shadow-indigo-500/20">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="flex items-center gap-3.5 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-3.5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
             </svg>
           </div>
           <div>
-            <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Today Check-Ins</p>
-            <p class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ data.occupancy_today?.today_check_ins || 0 }}</p>
+            <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Today Check-Ins</p>
+            <p class="text-xl font-bold text-slate-900 dark:text-white">{{ data.occupancy_today?.today_check_ins || 0 }}</p>
           </div>
         </div>
 
         <!-- Today Check-outs -->
-        <div class="flex items-center gap-4 rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-500/10 to-purple-500/5 p-4 dark:border-purple-900/50 dark:from-purple-500/20 dark:to-transparent">
-          <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-purple-500 text-white shadow-md shadow-purple-500/20">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="flex items-center gap-3.5 rounded-2xl border border-purple-100 bg-purple-50/50 p-3.5 dark:border-purple-900/40 dark:bg-purple-950/20">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-600 text-white shadow-xs">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
           </div>
           <div>
-            <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Today Check-Outs</p>
-            <p class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ data.occupancy_today?.today_check_outs || 0 }}</p>
+            <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Today Check-Outs</p>
+            <p class="text-xl font-bold text-slate-900 dark:text-white">{{ data.occupancy_today?.today_check_outs || 0 }}</p>
           </div>
         </div>
 
         <!-- Active Guests In-House -->
-        <div class="flex items-center gap-4 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 p-4 dark:border-emerald-900/50 dark:from-emerald-500/20 dark:to-transparent">
-          <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-md shadow-emerald-500/20">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="flex items-center gap-3.5 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3.5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
           <div>
-            <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Active In-House Guests</p>
-            <p class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ data.occupancy_today?.active_guests || 0 }}</p>
+            <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Active In-House</p>
+            <p class="text-xl font-bold text-slate-900 dark:text-white">{{ data.occupancy_today?.active_guests || 0 }}</p>
           </div>
         </div>
 
-        <!-- Pending Host Requests Action Alert -->
-        <div class="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-900/50 dark:bg-amber-950/20">
-          <div class="flex items-center gap-3">
-            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-md shadow-amber-500/20">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Pending Host Applications</p>
-              <p class="text-xl font-bold text-amber-900 dark:text-amber-300">{{ data.users_summary?.pending_hosts || 0 }} to review</p>
+        <!-- Pending Host Applications -->
+        <div class="flex items-center gap-3.5 rounded-2xl border border-amber-100 bg-amber-50/50 p-3.5 dark:border-amber-900/40 dark:bg-amber-950/20">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Host Applications</p>
+            <div class="flex items-center gap-2">
+              <p class="text-xl font-bold text-slate-900 dark:text-white">{{ data.users_summary?.pending_hosts || 0 }}</p>
+              @if ((data.users_summary?.pending_hosts || 0) > 0) {
+                <a routerLink="/admin/host-management" class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 hover:underline dark:bg-amber-900/50 dark:text-amber-300">
+                  Review
+                </a>
+              }
             </div>
           </div>
-          <a
-            routerLink="/admin/host-management"
-            class="cursor-pointer inline-flex items-center rounded-xl bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-700"
-          >
-            Review
-          </a>
         </div>
       </div>
     }
 
-    <!-- ─── Core KPI Metric Cards ─────────────────────────────────────────── -->
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <!-- ─── TOP KPI METRICS STRIP ─────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-      <!-- 1. Total Revenue -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <!-- 1. Net Revenue -->
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Revenue</span>
-          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Net Revenue</span>
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
         </div>
-        <p class="mt-3 text-2xl font-black text-slate-900 dark:text-white">
-          {{ formatCurrency(data.revenue_summary?.total_revenue, data.revenue_summary?.currency) }}
+        <p class="mt-2 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+          {{ formatCurrency(netRevenueAmount(), data.revenue_summary?.currency) }}
         </p>
-        <div class="mt-3 flex flex-wrap gap-2 text-xs">
-          <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-            Pending: {{ formatCurrency(data.revenue_summary?.pending_revenue, data.revenue_summary?.currency) }}
+        <div class="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+          <span class="font-medium text-slate-500 dark:text-slate-400">
+            Gross: {{ formatCurrency(grossRevenueAmount(), data.revenue_summary?.currency) }}
           </span>
-          <span class="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">
-            Refunded: {{ formatCurrency(data.revenue_summary?.refunded_amount, data.revenue_summary?.currency) }}
-          </span>
+          @if ((data.revenue_summary?.pending_revenue || 0) > 0) {
+            <span class="text-slate-300 dark:text-slate-600">·</span>
+            <span class="font-medium text-amber-600 dark:text-amber-400">
+              Pending: {{ formatCurrency(data.revenue_summary?.pending_revenue, data.revenue_summary?.currency) }}
+            </span>
+          }
         </div>
       </div>
 
-      <!-- 2. Total Bookings -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <!-- 2. Disbursed Payouts -->
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Bookings</span>
-          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Disbursed Payouts</span>
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          </div>
+        </div>
+        <p class="mt-2 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+          {{ formatCurrency(payoutsSummary().total_paid_amount || 0, payoutsSummary().currency) }}
+        </p>
+        <div class="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+          @if ((payoutsSummary().processing_payout_amount || 0) > 0) {
+            <span class="font-medium text-blue-600 dark:text-blue-400">
+              In-Flight: {{ formatCurrency(payoutsSummary().processing_payout_amount) }}
+            </span>
+          } @else if ((payoutsSummary().pending_payout_amount || 0) > 0) {
+            <span class="font-medium text-amber-600 dark:text-amber-400">
+              Pending: {{ formatCurrency(payoutsSummary().pending_payout_amount) }}
+            </span>
+          } @else {
+            <span class="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <span>Settlements Up to Date</span>
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- 3. Total Bookings -->
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Bookings</span>
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
         </div>
-        <p class="mt-3 text-2xl font-black text-slate-900 dark:text-white">
-          {{ data.bookings_summary?.total || 0 }}
+        <p class="mt-2 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+          {{ data.bookings_summary?.total || 0 }} <span class="text-sm font-normal text-slate-400">Reservations</span>
         </p>
-        <div class="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
-          <span class="rounded bg-blue-50 px-1.5 py-0.5 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+        <div class="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+          <span class="rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 font-semibold">
             {{ data.bookings_summary?.confirmed || 0 }} Confirmed
           </span>
-          <span class="rounded bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-            {{ data.bookings_summary?.completed || 0 }} Done
-          </span>
-          <span class="rounded bg-rose-50 px-1.5 py-0.5 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
-            {{ data.bookings_summary?.cancelled || 0 }} Cancelled
+          <span class="rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 font-medium">
+            {{ data.bookings_summary?.checked_in || 0 }} In-House
           </span>
         </div>
       </div>
 
-      <!-- 3. Properties -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <!-- 4. Registered Users & Hosts -->
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Properties</span>
-          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-          </div>
-        </div>
-        <p class="mt-3 text-2xl font-black text-slate-900 dark:text-white">
-          {{ data.properties_summary?.total || 0 }}
-        </p>
-        <div class="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
-          <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ data.properties_summary?.active || 0 }} Active</span>
-          <span>·</span>
-          <span class="text-slate-500">{{ data.properties_summary?.draft || 0 }} Draft</span>
-          <span>·</span>
-          <span class="text-amber-600 dark:text-amber-400">{{ data.properties_summary?.featured || 0 }} Featured</span>
-        </div>
-      </div>
-
-      <!-- 4. Users & Hosts -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Users</span>
-          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Platform Users</span>
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           </div>
         </div>
-        <p class="mt-3 text-2xl font-black text-slate-900 dark:text-white">
-          {{ data.users_summary?.total || 0 }}
+        <p class="mt-2 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+          {{ data.users_summary?.total || 0 }} <span class="text-sm font-normal text-slate-400">Accounts</span>
         </p>
-        <div class="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
-          <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ data.users_summary?.active || 0 }} Active</span>
+        <div class="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+          <span class="text-purple-600 dark:text-purple-400 font-semibold">{{ data.users_summary?.by_role?.['vendor'] || 0 }} Hosts</span>
           <span>·</span>
-          <span class="text-slate-500">{{ data.users_summary?.inactive || 0 }} Inactive</span>
-          <span>·</span>
-          <span class="text-rose-600 dark:text-rose-400">{{ data.users_summary?.suspended || 0 }} Suspended</span>
-        </div>
-      </div>
-
-      <!-- 5. Refunds -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Refund Requests</span>
-          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-            </svg>
-          </div>
-        </div>
-        <p class="mt-3 text-2xl font-black text-slate-900 dark:text-white">
-          {{ data.refunds_summary?.total_requests || 0 }}
-        </p>
-        <div class="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
-          <span class="font-medium text-amber-600 dark:text-amber-400">{{ data.refunds_summary?.pending || 0 }} Pending</span>
-          <span>·</span>
-          <span class="text-emerald-600 dark:text-emerald-400">{{ data.refunds_summary?.approved || 0 }} Approved</span>
-          <span>·</span>
-          <span class="text-slate-500">{{ formatCurrency(data.refunds_summary?.total_amount_refunded, data.revenue_summary?.currency) }}</span>
+          <span class="text-emerald-600 dark:text-emerald-400">{{ data.users_summary?.active || 0 }} Active</span>
         </div>
       </div>
 
     </div>
 
-    <!-- ─── Revenue & Booking Trends Visual Chart ─────────────────────────── -->
-    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <!-- ─── SECTION 1: REVENUE TRENDS & HOST SETTLEMENTS WIDGET ───────────── -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <!-- Revenue Trends Chart (2 Columns) -->
+      <div class="lg:col-span-2 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
         <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Revenue & Booking Trends</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Total of {{ formatCurrency(totalTrendsRevenue(), data.revenue_summary?.currency) }} across {{ totalTrendsBookings() }} bookings in the selected {{ selectedMonths() }} months
-          </p>
-        </div>
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 dark:text-white">Platform Financial Performance</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Total Net Volume <strong class="text-slate-800 dark:text-slate-200">{{ formatCurrency(totalTrendsRevenue(), data.revenue_summary?.currency) }}</strong> across {{ totalTrendsBookings() }} reservations
+              </p>
+            </div>
 
-        <!-- Metric Switcher -->
-        <div class="inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-          <button
-            type="button"
-            (click)="activeTrendTab.set('revenue')"
-            [class.bg-white]="activeTrendTab() === 'revenue'"
-            [class.dark:bg-slate-700]="activeTrendTab() === 'revenue'"
-            [class.shadow-xs]="activeTrendTab() === 'revenue'"
-            class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 transition dark:text-slate-200"
-          >
-            Revenue
-          </button>
-          <button
-            type="button"
-            (click)="activeTrendTab.set('bookings')"
-            [class.bg-white]="activeTrendTab() === 'bookings'"
-            [class.dark:bg-slate-700]="activeTrendTab() === 'bookings'"
-            [class.shadow-xs]="activeTrendTab() === 'bookings'"
-            class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 transition dark:text-slate-200"
-          >
-            Bookings Volume
-          </button>
-        </div>
-      </div>
-
-      <!-- Trend Chart Bars -->
-      @if (revenueTrends().length > 0) {
-        <div class="mt-8">
-          <div class="grid grid-flow-col auto-cols-fr gap-2 sm:gap-3 items-end h-56 pb-2 pt-6">
-            @for (trend of revenueTrends(); track trend.month) {
-              <div class="group relative flex flex-col items-center h-full justify-end">
-                <!-- Tooltip on hover -->
-                <div class="absolute -top-12 z-20 hidden flex-col items-center group-hover:flex whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-lg dark:bg-slate-800">
-                  <span>{{ trend.month }}</span>
-                  <span class="text-emerald-400 font-bold">
-                    {{ activeTrendTab() === 'revenue' ? formatCurrency(trend.revenue, data.revenue_summary?.currency) : (trend.bookings_count + ' bookings') }}
-                  </span>
-                  <div class="h-1.5 w-1.5 rotate-45 bg-slate-900 dark:bg-slate-800 -mb-1"></div>
-                </div>
-
-                <!-- Bar element -->
-                @if (activeTrendTab() === 'revenue') {
-                  <div
-                    class="w-full max-w-[42px] rounded-t-lg bg-gradient-to-t from-primary/80 to-primary transition-all duration-300 group-hover:brightness-110"
-                    [style.height.%]="(trend.revenue / maxRevenue()) * 100 || 4"
-                  ></div>
-                } @else {
-                  <div
-                    class="w-full max-w-[42px] rounded-t-lg bg-gradient-to-t from-blue-600/80 to-blue-500 transition-all duration-300 group-hover:brightness-110"
-                    [style.height.%]="(trend.bookings_count / maxBookings()) * 100 || 4"
-                  ></div>
-                }
-
-                <!-- X Axis label -->
-                <span class="mt-2 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate max-w-full text-center">
-                  {{ trend.month }}
-                </span>
-              </div>
-            }
+            <!-- Metric Toggle -->
+            <div class="inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800 self-start sm:self-auto">
+              <button
+                type="button"
+                (click)="activeTrendTab.set('revenue')"
+                [class.bg-white]="activeTrendTab() === 'revenue'"
+                [class.dark:bg-slate-700]="activeTrendTab() === 'revenue'"
+                [class.shadow-xs]="activeTrendTab() === 'revenue'"
+                [class.text-blue-600]="activeTrendTab() === 'revenue'"
+                class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition dark:text-slate-300"
+              >
+                Net Revenue
+              </button>
+              <button
+                type="button"
+                (click)="activeTrendTab.set('gross')"
+                [class.bg-white]="activeTrendTab() === 'gross'"
+                [class.dark:bg-slate-700]="activeTrendTab() === 'gross'"
+                [class.shadow-xs]="activeTrendTab() === 'gross'"
+                [class.text-blue-600]="activeTrendTab() === 'gross'"
+                class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition dark:text-slate-300"
+              >
+                Gross Volume
+              </button>
+              <button
+                type="button"
+                (click)="activeTrendTab.set('bookings')"
+                [class.bg-white]="activeTrendTab() === 'bookings'"
+                [class.dark:bg-slate-700]="activeTrendTab() === 'bookings'"
+                [class.shadow-xs]="activeTrendTab() === 'bookings'"
+                [class.text-blue-600]="activeTrendTab() === 'bookings'"
+                class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition dark:text-slate-300"
+              >
+                Bookings
+              </button>
+            </div>
           </div>
-        </div>
-      } @else {
-        <div class="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-          No revenue trend data available for this timeframe.
-        </div>
-      }
-    </div>
 
-    <!-- ─── Distributions: Properties by Type & Users by Role ─────────────── -->
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <!-- Trend Chart Bars -->
+          @if (revenueTrends().length > 0) {
+            <div class="mt-8">
+              <div class="grid grid-flow-col auto-cols-fr gap-2 sm:gap-3 items-end h-48 pb-2 pt-6">
+                @for (trend of revenueTrends(); track trend.month) {
+                  <div class="group relative flex flex-col items-center h-full justify-end">
+                    <!-- Tooltip on hover -->
+                    <div class="absolute -top-12 z-20 hidden flex-col items-center group-hover:flex whitespace-nowrap rounded-xl bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-white shadow-xl dark:bg-slate-800 pointer-events-none">
+                      <span class="text-slate-300 text-[10px]">{{ trend.month }}</span>
+                      <span class="text-emerald-400 font-bold">
+                        @if (activeTrendTab() === 'revenue') {
+                          {{ formatCurrency(trend.revenue, data.revenue_summary?.currency) }}
+                        } @else if (activeTrendTab() === 'gross') {
+                          {{ formatCurrency(trend.gross_revenue || trend.revenue, data.revenue_summary?.currency) }}
+                        } @else {
+                          {{ trend.bookings_count }} bookings
+                        }
+                      </span>
+                      <div class="h-1.5 w-1.5 rotate-45 bg-slate-900 dark:bg-slate-800 -mb-1"></div>
+                    </div>
 
-      <!-- Properties by Type -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Properties Distribution by Type</h3>
-          <span class="text-xs text-slate-500">{{ data.properties_summary?.total || 0 }} total</span>
-        </div>
-
-        @if (propertiesByType().length > 0) {
-          <div class="space-y-3.5">
-            @for (item of propertiesByType(); track item.type) {
-              <div>
-                <div class="flex justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  <span class="capitalize">{{ item.type }}</span>
-                  <span class="font-bold">{{ item.count }}</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div
-                    class="h-full rounded-full bg-indigo-500"
-                    [style.width.%]="((item.count / (data.properties_summary?.total || 1)) * 100)"
-                  ></div>
-                </div>
-              </div>
-            }
-          </div>
-        } @else {
-          <p class="py-6 text-center text-xs text-slate-500">No properties recorded yet.</p>
-        }
-      </div>
-
-      <!-- Users Distribution by Role -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Users Distribution by Role</h3>
-          <span class="text-xs text-slate-500">{{ data.users_summary?.total || 0 }} total</span>
-        </div>
-
-        @if (usersByRole().length > 0) {
-          <div class="space-y-3.5">
-            @for (item of usersByRole(); track item.role) {
-              <div>
-                <div class="flex justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  <span class="capitalize">{{ item.role }}</span>
-                  <span class="font-bold">{{ item.count }}</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div
-                    class="h-full rounded-full bg-purple-500"
-                    [style.width.%]="((item.count / (data.users_summary?.total || 1)) * 100)"
-                  ></div>
-                </div>
-              </div>
-            }
-          </div>
-        } @else {
-          <p class="py-6 text-center text-xs text-slate-500">No user data recorded yet.</p>
-        }
-      </div>
-
-    </div>
-
-    <!-- ─── Recent Bookings Table ─────────────────────────────────────────── -->
-    <div class="rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
-      <div class="flex items-center justify-between p-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-        <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Recent Bookings</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Latest reservations placed across properties</p>
-        </div>
-        <a
-          routerLink="/admin/booking-management"
-          class="cursor-pointer text-xs font-semibold text-primary hover:underline"
-        >
-          View All Bookings &rarr;
-        </a>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-slate-100 text-left text-xs dark:divide-slate-800">
-          <thead class="bg-slate-50 dark:bg-slate-900/60">
-            <tr>
-              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Reference</th>
-              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Guest</th>
-              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Property</th>
-              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Dates</th>
-              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Guests/Rooms</th>
-              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Amount</th>
-              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
-              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Payment</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800/60 dark:bg-slate-900">
-            @if (recentBookings().length === 0) {
-              <tr>
-                <td colspan="8" class="px-4 py-8 text-center text-slate-500">No recent bookings.</td>
-              </tr>
-            } @else {
-              @for (booking of recentBookings(); track booking.id) {
-                <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                  <td class="px-4 py-3">
-                    <span class="font-mono font-semibold text-slate-800 dark:text-slate-100">
-                      {{ booking.booking_reference || booking.id }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3">
-                    <p class="font-medium text-slate-800 dark:text-slate-100">{{ booking.guest_name || '—' }}</p>
-                    <p class="text-[11px] text-slate-500">{{ booking.guest_email || '' }}</p>
-                  </td>
-                  <td class="px-4 py-3">
-                    <p class="font-medium text-slate-800 dark:text-slate-100">{{ booking.property_name || '—' }}</p>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    <p>{{ formatDate(booking.check_in_date) }}</p>
-                    <p class="text-[11px] text-slate-400">to {{ formatDate(booking.check_out_date) }}</p>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    {{ booking.num_guests }} guest{{ booking.num_guests > 1 ? 's' : '' }} · {{ booking.num_rooms }} room{{ booking.num_rooms > 1 ? 's' : '' }}
-                  </td>
-                  <td class="px-4 py-3 font-bold text-slate-900 dark:text-white">
-                    {{ formatCurrency(booking.total_amount, booking.currency) }}
-                  </td>
-                  <td class="px-4 py-3">
-                    <span [class]="getStatusClass(booking.status)" class="inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-semibold">
-                      {{ formatStatusLabel(booking.status) }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3">
-                    <span [class]="getPaymentStatusClass(booking.payment_status)" class="inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-semibold capitalize">
-                      {{ booking.payment_status || '—' }}
-                    </span>
-                  </td>
-                </tr>
-              }
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ─── Top Performing Properties Grid ────────────────────────────────── -->
-    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-      <div class="flex items-center justify-between mb-5">
-        <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Top Performing Properties</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Highest revenue generating listings</p>
-        </div>
-        <a
-          routerLink="/admin/property-management"
-          class="cursor-pointer text-xs font-semibold text-primary hover:underline"
-        >
-          Manage All &rarr;
-        </a>
-      </div>
-
-      @if (topProperties().length > 0) {
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          @for (prop of topProperties(); track prop.id) {
-            <div class="flex flex-col rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:border-slate-700">
-              <div class="relative mb-3 h-32 w-full overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-700">
-                @if (prop.image_url) {
-                  <img
-                    [src]="resolveAssetUrl(prop.image_url)"
-                    [alt]="prop.name"
-                    class="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                } @else {
-                  <div class="flex h-full w-full items-center justify-center text-slate-400 text-xs">
-                    No image
-                  </div>
-                }
-                <span class="absolute top-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white capitalize backdrop-blur-xs">
-                  {{ prop.type }}
-                </span>
-              </div>
-
-              <div class="flex-1">
-                <h4 class="font-bold text-slate-900 dark:text-white text-sm line-clamp-1" [title]="prop.name">
-                  {{ prop.name }}
-                </h4>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">{{ prop.city }}</p>
-
-                <!-- Rating -->
-                <div class="flex items-center gap-1 mb-3">
-                  <div class="flex text-amber-400">
-                    @for (star of getStarArray(prop.average_rating); track $index) {
-                      <svg class="h-3.5 w-3.5" [class.fill-amber-400]="star.filled" [class.text-slate-300]="!star.filled" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
+                    <!-- Bar element with gradient -->
+                    @if (activeTrendTab() === 'revenue') {
+                      <div
+                        class="w-full max-w-[40px] rounded-t-xl bg-gradient-to-t from-blue-600 to-indigo-500 transition-all duration-300 group-hover:brightness-110 shadow-xs"
+                        [style.height.%]="((trend.revenue || 0) / maxRevenue()) * 100 || 6"
+                      ></div>
+                    } @else if (activeTrendTab() === 'gross') {
+                      <div
+                        class="w-full max-w-[40px] rounded-t-xl bg-gradient-to-t from-indigo-600 to-purple-500 transition-all duration-300 group-hover:brightness-110 shadow-xs"
+                        [style.height.%]="((trend.gross_revenue || trend.revenue || 0) / maxRevenue()) * 100 || 6"
+                      ></div>
+                    } @else {
+                      <div
+                        class="w-full max-w-[40px] rounded-t-xl bg-gradient-to-t from-emerald-600 to-teal-500 transition-all duration-300 group-hover:brightness-110 shadow-xs"
+                        [style.height.%]="((trend.bookings_count || 0) / maxBookings()) * 100 || 6"
+                      ></div>
                     }
-                  </div>
-                  <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    {{ prop.average_rating > 0 ? (prop.average_rating | number:'1.1-1') : 'New' }}
-                  </span>
-                </div>
 
-                <!-- Stats -->
-                <div class="grid grid-cols-2 gap-2 border-t border-slate-200/60 pt-2.5 text-xs dark:border-slate-700/60">
-                  <div>
-                    <span class="text-[10px] text-slate-500">Bookings</span>
-                    <p class="font-bold text-slate-800 dark:text-slate-200">{{ prop.total_bookings }}</p>
+                    <!-- X Axis Month Label -->
+                    <span class="mt-2 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate max-w-full text-center font-medium">
+                      {{ trend.month.slice(-2) }}/{{ trend.month.slice(2, 4) }}
+                    </span>
                   </div>
-                  <div class="text-right">
-                    <span class="text-[10px] text-slate-500">Revenue</span>
-                    <p class="font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(prop.total_revenue, data.revenue_summary?.currency) }}</p>
-                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="py-16 text-center text-xs text-slate-500 dark:text-slate-400">
+              No trends data recorded for this timeframe.
+            </div>
+          }
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+          <span>Total Refunds: <strong class="text-rose-600 dark:text-rose-400 font-semibold">{{ formatCurrency(data.revenue_summary?.refunded_amount, data.revenue_summary?.currency) }}</strong> ({{ data.refunds_summary?.total_requests || 0 }} requests)</span>
+          <span class="font-medium text-slate-400">{{ data.properties_summary?.active || 0 }} Active Properties</span>
+        </div>
+      </div>
+
+      <!-- Host Settlements Summary Widget (1 Column) -->
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between space-y-4">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>🏦 Host Settlements</span>
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Platform Payouts & Disbursements</p>
+            </div>
+            <span class="rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[10px] font-bold px-2 py-0.5">
+              {{ payoutsSummary().total_payouts || recentPayouts().length || 0 }} Batches
+            </span>
+          </div>
+
+          <!-- Breakdown list -->
+          <div class="mt-4 space-y-2.5 text-xs">
+            <!-- 1. Total Settled -->
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/40">
+              <div class="flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                <span class="font-medium text-slate-700 dark:text-slate-300">Settled to Hosts</span>
+              </div>
+              <span class="font-bold text-emerald-700 dark:text-emerald-300">
+                {{ formatCurrency(payoutsSummary().total_paid_amount || 0, payoutsSummary().currency) }}
+              </span>
+            </div>
+
+            <!-- 2. In-Flight / Processing -->
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-800/40">
+              <div class="flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+                <span class="font-medium text-slate-700 dark:text-slate-300">In-Flight / Processing</span>
+              </div>
+              <span class="font-bold text-blue-700 dark:text-blue-300">
+                {{ formatCurrency(payoutsSummary().processing_payout_amount || 0, payoutsSummary().currency) }}
+              </span>
+            </div>
+
+            <!-- 3. Pending Approval -->
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800/40">
+              <div class="flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+                <span class="font-medium text-slate-700 dark:text-slate-300">Pending Approval</span>
+              </div>
+              <span class="font-bold text-amber-700 dark:text-amber-300">
+                {{ formatCurrency(payoutsSummary().pending_payout_amount || 0, payoutsSummary().currency) }}
+              </span>
+            </div>
+
+            <!-- 4. Failed / Action Req -->
+            @if ((payoutsSummary().failed_payout_amount || 0) > 0) {
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40">
+                <div class="flex items-center gap-2">
+                  <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                  <span class="font-medium text-rose-700 dark:text-rose-300">Action Required</span>
                 </div>
+                <span class="font-bold text-rose-700 dark:text-rose-300">
+                  {{ formatCurrency(payoutsSummary().failed_payout_amount, payoutsSummary().currency) }}
+                </span>
+              </div>
+            }
+          </div>
+
+          <!-- Last Payout Banner -->
+          @if (payoutsSummary().last_payout_date || recentPayouts()[0]?.paid_at) {
+            <div class="mt-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-[11px] space-y-1">
+              <p class="font-bold uppercase tracking-wider text-slate-400 text-[10px]">Last Disbursed Transfer</p>
+              <div class="flex items-center justify-between text-slate-700 dark:text-slate-200 font-medium">
+                <span>{{ formatDateTime(payoutsSummary().last_payout_date || recentPayouts()[0]?.paid_at) }}</span>
+                <span class="font-bold text-emerald-600 dark:text-emerald-400">
+                  {{ formatCurrency(payoutsSummary().last_payout_amount || recentPayouts()[0]?.amount) }}
+                </span>
               </div>
             </div>
           }
         </div>
-      } @else {
-        <p class="py-8 text-center text-xs text-slate-500">No properties available yet.</p>
-      }
-    </div>
 
-    <!-- ─── Bottom 2 Grids: Recent Host Requests & Recent Users ───────────── -->
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-
-      <!-- Recent Host Requests -->
-      <div class="rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
-        <div class="flex items-center justify-between p-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Recent Host Applications</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Applications from prospective property owners</p>
-          </div>
+        <div class="pt-2">
           <a
-            routerLink="/admin/host-management"
-            class="cursor-pointer text-xs font-semibold text-primary hover:underline"
+            routerLink="/admin/finance/payouts"
+            class="cursor-pointer w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-xs"
           >
-            Manage &rarr;
+            <span>Go to Payout Management &rarr;</span>
           </a>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-slate-100 text-left text-xs dark:divide-slate-800">
-            <thead class="bg-slate-50 dark:bg-slate-900/60">
-              <tr>
-                <th class="px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200">Applicant</th>
-                <th class="px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200">Property / City</th>
-                <th class="px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200">Status</th>
-                <th class="px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200">Date</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800/60 dark:bg-slate-900">
-              @if (recentHostRequests().length === 0) {
-                <tr>
-                  <td colspan="4" class="px-4 py-6 text-center text-slate-500">No host applications found.</td>
-                </tr>
-              } @else {
-                @for (req of recentHostRequests(); track req.id) {
-                  <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
-                    <td class="px-4 py-2.5">
-                      <p class="font-medium text-slate-800 dark:text-slate-100">{{ req.full_name }}</p>
-                      <p class="text-[11px] text-slate-500">{{ req.email }}</p>
-                    </td>
-                    <td class="px-4 py-2.5">
-                      <p class="font-medium text-slate-800 dark:text-slate-100">{{ req.property_name }}</p>
-                      <p class="text-[11px] text-slate-500">{{ req.city }} · <span class="capitalize">{{ req.property_type }}</span></p>
-                    </td>
-                    <td class="px-4 py-2.5">
-                      <span [class]="getHostStatusClass(req.status)" class="inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize">
-                        {{ req.status }}
-                      </span>
-                    </td>
-                    <td class="px-4 py-2.5 text-slate-500 text-[11px]">
-                      {{ formatDate(req.created_at) }}
-                    </td>
-                  </tr>
-                }
-              }
-            </tbody>
-          </table>
         </div>
       </div>
 
-      <!-- Recent Registered Users -->
-      <div class="rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
-        <div class="flex items-center justify-between p-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Recent Users</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Newly registered platform accounts</p>
+    </div>
+
+    <!-- ─── SECTION 2: 4-PANEL ACTIVITY GRID ────────────────────────────────── -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+      <!-- Panel 1: Recent Payout Disbursements -->
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>💸 Recent Host Payouts</span>
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automated bank transfers via RazorpayX</p>
+            </div>
+            <a routerLink="/admin/finance/payouts" class="text-xs font-semibold text-primary hover:underline">
+              All Payouts &rarr;
+            </a>
           </div>
-          <a
-            routerLink="/admin/customer-management"
-            class="cursor-pointer text-xs font-semibold text-primary hover:underline"
-          >
-            Manage Users &rarr;
-          </a>
+
+          @if (recentPayouts().length > 0) {
+            <div class="w-full overflow-x-auto">
+              <table class="min-w-[460px] w-full divide-y divide-slate-100 text-left text-xs dark:divide-slate-800">
+                <thead class="bg-slate-50 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-900/60 dark:text-slate-400">
+                  <tr>
+                    <th class="py-2.5 px-3">Host / Vendor</th>
+                    <th class="py-2.5 px-2 text-right">Net Amount</th>
+                    <th class="py-2.5 px-2 text-center">Status</th>
+                    <th class="py-2.5 px-3">UTR / Ref</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  @for (payout of recentPayouts().slice(0, 5); track payout.id) {
+                    <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <td class="py-3 px-3">
+                        <p class="font-medium text-slate-900 dark:text-white truncate max-w-[130px]">{{ payout.vendor_name || 'Host Partner' }}</p>
+                        <p class="text-[10px] text-slate-400 truncate max-w-[130px]">{{ payout.vendor_email || '' }}</p>
+                      </td>
+                      <td class="py-3 px-2 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                        {{ formatCurrency(payout.amount, payout.currency) }}
+                      </td>
+                      <td class="py-3 px-2 text-center whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border" [ngClass]="getPayoutStatusBadgeClass(payout.status)">
+                          <span class="w-1 h-1 rounded-full" [ngClass]="getPayoutStatusDotClass(payout.status)"></span>
+                          {{ formatStatusLabel(payout.status) }}
+                        </span>
+                      </td>
+                      <td class="py-3 px-3 text-[11px]">
+                        @if (payout.utr) {
+                          <div class="flex items-center gap-1 font-mono text-emerald-700 dark:text-emerald-400 font-medium">
+                            <span class="truncate max-w-[100px]" [title]="payout.utr">{{ payout.utr }}</span>
+                            <button
+                              type="button"
+                              (click)="copyToClipboard(payout.utr, 'utr-' + payout.id)"
+                              class="cursor-pointer text-slate-400 hover:text-primary transition shrink-0"
+                              title="Copy UTR"
+                            >
+                              @if (copiedKey() === 'utr-' + payout.id) {
+                                <span class="text-[10px] text-emerald-600 font-bold">✓</span>
+                              } @else {
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                              }
+                            </button>
+                          </div>
+                        } @else {
+                          <span class="text-slate-400 font-mono text-[10px]">{{ payout.mode || 'In Queue' }}</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="py-10 text-center text-xs text-slate-500 dark:text-slate-400">
+              <p class="font-medium text-slate-700 dark:text-slate-300">No payout transfers recorded yet.</p>
+              <p class="mt-0.5 text-[11px] text-slate-400">Disbursed host settlements will appear here.</p>
+            </div>
+          }
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-slate-100 text-left text-xs dark:divide-slate-800">
-            <thead class="bg-slate-50 dark:bg-slate-900/60">
-              <tr>
-                <th class="px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200">User</th>
-                <th class="px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200">Role</th>
-                <th class="px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200">Status</th>
-                <th class="px-4 py-2.5 font-semibold text-slate-700 dark:text-slate-200">Joined</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800/60 dark:bg-slate-900">
-              @if (recentUsers().length === 0) {
-                <tr>
-                  <td colspan="4" class="px-4 py-6 text-center text-slate-500">No users found.</td>
-                </tr>
-              } @else {
-                @for (user of recentUsers(); track user.id) {
-                  <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
-                    <td class="px-4 py-2.5">
-                      <div class="flex items-center gap-2.5">
-                        <app-avatar [name]="user.full_name" [size]="28"></app-avatar>
-                        <div>
-                          <p class="font-medium text-slate-800 dark:text-slate-100">{{ user.full_name }}</p>
-                          <p class="text-[11px] text-slate-500">{{ user.email }}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-4 py-2.5">
-                      <span [class]="getUserRoleClass(user.role)" class="inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase">
-                        {{ user.role }}
-                      </span>
-                    </td>
-                    <td class="px-4 py-2.5">
-                      <span
-                        [class.text-emerald-600]="user.status === 'active'"
-                        [class.dark:text-emerald-400]="user.status === 'active'"
-                        [class.text-slate-500]="user.status !== 'active'"
-                        class="text-[11px] font-semibold capitalize"
-                      >
-                        ● {{ user.status }}
-                      </span>
-                    </td>
-                    <td class="px-4 py-2.5 text-slate-500 text-[11px]">
-                      {{ formatDate(user.created_at) }}
-                    </td>
+        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+          <span>Automated RazorpayX Disbursal</span>
+          <a routerLink="/admin/finance/payouts" class="text-primary hover:underline font-medium">Create Payout +</a>
+        </div>
+      </div>
+
+      <!-- Panel 2: Recent Refund Requests -->
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>🔄 Recent Refund Requests</span>
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Guest cancellation claims & refunds</p>
+            </div>
+            <a routerLink="/admin/finance/refunds" class="text-xs font-semibold text-primary hover:underline">
+              All Refunds &rarr;
+            </a>
+          </div>
+
+          @if (recentRefundRequests().length > 0) {
+            <div class="w-full overflow-x-auto">
+              <table class="min-w-[460px] w-full divide-y divide-slate-100 text-left text-xs dark:divide-slate-800">
+                <thead class="bg-slate-50 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-900/60 dark:text-slate-400">
+                  <tr>
+                    <th class="py-2.5 px-3">Booking / Guest</th>
+                    <th class="py-2.5 px-2">Property</th>
+                    <th class="py-2.5 px-2 text-right">Amount</th>
+                    <th class="py-2.5 px-3 text-center">Status</th>
                   </tr>
-                }
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  @for (refund of recentRefundRequests().slice(0, 5); track refund.id) {
+                    <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <td class="py-3 px-3">
+                        <p class="font-mono font-bold text-slate-800 dark:text-slate-100">{{ refund.booking_reference || 'Ref #' }}</p>
+                        <p class="text-[10px] text-slate-400 truncate max-w-[120px]">{{ refund.guest_name || refund.guest_email || 'Guest' }}</p>
+                      </td>
+                      <td class="py-3 px-2">
+                        <p class="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[130px]">{{ refund.property_name || '—' }}</p>
+                      </td>
+                      <td class="py-3 px-2 text-right font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                        {{ formatCurrency(refund.amount) }}
+                      </td>
+                      <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold border" [ngClass]="getRefundStatusClass(refund.status)">
+                          {{ formatStatusLabel(refund.status) }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="py-10 text-center text-xs text-slate-500 dark:text-slate-400">
+              <p class="font-medium text-slate-700 dark:text-slate-300">No active refund requests.</p>
+              <p class="mt-0.5 text-[11px] text-slate-400">All guest cancellations are up to date.</p>
+            </div>
+          }
+        </div>
+
+        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+          <span>{{ data.refunds_summary?.total_requests || 0 }} Total Requests</span>
+          <a routerLink="/admin/finance/refunds" class="text-primary hover:underline font-medium">Review Pending ({{ data.refunds_summary?.pending || 0 }})</a>
+        </div>
+      </div>
+
+      <!-- Panel 3: Recent Platform Bookings -->
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>📅 Recent Bookings</span>
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time platform reservation activity</p>
+            </div>
+            <a routerLink="/admin/booking-management" class="text-xs font-semibold text-primary hover:underline">
+              All Bookings &rarr;
+            </a>
+          </div>
+
+          @if (recentBookings().length > 0) {
+            <div class="w-full overflow-x-auto">
+              <table class="min-w-[460px] w-full divide-y divide-slate-100 text-left text-xs dark:divide-slate-800">
+                <thead class="bg-slate-50 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-900/60 dark:text-slate-400">
+                  <tr>
+                    <th class="py-2.5 px-3">Ref / Guest</th>
+                    <th class="py-2.5 px-2">Property</th>
+                    <th class="py-2.5 px-2 text-right">Amount</th>
+                    <th class="py-2.5 px-3 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  @for (booking of recentBookings().slice(0, 5); track booking.id || booking.booking_reference) {
+                    <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <td class="py-3 px-3">
+                        <p class="font-mono font-bold text-slate-800 dark:text-slate-100">{{ booking.booking_reference || booking.id }}</p>
+                        <p class="text-[10px] text-slate-400 truncate max-w-[120px]">{{ booking.guest_name || 'Guest' }}</p>
+                      </td>
+                      <td class="py-3 px-2">
+                        <p class="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[130px]">{{ booking.property_name || '—' }}</p>
+                        <p class="text-[10px] text-slate-400">{{ formatDate(booking.check_in_date) }}</p>
+                      </td>
+                      <td class="py-3 px-2 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                        {{ formatCurrency(booking.total_amount, booking.currency) }}
+                      </td>
+                      <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold border" [ngClass]="getStatusClass(booking.status)">
+                          {{ formatStatusLabel(booking.status) }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="py-10 text-center text-xs text-slate-500 dark:text-slate-400">
+              <p class="font-medium text-slate-700 dark:text-slate-300">No recent reservations.</p>
+            </div>
+          }
+        </div>
+
+        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+          <span>{{ data.bookings_summary?.total || 0 }} Total Bookings</span>
+          <a routerLink="/admin/booking-management" class="text-primary hover:underline font-medium">Manage Bookings</a>
+        </div>
+      </div>
+
+      <!-- Panel 4: Host Onboarding Requests -->
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>📝 Host Applications</span>
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Prospective homestay host registrations</p>
+            </div>
+            <a routerLink="/admin/host-management" class="text-xs font-semibold text-primary hover:underline">
+              All Applications &rarr;
+            </a>
+          </div>
+
+          @if (recentHostRequests().length > 0) {
+            <div class="w-full overflow-x-auto">
+              <table class="min-w-[460px] w-full divide-y divide-slate-100 text-left text-xs dark:divide-slate-800">
+                <thead class="bg-slate-50 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-900/60 dark:text-slate-400">
+                  <tr>
+                    <th class="py-2.5 px-3">Applicant</th>
+                    <th class="py-2.5 px-2">Property / City</th>
+                    <th class="py-2.5 px-3 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  @for (req of recentHostRequests().slice(0, 5); track req.id) {
+                    <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <td class="py-3 px-3">
+                        <p class="font-medium text-slate-900 dark:text-white truncate max-w-[130px]">{{ req.full_name }}</p>
+                        <p class="text-[10px] text-slate-400 truncate max-w-[130px]">{{ req.email }}</p>
+                      </td>
+                      <td class="py-3 px-2">
+                        <p class="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[130px]">{{ req.property_name || 'Homestay' }}</p>
+                        <p class="text-[10px] text-slate-400 capitalize">{{ req.property_type }} · {{ req.city }}</p>
+                      </td>
+                      <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold border" [ngClass]="getHostStatusClass(req.status)">
+                          {{ formatStatusLabel(req.status) }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="py-10 text-center text-xs text-slate-500 dark:text-slate-400">
+              <p class="font-medium text-slate-700 dark:text-slate-300">No pending host applications.</p>
+            </div>
+          }
+        </div>
+
+        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+          <span>{{ data.users_summary?.pending_hosts || 0 }} Pending Review</span>
+          <a routerLink="/admin/host-management" class="text-primary hover:underline font-medium">Review Applications</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── SECTION 3: TOP PERFORMING PROPERTIES & INVENTORY ───────────────── -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <!-- Top Performing Properties (2 Columns) -->
+      <div class="lg:col-span-2 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>🏆 Top Performing Homestays</span>
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Highest booked and top grossing properties</p>
+            </div>
+            <a routerLink="/admin/properties" class="text-xs font-semibold text-primary hover:underline">
+              All Properties &rarr;
+            </a>
+          </div>
+
+          @if (topProperties().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              @for (prop of topProperties().slice(0, 4); track prop.id) {
+                <div class="flex flex-col rounded-xl border border-slate-100 bg-slate-50/50 p-3.5 transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:border-slate-700">
+                  <div class="relative mb-2.5 h-28 w-full overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-700">
+                    @if (prop.image_url) {
+                      <img
+                        [src]="resolveAssetUrl(prop.image_url)"
+                        [alt]="prop.name"
+                        class="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    } @else {
+                      <div class="flex h-full w-full items-center justify-center text-slate-400 text-xs">
+                        No image
+                      </div>
+                    }
+                    <span class="absolute top-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[9px] font-semibold text-white capitalize backdrop-blur-xs">
+                      {{ prop.type }}
+                    </span>
+                  </div>
+
+                  <div class="flex-1">
+                    <h4 class="font-bold text-slate-900 dark:text-white text-xs line-clamp-1" [title]="prop.name">
+                      {{ prop.name }}
+                    </h4>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-1.5">{{ prop.city }}</p>
+
+                    <!-- Rating -->
+                    <div class="flex items-center gap-1 mb-2">
+                      <div class="flex text-amber-400">
+                        @for (star of getStarArray(prop.average_rating); track $index) {
+                          <svg class="h-3 w-3" [class.fill-amber-400]="star.filled" [class.text-slate-300]="!star.filled" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        }
+                      </div>
+                      <span class="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                        {{ prop.average_rating > 0 ? (prop.average_rating | number:'1.1-1') : 'New' }}
+                      </span>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 gap-1 border-t border-slate-200/60 pt-2 text-[11px] dark:border-slate-700/60">
+                      <div>
+                        <span class="text-[10px] text-slate-400">Bookings</span>
+                        <p class="font-bold text-slate-800 dark:text-slate-200">{{ prop.total_bookings }}</p>
+                      </div>
+                      <div class="text-right">
+                        <span class="text-[10px] text-slate-400">Revenue</span>
+                        <p class="font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(prop.total_revenue, data.revenue_summary?.currency) }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               }
-            </tbody>
-          </table>
+            </div>
+          } @else {
+            <div class="rounded-xl border border-dashed border-slate-200 p-8 text-center dark:border-slate-800">
+              <p class="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">No property performance records yet</p>
+            </div>
+          }
+        </div>
+
+        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+          <span>{{ data.properties_summary?.total || 0 }} Total Listings</span>
+          <a routerLink="/admin/properties" class="text-primary hover:underline font-medium">Manage Listings</a>
+        </div>
+      </div>
+
+      <!-- Property Type & User Breakdown (1 Column) -->
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
+            System Distribution
+          </h3>
+
+          <!-- Properties by Type -->
+          <div class="mt-4">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">Properties by Category</p>
+            <div class="space-y-2">
+              @for (item of propertiesByType(); track item.type) {
+                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <span class="font-medium text-slate-700 dark:text-slate-300 capitalize">{{ item.type }}</span>
+                  <span class="font-bold text-slate-900 dark:text-white">{{ item.count }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Users by Role -->
+          <div class="mt-5">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">Accounts by Role</p>
+            <div class="space-y-2">
+              @for (item of usersByRole(); track item.role) {
+                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <span class="font-medium text-slate-700 dark:text-slate-300 capitalize">{{ item.role }}</span>
+                  <span class="font-bold text-slate-900 dark:text-white">{{ item.count }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <a
+            routerLink="/admin/setting"
+            class="cursor-pointer w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition flex items-center justify-center gap-1.5"
+          >
+            <span>Platform Settings &rarr;</span>
+          </a>
         </div>
       </div>
 

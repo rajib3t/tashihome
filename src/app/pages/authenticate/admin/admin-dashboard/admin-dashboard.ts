@@ -5,16 +5,19 @@ import { catchError, finalize, of } from 'rxjs';
 import { DashboardService } from '../../../../services/dashboard/dashboard-service';
 import {
   AdminDashboardData,
-  RecentBooking,
-  RecentHostRequest,
-  RecentUser,
-  RevenueTrend,
-  TopProperty,
+  DashboardBookingItem,
+  DashboardHostRequestItem,
+  DashboardPayoutItem,
+  DashboardRefundItem,
+  DashboardUserItem,
+  PayoutStats,
+  RevenueTrendItem,
+  TopPropertyItem,
 } from '../../../../services/dashboard/dashboard.model';
 import { SettingsService } from '../../../../services/settings/settings-service';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
-import { Avatar } from '../../../../shared/components/users/avatar/avatar';
 import { environment } from '../../../../../environments/environment';
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -22,7 +25,6 @@ import { environment } from '../../../../../environments/environment';
     CommonModule,
     RouterModule,
     PageBreadcrumb,
-    Avatar,
   ],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
@@ -38,7 +40,8 @@ export class AdminDashboard implements OnInit {
   readonly selectedMonths = signal<number>(12);
   readonly dashboardData = signal<AdminDashboardData | null>(null);
   readonly lastUpdated = signal<Date>(new Date());
-  readonly activeTrendTab = signal<'revenue' | 'bookings'>('revenue');
+  readonly activeTrendTab = signal<'revenue' | 'gross' | 'bookings'>('revenue');
+  readonly copiedKey = signal<string>('');
 
   readonly monthOptions = [
     { label: 'Last 3 Months', value: 3 },
@@ -58,7 +61,39 @@ export class AdminDashboard implements OnInit {
   readonly recentBookings = computed(() => this.dashboardData()?.recent_bookings || []);
   readonly recentHostRequests = computed(() => this.dashboardData()?.recent_host_requests || []);
   readonly recentUsers = computed(() => this.dashboardData()?.recent_users || []);
+  readonly recentRefundRequests = computed(() => this.dashboardData()?.recent_refund_requests || []);
+  readonly recentPayouts = computed(() => this.dashboardData()?.recent_payouts || []);
   readonly topProperties = computed(() => this.dashboardData()?.top_properties || []);
+
+  readonly payoutsSummary = computed<PayoutStats>(() => {
+    const raw = this.dashboardData()?.payouts_summary;
+    if (raw) return raw;
+
+    const payouts = this.recentPayouts();
+    const paidList = payouts.filter((p) => p.status?.toLowerCase() === 'paid');
+    const procList = payouts.filter((p) => p.status?.toLowerCase() === 'processing');
+    const pendList = payouts.filter((p) => p.status?.toLowerCase() === 'pending');
+    const failList = payouts.filter((p) => ['failed', 'rejected', 'reversed'].includes(p.status?.toLowerCase()));
+    const lastPaid = paidList[0] || payouts[0];
+
+    const totalPaid = paidList.length ? paidList.reduce((acc, p) => acc + (p.amount || 0), 0) : (this.revenueSummary()?.total_revenue || 0) * 0.85;
+    const pendingAmt = pendList.length ? pendList.reduce((acc, p) => acc + (p.amount || 0), 0) : (this.revenueSummary()?.pending_revenue || 0);
+
+    return {
+      total_payouts: payouts.length || (paidList.length + procList.length + pendList.length),
+      total_paid_amount: totalPaid,
+      pending_payout_amount: pendingAmt,
+      processing_payout_amount: procList.reduce((acc, p) => acc + (p.amount || 0), 0),
+      failed_payout_amount: failList.reduce((acc, p) => acc + (p.amount || 0), 0),
+      pending_count: pendList.length,
+      processing_count: procList.length,
+      paid_count: paidList.length,
+      failed_count: failList.length,
+      last_payout_date: lastPaid?.paid_at || lastPaid?.created_at || null,
+      last_payout_amount: lastPaid?.amount || null,
+      currency: this.revenueSummary()?.currency || 'INR',
+    };
+  });
 
   readonly propertiesByType = computed(() => {
     const byType = this.propertiesSummary()?.by_type || {};
@@ -73,7 +108,7 @@ export class AdminDashboard implements OnInit {
   readonly maxRevenue = computed(() => {
     const trends = this.revenueTrends();
     if (!trends.length) return 1;
-    return Math.max(...trends.map((t) => t.revenue || 0), 1);
+    return Math.max(...trends.map((t) => Math.max(t.revenue || 0, t.gross_revenue || 0)), 1);
   });
 
   readonly maxBookings = computed(() => {
@@ -86,8 +121,26 @@ export class AdminDashboard implements OnInit {
     return this.revenueTrends().reduce((acc, curr) => acc + (curr.revenue || 0), 0);
   });
 
+  readonly totalTrendsGrossRevenue = computed(() => {
+    return this.revenueTrends().reduce((acc, curr) => acc + (curr.gross_revenue || curr.revenue || 0), 0);
+  });
+
   readonly totalTrendsBookings = computed(() => {
     return this.revenueTrends().reduce((acc, curr) => acc + (curr.bookings_count || 0), 0);
+  });
+
+  // Effective Net Revenue & Gross
+  readonly netRevenueAmount = computed(() => {
+    const rev = this.revenueSummary();
+    if (rev?.net_revenue !== undefined) return rev.net_revenue;
+    if (rev?.total_revenue !== undefined) return rev.total_revenue;
+    return 0;
+  });
+
+  readonly grossRevenueAmount = computed(() => {
+    const rev = this.revenueSummary();
+    if (rev?.gross_revenue !== undefined) return rev.gross_revenue;
+    return (rev?.total_revenue || 0) + (rev?.refunded_amount || 0);
   });
 
   ngOnInit(): void {
@@ -113,7 +166,18 @@ export class AdminDashboard implements OnInit {
       )
       .subscribe((res) => {
         if (!res) return;
-        const payload = (res.data as any)?.data !== undefined ? (res.data as any).data : res.data;
+        let payload: any = res;
+        if (payload?.data?.data !== undefined) {
+          payload = payload.data.data;
+        } else if (
+          payload?.data !== undefined &&
+          (payload.data.bookings_summary ||
+            payload.data.revenue_summary ||
+            payload.data.users_summary ||
+            payload.data.properties_summary)
+        ) {
+          payload = payload.data;
+        }
         this.dashboardData.set(payload || null);
         this.lastUpdated.set(new Date());
       });
@@ -126,6 +190,18 @@ export class AdminDashboard implements OnInit {
 
   refresh(): void {
     this.loadDashboard(this.selectedMonths());
+  }
+
+  copyToClipboard(text: string, key: string): void {
+    if (!text) return;
+    navigator.clipboard?.writeText(text).then(() => {
+      this.copiedKey.set(key);
+      setTimeout(() => {
+        if (this.copiedKey() === key) {
+          this.copiedKey.set('');
+        }
+      }, 2000);
+    });
   }
 
   // ── Helpers & Formatters ────────────────────────────────────────────────────
@@ -148,7 +224,7 @@ export class AdminDashboard implements OnInit {
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
       pending: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20',
-      confirmed: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/20',
+      confirmed: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20',
       checked_in: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/15 dark:text-indigo-300 dark:border-indigo-500/20',
       check_in: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/15 dark:text-indigo-300 dark:border-indigo-500/20',
       checked_out: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/20',
@@ -166,6 +242,42 @@ export class AdminDashboard implements OnInit {
       pending: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20',
       failed: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/20',
       refunded: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/20',
+    };
+    return map[status?.toLowerCase()] || 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+  }
+
+  getPayoutStatusBadgeClass(status: string): string {
+    const s = status?.toLowerCase();
+    if (s === 'paid') {
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20';
+    }
+    if (s === 'processing') {
+      return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/20';
+    }
+    if (s === 'pending') {
+      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20';
+    }
+    if (s === 'failed' || s === 'rejected' || s === 'reversed') {
+      return 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/20';
+    }
+    return 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+  }
+
+  getPayoutStatusDotClass(status: string): string {
+    const s = status?.toLowerCase();
+    if (s === 'paid') return 'bg-emerald-500';
+    if (s === 'processing') return 'bg-blue-500 animate-pulse';
+    if (s === 'pending') return 'bg-amber-500';
+    if (s === 'failed' || s === 'rejected' || s === 'reversed') return 'bg-rose-500';
+    return 'bg-slate-400';
+  }
+
+  getRefundStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      pending: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20',
+      approved: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/20',
+      processed: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20',
+      rejected: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/20',
     };
     return map[status?.toLowerCase()] || 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
   }
