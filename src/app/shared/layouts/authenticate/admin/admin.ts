@@ -116,6 +116,11 @@ export class Admin {
       ...(role !== 'staff'
         ? [
             {
+              icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.354a4 4 0 1 1 0 5.292M15 21H3v-1a6 6 0 0 1 12 0v1zm0 0h6v-1a6 6 0 0 0-9-5.197M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"/></svg>`,
+              name: 'Staffs',
+              path: '/admin/staff-management',
+            },
+            {
               icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path d="M7 7V4h10v3M8 12h8M12 9v6"/></svg>`,
               name: 'Refunds',
               path: '/admin/refund-management',

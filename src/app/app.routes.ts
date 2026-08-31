@@ -44,6 +44,8 @@ import { AdminBookingManagement } from './pages/authenticate/admin/booking-manag
 import { VendorBookingManagement } from './pages/authenticate/vendor/booking-management/booking-management';
 import { RefundManagement } from './pages/authenticate/admin/refund-management/refund-management';
 import { HostManagement } from './pages/authenticate/admin/host-management/host-management';
+import { StaffManagement } from './pages/authenticate/admin/staff-management/staff-management';
+import { EditStaff } from './pages/authenticate/admin/staff-management/edit-staff/edit-staff';
 
 export const routes: Routes = [
     {
@@ -263,6 +265,23 @@ export const routes: Routes = [
                         path: 'booking-management',
                         component: AdminBookingManagement,
                         title: 'Booking Management'
+                    },
+                    {
+                        path: 'staff-management',
+                        canActivate: [adminOnlyGuard],
+                        component: StaffManagement,
+                        title: 'Staff Management'
+                    },
+                    {
+                        path: 'staff-management/:id/edit',
+                        canActivate: [adminOnlyGuard],
+                        component: EditStaff,
+                        title: 'Edit Staff'
+                    },
+                    {
+                        path: 'staffs',
+                        redirectTo: 'staff-management',
+                        pathMatch: 'full'
                     },
                     {
                         path: 'refund-management',

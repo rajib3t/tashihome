@@ -1,0 +1,296 @@
+<app-page-breadcrumb 
+    pageTitle="Edit Staff Member" 
+    homelink="/admin"
+    [breadcrumbs]="[{ label: 'Staff Management', url: '/admin/staff-management' }, { label: 'Edit Staff' }]">
+</app-page-breadcrumb>
+
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <a routerLink="/admin/staff-management" class="cursor-pointer inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-400 dark:hover:text-primary">
+            <span>← Back to Staff List</span>
+        </a>
+    </div>
+
+    @if (errorMessage()) {
+        <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+            {{ errorMessage() }}
+        </div>
+    }
+
+    @if (successMessage()) {
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300">
+            {{ successMessage() }}
+        </div>
+    }
+
+    @if (passwordResetSuccess()) {
+        <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300">
+            <span>{{ passwordResetSuccess() }}</span>
+            <button type="button" (click)="passwordResetSuccess.set(null)" class="cursor-pointer text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-white font-bold ml-2">✕</button>
+        </div>
+    }
+
+    <div class="grid gap-6 lg:grid-cols-3">
+        <!-- Left Column: Avatar & Summary -->
+        <app-card title="Profile Photo" desc="Manage profile image for this staff/admin account." class="lg:col-span-1">
+            <div class="flex flex-col items-center justify-center p-4">
+                <div class="relative group">
+                    <app-avatar
+                        [name]="staff()?.full_name || 'Staff'"
+                        [size]="110"
+                        [rounded]="true"
+                        [src]="staffImagePreview()"
+                        backgroundColor="bg-primary">
+                    </app-avatar>
+                    
+                    @if (isImageUploading()) {
+                        <div class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 text-white">
+                            <svg class="h-6 w-6 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    }
+                </div>
+
+                <div class="mt-4 flex flex-col items-center">
+                    <label class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                        <span>Upload New Image</span>
+                        <input type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" [disabled]="isImageUploading() || isLoading()">
+                    </label>
+                    <span class="mt-1 text-[11px] text-slate-400">JPG, PNG, GIF up to 5MB</span>
+                </div>
+
+                @if (imageUploadError()) {
+                    <p class="mt-2 text-center text-xs text-red-600 dark:text-red-400">{{ imageUploadError() }}</p>
+                }
+
+                <div class="mt-6 w-full space-y-3 border-t border-slate-200 pt-4 dark:border-slate-800">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500 dark:text-slate-400">Role</span>
+                        <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold capitalize {{ getRoleBadgeClass(staff()?.role) }}">
+                            {{ staff()?.role || 'staff' }}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500 dark:text-slate-400">Account Status</span>
+                        @if (staff()?.status === 'active') {
+                            <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-800 dark:bg-green-900/20 dark:text-green-300">
+                                <span class="h-1.5 w-1.5 rounded-full bg-green-600"></span> Active
+                            </span>
+                        } @else {
+                            <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 font-medium text-red-800 dark:bg-red-900/20 dark:text-red-300">
+                                <span class="h-1.5 w-1.5 rounded-full bg-red-600"></span> Inactive
+                            </span>
+                        }
+                    </div>
+
+                    @if (staff()?.created_at) {
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-500 dark:text-slate-400">Created At</span>
+                            <span class="font-medium text-slate-700 dark:text-slate-300">{{ staff()?.created_at | date:'mediumDate' }}</span>
+                        </div>
+                    }
+
+                    <div class="pt-2">
+                        <button
+                            type="button"
+                            (click)="openPasswordResetModal()"
+                            class="cursor-pointer w-full inline-flex items-center justify-center rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/40"
+                        >
+                            Trigger Password Reset Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </app-card>
+
+        <!-- Right Column: Account Information -->
+        <app-card title="Account Details" desc="Update staff / admin details, contact info, and role permissions." class="lg:col-span-2">
+            <form [formGroup]="staffForm" (ngSubmit)="onSubmitUpdate()" class="space-y-4" novalidate>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="edit-fullname" class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Full Name *</label>
+                        <input
+                            id="edit-fullname"
+                            type="text"
+                            formControlName="full_name"
+                            placeholder="John Staff"
+                            [class.border-red-500]="fullNameControl.invalid && fullNameControl.touched"
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                        />
+                        @if (fullNameControl.invalid && fullNameControl.touched) {
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                                @if (fullNameControl.errors?.['required']) {
+                                    Full name is required.
+                                } @else if (fullNameControl.errors?.['minlength']) {
+                                    Must be at least 3 characters.
+                                } @else if (fullNameControl.errors?.['maxlength']) {
+                                    Cannot exceed 50 characters.
+                                }
+                            </p>
+                        }
+                    </div>
+
+                    <div>
+                        <label for="edit-email" class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Email *</label>
+                        <input
+                            id="edit-email"
+                            type="email"
+                            formControlName="email"
+                            placeholder="staff@example.com"
+                            [class.border-red-500]="emailControl.invalid && emailControl.touched"
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                        />
+                        @if (emailControl.invalid && emailControl.touched) {
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                                @if (emailControl.errors?.['required']) {
+                                    Email is required.
+                                } @else if (emailControl.errors?.['email']) {
+                                    Please enter a valid email address.
+                                }
+                            </p>
+                        }
+                    </div>
+
+                    <div>
+                        <label for="edit-phone" class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Phone *</label>
+                        <input
+                            id="edit-phone"
+                            type="tel"
+                            formControlName="phone"
+                            placeholder="1234567890"
+                            [class.border-red-500]="phoneControl.invalid && phoneControl.touched"
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                        />
+                        @if (phoneControl.invalid && phoneControl.touched) {
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                                @if (phoneControl.errors?.['required']) {
+                                    Phone number is required.
+                                } @else if (phoneControl.errors?.['pattern']) {
+                                    Please enter a valid 10-digit phone number.
+                                }
+                            </p>
+                        }
+                    </div>
+
+                    <div>
+                        <label for="edit-role" class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Role Permission *</label>
+                        <select
+                            id="edit-role"
+                            formControlName="role"
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                        >
+                            <option value="staff">Staff (Operational access)</option>
+                            <option value="admin">Admin (Full administrative access)</option>
+                        </select>
+                        @if (roleControl.invalid && roleControl.touched) {
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                                Role selection is required.
+                            </p>
+                        }
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <label class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            formControlName="is_subscribed"
+                            class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-700"
+                        />
+                        <span>Subscribe to administrative announcements</span>
+                    </label>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-800">
+                    <a
+                        routerLink="/admin/staff-management"
+                        class="cursor-pointer inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                        Cancel
+                    </a>
+                    <button
+                        type="submit"
+                        [disabled]="isSaving() || staffForm.invalid || isLoading()"
+                        class="cursor-pointer inline-flex items-center rounded-xl border border-transparent bg-primary px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+                    </button>
+                </div>
+            </form>
+        </app-card>
+    </div>
+</div>
+
+<!-- Password Reset Modal -->
+<app-modal [isOpen]="isPasswordResetModalOpen()" (close)="closePasswordResetModal()" className="max-w-[480px] m-4">
+    <div class="relative w-full max-w-[480px] rounded-3xl bg-white p-6 dark:bg-gray-900">
+        <div class="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                Send Password Reset Link
+            </h2>
+        </div>
+
+        <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">
+            Are you sure you want to send a password reset link to
+            <span class="font-semibold text-gray-900 dark:text-white">{{ staff()?.full_name }}</span>
+            ({{ staff()?.email }})?
+        </p>
+
+        <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            To confirm, please type <span class="font-bold text-amber-600 dark:text-amber-400">CONFIRM</span> below:
+        </p>
+
+        @if (passwordResetError()) {
+            <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+                {{ passwordResetError() }}
+            </div>
+        }
+
+        <form [formGroup]="passwordResetForm" (ngSubmit)="submitPasswordReset()" class="mt-4" novalidate>
+            <div class="mb-4">
+                <label for="edit-staff-reset-confirm" class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Confirmation Text
+                </label>
+                <input
+                    id="edit-staff-reset-confirm"
+                    type="text"
+                    formControlName="confirm"
+                    placeholder="Type CONFIRM to confirm"
+                    autocomplete="off"
+                    [class.border-red-500]="resetConfirmControl.invalid && resetConfirmControl.touched"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                />
+                @if (resetConfirmControl.invalid && resetConfirmControl.touched) {
+                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                        @if (resetConfirmControl.errors?.['required']) {
+                            Please type CONFIRM to proceed.
+                        } @else if (resetConfirmControl.errors?.['pattern']) {
+                            You must type exactly "CONFIRM".
+                        }
+                    </p>
+                }
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <button
+                    type="button"
+                    (click)="closePasswordResetModal()"
+                    class="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    [disabled]="isSendingPasswordReset() || passwordResetForm.invalid"
+                    class="cursor-pointer rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {{ isSendingPasswordReset() ? 'Sending Link...' : 'Send Link' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</app-modal>
+
