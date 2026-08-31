@@ -1,1 +1,598 @@
-<p>dashboard works!</p>
+<app-page-breadcrumb pageTitle="Host Dashboard" homelink="/vendor"></app-page-breadcrumb>
+
+<div class="space-y-6">
+
+  <!-- ─── Top Control & Greeting Bar ─────────────────────────────────────────── -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">Property & Business Dashboard</h1>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        Track your property earnings, guest reservations, arrivals, and reviews.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Add Property CTA -->
+      <a
+        routerLink="/vendor/property-management/create"
+        class="cursor-pointer inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:opacity-90"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Add Listing</span>
+      </a>
+
+      <!-- Timeframe Selector -->
+      <div class="relative inline-flex items-center">
+        <select
+          [value]="selectedMonths()"
+          (change)="onMonthsChange(+$any($event.target).value)"
+          class="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        >
+          @for (opt of monthOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Refresh Button -->
+      <button
+        type="button"
+        (click)="refresh()"
+        [disabled]="isLoading()"
+        class="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        title="Refresh data"
+      >
+        <svg
+          [class.animate-spin]="isLoading()"
+          class="h-4 w-4 text-slate-600 dark:text-slate-300"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>Refresh</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Error Alert ───────────────────────────────────────────────────────── -->
+  @if (errorMessage()) {
+    <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <svg class="h-5 w-5 flex-shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+        <button
+          type="button"
+          (click)="refresh()"
+          class="cursor-pointer rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700"
+        >Retry</button>
+      </div>
+    </div>
+  }
+
+  <!-- ─── Loading Skeleton ─────────────────────────────────────────────────── -->
+  @if (isLoading() && !dashboardData()) {
+    <div class="space-y-6">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="h-32 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/50"></div>
+        }
+      </div>
+      <div class="h-72 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/50"></div>
+    </div>
+  }
+
+  <!-- ─── Main Content ─────────────────────────────────────────────────────── -->
+  @if (dashboardData(); as data) {
+
+    <!-- ─── Today Occupancy & Guest Operations Strip ───────────────────────── -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+      <!-- Today Check-ins -->
+      <div class="flex items-center gap-4 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-4 dark:border-blue-900/50 dark:from-blue-500/20 dark:to-transparent">
+        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-500/20">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Arriving Today</p>
+          <p class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ data.occupancy_today?.today_check_ins || 0 }}</p>
+        </div>
+      </div>
+
+      <!-- Today Check-outs -->
+      <div class="flex items-center gap-4 rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-500/10 to-purple-500/5 p-4 dark:border-purple-900/50 dark:from-purple-500/20 dark:to-transparent">
+        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-purple-600 text-white shadow-md shadow-purple-500/20">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Departing Today</p>
+          <p class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ data.occupancy_today?.today_check_outs || 0 }}</p>
+        </div>
+      </div>
+
+      <!-- Active Guests In-House -->
+      <div class="flex items-center gap-4 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 p-4 dark:border-emerald-900/50 dark:from-emerald-500/20 dark:to-transparent">
+        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-500/20">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Current Guests In-House</p>
+          <p class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ data.occupancy_today?.active_guests || 0 }}</p>
+        </div>
+      </div>
+
+      <!-- Reviews Summary / Average Rating -->
+      <div class="flex items-center gap-4 rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-500/10 to-amber-500/5 p-4 dark:border-amber-900/50 dark:from-amber-500/20 dark:to-transparent">
+        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-md shadow-amber-500/20">
+          <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Guest Rating</p>
+          <div class="flex items-baseline gap-1.5">
+            <span class="text-2xl font-extrabold text-slate-900 dark:text-white">
+              {{ (data.reviews_summary?.average_rating || 0) > 0 ? (data.reviews_summary?.average_rating | number:'1.1-1') : '—' }}
+            </span>
+            <span class="text-xs text-slate-500">({{ data.reviews_summary?.total_reviews || 0 }} reviews)</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── Core KPI Metric Cards ─────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+      <!-- 1. Total Revenue -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Earnings</span>
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+        <p class="mt-3 text-2xl font-black text-slate-900 dark:text-white">
+          {{ formatCurrency(data.revenue_summary?.total_revenue, data.revenue_summary?.currency) }}
+        </p>
+        <div class="mt-3 flex flex-wrap gap-2 text-xs">
+          <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+            Pending: {{ formatCurrency(data.revenue_summary?.pending_revenue, data.revenue_summary?.currency) }}
+          </span>
+          <span class="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">
+            Refunds: {{ formatCurrency(data.revenue_summary?.refunded_amount, data.revenue_summary?.currency) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- 2. Total Bookings -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Bookings</span>
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        </div>
+        <p class="mt-3 text-2xl font-black text-slate-900 dark:text-white">
+          {{ data.bookings_summary?.total || 0 }}
+        </p>
+        <div class="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+          <span class="rounded bg-blue-50 px-1.5 py-0.5 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+            {{ data.bookings_summary?.confirmed || 0 }} Confirmed
+          </span>
+          <span class="rounded bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+            {{ data.bookings_summary?.completed || 0 }} Done
+          </span>
+          <span class="rounded bg-rose-50 px-1.5 py-0.5 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+            {{ data.bookings_summary?.cancelled || 0 }} Cancelled
+          </span>
+        </div>
+      </div>
+
+      <!-- 3. My Properties -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">My Listings</span>
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          </div>
+        </div>
+        <p class="mt-3 text-2xl font-black text-slate-900 dark:text-white">
+          {{ data.properties_summary?.total || 0 }}
+        </p>
+        <div class="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
+          <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ data.properties_summary?.active || 0 }} Active</span>
+          <span>·</span>
+          <span class="text-slate-500">{{ data.properties_summary?.draft || 0 }} Draft</span>
+          <span>·</span>
+          <span class="text-amber-600 dark:text-amber-400">{{ data.properties_summary?.featured || 0 }} Featured</span>
+        </div>
+      </div>
+
+      <!-- 4. Guest Satisfaction Score -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Overall Rating</span>
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-3 flex items-baseline gap-2">
+          <p class="text-2xl font-black text-slate-900 dark:text-white">
+            {{ (data.reviews_summary?.average_rating || 0) > 0 ? (data.reviews_summary?.average_rating | number:'1.1-1') : '0.0' }}
+          </p>
+          <span class="text-xs text-slate-400">/ 5.0</span>
+        </div>
+        <div class="mt-3 flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
+          <div class="flex text-amber-400">
+            @for (star of getStarArray(data.reviews_summary?.average_rating); track $index) {
+              <svg class="h-3.5 w-3.5" [class.fill-amber-400]="star.filled" [class.text-slate-300]="!star.filled" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            }
+          </div>
+          <span>from {{ data.reviews_summary?.total_reviews || 0 }} total reviews</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── Revenue & Booking Trends Chart ────────────────────────────────── -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Earnings & Booking Trends</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Total earnings of {{ formatCurrency(totalTrendsRevenue(), data.revenue_summary?.currency) }} over {{ totalTrendsBookings() }} reservations
+          </p>
+        </div>
+
+        <!-- Metric Switcher -->
+        <div class="inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+          <button
+            type="button"
+            (click)="activeTrendTab.set('revenue')"
+            [class.bg-white]="activeTrendTab() === 'revenue'"
+            [class.dark:bg-slate-700]="activeTrendTab() === 'revenue'"
+            [class.shadow-xs]="activeTrendTab() === 'revenue'"
+            class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 transition dark:text-slate-200"
+          >
+            Revenue
+          </button>
+          <button
+            type="button"
+            (click)="activeTrendTab.set('bookings')"
+            [class.bg-white]="activeTrendTab() === 'bookings'"
+            [class.dark:bg-slate-700]="activeTrendTab() === 'bookings'"
+            [class.shadow-xs]="activeTrendTab() === 'bookings'"
+            class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 transition dark:text-slate-200"
+          >
+            Bookings
+          </button>
+        </div>
+      </div>
+
+      <!-- Trend Chart Bars -->
+      @if (revenueTrends().length > 0) {
+        <div class="mt-8">
+          <div class="grid grid-flow-col auto-cols-fr gap-2 sm:gap-3 items-end h-52 pb-2 pt-6">
+            @for (trend of revenueTrends(); track trend.month) {
+              <div class="group relative flex flex-col items-center h-full justify-end">
+                <!-- Tooltip on hover -->
+                <div class="absolute -top-12 z-20 hidden flex-col items-center group-hover:flex whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-lg dark:bg-slate-800">
+                  <span>{{ trend.month }}</span>
+                  <span class="text-emerald-400 font-bold">
+                    {{ activeTrendTab() === 'revenue' ? formatCurrency(trend.revenue, data.revenue_summary?.currency) : (trend.bookings_count + ' bookings') }}
+                  </span>
+                  <div class="h-1.5 w-1.5 rotate-45 bg-slate-900 dark:bg-slate-800 -mb-1"></div>
+                </div>
+
+                <!-- Bar element -->
+                @if (activeTrendTab() === 'revenue') {
+                  <div
+                    class="w-full max-w-[42px] rounded-t-lg bg-gradient-to-t from-primary/80 to-primary transition-all duration-300 group-hover:brightness-110"
+                    [style.height.%]="(trend.revenue / maxRevenue()) * 100 || 4"
+                  ></div>
+                } @else {
+                  <div
+                    class="w-full max-w-[42px] rounded-t-lg bg-gradient-to-t from-blue-600/80 to-blue-500 transition-all duration-300 group-hover:brightness-110"
+                    [style.height.%]="(trend.bookings_count / maxBookings()) * 100 || 4"
+                  ></div>
+                }
+
+                <!-- X Axis label -->
+                <span class="mt-2 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate max-w-full text-center">
+                  {{ trend.month }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+          No trends data available for this timeframe.
+        </div>
+      }
+    </div>
+
+    <!-- ─── Reservations Section (Upcoming Arrivals & Recent Bookings) ─────── -->
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">Reservations</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Manage incoming guest arrivals and past reservations</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Tab selector -->
+          <div class="inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+            <button
+              type="button"
+              (click)="activeBookingTab.set('upcoming')"
+              [class.bg-white]="activeBookingTab() === 'upcoming'"
+              [class.dark:bg-slate-700]="activeBookingTab() === 'upcoming'"
+              [class.shadow-xs]="activeBookingTab() === 'upcoming'"
+              class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 transition dark:text-slate-200"
+            >
+              Upcoming Arrivals ({{ upcomingBookings().length }})
+            </button>
+            <button
+              type="button"
+              (click)="activeBookingTab.set('recent')"
+              [class.bg-white]="activeBookingTab() === 'recent'"
+              [class.dark:bg-slate-700]="activeBookingTab() === 'recent'"
+              [class.shadow-xs]="activeBookingTab() === 'recent'"
+              class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 transition dark:text-slate-200"
+            >
+              Recent Bookings ({{ recentBookings().length }})
+            </button>
+          </div>
+
+          <a
+            routerLink="/vendor/booking-management"
+            class="cursor-pointer text-xs font-semibold text-primary hover:underline hidden sm:inline-block"
+          >
+            All Bookings &rarr;
+          </a>
+        </div>
+      </div>
+
+      <!-- Table Content -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-100 text-left text-xs dark:divide-slate-800">
+          <thead class="bg-slate-50 dark:bg-slate-900/60">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Reference</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Guest</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Property</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Check-In / Out</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Guests / Rooms</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Amount</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Booking Status</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Payment</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800/60 dark:bg-slate-900">
+            <!-- UPCOMING TAB -->
+            @if (activeBookingTab() === 'upcoming') {
+              @if (upcomingBookings().length === 0) {
+                <tr>
+                  <td colspan="8" class="px-4 py-8 text-center text-slate-500">No upcoming guest arrivals.</td>
+                </tr>
+              } @else {
+                @for (booking of upcomingBookings(); track booking.id) {
+                  <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                    <td class="px-4 py-3 font-mono font-semibold text-slate-800 dark:text-slate-100">
+                      {{ booking.booking_reference || booking.id }}
+                    </td>
+                    <td class="px-4 py-3">
+                      <p class="font-medium text-slate-800 dark:text-slate-100">{{ booking.guest_name || '—' }}</p>
+                      <p class="text-[11px] text-slate-500">{{ booking.guest_email || '' }}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                      <p class="font-medium text-slate-800 dark:text-slate-100">{{ booking.property_name || '—' }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                      <p class="font-semibold text-indigo-600 dark:text-indigo-400">In: {{ formatDate(booking.check_in_date) }}</p>
+                      <p class="text-[11px] text-slate-400">Out: {{ formatDate(booking.check_out_date) }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                      {{ booking.num_guests }} guest{{ booking.num_guests > 1 ? 's' : '' }} · {{ booking.num_rooms }} room{{ booking.num_rooms > 1 ? 's' : '' }}
+                    </td>
+                    <td class="px-4 py-3 font-bold text-slate-900 dark:text-white">
+                      {{ formatCurrency(booking.total_amount, booking.currency) }}
+                    </td>
+                    <td class="px-4 py-3">
+                      <span [class]="getStatusClass(booking.status)" class="inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-semibold">
+                        {{ formatStatusLabel(booking.status) }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span [class]="getPaymentStatusClass(booking.payment_status)" class="inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-semibold capitalize">
+                        {{ booking.payment_status || '—' }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              }
+            }
+
+            <!-- RECENT TAB -->
+            @if (activeBookingTab() === 'recent') {
+              @if (recentBookings().length === 0) {
+                <tr>
+                  <td colspan="8" class="px-4 py-8 text-center text-slate-500">No recent reservations found.</td>
+                </tr>
+              } @else {
+                @for (booking of recentBookings(); track booking.id) {
+                  <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                    <td class="px-4 py-3 font-mono font-semibold text-slate-800 dark:text-slate-100">
+                      {{ booking.booking_reference || booking.id }}
+                    </td>
+                    <td class="px-4 py-3">
+                      <p class="font-medium text-slate-800 dark:text-slate-100">{{ booking.guest_name || '—' }}</p>
+                      <p class="text-[11px] text-slate-500">{{ booking.guest_email || '' }}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                      <p class="font-medium text-slate-800 dark:text-slate-100">{{ booking.property_name || '—' }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                      <p>{{ formatDate(booking.check_in_date) }}</p>
+                      <p class="text-[11px] text-slate-400">to {{ formatDate(booking.check_out_date) }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                      {{ booking.num_guests }} guest{{ booking.num_guests > 1 ? 's' : '' }} · {{ booking.num_rooms }} room{{ booking.num_rooms > 1 ? 's' : '' }}
+                    </td>
+                    <td class="px-4 py-3 font-bold text-slate-900 dark:text-white">
+                      {{ formatCurrency(booking.total_amount, booking.currency) }}
+                    </td>
+                    <td class="px-4 py-3">
+                      <span [class]="getStatusClass(booking.status)" class="inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-semibold">
+                        {{ formatStatusLabel(booking.status) }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span [class]="getPaymentStatusClass(booking.payment_status)" class="inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-semibold capitalize">
+                        {{ booking.payment_status || '—' }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── Top Performing Properties Grid ────────────────────────────────── -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">Top Performing Properties</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Your most booked and top revenue listings</p>
+        </div>
+        <a
+          routerLink="/vendor/property-management"
+          class="cursor-pointer text-xs font-semibold text-primary hover:underline"
+        >
+          Manage All Listings &rarr;
+        </a>
+      </div>
+
+      @if (topProperties().length > 0) {
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          @for (prop of topProperties(); track prop.id) {
+            <div class="flex flex-col rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:border-slate-700">
+              <div class="relative mb-3 h-32 w-full overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-700">
+                @if (prop.image_url) {
+                  <img
+                    [src]="resolveAssetUrl(prop.image_url)"
+                    [alt]="prop.name"
+                    class="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                } @else {
+                  <div class="flex h-full w-full items-center justify-center text-slate-400 text-xs">
+                    No image
+                  </div>
+                }
+                <span class="absolute top-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white capitalize backdrop-blur-xs">
+                  {{ prop.type }}
+                </span>
+              </div>
+
+              <div class="flex-1">
+                <h4 class="font-bold text-slate-900 dark:text-white text-sm line-clamp-1" [title]="prop.name">
+                  {{ prop.name }}
+                </h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">{{ prop.city }}</p>
+
+                <!-- Rating -->
+                <div class="flex items-center gap-1 mb-3">
+                  <div class="flex text-amber-400">
+                    @for (star of getStarArray(prop.average_rating); track $index) {
+                      <svg class="h-3.5 w-3.5" [class.fill-amber-400]="star.filled" [class.text-slate-300]="!star.filled" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    }
+                  </div>
+                  <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    {{ prop.average_rating > 0 ? (prop.average_rating | number:'1.1-1') : 'New' }}
+                  </span>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-2 gap-2 border-t border-slate-200/60 pt-2.5 text-xs dark:border-slate-700/60">
+                  <div>
+                    <span class="text-[10px] text-slate-500">Bookings</span>
+                    <p class="font-bold text-slate-800 dark:text-slate-200">{{ prop.total_bookings }}</p>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] text-slate-500">Revenue</span>
+                    <p class="font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(prop.total_revenue, data.revenue_summary?.currency) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="rounded-xl border border-dashed border-slate-200 p-8 text-center dark:border-slate-800">
+          <p class="text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">No listings found</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Start listing your properties to receive guest bookings and revenue.</p>
+          <a
+            routerLink="/vendor/property-management/create"
+            class="inline-flex items-center rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-90"
+          >
+            Create Your First Property
+          </a>
+        </div>
+      }
+    </div>
+
+    <!-- ─── Property Types Breakdown ──────────────────────────────────────── -->
+    @if (propertiesByType().length > 0) {
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Properties Inventory by Type</h3>
+          <span class="text-xs text-slate-500">{{ data.properties_summary?.total || 0 }} total</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          @for (item of propertiesByType(); track item.type) {
+            <div class="rounded-xl border border-slate-100 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-800/40">
+              <p class="text-xs text-slate-500 capitalize">{{ item.type }}</p>
+              <p class="text-xl font-bold text-slate-900 dark:text-white mt-1">{{ item.count }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  }
+
+</div>

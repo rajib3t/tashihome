@@ -131,11 +131,11 @@ export interface BookingRefundRequest {
 export type BookingStatus =
   | 'pending'
   | 'confirmed'
-  | 'check_in'
-  | 'check_out'
+  | 'checked_in'
+  | 'checked_out'
   | 'cancelled'
+  | 'no_show'
   | 'completed'
-  | 'failed'
   | string;
 
 export interface BookingData {

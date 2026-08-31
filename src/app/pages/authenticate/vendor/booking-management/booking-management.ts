@@ -11,14 +11,15 @@ import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { DateInput } from '../../../../shared/components/ui/date-input/date-input';
-
+import { environment } from '../../../../../environments/environment';
 const ALL_STATUS_OPTIONS: { value: BookingStatus; label: string }[] = [
-  { value: 'pending',   label: 'Pending' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'check_in',  label: 'Check In' },
-  { value: 'check_out', label: 'Check Out' },
-  { value: 'cancelled', label: 'Cancelled' },
-  { value: 'completed', label: 'Completed' },
+  { value: 'pending',     label: 'Pending' },
+  { value: 'confirmed',   label: 'Confirmed' },
+  { value: 'checked_in',  label: 'Checked In' },
+  { value: 'checked_out', label: 'Checked Out' },
+  { value: 'completed',   label: 'Completed' },
+  { value: 'cancelled',   label: 'Cancelled' },
+  { value: 'no_show',     label: 'No Show' },
 ];
 
 @Component({
@@ -37,6 +38,7 @@ const ALL_STATUS_OPTIONS: { value: BookingStatus; label: string }[] = [
   styleUrl: './booking-management.css',
 })
 export class VendorBookingManagement {
+  private readonly assetUrl = environment.assetUrl
   private readonly bookingService = inject(BookingService);
   private readonly settingsService = inject(SettingsService);
   private readonly fb = inject(FormBuilder);
@@ -65,7 +67,7 @@ export class VendorBookingManagement {
   // ── status change modal ───────────────────────────────────────────────────────
   readonly isStatusModalOpen = signal(false);
   readonly bookingToChangeStatus = signal<BookingData | null>(null);
-  readonly selectedStatus = signal<BookingStatus>('check_in');
+  readonly selectedStatus = signal<BookingStatus>('checked_in');
   readonly isUpdatingStatus = signal(false);
   readonly statusErrorMessage = signal<string | null>(null);
 
@@ -180,8 +182,8 @@ export class VendorBookingManagement {
   // ── Vendor Status Permissions ───────────────────────────────────────────────
   /**
    * Status change rules for Vendor:
-   * - Confirmed: Vendor can update to Check-In or Cancelled
-   * - Check-In: Vendor can update to Check-Out or Completed
+   * - Confirmed: Vendor can update to Checked-In, Cancelled, or No-Show
+   * - Checked-In: Vendor can update to Checked-Out or Completed
    * - Pending: Vendor can update to Confirmed or Cancelled
    */
   getAvailableStatuses(booking: BookingData | null): { value: BookingStatus; label: string }[] {
@@ -189,12 +191,19 @@ export class VendorBookingManagement {
     switch (booking.status) {
       case 'confirmed':
         return [
-          { value: 'check_in', label: 'Check In' },
+          { value: 'checked_in', label: 'Check In' },
           { value: 'cancelled', label: 'Cancelled' },
+          { value: 'no_show', label: 'No Show' },
         ];
+      case 'checked_in':
       case 'check_in':
         return [
-          { value: 'check_out', label: 'Check Out' },
+          { value: 'checked_out', label: 'Check Out' },
+          { value: 'completed', label: 'Completed' },
+        ];
+      case 'checked_out':
+      case 'check_out':
+        return [
           { value: 'completed', label: 'Completed' },
         ];
       case 'pending':
@@ -208,7 +217,7 @@ export class VendorBookingManagement {
   }
 
   isStatusChangeAllowed(booking: BookingData): boolean {
-    return ['confirmed', 'check_in', 'pending'].includes(booking.status);
+    return ['confirmed', 'checked_in', 'check_in', 'checked_out', 'check_out', 'pending'].includes(booking.status);
   }
 
   // ── detail modal ─────────────────────────────────────────────────────────────
@@ -248,7 +257,7 @@ export class VendorBookingManagement {
     const newStatus = this.selectedStatus();
 
     // Enforce check-in date validation with current date
-    if (newStatus === 'check_in') {
+    if (newStatus === 'checked_in' || newStatus === 'check_in') {
       const validation = this.validateCheckInDate(booking);
       if (!validation.isValid) {
         this.statusErrorMessage.set(
@@ -281,13 +290,16 @@ export class VendorBookingManagement {
   // ── helpers ───────────────────────────────────────────────────────────────────
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
-      pending:   'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
-      confirmed: 'bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
-      check_in:  'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
-      check_out: 'bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
-      cancelled: 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300',
-      completed: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
-      failed:    'bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300',
+      pending:     'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
+      confirmed:   'bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+      checked_in:  'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
+      check_in:    'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
+      checked_out: 'bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
+      check_out:   'bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
+      cancelled:   'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300',
+      completed:   'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
+      no_show:     'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+      failed:      'bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300',
     };
     return map[status] ?? 'bg-slate-50 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300';
   }
@@ -327,5 +339,15 @@ export class VendorBookingManagement {
     if (!assets?.length) return null;
     const primary = assets.find(a => a.is_primary) ?? assets[0];
     return primary?.file_url ?? null;
+  }
+
+   resolveAssetUrl(url?: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('blob:')) {
+      return url;
+    }
+    const base = this.assetUrl ? (this.assetUrl.endsWith('/') ? this.assetUrl : `${this.assetUrl}/`) : '';
+    const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+    return `${base}${cleanPath}`;
   }
 }
