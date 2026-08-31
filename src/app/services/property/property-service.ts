@@ -9,7 +9,8 @@ import {
   PropertyMediaUploadResponse,
   PropertyUpdateRequest,
   CreatePropertyRequest,
-  PropertyData
+  PropertyData,
+  PropertyPublicSearchParams
 } from './property.model';
 
 function buildPropertyQueryParams(query?: PropertyQuery): Record<string, string | number | boolean> {
@@ -43,6 +44,49 @@ function buildPropertyQueryParams(query?: PropertyQuery): Record<string, string 
   if (query?.sortOrder) {
     queryParams['sortOrder'] = query.sortOrder;
   }
+
+  return queryParams;
+}
+
+function buildPropertySearchParams(params?: PropertyPublicSearchParams): Record<string, string | number | boolean> {
+  const queryParams: Record<string, string | number | boolean> = {
+    page: params?.page ?? 1,
+    size: params?.size ?? 10,
+  };
+
+  if (params?.search?.trim()) queryParams['search'] = params.search.trim();
+  if (params?.q?.trim()) queryParams['q'] = params.q.trim();
+  if (params?.region?.trim()) queryParams['region'] = params.region.trim();
+  if (params?.city_name?.trim()) queryParams['city_name'] = params.city_name.trim();
+  if (params?.city?.trim()) queryParams['city'] = params.city.trim();
+  if (params?.city_id?.trim()) queryParams['city_id'] = params.city_id.trim();
+  if (params?.location_name?.trim()) queryParams['location_name'] = params.location_name.trim();
+  if (params?.location?.trim()) queryParams['location'] = params.location.trim();
+  if (params?.location_id?.trim()) queryParams['location_id'] = params.location_id.trim();
+  if (params?.country_name?.trim()) queryParams['country_name'] = params.country_name.trim();
+  if (params?.country?.trim()) queryParams['country'] = params.country.trim();
+  if (params?.country_id?.trim()) queryParams['country_id'] = params.country_id.trim();
+
+  // Ensure dates are only sent when both exist and check_out_date > check_in_date
+  if (params?.check_in_date?.trim() && params?.check_out_date?.trim()) {
+    const inDate = params.check_in_date.trim();
+    const outDate = params.check_out_date.trim();
+    if (outDate > inDate) {
+      queryParams['check_in_date'] = inDate;
+      queryParams['check_out_date'] = outDate;
+    }
+  }
+
+  if (params?.guests !== undefined && params?.guests !== null && params?.guests !== '') queryParams['guests'] = params.guests;
+  if (params?.adults !== undefined && params?.adults !== null && params?.adults !== '') queryParams['adults'] = params.adults;
+  if (params?.children !== undefined && params?.children !== null && params?.children !== '') queryParams['children'] = params.children;
+  if (params?.rooms !== undefined && params?.rooms !== null && params?.rooms !== '') queryParams['rooms'] = params.rooms;
+  if (params?.min_price !== undefined && params?.min_price !== null && params?.min_price !== '') queryParams['min_price'] = params.min_price;
+  if (params?.max_price !== undefined && params?.max_price !== null && params?.max_price !== '') queryParams['max_price'] = params.max_price;
+  if (params?.type?.trim()) queryParams['type'] = params.type.trim();
+  if (params?.is_featured !== undefined) queryParams['is_featured'] = params.is_featured;
+  if (params?.sortBy?.trim()) queryParams['sortBy'] = params.sortBy.trim();
+  if (params?.sortOrder) queryParams['sortOrder'] = params.sortOrder;
 
   return queryParams;
 }
@@ -149,6 +193,14 @@ export class PropertyService {
     getProperties: (params: PropertyQuery): Observable<PaginatedResponse<Partial<PropertyData>>> => {
       const queryParams = buildPropertyQueryParams(params);
       return this.apiService.get<PaginatedResponse<Partial<PropertyData>>>('/public/properties/', { params: queryParams }).pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    searchProperties: (params?: PropertyPublicSearchParams): Observable<PaginatedResponse<Partial<PropertyData>>> => {
+      const queryParams = buildPropertySearchParams(params);
+      return this.apiService.get<PaginatedResponse<Partial<PropertyData>>>('/public/properties/search', { params: queryParams }).pipe(
         map((res) => res.data),
         catchError(this.apiService.passthroughError)
       );

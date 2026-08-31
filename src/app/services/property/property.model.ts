@@ -176,6 +176,35 @@ export interface PropertyQuery {
   sortOrder?: 'asc' | 'desc';
 }
 
+export interface PropertyPublicSearchParams {
+  search?: string;
+  q?: string;
+  region?: string;
+  city_name?: string;
+  city?: string;
+  city_id?: string;
+  location_name?: string;
+  location?: string;
+  location_id?: string;
+  country_name?: string;
+  country?: string;
+  country_id?: string;
+  check_in_date?: string;
+  check_out_date?: string;
+  guests?: number | string;
+  adults?: number | string;
+  children?: number | string;
+  rooms?: number | string;
+  min_price?: number | string;
+  max_price?: number | string;
+  type?: PropertyType | string;
+  is_featured?: boolean;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  size?: number;
+}
+
 
 
 

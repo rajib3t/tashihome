@@ -23,6 +23,7 @@ import { CreateProperty } from './pages/authenticate/admin/property-management/c
 import { EditProperty } from './pages/authenticate/admin/property-management/edit-property/edit-property';
 import { Property } from './pages/public/properties/property/property';
 import { Properties } from './pages/public/properties/properties';
+import { Search } from './pages/public/search/search';
 import { Story } from './pages/public/story/story';
 import { Register } from './pages/public/register/register';
 import { ActivateAccount } from './pages/public/activate-account/activate-account';
@@ -107,6 +108,11 @@ export const routes: Routes = [
                 path: 'stays',
                 component: Properties,
                 title: 'Stays',
+            },
+            {
+                path: 'search',
+                component: Search,
+                title: 'Search Homestays',
             },
 
             {

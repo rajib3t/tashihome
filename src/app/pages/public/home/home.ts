@@ -21,6 +21,7 @@ import { filter, catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery, CitySearch } from '../../../services/city/city-model';
+import { SettingsService } from '../../../services/settings/settings-service';
 import { environment } from '../../../../environments/environment';
 import { SingleProperty } from '../../../shared/components/properties/single-property/single-property';
 
@@ -30,6 +31,14 @@ export interface StatItem {
   suffix?: string;
   decimals?: number;
   label: string;
+}
+
+export interface CalendarDay {
+  dateStr: string;
+  dayNumber: number;
+  isCurrentMonth: boolean;
+  isPast: boolean;
+  isToday: boolean;
 }
 
 interface MistBlob {
@@ -73,6 +82,17 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   private reduceMotion = false;
 
   selectedCityId: string = '';
+  checkInDate: string = '';
+  checkOutDate: string = '';
+  adultsCount: number = 2;
+  childrenCount: number = 0;
+  roomsCount: number = 1;
+  showGuestsDropdown: boolean = false;
+  showDatesDropdown: boolean = false;
+  calendarViewDate: Date = new Date();
+  calendarDays: CalendarDay[] = [];
+  readonly weekdays: string[] = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  minTodayDate: string = new Date().toISOString().split('T')[0];
 
   newsletterEmail: string = '';
   newsletterSubmitted: boolean = false;
@@ -86,6 +106,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   public readonly propertyService: PropertyService = inject(PropertyService);
   public readonly cityService: CityService = inject(CityService);
+  public readonly settingsService: SettingsService = inject(SettingsService);
   constructor(
     private el: ElementRef,
     private cdr: ChangeDetectorRef,
@@ -93,6 +114,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    this.generateCalendar();
     this.loadProperties();
     this.loadCities();
 
@@ -123,15 +145,279 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.selectedCityId = target.value;
   }
 
+  // ================= GUESTS DROPDOWN =================
+  public toggleGuestsDropdown(): void {
+    this.showGuestsDropdown = !this.showGuestsDropdown;
+    if (this.showGuestsDropdown) {
+      this.showDatesDropdown = false;
+    }
+  }
+
+  public updateGuests(field: 'adults' | 'children' | 'rooms', delta: number): void {
+    if (field === 'adults') {
+      this.adultsCount = Math.max(1, Math.min(20, this.adultsCount + delta));
+    } else if (field === 'children') {
+      this.childrenCount = Math.max(0, Math.min(10, this.childrenCount + delta));
+    } else if (field === 'rooms') {
+      this.roomsCount = Math.max(1, Math.min(10, this.roomsCount + delta));
+    }
+  }
+
+  public getGuestsSummary(): string {
+    const totalGuests = this.adultsCount + this.childrenCount;
+    const guestText = totalGuests === 1 ? '1 guest' : `${totalGuests} guests`;
+    const roomText = this.roomsCount === 1 ? '1 room' : `${this.roomsCount} rooms`;
+    return `${guestText}, ${roomText}`;
+  }
+
+  // ================= CALENDAR DATE PICKER =================
+  public toggleDatesDropdown(): void {
+    this.showDatesDropdown = !this.showDatesDropdown;
+    if (this.showDatesDropdown) {
+      this.showGuestsDropdown = false;
+      if (this.checkInDate) {
+        const parts = this.checkInDate.split('-');
+        if (parts.length === 3) {
+          this.calendarViewDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
+        }
+      } else {
+        this.calendarViewDate = new Date();
+      }
+      this.generateCalendar();
+    }
+  }
+
+  public closeDatesDropdown(): void {
+    this.showDatesDropdown = false;
+  }
+
+  public prevMonth(): void {
+    this.calendarViewDate = new Date(
+      this.calendarViewDate.getFullYear(),
+      this.calendarViewDate.getMonth() - 1,
+      1
+    );
+    this.generateCalendar();
+  }
+
+  public nextMonth(): void {
+    this.calendarViewDate = new Date(
+      this.calendarViewDate.getFullYear(),
+      this.calendarViewDate.getMonth() + 1,
+      1
+    );
+    this.generateCalendar();
+  }
+
+  public getCalendarMonthYearLabel(): string {
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return `${monthNames[this.calendarViewDate.getMonth()]} ${this.calendarViewDate.getFullYear()}`;
+  }
+
+  public generateCalendar(): void {
+    const year = this.calendarViewDate.getFullYear();
+    const month = this.calendarViewDate.getMonth();
+
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+    const totalDaysInPrevMonth = new Date(year, month, 0).getDate();
+
+    const days: CalendarDay[] = [];
+
+    // Leading days from previous month
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+      const dayNum = totalDaysInPrevMonth - i;
+      const d = new Date(year, month - 1, dayNum);
+      const dateStr = this.formatDateIso(d);
+      days.push({
+        dateStr,
+        dayNumber: dayNum,
+        isCurrentMonth: false,
+        isPast: dateStr < this.minTodayDate,
+        isToday: dateStr === this.minTodayDate,
+      });
+    }
+
+    // Days in current month
+    for (let dayNum = 1; dayNum <= totalDaysInMonth; dayNum++) {
+      const d = new Date(year, month, dayNum);
+      const dateStr = this.formatDateIso(d);
+      days.push({
+        dateStr,
+        dayNumber: dayNum,
+        isCurrentMonth: true,
+        isPast: dateStr < this.minTodayDate,
+        isToday: dateStr === this.minTodayDate,
+      });
+    }
+
+    // Trailing days from next month to complete the row
+    const totalSlots = Math.ceil(days.length / 7) * 7;
+    const remaining = totalSlots - days.length;
+    for (let dayNum = 1; dayNum <= remaining; dayNum++) {
+      const d = new Date(year, month + 1, dayNum);
+      const dateStr = this.formatDateIso(d);
+      days.push({
+        dateStr,
+        dayNumber: dayNum,
+        isCurrentMonth: false,
+        isPast: dateStr < this.minTodayDate,
+        isToday: dateStr === this.minTodayDate,
+      });
+    }
+
+    this.calendarDays = days;
+  }
+
+  private formatDateIso(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  public onDateClick(dateStr: string): void {
+    if (dateStr < this.minTodayDate) return;
+
+    if (!this.checkInDate || (this.checkInDate && this.checkOutDate)) {
+      // First click: select check-in
+      this.checkInDate = dateStr;
+      this.checkOutDate = '';
+    } else if (this.checkInDate && !this.checkOutDate) {
+      if (dateStr > this.checkInDate) {
+        // Second click: select check-out
+        this.checkOutDate = dateStr;
+      } else {
+        // Clicked before check-in: reset check-in
+        this.checkInDate = dateStr;
+        this.checkOutDate = '';
+      }
+    }
+  }
+
+  public isDateCheckIn(dateStr: string): boolean {
+    return this.checkInDate === dateStr;
+  }
+
+  public isDateCheckOut(dateStr: string): boolean {
+    return this.checkOutDate === dateStr;
+  }
+
+  public isDateInRange(dateStr: string): boolean {
+    return Boolean(
+      this.checkInDate &&
+      this.checkOutDate &&
+      dateStr > this.checkInDate &&
+      dateStr < this.checkOutDate
+    );
+  }
+
+  public clearDates(): void {
+    this.checkInDate = '';
+    this.checkOutDate = '';
+  }
+
+  public applyQuickPreset(preset: 'this_weekend' | 'next_weekend' | 'next_3_days' | 'next_week'): void {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sun, 5 = Fri, 6 = Sat
+
+    if (preset === 'this_weekend') {
+      const daysUntilFri = (5 - dayOfWeek + 7) % 7 || 7;
+      const fri = new Date(today);
+      fri.setDate(today.getDate() + (dayOfWeek === 5 ? 0 : (dayOfWeek === 6 ? 6 : daysUntilFri)));
+      const sun = new Date(fri);
+      sun.setDate(fri.getDate() + 2);
+
+      this.checkInDate = this.formatDateIso(fri);
+      this.checkOutDate = this.formatDateIso(sun);
+    } else if (preset === 'next_weekend') {
+      const daysUntilFri = ((5 - dayOfWeek + 7) % 7 || 7) + 7;
+      const fri = new Date(today);
+      fri.setDate(today.getDate() + daysUntilFri);
+      const sun = new Date(fri);
+      sun.setDate(fri.getDate() + 2);
+
+      this.checkInDate = this.formatDateIso(fri);
+      this.checkOutDate = this.formatDateIso(sun);
+    } else if (preset === 'next_3_days') {
+      const start = new Date(today);
+      start.setDate(today.getDate() + 1);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 3);
+
+      this.checkInDate = this.formatDateIso(start);
+      this.checkOutDate = this.formatDateIso(end);
+    } else if (preset === 'next_week') {
+      const start = new Date(today);
+      start.setDate(today.getDate() + 1);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 7);
+
+      this.checkInDate = this.formatDateIso(start);
+      this.checkOutDate = this.formatDateIso(end);
+    }
+
+    if (this.checkInDate) {
+      const parts = this.checkInDate.split('-');
+      this.calendarViewDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
+      this.generateCalendar();
+    }
+  }
+
+  public getFormattedDatesSummary(): string {
+    if (!this.checkInDate && !this.checkOutDate) {
+      return 'Add dates';
+    }
+    if (this.checkInDate && !this.checkOutDate) {
+      return `From ${this.formatDisplayDate(this.checkInDate)}`;
+    }
+    if (this.checkInDate && this.checkOutDate) {
+      const nights = this.getNightsCount();
+      const nightLabel = nights === 1 ? '1 night' : `${nights} nights`;
+      return `${this.formatDisplayDate(this.checkInDate)} – ${this.formatDisplayDate(this.checkOutDate)} (${nightLabel})`;
+    }
+    return 'Add dates';
+  }
+
+  public formatDisplayDate(dateStr: string): string {
+    if (!dateStr) return '';
+    return this.settingsService.formatDate(dateStr);
+  }
+
+  public getNightsCount(): number {
+    if (!this.checkInDate || !this.checkOutDate) return 0;
+    const d1 = new Date(this.checkInDate);
+    const d2 = new Date(this.checkOutDate);
+    const diffTime = d2.getTime() - d1.getTime();
+    return Math.max(0, Math.round(diffTime / (1000 * 60 * 60 * 24)));
+  }
+
+  public goToSearch(): void {
+    const totalGuests = this.adultsCount + this.childrenCount;
+    const queryParams: Record<string, any> = {};
+    if (this.selectedCityId) queryParams['city_id'] = this.selectedCityId;
+    if (this.checkInDate && this.checkOutDate && this.checkOutDate > this.checkInDate) {
+      queryParams['check_in_date'] = this.checkInDate;
+      queryParams['check_out_date'] = this.checkOutDate;
+    }
+    if (this.adultsCount !== 2) queryParams['adults'] = this.adultsCount;
+    if (this.childrenCount > 0) queryParams['children'] = this.childrenCount;
+    if (this.roomsCount !== 1) queryParams['rooms'] = this.roomsCount;
+    if (totalGuests > 0) queryParams['guests'] = totalGuests;
+
+    this.router.navigate(['/search'], { queryParams });
+  }
+
   public filterStays(): void {
-    this.loadProperties(this.selectedCityId || undefined);
-    this.scrollToStays();
+    this.goToSearch();
   }
 
   public onCityCardClick(cityId?: string): void {
     if (!cityId) return;
-    this.selectedCityId = cityId;
-    this.filterStays();
+    this.router.navigate(['/search'], { queryParams: { city_id: cityId } });
   }
 
   private loadCities(): void {
