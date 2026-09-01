@@ -1,8 +1,37 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, signal, AfterViewInit, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+// Stronger email validator: stricter pattern and basic anti-spam checks
+function strongEmailValidator(control: AbstractControl): ValidationErrors | null {
+  const value = (control.value || '').toString().trim();
+  if (!value) return null;
+
+  // Basic stricter email regex: no consecutive dots, reasonable local part, and TLD length
+  const emailRegex = /^[A-Za-z0-9]+(?:[._%+-][A-Za-z0-9]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,63}$/;
+  if (!emailRegex.test(value)) return { invalidEmail: true };
+
+  // Reject consecutive dots anywhere
+  if (/\.\./.test(value)) return { invalidEmail: true };
+
+  return null;
+}
+
+// E.164-like phone validator: require 8-15 digits and optional leading +
+function e164PhoneValidator(control: AbstractControl): ValidationErrors | null {
+  const value = (control.value || '').toString().trim();
+  if (!value) return null;
+
+  const digits = value.replace(/\D/g, '');
+  if (digits.length < 8 || digits.length > 15) return { invalidPhone: true };
+
+  const e164 = /^\+?[1-9]\d{7,14}$/;
+  if (!e164.test(value) && !e164.test('+' + digits)) return { invalidPhone: true };
+
+  return null;
+}
+
 import { Logo } from '../../../shared/components/common/logo/logo';
 import { SettingsService } from '../../../services/settings/settings-service';
 import { UserService } from '../../../services/user/user-service';
@@ -28,8 +57,8 @@ export class Register implements AfterViewInit {
   public readonly settingsData = computed(() => this.settingService.settingsData());
   public readonly registerForm = this.formBuilder.group({
     fullName: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email, strongEmailValidator]],
+    phone: ['', [Validators.required, e164PhoneValidator]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     agreeTerms: [false, [Validators.requiredTrue]],
     subscribe: [false],
