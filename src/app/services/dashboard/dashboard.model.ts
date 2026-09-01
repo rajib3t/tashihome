@@ -264,3 +264,27 @@ export interface VendorSummaryResponse {
   message: string;
   data: VendorSummaryData;
 }
+
+export interface PublicStatItem {
+  key: 'homes' | 'states' | 'verified' | 'rating' | string;
+  target: number;
+  current?: number;
+  suffix?: string | null;
+  decimals?: number;
+  label: string;
+}
+
+export interface PublicStatsData {
+  total_homes: number;
+  total_destinations: number;
+  verified_percent: number;
+  average_rating: number;
+  total_reviews: number;
+  stats: PublicStatItem[];
+}
+
+export interface PublicStatsResponse {
+  status: string;
+  message: string;
+  data: PublicStatsData;
+}

@@ -21,11 +21,13 @@ import { filter, catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery, CitySearch } from '../../../services/city/city-model';
+import { DashboardService } from '../../../services/dashboard/dashboard-service';
 import { SettingsService } from '../../../services/settings/settings-service';
 import { environment } from '../../../../environments/environment';
 import { SingleProperty } from '../../../shared/components/properties/single-property/single-property';
 
 export interface StatItem {
+  key?: string;
   target: number;
   current: number;
   suffix?: string;
@@ -98,15 +100,16 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   newsletterSubmitted: boolean = false;
 
   stats: StatItem[] = [
-    { target: 61, current: 0, label: 'homes on the register' },
-    { target: 7, current: 0, label: 'hill states, one circuit' },
-    { target: 100, current: 0, suffix: '%', label: 'visited on foot by us first' },
-    { target: 4.9, current: 0, decimals: 1, label: 'average guest rating' },
+    { key: 'homes', target: 61, current: 0, label: 'homes on the register' },
+    { key: 'states', target: 7, current: 0, label: 'hill states, one circuit' },
+    { key: 'verified', target: 100, current: 0, suffix: '%', label: 'visited on foot by us first' },
+    { key: 'rating', target: 4.9, current: 0, decimals: 1, label: 'average guest rating' },
   ];
 
   public readonly propertyService: PropertyService = inject(PropertyService);
   public readonly cityService: CityService = inject(CityService);
   public readonly settingsService: SettingsService = inject(SettingsService);
+  public readonly dashboardService: DashboardService = inject(DashboardService);
   constructor(
     private el: ElementRef,
     private cdr: ChangeDetectorRef,
@@ -117,6 +120,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.generateCalendar();
     this.loadProperties();
     this.loadCities();
+    this.loadStats();
 
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
@@ -125,6 +129,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
         if (event.urlAfterRedirects === '/' || event.urlAfterRedirects.startsWith('/?')) {
           this.loadProperties();
           this.loadCities();
+          this.loadStats();
           if (isPlatformBrowser(this.platformId)) {
             window.scrollTo({ top: 0, behavior: 'auto' });
           }
@@ -418,6 +423,31 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   public onCityCardClick(cityId?: string): void {
     if (!cityId) return;
     this.router.navigate(['/search'], { queryParams: { city_id: cityId } });
+  }
+
+  private loadStats(): void {
+    this.dashboardService
+      .getPublicStats()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError((error) => {
+          console.warn('Could not load public stats:', error);
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (response?.data?.stats && response.data.stats.length > 0) {
+          this.stats = response.data.stats.map((s) => ({
+            key: s.key,
+            target: s.target,
+            current: 0,
+            suffix: s.suffix || undefined,
+            decimals: s.decimals || 0,
+            label: s.label,
+          }));
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   private loadCities(): void {

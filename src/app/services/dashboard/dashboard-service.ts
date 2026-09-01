@@ -6,6 +6,7 @@ import { ApiResponse } from '../api/api-response.model';
 import {
   AdminDashboardData,
   AdminDashboardSummaryData,
+  PublicStatsData,
   VendorDashboardData,
   VendorDashboardSummaryData,
 } from './dashboard.model';
@@ -60,7 +61,21 @@ export class DashboardService {
       );
   }
 
+  // ── Public Endpoints ────────────────────────────────────────────────────────
+  public getPublicStats(): Observable<ApiResponse<PublicStatsData>> {
+    return this.apiService
+      .get<ApiResponse<PublicStatsData>>('/public/stats')
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
   // ── Sub-namespaces for convenience & consistency ────────────────────────────
+  public readonly public = {
+    getStats: () => this.getPublicStats(),
+  };
+
   public readonly admin = {
     getDashboard: (months: number = 12) => this.getAdminDashboard(months),
     getSummary: () => this.getAdminDashboardSummary(),
