@@ -1,0 +1,700 @@
+<app-page-breadcrumb pageTitle="Room Blocks & Inventory" homelink="/admin"></app-page-breadcrumb>
+
+<div class="space-y-6">
+  <!-- Top Banner Alerts -->
+  @if (successMessage()) {
+    <div class="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-300 animate-fadeIn">
+      <div class="flex items-center gap-3">
+        <svg class="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="font-medium">{{ successMessage() }}</span>
+      </div>
+      <button type="button" class="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400" (click)="successMessage.set('')">✕</button>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="flex items-center justify-between rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800 dark:border-red-800/50 dark:bg-red-950/30 dark:text-red-300">
+      <div class="flex items-center gap-3">
+        <svg class="h-5 w-5 text-red-600 dark:text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="font-medium">{{ errorMessage() }}</span>
+      </div>
+      <button type="button" class="text-red-600 hover:text-red-800 dark:text-red-400" (click)="errorMessage.set('')">✕</button>
+    </div>
+  }
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- Active Blocks Today -->
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Blocks Today</p>
+          <h3 class="mt-2 text-2xl font-bold text-slate-800 dark:text-slate-100">
+            {{ summaryStats().activeBlocksToday }} <span class="text-sm font-medium text-slate-500">Units</span>
+          </h3>
+        </div>
+        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <circle cx="12" cy="15" r="2"></circle>
+          </svg>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-slate-400">Active holds across all properties</p>
+    </div>
+
+    <!-- Upcoming Blocks -->
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Upcoming Blocks</p>
+          <h3 class="mt-2 text-2xl font-bold text-slate-800 dark:text-slate-100">
+            {{ summaryStats().upcomingBlocksCount }} <span class="text-sm font-medium text-slate-500">Periods</span>
+          </h3>
+        </div>
+        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-slate-400">Scheduled future periods</p>
+    </div>
+
+    <!-- Total Units Blocked -->
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Units Blocked</p>
+          <h3 class="mt-2 text-2xl font-bold text-slate-800 dark:text-slate-100">
+            {{ summaryStats().totalUnitsBlocked }} <span class="text-sm font-medium text-slate-500">Units</span>
+          </h3>
+        </div>
+        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-slate-400">Platform-wide blocked capacity</p>
+    </div>
+
+    <!-- Blocked Properties -->
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Blocked Properties</p>
+          <h3 class="mt-2 text-2xl font-bold text-slate-800 dark:text-slate-100">
+            {{ summaryStats().blockedPropertiesCount }} <span class="text-sm font-medium text-slate-500">Properties</span>
+          </h3>
+        </div>
+        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-slate-400">With active/scheduled holds</p>
+    </div>
+  </div>
+
+  <!-- Main Management Card -->
+  <app-card title="Property Operations: Room Blocks" desc="Global oversight of blocked room units across all properties for maintenance, renovations, and administrative holds.">
+    <!-- Top Action Bar -->
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          {{ roomBlocks().length }} block records loaded
+        </span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          (click)="onRefresh()"
+          [disabled]="isLoading()"
+          class="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.animate-spin]="isLoading()">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Refresh
+        </button>
+        <button
+          type="button"
+          (click)="openCreateModal()"
+          class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          + Block Room Units
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters & Search Form -->
+    <form [formGroup]="searchForm" (ngSubmit)="onSearch()" class="grid gap-4 rounded-2xl bg-slate-50/75 p-4 sm:grid-cols-2 lg:grid-cols-5 dark:bg-slate-800/40">
+      <!-- Property Filter -->
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">Property</label>
+        <select
+          formControlName="property_id"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        >
+          <option value="">All Properties</option>
+          @for (p of properties(); track p.id) {
+            <option [value]="p.id">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Start Date -->
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">From Date</label>
+        <app-date-input formControlName="start_date" placeholder="Start Date"></app-date-input>
+      </div>
+
+      <!-- End Date -->
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">To Date</label>
+        <app-date-input formControlName="end_date" placeholder="End Date"></app-date-input>
+      </div>
+
+      <!-- Reason / Keyword Search -->
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">Search Reason</label>
+        <input
+          type="text"
+          formControlName="search"
+          placeholder="e.g. Renovation, Host..."
+          class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        />
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-end gap-2">
+        <button
+          type="submit"
+          class="cursor-pointer flex-1 inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
+        >
+          Filter
+        </button>
+        <button
+          type="button"
+          (click)="onReset()"
+          class="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        >
+          Reset
+        </button>
+      </div>
+    </form>
+
+    <!-- Data Table -->
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+          <thead class="bg-slate-50 dark:bg-slate-900/80">
+            <tr>
+              <th class="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-200">SL</th>
+              <th class="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-200">Property</th>
+              <th class="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-200">Room Type</th>
+              <th class="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-200">Date Range</th>
+              <th class="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-200 text-center">Units</th>
+              <th class="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-200">Reason / Notes</th>
+              <th class="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-200">Creator</th>
+              <th class="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-200">Status</th>
+              <th class="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-200 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+            @if (isLoading()) {
+              <tr>
+                <td colspan="9" class="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
+                  <div class="flex items-center justify-center gap-2">
+                    <svg class="h-5 w-5 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    Loading room blocks...
+                  </div>
+                </td>
+              </tr>
+            } @else if (roomBlocks().length === 0) {
+              <tr>
+                <td colspan="9" class="px-4 py-12 text-center">
+                  <div class="mx-auto max-w-sm">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    </div>
+                    <h4 class="mt-3 text-base font-semibold text-slate-800 dark:text-slate-100">No Room Blocks Found</h4>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      No room block records match your filter criteria.
+                    </p>
+                    <button
+                      type="button"
+                      (click)="openCreateModal()"
+                      class="cursor-pointer mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-medium text-white hover:opacity-90 shadow-sm"
+                    >
+                      + Block Room Units Now
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @else {
+              @for (block of roomBlocks(); track block.id; let i = $index) {
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                  <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400 text-xs font-mono">
+                    {{ getSerialNumber(i) }}
+                  </td>
+                  <td class="px-4 py-3.5">
+                    <p class="font-medium text-slate-800 dark:text-slate-100">{{ block.property?.name || '—' }}</p>
+                    @if (block.property?.address) {
+                      <p class="text-xs text-slate-400 truncate max-w-[180px]">{{ block.property?.address }}</p>
+                    }
+                  </td>
+                  <td class="px-4 py-3.5">
+                    <span class="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      {{ block.room_type?.name || 'Room Type' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3.5">
+                    <div>
+                      <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        {{ formatDate(block.block_start_date) }} — {{ formatDate(block.block_end_date) }}
+                      </p>
+                      <p class="text-[11px] text-slate-400">
+                        {{ calculateNights(block.block_start_date, block.block_end_date) }} nights
+                      </p>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3.5 text-center">
+                    <span class="inline-flex items-center justify-center rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+                      {{ block.units_blocked }} {{ block.units_blocked === 1 ? 'unit' : 'units' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3.5">
+                    <p class="text-xs font-medium text-slate-700 dark:text-slate-300 max-w-[200px] truncate" [title]="block.reason || 'No reason provided'">
+                      {{ block.reason || '—' }}
+                    </p>
+                  </td>
+                  <td class="px-4 py-3.5">
+                    @if (block.creator) {
+                      <p class="text-xs font-medium text-slate-800 dark:text-slate-200">{{ block.creator.full_name || 'Admin/Host' }}</p>
+                      <p class="text-[11px] text-slate-400 capitalize">{{ block.creator.role || 'User' }}</p>
+                    } @else {
+                      <span class="text-xs text-slate-400">—</span>
+                    }
+                  </td>
+                  <td class="px-4 py-3.5">
+                    @if (isBlockActive(block)) {
+                      <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                        <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        Active
+                      </span>
+                    } @else if (isBlockUpcoming(block)) {
+                      <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
+                        <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                        Upcoming
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        Completed
+                      </span>
+                    }
+                  </td>
+                  <td class="px-4 py-3.5 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        (click)="openEditModal(block)"
+                        class="cursor-pointer rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
+                        title="Edit block dates or units"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        (click)="openDeleteModal(block)"
+                        class="cursor-pointer rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-50 dark:border-rose-800/60 dark:text-rose-400 dark:hover:bg-rose-950/30"
+                        title="Release block"
+                      >
+                        Release
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-6">
+      <app-pagination
+        [meta]="meta"
+        (pageChange)="onPageChange($event)"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </div>
+  </app-card>
+</div>
+
+<!-- ─── 1. BLOCK ROOM UNITS MODAL ──────────────────────────────────────────────── -->
+<app-modal [isOpen]="isCreateModalOpen()" (close)="closeCreateModal()" className="max-w-xl mx-4">
+  <div class="p-6 md:p-8">
+    <div class="mb-5 flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-primary">Admin Operations</p>
+        <h2 class="mt-1 text-lg font-bold text-slate-900 dark:text-white">Block Room Units on Property</h2>
+      </div>
+    </div>
+
+    <form [formGroup]="createForm" (ngSubmit)="submitCreate()" class="space-y-4">
+      <!-- Property Selection -->
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200">
+          Target Property <span class="text-red-500">*</span>
+        </label>
+        <select
+          formControlName="property_id"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        >
+          <option value="" disabled>Select a property...</option>
+          @for (p of properties(); track p.id) {
+            <option [value]="p.id">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Room Type Selection -->
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200">
+          Room Type <span class="text-red-500">*</span>
+        </label>
+        <select
+          formControlName="room_type_id"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        >
+          <option value="" disabled>Select room type...</option>
+          @for (prt of createModalRoomTypes(); track prt.id) {
+            <option [value]="prt.room_type?.id">
+              {{ prt.room_type?.name }} ({{ prt.total_units || 1 }} total units)
+            </option>
+          }
+        </select>
+      </div>
+
+      <!-- Date Range (Start Date & End Date) -->
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200">
+            Start Date <span class="text-red-500">*</span>
+          </label>
+          <app-date-input formControlName="block_start_date" placeholder="Check-in date"></app-date-input>
+        </div>
+        <div>
+          <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200">
+            End Date (Checkout) <span class="text-red-500">*</span>
+          </label>
+          <app-date-input formControlName="block_end_date" placeholder="Checkout date"></app-date-input>
+        </div>
+      </div>
+
+      <!-- Duration Indicator -->
+      @let startVal = createForm.get('block_start_date')?.value;
+      @let endVal = createForm.get('block_end_date')?.value;
+      @if (startVal && endVal) {
+        <div class="rounded-xl bg-slate-50 px-3.5 py-2 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300 flex items-center justify-between">
+          <span>Block Duration:</span>
+          <span class="font-bold text-primary">{{ calculateNights(startVal, endVal) }} Nights</span>
+        </div>
+      }
+
+      <!-- Units to Block Stepper -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="text-xs font-semibold text-slate-700 dark:text-slate-200">
+            Units to Block <span class="text-red-500">*</span>
+          </label>
+          <span class="text-xs text-slate-400">
+            Max total inventory: {{ selectedRoomTypeMaxUnits() }} units
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            (click)="adjustCreateUnits(-1)"
+            class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            -
+          </button>
+          <input
+            type="number"
+            min="1"
+            [max]="selectedRoomTypeMaxUnits()"
+            formControlName="units_blocked"
+            class="w-24 text-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-base font-bold text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          />
+          <button
+            type="button"
+            (click)="adjustCreateUnits(1)"
+            class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            +
+          </button>
+          <span class="text-xs text-slate-500">
+            {{ createForm.get('units_blocked')?.value }} {{ createForm.get('units_blocked')?.value === 1 ? 'room unit' : 'room units' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Predefined Reason Selection -->
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200">
+          Reason for Block
+        </label>
+        <div class="flex flex-wrap gap-1.5 mb-2">
+          @for (r of predefinedReasons; track r) {
+            <button
+              type="button"
+              (click)="createForm.patchValue({ reason_preset: r })"
+              [class.bg-primary]="createForm.get('reason_preset')?.value === r"
+              [class.text-white]="createForm.get('reason_preset')?.value === r"
+              [class.bg-slate-100]="createForm.get('reason_preset')?.value !== r"
+              [class.text-slate-700]="createForm.get('reason_preset')?.value !== r"
+              [class.dark:bg-slate-800]="createForm.get('reason_preset')?.value !== r"
+              [class.dark:text-slate-300]="createForm.get('reason_preset')?.value !== r"
+              class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-medium transition hover:opacity-90"
+            >
+              {{ r }}
+            </button>
+          }
+        </div>
+        <textarea
+          formControlName="reason_custom"
+          rows="2"
+          placeholder="Additional notes / maintenance ticket reference..."
+          class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        ></textarea>
+      </div>
+
+      <!-- Error message -->
+      @if (createError()) {
+        <div class="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+          {{ createError() }}
+        </div>
+      }
+
+      <!-- Modal Footer -->
+      <div class="mt-6 flex items-center justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+        <button
+          type="button"
+          (click)="closeCreateModal()"
+          class="cursor-pointer rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+          [disabled]="isCreating()"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90 disabled:opacity-50"
+          [disabled]="isCreating()"
+        >
+          @if (isCreating()) {
+            <svg class="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            Blocking Units...
+          } @else {
+            🔒 Confirm Block
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</app-modal>
+
+<!-- ─── 2. EDIT ROOM BLOCK MODAL ────────────────────────────────────────────────── -->
+<app-modal [isOpen]="isEditModalOpen()" (close)="closeEditModal()" className="max-w-lg mx-4">
+  @if (blockToEdit(); as b) {
+    <div class="p-6 md:p-8">
+      <div class="mb-5 flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-primary">Modify Hold</p>
+          <h2 class="mt-1 text-lg font-bold text-slate-900 dark:text-white">Edit Room Block</h2>
+        </div>
+      </div>
+
+      <!-- Property & Room Info Banner -->
+      <div class="mb-4 rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+        <p class="text-xs text-slate-400">Property & Room Type</p>
+        <p class="font-semibold text-slate-800 dark:text-slate-100 text-sm mt-0.5">
+          {{ b.property?.name || 'Property' }} · <span class="text-primary">{{ b.room_type?.name || 'Room Type' }}</span>
+        </p>
+      </div>
+
+      <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="space-y-4">
+        <!-- Date Range -->
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200">Start Date</label>
+            <app-date-input formControlName="block_start_date"></app-date-input>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200">End Date</label>
+            <app-date-input formControlName="block_end_date"></app-date-input>
+          </div>
+        </div>
+
+        <!-- Units Stepper -->
+        <div>
+          <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200">Units to Block</label>
+          <div class="flex items-center gap-3">
+            <button
+              type="button"
+              (click)="adjustEditUnits(-1)"
+              class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              -
+            </button>
+            <input
+              type="number"
+              min="1"
+              formControlName="units_blocked"
+              class="w-24 text-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-base font-bold text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+            <button
+              type="button"
+              (click)="adjustEditUnits(1)"
+              class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div>
+          <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200">Reason</label>
+          <textarea
+            formControlName="reason"
+            rows="2"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          ></textarea>
+        </div>
+
+        @if (editError()) {
+          <div class="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+            {{ editError() }}
+          </div>
+        }
+
+        <!-- Footer -->
+        <div class="mt-6 flex items-center justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+          <button
+            type="button"
+            (click)="closeEditModal()"
+            class="cursor-pointer rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            [disabled]="isUpdating()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 disabled:opacity-50"
+            [disabled]="isUpdating()"
+          >
+            @if (isUpdating()) {
+              Saving...
+            } @else {
+              💾 Save Changes
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</app-modal>
+
+<!-- ─── 3. DELETE / RELEASE CONFIRMATION MODAL ──────────────────────────────────── -->
+<app-modal [isOpen]="isDeleteModalOpen()" (close)="closeDeleteModal()" className="max-w-md mx-4">
+  @if (blockToDelete(); as b) {
+    <div class="p-6 md:p-8">
+      <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+
+      <h3 class="text-center text-lg font-bold text-slate-900 dark:text-white">
+        Release Room Block?
+      </h3>
+
+      <p class="mt-2 text-center text-sm text-slate-600 dark:text-slate-300">
+        Are you sure you want to remove the block on
+        <strong class="text-slate-800 dark:text-slate-100">{{ b.room_type?.name || 'Room' }} ({{ b.units_blocked }} {{ b.units_blocked === 1 ? 'unit' : 'units' }})</strong>
+        at <strong>{{ b.property?.name }}</strong> from
+        <strong>{{ formatDate(b.block_start_date) }}</strong> to <strong>{{ formatDate(b.block_end_date) }}</strong>?
+      </p>
+
+      <div class="mt-4 rounded-xl bg-slate-50 p-3 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+        💡 These room units will immediately become available for guests to book online.
+      </div>
+
+      @if (deleteError()) {
+        <div class="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+          {{ deleteError() }}
+        </div>
+      }
+
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button
+          type="button"
+          (click)="closeDeleteModal()"
+          class="cursor-pointer rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+          [disabled]="isDeleting()"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmDelete()"
+          class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-50"
+          [disabled]="isDeleting()"
+        >
+          @if (isDeleting()) {
+            Releasing...
+          } @else {
+            🔓 Yes, Release Block
+          }
+        </button>
+      </div>
+    </div>
+  }
+</app-modal>
+

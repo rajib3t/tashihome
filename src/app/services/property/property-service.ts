@@ -206,8 +206,13 @@ export class PropertyService {
       );
     },
 
-    getPropertyBySlug: (slug: string): Observable<ApiResponse<Partial<PropertyData>>> => {
-      return this.apiService.get<ApiResponse<Partial<PropertyData>>>(`/public/properties/${slug}`).pipe(
+    getPropertyBySlug: (slug: string, checkInDate?: string, checkOutDate?: string): Observable<ApiResponse<Partial<PropertyData>>> => {
+      const params: Record<string, string> = {};
+      if (checkInDate?.trim() && checkOutDate?.trim()) {
+        params['check_in_date'] = checkInDate.trim();
+        params['check_out_date'] = checkOutDate.trim();
+      }
+      return this.apiService.get<ApiResponse<Partial<PropertyData>>>(`/public/properties/${slug}`, { params }).pipe(
         map((res) => res.data),
         catchError(this.apiService.passthroughError)
       );

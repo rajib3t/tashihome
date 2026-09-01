@@ -274,6 +274,7 @@ export class Checkout implements OnInit {
   }
 
   public verifyAvailability(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     const prop = this.property();
     const rtId = this.selectedRoomType()?.id;
     if (!prop?.id || !rtId || !this.checkInDate() || !this.checkOutDate()) return;
@@ -293,19 +294,55 @@ export class Checkout implements OnInit {
         next: (res) => {
           this.isCheckingAvailability.set(false);
           const data = res.data;
-          const available = data?.available !== false && data?.is_available !== false;
-          this.isAvailable.set(available);
+          const requestedRooms = this.numRooms() || 1;
+          let isAvail = false;
+          let isBlocked = false;
+
+          if (data) {
+            const matchedRoom = data.room_types_availability?.find(
+              (rt: any) => rt.room_type_id === rtId || rt.property_room_type_id === rtId
+            );
+
+            if (matchedRoom) {
+              const availUnits = typeof matchedRoom.available_units === 'number' ? matchedRoom.available_units : 0;
+              const blockedUnits = typeof matchedRoom.blocked_units === 'number' ? matchedRoom.blocked_units : 0;
+              if (blockedUnits > 0) isBlocked = true;
+              isAvail = matchedRoom.is_available === true && availUnits >= requestedRooms;
+            } else {
+              const availUnits = typeof data.available_units === 'number'
+                ? data.available_units
+                : typeof data.available_rooms === 'number'
+                ? data.available_rooms
+                : (data.is_available || data.available ? requestedRooms : 0);
+
+              const blockedUnits = typeof data.blocked_units === 'number' ? data.blocked_units : 0;
+              if (blockedUnits > 0) isBlocked = true;
+
+              if (data.is_available === false || data.available === false || (typeof data.available_units === 'number' && data.available_units < requestedRooms)) {
+                isAvail = false;
+              } else {
+                isAvail = (data.is_available === true || data.available === true) && availUnits >= requestedRooms;
+              }
+            }
+          }
+
+          this.isAvailable.set(isAvail);
           this.availabilityMessage.set(
             data?.message ||
-              (available
+              (isAvail
                 ? 'Rooms are confirmed available for these dates.'
+                : isBlocked
+                ? 'This room is currently blocked for maintenance/personal stay for the selected dates.'
                 : 'Selected dates are unavailable for this room type.')
           );
         },
         error: (err) => {
           this.isCheckingAvailability.set(false);
-          // Non-blocking fallback
-          this.isAvailable.set(true);
+          const errorMsg = this.bookingService.extractApiErrorMessage(err);
+          this.isAvailable.set(false);
+          this.availabilityMessage.set(
+            errorMsg || 'This room is unavailable or blocked for your selected dates.'
+          );
         },
       });
   }
@@ -354,6 +391,11 @@ export class Checkout implements OnInit {
 
     if (!prop?.id || !roomType?.id) {
       this.bookingError.set('Property or room details are missing. Please refresh and try again.');
+      return;
+    }
+
+    if (this.isAvailable() === false) {
+      this.bookingError.set('This room type is currently blocked or unavailable for the selected dates. Please select different dates.');
       return;
     }
 

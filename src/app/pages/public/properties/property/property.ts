@@ -48,6 +48,7 @@ export class Property {
   public availabilityStatus = signal<'idle' | 'available' | 'unavailable' | 'error'>('idle');
   public availabilityMessage = signal<string | null>(null);
   public availabilityResult = signal<CheckAvailabilityResponseData | null>(null);
+  public roomTypesAvailability = signal<Record<string, { is_available: boolean; available_units: number; blocked_units: number; total_units: number }>>({});
 
   // Lightbox State
   public isLightboxOpen = signal<boolean>(false);
@@ -86,7 +87,7 @@ export class Property {
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
     if (slug) {
-      this.propertyService.public.getPropertyBySlug(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      this.propertyService.public.getPropertyBySlug(slug, this.checkInDate(), this.checkOutDate()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           this.propertyData.set(res.data);
           this.galleryImages.set(this.buildGalleryImages(res.data));
@@ -98,6 +99,10 @@ export class Property {
               this.selectedRoomTypeId.set(roomTypes[0].room_type.id);
             } else if (res.data.room_type?.id) {
               this.selectedRoomTypeId.set(res.data.room_type.id);
+            }
+            // Check availability for initial dates on browser
+            if (isPlatformBrowser(this.platformId)) {
+              this.checkAvailability();
             }
           }
 
@@ -153,18 +158,22 @@ export class Property {
         this.checkOutDate.set(toDateString(d));
       }
     }
+
+    this.checkAvailability();
   }
 
   public onCheckOutChange(newVal: string): void {
     this.checkOutDate.set(newVal);
     this.availabilityStatus.set('idle');
     this.availabilityMessage.set(null);
+    this.checkAvailability();
   }
 
   public onRoomTypeChange(roomTypeId: string): void {
     this.selectedRoomTypeId.set(roomTypeId);
     this.availabilityStatus.set('idle');
     this.availabilityMessage.set(null);
+    this.checkAvailability();
   }
 
   public adjustGuests(delta: number): void {
@@ -172,16 +181,13 @@ export class Property {
     const current = this.numGuests();
     const next = Math.max(1, Math.min(current + delta, maxCapacity));
     this.numGuests.set(next);
-    this.availabilityStatus.set('idle');
-    this.availabilityMessage.set(null);
   }
 
   public adjustRooms(delta: number): void {
     const current = this.numRooms();
     const next = Math.max(1, Math.min(current + delta, 10));
     this.numRooms.set(next);
-    this.availabilityStatus.set('idle');
-    this.availabilityMessage.set(null);
+    this.checkAvailability();
   }
 
   public calculateNights(): number {
@@ -218,6 +224,7 @@ export class Property {
   }
 
   public checkAvailability(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     const prop = this.propertyData();
     if (!prop?.id) return;
 
@@ -253,26 +260,115 @@ export class Property {
         const data = res.data;
         this.availabilityResult.set(data);
 
-        // Check if available
-        const isAvail = data?.available !== false && data?.is_available !== false;
+        // Update room types availability map
+        if (data?.room_types_availability && Array.isArray(data.room_types_availability)) {
+          const map: Record<string, { is_available: boolean; available_units: number; blocked_units: number; total_units: number }> = {};
+          for (const rt of data.room_types_availability) {
+            const key = rt.room_type_id || rt.property_room_type_id || '';
+            if (key) {
+              map[key] = {
+                is_available: rt.is_available === true && (typeof rt.available_units !== 'number' || rt.available_units > 0),
+                available_units: typeof rt.available_units === 'number' ? rt.available_units : 0,
+                blocked_units: typeof rt.blocked_units === 'number' ? rt.blocked_units : 0,
+                total_units: typeof rt.total_units === 'number' ? rt.total_units : 1,
+              };
+            }
+          }
+          this.roomTypesAvailability.set(map);
+        }
+
+        const requestedRooms = this.numRooms() || 1;
+        let isAvail = false;
+        let isBlocked = false;
+
+        if (data) {
+          const matchedRoom = data.room_types_availability?.find(
+            (rt: any) => rt.room_type_id === roomTypeId || rt.property_room_type_id === roomTypeId
+          );
+
+          if (matchedRoom) {
+            const availUnits = typeof matchedRoom.available_units === 'number' ? matchedRoom.available_units : 0;
+            const blockedUnits = typeof matchedRoom.blocked_units === 'number' ? matchedRoom.blocked_units : 0;
+            if (blockedUnits > 0) isBlocked = true;
+            isAvail = matchedRoom.is_available === true && availUnits >= requestedRooms;
+          } else {
+            const availUnits = typeof data.available_units === 'number'
+              ? data.available_units
+              : typeof data.available_rooms === 'number'
+              ? data.available_rooms
+              : (data.is_available || data.available ? requestedRooms : 0);
+
+            const blockedUnits = typeof data.blocked_units === 'number' ? data.blocked_units : 0;
+            if (blockedUnits > 0) isBlocked = true;
+
+            if (data.is_available === false || data.available === false || (typeof data.available_units === 'number' && data.available_units < requestedRooms)) {
+              isAvail = false;
+            } else {
+              isAvail = (data.is_available === true || data.available === true) && availUnits >= requestedRooms;
+            }
+          }
+        }
+
         if (isAvail) {
           this.availabilityStatus.set('available');
-          this.availabilityMessage.set(data?.message || 'Rooms are available for your selected dates!');
+          this.availabilityMessage.set(data?.message || 'Rooms are confirmed available for your stay!');
         } else {
           this.availabilityStatus.set('unavailable');
-          this.availabilityMessage.set(data?.message || 'Selected dates are unavailable for this room type. Please select alternative dates or room type.');
+          this.availabilityMessage.set(
+            data?.message ||
+              (isBlocked
+                ? '🔴 This room type is blocked for maintenance or personal stay for the selected dates.'
+                : 'Selected dates are unavailable or sold out for this room type.')
+          );
         }
       },
       error: (err) => {
         this.isCheckingAvailability.set(false);
         const errorMsg = this.bookingService.extractApiErrorMessage(err);
-        this.availabilityStatus.set('error');
-        this.availabilityMessage.set(errorMsg || 'Unable to verify availability right now. Please try again.');
+        this.availabilityStatus.set('unavailable');
+        this.availabilityMessage.set(errorMsg || 'This room is unavailable or blocked for your selected dates.');
       }
     });
   }
 
+  public isRoomTypeAvailable(roomTypeId?: string): boolean {
+    if (!roomTypeId) return true;
+    const map = this.roomTypesAvailability();
+    if (map[roomTypeId]) {
+      return map[roomTypeId].is_available;
+    }
+    if (this.selectedRoomTypeId() === roomTypeId) {
+      return this.availabilityStatus() !== 'unavailable';
+    }
+    return true;
+  }
+
+  public getRoomTypeAvailabilityInfo(roomTypeId?: string, defaultTotal: number = 1): {
+    is_available: boolean;
+    available_units: number;
+    blocked_units: number;
+    total_units: number;
+  } {
+    if (!roomTypeId) {
+      return { is_available: true, available_units: defaultTotal, blocked_units: 0, total_units: defaultTotal };
+    }
+    const map = this.roomTypesAvailability();
+    if (map[roomTypeId]) {
+      return map[roomTypeId];
+    }
+    return {
+      is_available: this.isRoomTypeAvailable(roomTypeId),
+      available_units: defaultTotal,
+      blocked_units: 0,
+      total_units: defaultTotal,
+    };
+  }
+
   public proceedToCheckout(): void {
+    if (this.availabilityStatus() === 'unavailable') {
+      return;
+    }
+
     const prop = this.propertyData();
     if (!prop?.slug && !prop?.id) return;
 

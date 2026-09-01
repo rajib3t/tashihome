@@ -4,15 +4,54 @@ export interface CheckAvailabilityRequest {
   property_id: string;
   check_in_date: string; // YYYY-MM-DD
   check_out_date: string; // YYYY-MM-DD
+  room_type_id?: string | null;
+  num_rooms?: number;
+  num_guests?: number;
+}
+
+export interface RoomTypeAvailability {
+  property_room_type_id?: string;
   room_type_id: string;
+  room_type_name?: string;
+  total_units: number;
+  booked_units: number;
+  blocked_units: number;
+  available_units: number;
+  is_available: boolean;
+}
+
+export interface PricingQuoteItem {
+  date: string;
+  base_price: number;
+  is_weekend: boolean;
+}
+
+export interface BookingQuote {
+  nights: number;
   num_rooms: number;
   num_guests: number;
+  base_price_per_night: number;
+  subtotal: number;
+  tax_amount: number;
+  cleaning_fee: number;
+  service_fee: number;
+  discount_amount: number;
+  total_amount: number;
+  currency: string;
+  nightly_breakdown?: PricingQuoteItem[];
 }
 
 export interface CheckAvailabilityResponseData {
   available?: boolean;
   is_available?: boolean;
+  available_units?: number;
   available_rooms?: number;
+  total_units?: number;
+  booked_units?: number;
+  blocked_units?: number;
+  requested_rooms?: number;
+  quote?: BookingQuote | null;
+  room_types_availability?: RoomTypeAvailability[];
   price_per_night?: number;
   sale_price_per_night?: number;
   num_nights?: number;

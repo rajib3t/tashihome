@@ -40,6 +40,8 @@ import { EditVendorProperty } from './pages/authenticate/vendor/vendor-property-
 import { Checkout } from './pages/public/checkout/checkout';
 import { AdminBookingManagement } from './pages/authenticate/admin/booking-management/booking-management';
 import { VendorBookingManagement } from './pages/authenticate/vendor/booking-management/booking-management';
+import { AdminRoomBlockManagement } from './pages/authenticate/admin/room-block-management/room-block-management';
+import { VendorRoomBlockManagement } from './pages/authenticate/vendor/room-block-management/room-block-management';
 import { RefundManagement } from './pages/authenticate/admin/refund-management/refund-management';
 import { HostManagement } from './pages/authenticate/admin/host-management/host-management';
 import { StaffManagement } from './pages/authenticate/admin/staff-management/staff-management';
@@ -321,6 +323,16 @@ export const routes: Routes = [
                         title: 'Booking Management'
                     },
                     {
+                        path: 'room-blocks',
+                        component: AdminRoomBlockManagement,
+                        title: 'Room Blocks & Availability'
+                    },
+                    {
+                        path: 'room-block-management',
+                        redirectTo: 'room-blocks',
+                        pathMatch: 'full'
+                    },
+                    {
                         path: 'staff-management',
                         canActivate: [adminOnlyGuard],
                         component: StaffManagement,
@@ -400,6 +412,16 @@ export const routes: Routes = [
                         path: 'booking-management',
                         component: VendorBookingManagement,
                         title: 'Booking Management'
+                    },
+                    {
+                        path: 'room-blocks',
+                        component: VendorRoomBlockManagement,
+                        title: 'Room Blocks & Availability'
+                    },
+                    {
+                        path: 'room-block-management',
+                        redirectTo: 'room-blocks',
+                        pathMatch: 'full'
                     }
                 ]
             },

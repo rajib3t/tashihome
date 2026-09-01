@@ -58,17 +58,29 @@ export class BookingService {
 
   /**
    * Check room/property availability for selected dates, room type, rooms, and guests
-   * Endpoint: POST /api/v1/user/bookings/check-availability
+   * Endpoints: POST /api/v1/public/stays/check-availability or /api/v1/public/properties/check-availability or /api/v1/user/bookings/check-availability
    */
   public checkAvailability(
     payload: CheckAvailabilityRequest
   ): Observable<ApiResponse<CheckAvailabilityResponseData>> {
     return this.apiService
       .post<ApiResponse<CheckAvailabilityResponseData>>(
-        '/user/bookings/check-availability',
+        '/public/stays/check-availability',
         payload
       )
       .pipe(
+        catchError(() =>
+          this.apiService.post<ApiResponse<CheckAvailabilityResponseData>>(
+            '/public/properties/check-availability',
+            payload
+          )
+        ),
+        catchError(() =>
+          this.apiService.post<ApiResponse<CheckAvailabilityResponseData>>(
+            '/user/bookings/check-availability',
+            payload
+          )
+        ),
         map((res) => res.data),
         catchError(this.apiService.passthroughError)
       );
