@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { Public } from './shared/layouts/public/public';
-import { Home } from './pages/public/home/home';
 import { Login } from './pages/public/login/login';
 import { authGuard, guestGuard } from './guards/auth/auth-guard';
 import { Authenticate } from './shared/layouts/authenticate/authenticate';
@@ -22,9 +21,8 @@ import { PropertyManagement } from './pages/authenticate/admin/property-manageme
 import { CreateProperty } from './pages/authenticate/admin/property-management/create-property/create-property';
 import { EditProperty } from './pages/authenticate/admin/property-management/edit-property/edit-property';
 import { Property } from './pages/public/properties/property/property';
-import { Properties } from './pages/public/properties/properties';
+
 import { Search } from './pages/public/search/search';
-import { Story } from './pages/public/story/story';
 import { BecomeHost } from './pages/public/become-host/become-host';
 import { Register } from './pages/public/register/register';
 import { ActivateAccount } from './pages/public/activate-account/activate-account';
@@ -86,7 +84,7 @@ export const routes: Routes = [
         children: [
             {
                 path: '',
-                component: Home,
+                loadComponent: () => import('./pages/public/home/home').then((m) => m.Home),
                 title: 'Home',
             },
             {
@@ -96,7 +94,7 @@ export const routes: Routes = [
             },
             {
                 path: 'our-story',
-                component: Story,
+                loadComponent: () => import('./pages/public/story/story').then((m) => m.Story),
                 title: 'Our Story',
             },
             {
@@ -121,7 +119,7 @@ export const routes: Routes = [
             },
             {
                 path: 'stays',
-                component: Properties,
+                loadComponent: () => import('./pages/public/properties/properties').then((m) => m.Properties),
                 title: 'Stays',
             },
             {
