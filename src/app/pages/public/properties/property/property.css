@@ -2,6 +2,11 @@
    PROPERTY DETAIL PAGE ENHANCEMENTS
    ========================================================= */
 
+:host {
+  display: block;
+  color: #0c4550;
+}
+
 /* Reveal animations */
 .reveal {
   opacity: 0;
@@ -14,6 +19,45 @@
 .reveal.in {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Main layout alignment */
+.property-page-grid {
+  align-items: flex-start;
+}
+
+.property-content-column,
+.property-booking-column {
+  min-width: 0;
+}
+
+.property-content-column > * + * {
+  margin-top: 0;
+}
+
+.property-booking-column {
+  width: 100%;
+}
+
+.property-booking-column > div {
+  width: 100%;
+}
+
+.property-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 1.15rem;
+  row-gap: 0.7rem;
+}
+
+.property-meta-row .meta-divider {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.38);
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 /* Glassmorphic Cards */
@@ -47,3 +91,26 @@
   transform: translateY(-2px);
   box-shadow: 0 12px 24px -8px rgba(12, 69, 80, 0.12);
 }
+
+@media (max-width: 1023.98px) {
+  .property-page-grid {
+    gap: 2rem;
+  }
+
+  .property-booking-column {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .property-meta-row {
+    column-gap: 0.75rem;
+    row-gap: 0.5rem;
+  }
+
+  .property-meta-row > span {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+}
+

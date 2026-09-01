@@ -57,13 +57,13 @@
         {{ propertyData()?.name }}
       </h1>
 
-      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-5 text-cloud/85 text-sm">
+      <div class="property-meta-row mt-5 text-cloud/85 text-sm">
         <span class="flex items-center gap-1.5 font-medium text-cloud">
           <span class="text-ochre">₹</span>{{ propertyData()?.price_per_night ?? 0 | number }}
           <span class="text-cloud/55 font-normal">/ night</span>
         </span>
         @if (propertyData()?.city?.name) {
-        <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
+        <span class="meta-divider"></span>
         <span class="inline-flex items-center gap-1.5">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" class="opacity-70">
             <path d="M12 21s-7-6.2-7-11.2A7 7 0 0 1 19 9.8C19 14.8 12 21 12 21Z" stroke="currentColor"
@@ -75,18 +75,18 @@
         </span>
         }
         @if (propertyData()?.address) {
-        <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
+        <span class="meta-divider"></span>
         <span>{{ propertyData()?.address }}</span>
         }
         @if ((propertyData()?.property_room_types ?? []).length > 0) {
-        <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
+        <span class="meta-divider"></span>
         <span>
           @for (rt of propertyData()?.property_room_types ?? []; track rt.id) {
           {{ rt.room_type?.name }} · {{ rt.room_type?.capacity }} guests@if (!$last) {, }
           }
         </span>
         } @else if (propertyData()?.room_type) {
-        <span class="w-1 h-1 rounded-full bg-cloud/40"></span>
+        <span class="meta-divider"></span>
         <span>{{ propertyData()?.room_type?.capacity }} guests · {{ propertyData()?.room_type?.name }}</span>
         }
       </div>
@@ -375,10 +375,10 @@
   </div>
 
   <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10">
-    <div class="grid lg:grid-cols-[1fr_360px] gap-14">
+    <div class="property-page-grid grid lg:grid-cols-[minmax(0,1fr)_360px] gap-14 lg:gap-16">
 
       <!-- LEFT: content -->
-      <div class="min-w-0 space-y-10">
+      <div class="property-content-column min-w-0 space-y-10">
 
         <!-- host strip -->
         <div
@@ -591,9 +591,9 @@
       </div>
 
       <!-- RIGHT: booking sidebar -->
-      <div id="book" class="reveal">
+      <div id="book" class="property-booking-column reveal">
         <div
-          class="sticky top-28 rounded-3xl border border-white/90 glass-property-card-solid shadow-2xl shadow-pine/15 p-6 overflow-hidden relative">
+          class="sticky top-24 rounded-3xl border border-white/90 glass-property-card-solid shadow-2xl shadow-pine/15 p-6 overflow-hidden relative w-full max-w-full">
           <span
             class="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full bg-ochre/10 blur-2xl"></span>
 
