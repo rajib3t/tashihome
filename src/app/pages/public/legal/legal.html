@@ -1,0 +1,1051 @@
+<!-- ============ LEGAL POLICIES & TERMS HERO ============ -->
+<section
+  class="relative bg-pine text-cloud overflow-hidden pt-36 pb-20 md:pt-40 md:pb-24 border-b border-white/10"
+  style="background: url('/images/hero-himalaya.jpg') center/cover no-repeat;"
+>
+  <!-- Atmospheric gradient overlay -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black/85 via-pine/80 to-pine/95"></div>
+
+  <!-- Ambient glowing orbs -->
+  <div class="pointer-events-none absolute -top-24 right-0 w-[38rem] h-[38rem] bg-moss/20 rounded-full blur-[130px]"></div>
+  <div class="pointer-events-none absolute bottom-0 left-0 w-[32rem] h-[32rem] bg-ochre/15 rounded-full blur-[130px]"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10">
+    <div class="max-w-4xl">
+      <!-- Breadcrumb badge -->
+      <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-5">
+        <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
+        <span class="text-xs uppercase tracking-widest font-medium text-mist">Tashi Homes • Legal &amp; Compliance</span>
+      </div>
+
+      <h1 class="font-display text-3xl sm:text-5xl md:text-6xl text-cloud leading-tight tracking-tight">
+        Legal Policies &amp; <em class="font-accent not-italic text-ochre">Platform Terms</em>
+      </h1>
+
+      <p class="mt-4 text-cloud/80 text-base md:text-lg font-light max-w-2xl leading-relaxed">
+        Homestay Booking Marketplace — North Bengal, India. Transparent terms aligning guest safety, host dignity, and Indian statutory compliance.
+      </p>
+
+      <div class="mt-6 flex flex-wrap items-center gap-3">
+        <span class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-3.5 py-1.5 rounded-full text-xs text-cloud/90">
+          <span class="w-1.5 h-1.5 rounded-full bg-ochre"></span>
+          <span>Platform Policies</span>
+        </span>
+        <span class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-3.5 py-1.5 rounded-full text-xs text-cloud/80">
+          <span>Consumer Protection Act 2019 • IT Act 2000 • DPDP Act 2023</span>
+        </span>
+        <button
+          type="button"
+          (click)="printPage()"
+          class="inline-flex items-center gap-1.5 text-xs font-medium text-ochre hover:text-ochreD bg-black/30 hover:bg-black/40 border border-ochre/30 px-3.5 py-1.5 rounded-full transition-colors cursor-pointer"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          <span>Print / Save PDF</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ POLICY NAVIGATION TABS ============ -->
+<div class="sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-ink/10 shadow-sm">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex items-center justify-between overflow-x-auto py-3 gap-2 no-scrollbar">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        @for (tab of tabs; track tab.id) {
+          <button
+            type="button"
+            (click)="setTab(tab.id, tab.path)"
+            [class.bg-pine]="activeTab() === tab.id"
+            [class.text-white]="activeTab() === tab.id"
+            [class.shadow-md]="activeTab() === tab.id"
+            [class.bg-ink/5]="activeTab() !== tab.id"
+            [class.text-ink/75]="activeTab() !== tab.id"
+            [class.hover:bg-ink/10]="activeTab() !== tab.id"
+            class="px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <span>{{ tab.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN CONTENT AREA ============ -->
+<div class="bg-[#F8FAFB] text-ink min-h-screen py-10 lg:py-16">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid lg:grid-cols-12 gap-10">
+
+      <!-- LEFT SIDEBAR: Table of Contents & Quick Navigation -->
+      <aside class="hidden lg:block lg:col-span-4 xl:col-span-3">
+        <div class="sticky top-32 space-y-6">
+          <div class="bg-white rounded-2xl p-5 border border-ink/10 shadow-sm">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-ink/50 mb-3">Table of Contents</h2>
+            <nav class="space-y-1 text-sm max-h-[65vh] overflow-y-auto pr-1">
+              @for (item of tableOfContents; track item.id) {
+                <button
+                  type="button"
+                  (click)="scrollToSection(item.id)"
+                  [class.text-pine]="isSectionVisible(item.category, item.number)"
+                  [class.font-medium]="isSectionVisible(item.category, item.number)"
+                  class="w-full text-left py-1.5 px-2.5 rounded-lg text-xs hover:bg-ink/5 text-ink/70 hover:text-ink transition-colors flex items-start gap-2 group cursor-pointer"
+                >
+                  <span class="text-ochre font-semibold shrink-0">{{ item.number }}.</span>
+                  <span class="group-hover:translate-x-0.5 transition-transform leading-snug">{{ item.title }}</span>
+                </button>
+              }
+            </nav>
+          </div>
+
+          <!-- Platform Info Card -->
+          <div class="bg-pine/5 border border-pine/15 rounded-2xl p-4 text-xs text-ink/80 leading-relaxed space-y-1">
+            <div class="flex items-center gap-2 font-semibold text-pine">
+              <svg class="w-4 h-4 text-pine" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Platform Framework</span>
+            </div>
+            <p>Governing Terms for Homestay Booking Marketplace operations across North Bengal and Eastern Himalaya.</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT COLUMN: Exact Legal Policy Document -->
+      <main class="lg:col-span-8 xl:col-span-9">
+        <div class="bg-white rounded-3xl p-6 sm:p-10 md:p-12 border border-ink/10 shadow-sm space-y-12 legal-document-content">
+
+          <!-- DOCUMENT HEADER -->
+          <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 text-sm text-slate-700">
+            <h2 class="font-display text-2xl font-bold text-pine">TASHI HOMES</h2>
+            <p class="text-xs font-semibold text-ink/70 uppercase tracking-wider mt-1">Legal Policies &amp; Platform Terms • Homestay Booking Marketplace — North Bengal, India</p>
+          </div>
+
+          <!-- SUMMARY TABLE OF CONTENTS BLOCK -->
+          @if (activeTab() === 'all') {
+            <div class="p-6 rounded-2xl bg-pine/5 border border-pine/15">
+              <h3 class="font-display text-lg font-semibold text-pine mb-4">Contents</h3>
+              <ol class="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-ink/80 list-decimal list-inside">
+                <li>Definitions &amp; Interpretation</li>
+                <li>Nature of the Platform (Marketplace, Not Operator)</li>
+                <li>Terms of Service — Guests</li>
+                <li>Homestay Partner (Host) Agreement</li>
+                <li>Booking, Pricing &amp; Payments</li>
+                <li>Cancellation &amp; Refund Policy</li>
+                <li>Reviews, Conduct &amp; Community Guidelines</li>
+                <li>Privacy Policy</li>
+                <li>Intermediary Status &amp; Grievance Redressal Mechanism</li>
+                <li>Limitation of Liability, Indemnity &amp; Insurance</li>
+                <li>Intellectual Property</li>
+                <li>Dispute Resolution, Governing Law &amp; Jurisdiction</li>
+                <li>Miscellaneous / General Provisions</li>
+              </ol>
+            </div>
+          }
+
+          <!-- SECTION 1: DEFINITIONS & INTERPRETATION -->
+          @if (isSectionVisible('general', '1')) {
+            <section id="sec-1" class="scroll-mt-32 space-y-4 pt-4 border-t first:border-0 border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">1</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Definitions &amp; Interpretation</h2>
+              </div>
+              <p class="text-sm text-ink/80 leading-relaxed">
+                For the purposes of these policies, the following terms carry the meanings set out below. Terms used but not defined here carry their ordinary meaning under Indian law.
+              </p>
+              <ul class="space-y-2.5 text-sm text-ink/80 leading-relaxed pl-1">
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">"Platform"</strong> means the Tashi Homes website, mobile application, and any associated services operated by [Tashi Homes legal entity name, to be inserted once registration is finalized], through which Guests can search for, compare, and book Homestays.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">"Homestay"</strong> means a private residential property — a room, floor, cottage, or the whole home — offered by a Host for short-term paid accommodation, as distinct from a hotel, resort, service apartment, or commercially licensed guest house.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">"Host" or "Homestay Partner"</strong> means the individual or family who owns or lawfully occupies and manages the Homestay and lists it on the Platform.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">"Guest" or "User"</strong> means any person who browses, registers on, or books through the Platform.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">"Booking"</strong> means a confirmed reservation of a Homestay for specified dates, made through the Platform and accepted by the Host.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">"Listing"</strong> means the description, photographs, pricing, availability calendar, and house rules a Host publishes for a Homestay.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">"Service Fee" or "Platform Fee"</strong> means the commission or convenience fee charged by Tashi Homes for facilitating a Booking.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">"North Bengal"</strong> refers to the operating region — including but not limited to Darjeeling, Kalimpong, Jalpaiguri, Alipurduar, Cooch Behar, and adjoining Dooars/Terai areas — where listed Homestays are located.</span>
+                </li>
+              </ul>
+              <p class="text-sm text-ink/80 leading-relaxed">
+                These policies should be read together. Where a specific policy (e.g., Cancellation &amp; Refund Policy) conflicts with the general Terms of Service on a matter it specifically addresses, the specific policy governs.
+              </p>
+            </section>
+          }
+
+          <!-- SECTION 2: NATURE OF THE PLATFORM -->
+          @if (isSectionVisible('general', '2')) {
+            <section id="sec-2" class="scroll-mt-32 space-y-4 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">2</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Nature of the Platform (Marketplace, Not Operator)</h2>
+              </div>
+              <p class="text-xs font-medium text-ink/60 italic">
+                This section is the legal foundation of the entire document. Getting it right is what limits Tashi Homes' liability for what happens inside someone's home.
+              </p>
+
+              <div class="space-y-3">
+                <h3 class="text-base font-semibold text-ink">2.1 Intermediary / Marketplace Model</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Tashi Homes operates strictly as an online marketplace and intermediary, within the meaning of Section 2(1)(w) of the Information Technology Act, 2000 and Rule 2(1)(w) of the Consumer Protection (E-Commerce) Rules, 2020. Tashi Homes:
+                </p>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>does not own, lease, manage, or operate any Homestay listed on the Platform;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>does not act as an agent of the Host for the purpose of the underlying accommodation contract, which is formed directly between Guest and Host;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>does not employ, supervise, or control Hosts, their staff, or their household members;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>is not a party to, and assumes no liability under, the contract of accommodation formed between Guest and Host at the point of Booking confirmation.</span>
+                  </li>
+                </ul>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Tashi Homes' role is limited to: listing discovery, search and comparison tools, secure payment collection and disbursal, booking confirmation logistics, customer support coordination, and (where offered) verification checks on Hosts and properties as described in Section 4.
+                </p>
+              </div>
+
+              <div class="space-y-2 pt-2">
+                <h3 class="text-base font-semibold text-ink">2.2 Why This Distinction Matters for a Homestay Model</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Because Homestays are private residences rather than licensed commercial hotels, Tashi Homes' marketplace-not-operator status is especially important to state clearly to Guests — the safety standards, staffing, and facilities of a family home will differ from a hotel, and Guests are booking with that understanding. Section 3.6 (Guest Acknowledgement of Homestay Nature) makes this explicit as part of the Guest contract.
+                </p>
+              </div>
+            </section>
+          }
+
+          <!-- SECTION 3: TERMS OF SERVICE — GUESTS -->
+          @if (isSectionVisible('terms', '3')) {
+            <section id="sec-3" class="scroll-mt-32 space-y-5 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">3</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Terms of Service — Guests</h2>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">3.1 Acceptance of Terms</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  By creating an account, browsing Listings, or making a Booking, the Guest agrees to be bound by these Terms of Service, the Cancellation &amp; Refund Policy, the Privacy Policy, and any Host-specific house rules disclosed at the time of Booking. If the Guest does not agree, they must not use the Platform.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">3.2 Eligibility</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Users must be at least 18 years of age and capable of entering into a valid contract under the Indian Contract Act, 1872.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>A Booking made on behalf of a group must be made by a person who will be present at check-in, or who accepts responsibility for the conduct of the group.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Tashi Homes may require government-issued ID verification (Aadhaar, passport, driving licence, or voter ID) prior to or at check-in, consistent with the Host's registration obligations under local police/tourism regulations (see Section 4.2).</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">3.3 Account Registration</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Users must provide accurate, current, and complete information at registration and keep it updated.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Users are responsible for maintaining the confidentiality of login credentials and for all activity under their account.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Tashi Homes may suspend or terminate accounts that provide false information, are used fraudulently, or violate these Terms.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">3.4 Booking Process</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>A Booking request becomes a confirmed Booking only upon (a) successful payment or advance payment as specified in the Listing, and (b) confirmation issued by the Platform on the Host's behalf or by the Host directly, whichever workflow is enabled for that Listing.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Prices, availability, and house rules displayed at the time of Booking form part of the contract; Tashi Homes will notify Guests promptly if a Host is unable to honour a confirmed Booking (see Section 3.7 — Host Default).</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Guests must review property description, photographs, amenities, and house rules carefully before booking, as Homestays vary significantly in facilities compared to hotels.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">3.5 Guest Conduct at the Homestay</h3>
+                <p class="text-xs text-ink/60">Because a Homestay is someone's home, Guest conduct obligations are stricter and more specific than at a hotel:</p>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Guests must comply with the Host's house rules (check-in/out times, guest limits, smoking/alcohol policy, pet policy, quiet hours) as disclosed in the Listing.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Guests must not exceed the disclosed occupancy limit or bring undisclosed guests/pets without the Host's consent.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Guests are liable to the Host directly for any damage to the property, fixtures, or belongings caused during their stay, beyond ordinary wear and tear.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Illegal activity, harassment of the Host or their family, or activity endangering the safety of the household will result in immediate account suspension and may be reported to local authorities.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">3.6 Guest Acknowledgement of Homestay Nature</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  By booking, the Guest expressly acknowledges and accepts that:
+                </p>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>a Homestay is a private residence, not a licensed hotel, and may not offer 24-hour reception, elevators, standardised fire-safety infrastructure, or hotel-grade housekeeping;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>they may be sharing common areas with the Host's family or other Guests, depending on the Listing type (entire home vs. private room vs. shared homestay);</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>facilities, décor, and services will vary Host to Host, and the Listing description/photographs are the operative representation of what to expect, not a general hotel-industry standard.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">3.7 Host Default / Booking Not Honoured</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Added in 10.1 B
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">3.8 Taxes</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Listed prices are inclusive/exclusive of applicable Goods and Services Tax (GST) and other statutory levies as displayed at checkout. GST invoices will be issued in accordance with applicable law based on the Platform's GST registration and, where applicable, the Host's own GST status.
+                </p>
+              </div>
+            </section>
+          }
+
+          <!-- SECTION 4: HOMESTAY PARTNER (HOST) AGREEMENT -->
+          @if (isSectionVisible('host-agreement', '4')) {
+            <section id="sec-4" class="scroll-mt-32 space-y-5 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">4</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Homestay Partner (Host) Agreement</h2>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">4.1 Eligibility &amp; Onboarding</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>The Host must be the legal owner of the property or hold documented authority (e.g., from the owner/family) to let it out for paid stays.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>The Host must provide accurate identity documents, property ownership/occupancy proof, and bank/UPI details for payouts, as part of Tashi Homes' onboarding verification.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Tashi Homes may conduct a physical or virtual property verification before activating a Listing, and may periodically re-verify Listings.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">4.2 Regulatory &amp; Licensing Compliance (Host's Responsibility)</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Homestays in West Bengal — particularly in the hills (Darjeeling, Kalimpong) and Dooars/Terai belt — may be subject to registration under the West Bengal Tourism department's homestay scheme, local municipal/Gram Panchayat trade licence requirements, fire and public-safety norms, and mandatory guest-register/police-verification obligations for tourist lodging. The Host is solely responsible for:
+                </p>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>obtaining and maintaining any homestay registration, trade licence, or tourism department certification applicable in their district;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>maintaining a guest register and complying with local police reporting/foreigner-registration (FRRO/C-Form) requirements where the Guest is a foreign national;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>basic fire and electrical safety measures, and disclosing any known safety limitations of the property;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>complying with local municipal, panchayat, and state tourism regulations applicable to paid home-stays.</span>
+                  </li>
+                </ul>
+                <p class="text-sm text-ink/80 leading-relaxed pt-1">
+                  Tashi Homes may request copies of applicable registrations at onboarding and may de-list any Homestay operating without required local approvals, but Tashi Homes does not certify or guarantee a Host's regulatory compliance, and onboarding a Listing is not a representation that the property fully complies with every applicable local law.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">4.3 Listing Accuracy</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Hosts must ensure photographs, descriptions, amenities, pricing, and availability calendars are accurate and kept up to date.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Misrepresentation (e.g., undisclosed shared bathrooms, inaccurate location, unlisted extra charges) is grounds for Listing suspension and forfeiture of that Booking's payout, without prejudice to the Guest's refund.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">4.4 Commission, Fees &amp; Payouts</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Tashi Homes charges a commission/service fee on each completed Booking, as disclosed to the Host at onboarding and reflected in the Host's dashboard (exact percentage to be fixed commercially and inserted here).</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Payouts to Hosts will be released to the registered bank/UPI account within the timeline specified in the Host dashboard (e.g., T+2 days after check-in), net of commission, applicable TDS under the Income Tax Act, 1961 where required, and any Guest-approved refund deductions.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Hosts are independently responsible for their own GST/income tax registration and compliance on income earned through the Platform; Tashi Homes may issue TDS certificates as required by law but does not act as the Host's tax advisor.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">4.5 Cancellation by Host</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Hosts who cancel a confirmed Booking without a valid reason (as opposed to a genuine emergency) may be subject to a cancellation penalty deducted from future payouts, temporary suspension of their calendar, or removal from the Platform for repeat cancellations, in addition to the Guest refund obligations in Section 3.7.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">4.6 Non-Circumvention</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Hosts and Guests agree not to use contact information exchanged through the Platform to complete a booking transaction outside the Platform in order to avoid the Service Fee, during the term of these Terms and for a reasonable period thereafter. Confirmed circumvention may result in account termination and recovery of the bypassed commission.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">4.7 Termination / De-listing</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Tashi Homes may suspend or permanently de-list a Homestay for: repeated Guest complaints, safety concerns, regulatory non-compliance, fraudulent listings, discriminatory refusal of Guests, or breach of this Agreement, with notice where practicable except in cases of urgent safety risk.
+                </p>
+              </div>
+            </section>
+          }
+
+          <!-- SECTION 5: BOOKING, PRICING & PAYMENTS -->
+          @if (isSectionVisible('terms', '5')) {
+            <section id="sec-5" class="scroll-mt-32 space-y-4 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">5</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Booking, Pricing &amp; Payments</h2>
+              </div>
+              <ul class="space-y-2.5 text-sm text-ink/80 leading-relaxed pl-1">
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>All payments are processed through Tashi Homes' authorised payment gateway partner(s); Tashi Homes does not store full card details, in line with RBI tokenisation norms.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>Prices may vary by season, demand, and length of stay, and are set by the Host within any bounds Tashi Homes sets for platform pricing consistency.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>Where partial/advance payment models are offered, the balance payment terms (amount, due date, payment method at property) will be clearly disclosed before Booking confirmation.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>In case of payment failure after debit, Tashi Homes will initiate reversal to the original payment method within RBI-mandated timelines (currently up to 5–7 working days depending on the issuing bank).</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>Currency: all prices are quoted in Indian Rupees (INR) unless otherwise stated.</span>
+                </li>
+              </ul>
+            </section>
+          }
+
+          <!-- SECTION 6: CANCELLATION & REFUND POLICY -->
+          @if (isSectionVisible('refund', '6')) {
+            <section id="sec-6" class="scroll-mt-32 space-y-5 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">6</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Cancellation &amp; Refund Policy</h2>
+              </div>
+              <p class="text-sm text-ink/80 leading-relaxed">
+                Tashi Homes offers tiered cancellation policies that Hosts may choose from per Listing (or per season), disclosed clearly to the Guest before Booking. A suggested default framework is set out below; the actual policy applicable to a specific Booking is the one shown at the time of booking.
+              </p>
+
+              <div class="space-y-4">
+                <h3 class="text-base font-semibold text-ink">6.1 Suggested Standard Tiers</h3>
+
+                <div class="grid md:grid-cols-3 gap-4 pt-1">
+                  <!-- Flexible -->
+                  <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                    <h4 class="font-semibold text-pine text-sm uppercase tracking-wider mb-2.5">Flexible</h4>
+                    <ul class="space-y-2 text-xs text-ink/80 leading-relaxed">
+                      <li class="flex items-start gap-2">
+                        <span class="text-ochre font-bold">•</span>
+                        <span>Full refund if cancelled 48+ hours before check-in.</span>
+                      </li>
+                      <li class="flex items-start gap-2">
+                        <span class="text-ochre font-bold">•</span>
+                        <span>50% refund if cancelled within 48 hours of check-in.</span>
+                      </li>
+                      <li class="flex items-start gap-2">
+                        <span class="text-ochre font-bold">•</span>
+                        <span>No refund for no-shows or same-day cancellation.</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Moderate -->
+                  <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                    <h4 class="font-semibold text-pine text-sm uppercase tracking-wider mb-2.5">Moderate</h4>
+                    <ul class="space-y-2 text-xs text-ink/80 leading-relaxed">
+                      <li class="flex items-start gap-2">
+                        <span class="text-ochre font-bold">•</span>
+                        <span>Full refund if cancelled 7+ days before check-in.</span>
+                      </li>
+                      <li class="flex items-start gap-2">
+                        <span class="text-ochre font-bold">•</span>
+                        <span>50% refund if cancelled 3–7 days before check-in.</span>
+                      </li>
+                      <li class="flex items-start gap-2">
+                        <span class="text-ochre font-bold">•</span>
+                        <span>No refund within 72 hours of check-in.</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Strict / Peak Season -->
+                  <div class="p-5 rounded-2xl bg-amber-50/70 border border-amber-200/80">
+                    <h4 class="font-semibold text-amber-900 text-sm uppercase tracking-wider mb-2.5">Strict / Peak Season</h4>
+                    <ul class="space-y-2 text-xs text-ink/80 leading-relaxed">
+                      <li class="flex items-start gap-2">
+                        <span class="text-ochre font-bold">•</span>
+                        <span>50% refund if cancelled 14+ days before check-in.</span>
+                      </li>
+                      <li class="flex items-start gap-2">
+                        <span class="text-ochre font-bold">•</span>
+                        <span>No refund within 14 days of check-in — reflecting the limited inventory and high demand of peak-season North Bengal travel (e.g., Durga Puja, Diwali, and Darjeeling's Oct–Dec/Apr–May peak tourist windows).</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">6.2 Non-Refundable Components</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  The Tashi Homes Service Fee is non-refundable in cases of Guest-initiated cancellation, but is refunded in full where the Host cancels, fails to honour a Booking, or where the property is found to be materially misrepresented.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">6.3 Refund Timelines</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Approved refunds will be processed to the original payment method within 7–10 business days, subject to the Guest's bank/payment provider processing times.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">6.4 Force Majeure Cancellations</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Where a Booking cannot be honoured due to circumstances beyond either party's reasonable control — landslides, road closures, extreme weather, bandhs/strikes affecting the North Bengal hill routes, government-imposed travel restrictions, or natural disasters — Tashi Homes will facilitate a full refund or free rescheduling, regardless of the standard cancellation tier, unless the Host has already incurred non-recoverable costs which will be disclosed transparently.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">6.5 Disputed Quality Issues</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  If a Guest reports on arrival that the property materially differs from the Listing (cleanliness, safety, or missing disclosed amenities) and this is substantiated (e.g., via photos and Host acknowledgment), Tashi Homes may facilitate a partial or full refund, relocation, or goodwill credit at its discretion, following its internal grievance process (Section 9).
+                </p>
+              </div>
+            </section>
+          }
+
+          <!-- SECTION 7: REVIEWS, CONDUCT & COMMUNITY GUIDELINES -->
+          @if (isSectionVisible('terms', '7')) {
+            <section id="sec-7" class="scroll-mt-32 space-y-5 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">7</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Reviews, Conduct &amp; Community Guidelines</h2>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">7.1 Reviews</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Only Guests who have completed a Booking may post a review of that Homestay.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Reviews must be honest, first-hand, and free of hate speech, defamatory content, or personal data of third parties.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Tashi Homes may remove reviews that violate these guidelines but will not remove genuine reviews merely because a Host disputes the rating.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">7.2 Non-Discrimination</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Hosts may not refuse a Guest booking on the basis of religion, caste, race, gender, sexual orientation, disability, or region of origin. Complaints of discriminatory refusal will be investigated and may result in Listing suspension.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">7.3 Zero-Tolerance Conduct</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Harassment, threats, or unsafe conduct by either Guest or Host toward the other — including inappropriate behaviour toward Host family members, who often live on the same premises in a genuine homestay — will result in immediate account suspension pending investigation, and may be reported to local police where warranted.
+                </p>
+              </div>
+            </section>
+          }
+
+          <!-- SECTION 8: PRIVACY POLICY -->
+          @if (isSectionVisible('privacy', '8')) {
+            <section id="sec-8" class="scroll-mt-32 space-y-5 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">8</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Privacy Policy</h2>
+              </div>
+              <p class="text-sm text-ink/80 leading-relaxed">
+                This Privacy Policy is drafted with reference to the Digital Personal Data Protection Act, 2023 (DPDP Act) and the IT (Reasonable Security Practices) Rules, 2011, pending full notification of DPDP Rules.
+              </p>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">8.1 Data We Collect</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span><strong class="text-ink">Identity data:</strong> name, government ID (where required for check-in/FRRO compliance), date of birth, gender.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span><strong class="text-ink">Contact data:</strong> phone number, email, address.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span><strong class="text-ink">Transaction data:</strong> booking history, payment status (not full card/UPI credentials, which are handled by our payment gateway partner).</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span><strong class="text-ink">Device/usage data:</strong> IP address, device identifiers, app usage analytics, location (if permitted) for showing nearby Homestays.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span><strong class="text-ink">Content data:</strong> reviews, support chat messages, photographs uploaded by Hosts.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">8.2 Purpose of Processing</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>To create and manage accounts, process Bookings and payments, and communicate booking confirmations/updates.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>To comply with legal obligations, including local guest-registration and law-enforcement requirements applicable to tourist accommodation.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>To improve the Platform, prevent fraud, and provide customer support.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>With consent, for marketing communications about offers and new Homestays (Guests may opt out at any time).</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">8.3 Sharing of Data</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>With the relevant Host, limited to what is necessary to fulfil a Booking (name, contact number, ID details where legally required, stay dates).</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>With payment gateway and banking partners, strictly for transaction processing.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>With government/law-enforcement authorities where legally mandated (e.g., guest registration requirements, lawful requests).</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Tashi Homes does not sell personal data to third parties for their independent marketing use.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">8.4 Data Retention</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Personal data is retained for as long as the account is active and for a reasonable period thereafter to meet legal, accounting, and dispute-resolution requirements, after which it is deleted or anonymised.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">8.5 User Rights</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Right to access and obtain a copy of personal data held about them.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Right to correction of inaccurate or incomplete data.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Right to withdraw consent for optional processing (e.g., marketing) at any time.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Right to grievance redressal through the Data Grievance Officer / Grievance Officer described in Section 9.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">8.6 Cookies</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  The Platform uses cookies and similar technologies for session management, analytics, and (with consent) personalised recommendations. Users can manage cookie preferences through their browser or app settings.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">8.7 Data Security</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Tashi Homes implements reasonable technical and organisational security measures — encryption in transit, access controls, and restricted internal access — to protect personal data, consistent with the IT (Reasonable Security Practices) Rules, 2011.
+                </p>
+              </div>
+            </section>
+          }
+
+          <!-- SECTION 9: INTERMEDIARY STATUS & GRIEVANCE REDRESSAL MECHANISM -->
+          @if (isSectionVisible('privacy', '9') || isSectionVisible('grievance', '9')) {
+            <section id="sec-9" class="scroll-mt-32 space-y-5 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">9</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Intermediary Status &amp; Grievance Redressal Mechanism</h2>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">9.1 Safe Harbour under the IT Act</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Tashi Homes is an intermediary under Section 79 of the Information Technology Act, 2000, and complies with the due-diligence requirements of the IT (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021, including publishing these Terms, acting on user complaints, and cooperating with lawful government/court orders for content takedown or information disclosure.
+                </p>
+              </div>
+
+              <div class="space-y-3">
+                <h3 class="text-base font-semibold text-ink">9.2 Grievance Officer</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  In accordance with the Consumer Protection (E-Commerce) Rules, 2020 and the IT Rules, 2021, Tashi Homes will appoint a Grievance Officer whose name, designation, and contact details (email and phone) will be published on the Platform. Complaints will be:
+                </p>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>acknowledged within 48 hours of receipt;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>resolved within one month from the date of receipt, as required under the E-Commerce Rules;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>escalated internally where the initial resolution is unsatisfactory to the complainant.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">9.3 Nodal Officer / Contact for Law Enforcement</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Tashi Homes will additionally designate a Nodal Contact Person for coordination with law enforcement agencies as required under the IT Rules, 2021.
+                </p>
+              </div>
+            </section>
+          }
+
+          <!-- SECTION 10: LIMITATION OF LIABILITY, INDEMNITY & INSURANCE -->
+          @if (isSectionVisible('general', '10')) {
+            <section id="sec-10" class="scroll-mt-32 space-y-6 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">10</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Limitation of Liability, Indemnity &amp; Insurance</h2>
+              </div>
+
+              <div class="space-y-3">
+                <h3 class="text-base font-semibold text-ink">10.1 Limitation of Liability</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  To the maximum extent permitted by law:
+                </p>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Tashi Homes' aggregate liability to any Guest or Host arising out of or in connection with a Booking is limited to the amount paid through the Platform for that specific Booking.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Tashi Homes is not liable for personal injury, loss of belongings, property damage, or any dispute arising from the actual stay at a Homestay, as this occurs under the direct contract between Guest and Host; Tashi Homes' role is limited to facilitating the booking and payment as described in Section 2.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Tashi Homes is not liable for indirect, incidental, or consequential losses (e.g., lost wages, missed connections, trip-planning costs) arising from a cancelled or defective Booking, beyond the refund remedies set out in Section 6.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 10.1A -->
+              <div class="p-6 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3">
+                <h3 class="text-base font-bold text-amber-950">10.1A – Waiver of Liability for Host Services</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  The Platform (Tashi Homes) acts solely as an intermediary facilitating the booking and payment between Guests and Hosts. The Platform does not itself provide accommodation, hospitality, or any related services.
+                </p>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Accordingly, to the maximum extent permitted by law, Tashi Homes expressly disclaims and waives any and all liability, responsibility, or obligation arising from or relating to:
+                </p>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-amber-700 font-bold mt-0.5">•</span>
+                    <span>the quality, adequacy, suitability, safety, cleanliness, or performance of any services, facilities, amenities, or accommodation provided by the Host (hotel/homestay);</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-amber-700 font-bold mt-0.5">•</span>
+                    <span>any failure, deficiency, shortfall, or inadequacy in the services rendered by the Host to the Guest during the stay;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-amber-700 font-bold mt-0.5">•</span>
+                    <span>any dispute, claim, complaint, loss, damage, injury, or inconvenience experienced by the Guest as a result of the Host’s acts, omissions, negligence, or breach of the direct Guest–Host contract.</span>
+                  </li>
+                </ul>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  The Guest acknowledges that any such claims must be directed exclusively against the Host, and that Tashi Homes’ sole role is limited to facilitating the booking and payment as described in these Terms. The Guest hereby irrevocably waives, releases, and forever discharges Tashi Homes from any claims, demands, or causes of action in connection with inadequate or defective services provided by the Host.
+                </p>
+              </div>
+
+              <!-- 10.1B -->
+              <div class="p-6 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3">
+                <h3 class="text-base font-bold text-amber-950">10.1B – Waiver of Liability for Host’s Willful Cancellation or Refusal on Arrival</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  The Platform (Tashi Homes) acts solely as an intermediary facilitating the booking and payment between Guests and Hosts. The Platform does not control, supervise, or guarantee the Host’s performance or availability of the accommodation.
+                </p>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  To the maximum extent permitted by law, Tashi Homes expressly disclaims and waives any and all liability, responsibility, or obligation arising from or relating to:
+                </p>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-amber-700 font-bold mt-0.5">•</span>
+                    <span>the Host’s willful cancellation, refusal, denial of entry, or failure to honour a confirmed Booking upon the Guest’s arrival (or at any other time);</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-amber-700 font-bold mt-0.5">•</span>
+                    <span>any cancellation, termination, or non-performance of the Booking caused by the Host’s own fault, act, omission, negligence, misconduct, or breach of the direct Guest–Host contract;</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-amber-700 font-bold mt-0.5">•</span>
+                    <span>any resulting inconvenience, alternative accommodation costs, travel disruption, loss, damage, or expense suffered by the Guest due to the Host’s willful or fault-based cancellation or refusal.</span>
+                  </li>
+                </ul>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  The Guest acknowledges that the Host alone is responsible for honouring the Booking and that any such claims, losses, or remedies must be directed exclusively against the Host. The Guest’s rights against the Platform (if any) are strictly limited to the refund remedies (if applicable) set out in Section 6 of these Terms.
+                </p>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  The Guest hereby irrevocably waives, releases, and forever discharges Tashi Homes from any claims, demands, or causes of action in connection with the Host’s willful cancellation or refusal of the Booking due to the Host’s own fault.
+                </p>
+              </div>
+
+              <!-- Host Default Relocation/Refund Clause -->
+              <p class="text-sm text-ink/80 leading-relaxed">
+                If a Host is unable to honour a confirmed Booking for any reason, Tashi Homes will, on a best-efforts basis: (a) attempt to find a comparable alternative Homestay at no additional cost where reasonably possible, and (b) failing that, refund the full amount paid via the Platform within the timelines in Section 6. Tashi Homes' liability in such cases is limited to the amount paid through the Platform for that Booking, as further set out in Section 10.1.
+              </p>
+
+              <!-- 10.2 Indemnity -->
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">10.2</h3>
+                <ul class="space-y-2 text-sm text-ink/80 leading-relaxed pl-1">
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Hosts agree to indemnify Tashi Homes against claims arising from inaccurate Listings, regulatory non-compliance, or harm caused to Guests at the property due to the Host's negligence.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Guests agree to indemnify Tashi Homes and the relevant Host against claims arising from the Guest's breach of house rules, damage caused, or unlawful conduct during the stay.</span>
+                  </li>
+                  <li class="flex items-start gap-2.5">
+                    <span class="text-ochre font-bold mt-0.5">•</span>
+                    <span>Added from 3.7</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 10.3 Insurance -->
+              <div class="space-y-2">
+                <h3 class="text-base font-semibold text-ink">10.3 Insurance (Recommended)</h3>
+                <p class="text-sm text-ink/80 leading-relaxed">
+                  Tashi Homes may, as a value-added feature, offer or facilitate optional travel/stay insurance or a Host property-damage protection product; unless expressly stated, no such insurance is included by default, and Guests/Hosts are encouraged to maintain their own appropriate insurance.
+                </p>
+              </div>
+            </section>
+          }
+
+          <!-- SECTION 11: INTELLECTUAL PROPERTY -->
+          @if (isSectionVisible('general', '11')) {
+            <section id="sec-11" class="scroll-mt-32 space-y-4 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">11</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Intellectual Property</h2>
+              </div>
+              <ul class="space-y-2.5 text-sm text-ink/80 leading-relaxed pl-1">
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>The Tashi Homes name, logo, and platform design are the intellectual property of Tashi Homes and may not be used without written permission.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>Hosts grant Tashi Homes a non-exclusive, royalty-free licence to use Listing photographs and descriptions for marketing the Platform (including social media and promotional material), which the Host warrants they own or have rights to use.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>User-generated content (reviews, photos) may be used by Tashi Homes for promotional purposes with attribution where reasonably practicable.</span>
+                </li>
+              </ul>
+            </section>
+          }
+
+          <!-- SECTION 12: DISPUTE RESOLUTION, GOVERNING LAW & JURISDICTION -->
+          @if (isSectionVisible('general', '12')) {
+            <section id="sec-12" class="scroll-mt-32 space-y-4 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">12</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Dispute Resolution, Governing Law &amp; Jurisdiction</h2>
+              </div>
+              <ul class="space-y-2.5 text-sm text-ink/80 leading-relaxed pl-1">
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>These Terms are governed by the laws of India.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>Parties will first attempt good-faith resolution through Tashi Homes' Grievance Officer (Section 9).</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>Failing resolution within 30 days, disputes may be referred to arbitration under the Arbitration and Conciliation Act, 1996, with a sole arbitrator appointed mutually, seat and venue at Subject to the arbitration clause, courts at Kolkata.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span>Nothing in this clause restricts a consumer's statutory right to approach the Consumer Disputes Redressal Commission under the Consumer Protection Act, 2019, which remains available regardless of the arbitration clause.</span>
+                </li>
+              </ul>
+
+              <div class="p-4 rounded-xl bg-slate-100 text-xs text-slate-700 italic border border-slate-200">
+                Arbitration clauses in consumer contracts are an area of active judicial debate in India — some High Courts have held mandatory arbitration clauses in standard-form consumer contracts to be one-sided and unenforceable. Have your advocate confirm the enforceability of this clause for your specific consumer-facing terms.
+              </div>
+            </section>
+          }
+
+          <!-- SECTION 13: MISCELLANEOUS / GENERAL PROVISIONS -->
+          @if (isSectionVisible('general', '13')) {
+            <section id="sec-13" class="scroll-mt-32 space-y-4 pt-6 border-t border-ink/10">
+              <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-pine/10 text-pine text-xs font-bold">13</span>
+                <h2 class="font-display text-2xl text-ink font-semibold">Miscellaneous / General Provisions</h2>
+              </div>
+              <ul class="space-y-2.5 text-sm text-ink/80 leading-relaxed pl-1">
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">Amendments:</strong> Tashi Homes may update these policies from time to time; material changes will be notified via email/in-app notice, and continued use after the effective date constitutes acceptance.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">Severability:</strong> if any provision is held invalid, the remainder of these Terms continues in full force.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">Assignment:</strong> Tashi Homes may assign these Terms in connection with a merger, acquisition, or sale of assets; Users/Hosts may not assign their rights without Tashi Homes' consent.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">Entire Agreement:</strong> these Terms, together with the specific policies referenced, constitute the entire agreement between the parties regarding Platform use.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-ochre font-bold mt-0.5">•</span>
+                  <span><strong class="text-ink">Notices:</strong> official communications will be sent to the registered email/phone on file; Tashi Homes' contact details and registered address will be published on the Platform once finalised.</span>
+                </li>
+              </ul>
+            </section>
+          }
+
+          <!-- FOOTER DETAILS -->
+          <div class="pt-8 border-t border-ink/10 text-xs text-ink/60 space-y-1.5 bg-slate-50 p-6 rounded-2xl">
+            <p><strong class="text-ink">Effective Date:</strong> [to be inserted upon publication]</p>
+            <p><strong class="text-ink">Entity Name &amp; Registered Address:</strong> [to be inserted once Tashi Homes' registration is finalised]</p>
+          </div>
+
+        </div>
+      </main>
+
+    </div>
+  </div>
+</div>
+

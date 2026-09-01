@@ -16,8 +16,8 @@
     style="background: linear-gradient(to bottom, rgba(10,15,20,1), transparent);"></div>
 
   <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
-      <div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div class="lg:col-span-1">
         <div class="flex items-center gap-2.5">
           <app-logo [size]="34" [glow]="false" [withText]="true" [variant]="'white'"></app-logo>
         </div>
@@ -35,6 +35,16 @@
         </ul>
       </div>
       <div>
+        <p class="eyebrow text-cloud/40">Legal &amp; Policies</p>
+        <ul class="mt-4 space-y-2 text-sm">
+          <li><a routerLink="/terms" class="hover:text-ochre transition-colors">Terms of Service</a></li>
+          <li><a routerLink="/host-agreement" class="hover:text-ochre transition-colors">Host Agreement</a></li>
+          <li><a routerLink="/privacy-policy" class="hover:text-ochre transition-colors">Privacy Policy</a></li>
+          <li><a routerLink="/refund-policy" class="hover:text-ochre transition-colors">Refund Policy</a></li>
+          <li><a routerLink="/legal" class="hover:text-ochre transition-colors">Legal Overview</a></li>
+        </ul>
+      </div>
+      <div>
         <p class="eyebrow text-cloud/40">Launch Regions</p>
         <ul class="mt-4 space-y-2 text-sm text-cloud/70">
           <li>Darjeeling &amp; Kalimpong</li>
@@ -48,13 +58,22 @@
         <ul class="mt-4 space-y-2 text-sm text-cloud/70">
           <li>info&#64;tashihomes.in</li>
           <li>+91 81003 57588</li>
+          <li class="pt-1 text-xs text-cloud/50">Grievance &amp; Nodal support available per IT Rules 2021</li>
         </ul>
       </div>
     </div>
     <div
-      class="border-t border-cloud/10 mt-12 pt-6 text-xs text-cloud/40 flex flex-col sm:flex-row justify-between gap-2">
-      <p>© 2026 Tashi Homes. A directory, not a hotel chain.</p>
-      <p>Made for the seven sister states and the hills beyond.</p>
+      class="border-t border-cloud/10 mt-12 pt-6 text-xs text-cloud/40 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p>© 2026 Tashi Homes. A marketplace directory, not a hotel chain.</p>
+      <div class="flex flex-wrap items-center gap-4 text-cloud/60">
+        <a routerLink="/terms" class="hover:text-ochre transition-colors">Terms</a>
+        <span>•</span>
+        <a routerLink="/host-agreement" class="hover:text-ochre transition-colors">Host Terms</a>
+        <span>•</span>
+        <a routerLink="/privacy-policy" class="hover:text-ochre transition-colors">Privacy</a>
+        <span>•</span>
+        <a routerLink="/refund-policy" class="hover:text-ochre transition-colors">Refunds</a>
+      </div>
     </div>
   </div>
 </footer>

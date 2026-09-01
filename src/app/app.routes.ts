@@ -152,6 +152,61 @@ export const routes: Routes = [
                 path: 'stay/:slug/checkout',
                 component: Checkout,
                 title: 'Checkout & Reserve',
+            },
+            {
+                path: 'terms',
+                loadComponent: () => import('./pages/public/legal/legal').then((m) => m.Legal),
+                title: 'Terms of Service — Guests | Tashi Homes',
+                data: { tab: 'terms' }
+            },
+            {
+                path: 'terms-and-conditions',
+                redirectTo: 'terms',
+                pathMatch: 'full'
+            },
+            {
+                path: 'host-agreement',
+                loadComponent: () => import('./pages/public/legal/legal').then((m) => m.Legal),
+                title: 'Homestay Partner (Host) Agreement | Tashi Homes',
+                data: { tab: 'host-agreement' }
+            },
+            {
+                path: 'partner-agreement',
+                redirectTo: 'host-agreement',
+                pathMatch: 'full'
+            },
+            {
+                path: 'privacy-policy',
+                loadComponent: () => import('./pages/public/legal/legal').then((m) => m.Legal),
+                title: 'Privacy Policy | Tashi Homes',
+                data: { tab: 'privacy' }
+            },
+            {
+                path: 'privacy',
+                redirectTo: 'privacy-policy',
+                pathMatch: 'full'
+            },
+            {
+                path: 'refund-policy',
+                loadComponent: () => import('./pages/public/legal/legal').then((m) => m.Legal),
+                title: 'Cancellation & Refund Policy | Tashi Homes',
+                data: { tab: 'refund' }
+            },
+            {
+                path: 'cancellation-policy',
+                redirectTo: 'refund-policy',
+                pathMatch: 'full'
+            },
+            {
+                path: 'cancellation-refund-policy',
+                redirectTo: 'refund-policy',
+                pathMatch: 'full'
+            },
+            {
+                path: 'legal',
+                loadComponent: () => import('./pages/public/legal/legal').then((m) => m.Legal),
+                title: 'Legal Policies & Platform Terms | Tashi Homes',
+                data: { tab: 'all' }
             }
         ]
     },

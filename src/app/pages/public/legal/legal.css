@@ -1,0 +1,36 @@
+/* Custom styles for Legal and Policies View */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.legal-document-content p,
+.legal-document-content li {
+  line-height: 1.75;
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  header,
+  footer,
+  aside,
+  .sticky,
+  button {
+    display: none !important;
+  }
+
+  .legal-document-content {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}
+
