@@ -16,6 +16,10 @@ import {
   RazorpayOrderResponse,
   RazorpayVerifyRequest,
 } from './booking.model';
+import {
+  generateIdempotencyKey,
+  generatePaymentVerificationKey,
+} from '../../utils/idempotency';
 
 function buildBookingQueryParams(query?: BookingQuery): Record<string, string | number> {
   const params: Record<string, string | number> = {
@@ -75,10 +79,14 @@ export class BookingService {
    * Endpoint: POST /api/v1/user/bookings/
    */
   public createBooking(
-    payload: CreateBookingRequest
+    payload: CreateBookingRequest,
+    idempotencyKey?: string
   ): Observable<ApiResponse<BookingData>> {
+    const key = idempotencyKey || generateIdempotencyKey();
     return this.apiService
-      .protectedPost<ApiResponse<BookingData>>('/user/bookings/', payload)
+      .protectedPost<ApiResponse<BookingData>>('/user/bookings/', payload, {
+        idempotencyKey: key,
+      })
       .pipe(
         map((res) => res.data),
         catchError(this.apiService.passthroughError)
@@ -91,12 +99,18 @@ export class BookingService {
    */
   public cancelBooking(
     bookingId: string,
-    payload: CancelBookingRequest = {}
+    payload: CancelBookingRequest = {},
+    idempotencyKey?: string
   ): Observable<ApiResponse<BookingData>> {
+    const options: { idempotencyKey?: string } = {};
+    if (idempotencyKey) {
+      options.idempotencyKey = idempotencyKey;
+    }
     return this.apiService
       .protectedPost<ApiResponse<BookingData>>(
         `/user/bookings/${encodeURIComponent(bookingId)}/cancel`,
-        payload
+        payload,
+        options
       )
       .pipe(
         map((res) => res.data),
@@ -110,12 +124,15 @@ export class BookingService {
    */
   public recordPayment(
     bookingId: string,
-    payload: BookingPaymentRequest
+    payload: BookingPaymentRequest,
+    idempotencyKey?: string
   ): Observable<ApiResponse<BookingPayment>> {
+    const key = idempotencyKey || generateIdempotencyKey();
     return this.apiService
       .protectedPost<ApiResponse<BookingPayment>>(
         `/user/bookings/${encodeURIComponent(bookingId)}/payments`,
-        payload
+        payload,
+        { idempotencyKey: key }
       )
       .pipe(
         map((res) => res.data),
@@ -128,12 +145,15 @@ export class BookingService {
    * Endpoint: POST /api/v1/user/bookings/{booking_id}/razorpay/order
    */
   public createRazorpayOrder(
-    bookingId: string
+    bookingId: string,
+    idempotencyKey?: string
   ): Observable<ApiResponse<RazorpayOrderResponse>> {
+    const key = idempotencyKey || generateIdempotencyKey();
     return this.apiService
       .protectedPost<ApiResponse<RazorpayOrderResponse>>(
         `/user/bookings/${encodeURIComponent(bookingId)}/razorpay/order`,
-        {}
+        {},
+        { idempotencyKey: key }
       )
       .pipe(
         map((res) => res.data),
@@ -147,12 +167,17 @@ export class BookingService {
    */
   public verifyRazorpayPayment(
     bookingId: string,
-    payload: RazorpayVerifyRequest
+    payload: RazorpayVerifyRequest,
+    idempotencyKey?: string
   ): Observable<ApiResponse<any>> {
+    const key =
+      idempotencyKey ||
+      generatePaymentVerificationKey(payload.razorpay_payment_id);
     return this.apiService
       .protectedPost<ApiResponse<any>>(
         `/user/bookings/${encodeURIComponent(bookingId)}/razorpay/verify`,
-        payload
+        payload,
+        { idempotencyKey: key }
       )
       .pipe(
         map((res) => res.data),

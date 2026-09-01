@@ -56,12 +56,13 @@ export class ApiService {
   private makeRequest<T>(method: string, endpoint: string, body?: any, isProtected: boolean = false, options?: any): Observable<ApiResponse<T>> {
     const url = `${this.apiBaseUrl}${endpoint}`;
     
-    const headers = this.createHeaders(isProtected, body, method, endpoint);
+    const headers = this.createHeaders(isProtected, body, method, endpoint, options);
+    const { headers: _overrideHeaders, idempotencyKey: _idemKey, ...remainingOptions } = options || {};
     const requestOptions = {
+      ...remainingOptions,
       headers,
       observe: 'response' as 'response',
       withCredentials: true,
-      ...options
     };
     let request$: Observable<HttpEvent<T>>;
     switch (method.toLowerCase()) {
@@ -96,7 +97,13 @@ export class ApiService {
   }
 
 
-  private createHeaders(isProtected: boolean = false, body?: any, method?: string, endpoint?: string): HttpHeaders {
+  private createHeaders(
+    isProtected: boolean = false,
+    body?: any,
+    method?: string,
+    endpoint?: string,
+    options?: any
+  ): HttpHeaders {
     // Let the interceptor handle all headers including Content-Type, Accept, etc.
     let headers = new HttpHeaders();
 
@@ -115,8 +122,29 @@ export class ApiService {
       headers = headers.set('X-Is-Protected', 'true');
     }
 
-    
-    
+    // Merge custom headers from options if provided
+    if (options?.headers) {
+      if (options.headers instanceof HttpHeaders) {
+        options.headers.keys().forEach((key: string) => {
+          const val = options.headers.get(key);
+          if (val !== null && val !== undefined) {
+            headers = headers.set(key, val);
+          }
+        });
+      } else if (typeof options.headers === 'object') {
+        Object.entries(options.headers).forEach(([key, val]) => {
+          if (val !== null && val !== undefined) {
+            headers = headers.set(key, String(val));
+          }
+        });
+      }
+    }
+
+    // Attach Idempotency-Key if provided in options
+    if (options?.idempotencyKey) {
+      headers = headers.set('Idempotency-Key', options.idempotencyKey);
+    }
+
     // Don't set Content-Type for FormData - let Angular auto-set with boundary
     if (body instanceof FormData) {
       headers = headers.delete('Content-Type');
@@ -196,6 +224,16 @@ export class ApiService {
   
   // Utility: handle API response
   private handleResponse<T>(response: HttpResponse<T>): ApiResponse<T> {
+    const isReplay =
+      response.headers.get('Idempotent-Replay') === 'true' ||
+      response.headers.get('idempotent-replay') === 'true';
+    if (isReplay) {
+      const key =
+        response.headers.get('X-Idempotency-Key') ||
+        response.headers.get('x-idempotency-key');
+      console.info(`[ApiService] Response replayed from idempotent cache (Key: ${key})`);
+    }
+
     return {
       data: response.body as T,
       status: response.status,

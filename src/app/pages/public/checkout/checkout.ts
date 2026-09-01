@@ -30,8 +30,10 @@ import {
 import { environment } from '../../../../environments/environment';
 import { RazorpayService } from '../../../services/booking/razorpay-service';
 import { SettingsService } from '../../../services/settings/settings-service';
-
-
+import {
+  generateIdempotencyKey,
+  generatePaymentVerificationKey,
+} from '../../../utils/idempotency';
 
 function toDateString(d: Date): string {
   const year = d.getFullYear();
@@ -62,6 +64,14 @@ export class Checkout implements OnInit {
   private readonly razorpayService = inject(RazorpayService);
   private readonly settingsService = inject(SettingsService);
 
+  // Idempotency Keys (Persisted across retries, reset on form changes)
+  private bookingIdempotencyKey: string = generateIdempotencyKey();
+  private paymentIdempotencyKey: string = generateIdempotencyKey();
+
+  public resetIdempotencyKeys(): void {
+    this.bookingIdempotencyKey = generateIdempotencyKey();
+    this.paymentIdempotencyKey = generateIdempotencyKey();
+  }
 
   // Property & Booking State
   public property = signal<Partial<PropertyData> | null>(null);
@@ -121,6 +131,13 @@ export class Checkout implements OnInit {
         });
       }
     });
+
+    // Reset idempotency keys when form inputs change
+    this.guestForm.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.resetIdempotencyKeys();
+      });
   }
 
   ngOnInit(): void {
@@ -354,6 +371,7 @@ export class Checkout implements OnInit {
     const roomType = this.selectedRoomType();
     if (!prop?.id || !roomType?.id) return;
 
+    if (this.isSubmitting()) return; // Prevent local double click
     this.isSubmitting.set(true);
     this.bookingError.set(null);
 
@@ -370,7 +388,7 @@ export class Checkout implements OnInit {
     };
 
     this.bookingService
-      .createBooking(bookingPayload)
+      .createBooking(bookingPayload, this.bookingIdempotencyKey)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
@@ -388,6 +406,20 @@ export class Checkout implements OnInit {
         },
         error: (err) => {
           this.isSubmitting.set(false);
+          const errorCode = err.error?.error_code || err.error?.detail?.error_code;
+          if (errorCode === 'IDEMPOTENCY_CONFLICT') {
+            this.bookingError.set(
+              'A booking request with these details is currently being processed. Please wait a moment.'
+            );
+            return;
+          }
+          if (errorCode === 'IDEMPOTENCY_PAYLOAD_MISMATCH') {
+            this.resetIdempotencyKeys();
+            this.bookingError.set(
+              'Booking details were modified. Please submit again.'
+            );
+            return;
+          }
           const errorMsg = this.bookingService.extractApiErrorMessage(err);
           this.bookingError.set(
             errorMsg || 'Failed to create booking. Please check your dates and try again.'
@@ -408,7 +440,7 @@ export class Checkout implements OnInit {
       }
 
       this.bookingService
-        .createRazorpayOrder(bookingId)
+        .createRazorpayOrder(bookingId, this.paymentIdempotencyKey)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (res) => {
@@ -497,9 +529,10 @@ export class Checkout implements OnInit {
           razorpay_payment_id: response.razorpay_payment_id || '',
           razorpay_signature: response.razorpay_signature || '',
         };
+        const verifyKey = generatePaymentVerificationKey(response.razorpay_payment_id);
 
         this.bookingService
-          .verifyRazorpayPayment(bookingId, verifyData)
+          .verifyRazorpayPayment(bookingId, verifyData, verifyKey)
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: () => {
@@ -541,12 +574,16 @@ export class Checkout implements OnInit {
     const amount = deposit > 0 ? deposit : this.getBaseTotal();
 
     this.bookingService
-      .recordPayment(bookingId, {
-        payment_method: 'pay_at_homestay',
-        amount: amount,
-        transaction_id: `DIRECT-${Date.now()}`,
-        gateway: 'internal',
-      })
+      .recordPayment(
+        bookingId,
+        {
+          payment_method: 'pay_at_homestay',
+          amount: amount,
+          transaction_id: `DIRECT-${Date.now()}`,
+          gateway: 'internal',
+        },
+        this.paymentIdempotencyKey
+      )
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {

@@ -14,6 +14,10 @@ import { BookingData, RazorpayVerifyRequest } from '../../../../services/booking
 import { RazorpayService } from '../../../../services/booking/razorpay-service';
 import { SettingsService } from '../../../../services/settings/settings-service';
 import { AppDatePipe } from '../../../../pipes/app-date-pipe/app-date-pipe';
+import {
+  generateIdempotencyKey,
+  generatePaymentVerificationKey,
+} from '../../../../utils/idempotency';
 
 
 export type ProfileTab = 'trips' | 'saved' | 'reviews' | 'account' | 'security';
@@ -390,8 +394,9 @@ export class Profile implements OnInit {
         return;
       }
 
+      const paymentKey = generateIdempotencyKey();
       this.bookingService
-        .createRazorpayOrder(booking.id)
+        .createRazorpayOrder(booking.id, paymentKey)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (res) => {
@@ -471,9 +476,10 @@ export class Profile implements OnInit {
           razorpay_payment_id: response.razorpay_payment_id || '',
           razorpay_signature: response.razorpay_signature || '',
         };
+        const verifyKey = generatePaymentVerificationKey(response.razorpay_payment_id);
 
         this.bookingService
-          .verifyRazorpayPayment(booking.id, verifyData)
+          .verifyRazorpayPayment(booking.id, verifyData, verifyKey)
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: () => {

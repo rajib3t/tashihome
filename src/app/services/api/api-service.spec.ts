@@ -49,4 +49,16 @@ describe('ApiService', () => {
 
     req.flush({ data: {} });
   });
+
+  it('should attach Idempotency-Key header when idempotencyKey option is provided', () => {
+    const testKey = 'test-uuid-idempotency-key-123';
+    service
+      .protectedPost('/user/bookings/', { test: 123 }, { idempotencyKey: testKey })
+      .subscribe();
+
+    const req = httpMock.expectOne((request) => request.url.includes('/user/bookings/'));
+
+    expect(req.request.headers.get('Idempotency-Key')).toBe(testKey);
+    req.flush({ data: { id: 'booking-1' } });
+  });
 });

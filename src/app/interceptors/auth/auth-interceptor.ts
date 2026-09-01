@@ -210,12 +210,14 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
       }
 
       // For non-401 errors, preserve the original error structure and message
+      const serverErrorCode = error.error?.detail?.error_code || error.error?.error_code || error.error?.code;
       const standardizedError = {
         status: error.status || 0,
         error: {
           success: false,
           message: getErrorMessage(error),
           data: null,
+          error_code: serverErrorCode,
           error: error.error || error.message || 'An unexpected error occurred'
         }
       };
