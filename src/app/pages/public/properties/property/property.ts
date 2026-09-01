@@ -173,6 +173,11 @@ export class Property {
     this.selectedRoomTypeId.set(roomTypeId);
     this.availabilityStatus.set('idle');
     this.availabilityMessage.set(null);
+    // Clamp number of rooms to the selected room type's available units
+    const maxRooms = Math.max(1, this.getMaxRooms());
+    if (this.numRooms() > maxRooms) {
+      this.numRooms.set(maxRooms);
+    }
     this.checkAvailability();
   }
 
@@ -185,9 +190,32 @@ export class Property {
 
   public adjustRooms(delta: number): void {
     const current = this.numRooms();
-    const next = Math.max(1, Math.min(current + delta, 10));
+    const maxRooms = Math.max(1, this.getMaxRooms());
+    const next = Math.max(1, Math.min(current + delta, maxRooms));
     this.numRooms.set(next);
     this.checkAvailability();
+  }
+
+  public getMaxRooms(): number {
+    const prop = this.propertyData();
+    if (!prop) return 10;
+
+    const selectedId = this.selectedRoomTypeId();
+    if (selectedId && Array.isArray(prop.property_room_types)) {
+      const matched = prop.property_room_types.find(
+        (prt) => prt?.room_type?.id === selectedId || prt?.id === selectedId
+      );
+      if (matched && typeof matched.total_units === 'number') {
+        return matched.total_units;
+      }
+    }
+
+    // Fallback to top-level room_type total_units if present
+    if (prop.room_type && typeof (prop as any).room_type?.total_units === 'number') {
+      return (prop as any).room_type.total_units;
+    }
+
+    return 10;
   }
 
   public calculateNights(): number {

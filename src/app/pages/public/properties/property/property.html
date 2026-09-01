@@ -696,7 +696,8 @@
                   <button
                     type="button"
                     (click)="adjustRooms(1)"
-                    class="w-6 h-6 rounded-full bg-cloud2 text-ink hover:bg-moss/20 grid place-items-center text-xs font-bold transition-colors cursor-pointer">
+                    [disabled]="numRooms() >= getMaxRooms()"
+                    class="w-6 h-6 rounded-full bg-cloud2 text-ink hover:bg-moss/20 disabled:opacity-30 grid place-items-center text-xs font-bold transition-colors cursor-pointer">
                     +
                   </button>
                 </div>
