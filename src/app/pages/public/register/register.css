@@ -6,7 +6,7 @@
 
 /* Brand panel background image */
 .register-brand-panel {
-  background-image: url('/images/hero-himalaya.jpg');
+  background-image: url('/images/hero-himalaya.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -14,7 +14,7 @@
 
 /* Form panel background image */
 .register-form-panel {
-  background-image: url('/images/property-bg.jpg');
+  background-image: url('/images/property-bg.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

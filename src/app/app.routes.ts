@@ -1,88 +1,43 @@
 import { Routes } from '@angular/router';
-import { Public } from './shared/layouts/public/public';
-import { Login } from './pages/public/login/login';
 import { authGuard, guestGuard } from './guards/auth/auth-guard';
-import { Authenticate } from './shared/layouts/authenticate/authenticate';
 import { adminGuard, adminOnlyGuard, staffGuard, userGuard, vendorGuard } from './guards/auth/role-guard';
-import { Admin } from './shared/layouts/authenticate/admin/admin';
-import { AdminDashboard } from './pages/authenticate/admin/admin-dashboard/admin-dashboard';
-import { Setting } from './pages/authenticate/admin/setting/setting';
-import { CountryManagement } from './pages/authenticate/admin/country-management/country-management';
-import { CityManagement } from './pages/authenticate/admin/city-management/city-management';
-import { LocationManagement } from './pages/authenticate/admin/location-management/location-management';
-import { FacilityManagement } from './pages/authenticate/admin/facility-management/facility-management';
-import { AmenityManagement } from './pages/authenticate/admin/amenity-management/amenity-management';
-import { RoomTypeManagement } from './pages/authenticate/admin/room-type-management/room-type-management';
-import { VendorManagement } from './pages/authenticate/admin/vendor-management/vendor-management';
-import { EditVendor } from './pages/authenticate/admin/vendor-management/edit-vendor/edit-vendor';
-import { CustomerManagement } from './pages/authenticate/admin/customer-management/customer-management';
-import { EditCustomer } from './pages/authenticate/admin/customer-management/edit-customer/edit-customer';
-import { PropertyManagement } from './pages/authenticate/admin/property-management/property-management';
-import { CreateProperty } from './pages/authenticate/admin/property-management/create-property/create-property';
-import { EditProperty } from './pages/authenticate/admin/property-management/edit-property/edit-property';
-import { Property } from './pages/public/properties/property/property';
 
-import { Search } from './pages/public/search/search';
-import { BecomeHost } from './pages/public/become-host/become-host';
-import { Register } from './pages/public/register/register';
-import { ActivateAccount } from './pages/public/activate-account/activate-account';
-import { ForgotPassword } from './pages/public/forgot-password/forgot-password';
-import { PasswordReset } from './pages/public/password-reset/password-reset';
-import { User as UserLayout } from './shared/layouts/authenticate/user/user';
-import { Profile } from './pages/authenticate/user/profile/profile';
-import { AdminProfile } from './pages/authenticate/admin/profile/profile';
-import { VendorProfile } from './pages/authenticate/vendor/profile/profile';
-import { Vendor } from './shared/layouts/authenticate/vendor/vendor';
-import { Dashboard } from './pages/authenticate/vendor/dashboard/dashboard';
-import { VendorPropertyManagement } from './pages/authenticate/vendor/vendor-property-management/vendor-property-management';
-import { CreateVendorProperty } from './pages/authenticate/vendor/vendor-property-management/create-property/create-property';
-import { EditVendorProperty } from './pages/authenticate/vendor/vendor-property-management/edit-property/edit-property';
-import { Checkout } from './pages/public/checkout/checkout';
-import { AdminBookingManagement } from './pages/authenticate/admin/booking-management/booking-management';
-import { VendorBookingManagement } from './pages/authenticate/vendor/booking-management/booking-management';
-import { AdminRoomBlockManagement } from './pages/authenticate/admin/room-block-management/room-block-management';
-import { VendorRoomBlockManagement } from './pages/authenticate/vendor/room-block-management/room-block-management';
-import { RefundManagement } from './pages/authenticate/admin/refund-management/refund-management';
-import { HostManagement } from './pages/authenticate/admin/host-management/host-management';
-import { StaffManagement } from './pages/authenticate/admin/staff-management/staff-management';
-import { EditStaff } from './pages/authenticate/admin/staff-management/edit-staff/edit-staff';
-import { PayoutManagement } from './pages/authenticate/admin/payout-management/payout-management';
 
 export const routes: Routes = [
     {
         path: 'login',
-        component: Login,
+        loadComponent: () => import('./pages/public/login/login').then((m) => m.Login),
         title: 'Login',
         canActivate: [guestGuard],
     },
     {
         path: 'forgot-password',
-        component: ForgotPassword,
+        loadComponent: () => import('./pages/public/forgot-password/forgot-password').then((m) => m.ForgotPassword),
         title: 'Forgot Password',
     },
     {
         path: 'password-reset',
-        component: PasswordReset,
+        loadComponent: () => import('./pages/public/password-reset/password-reset').then((m) => m.PasswordReset),
         title: 'Reset Password',
     },
     {
         path: 'password-reset/:token',
-        component: PasswordReset,
+        loadComponent: () => import('./pages/public/password-reset/password-reset').then((m) => m.PasswordReset),
         title: 'Reset Password',
     },
     {
         path: "register",
-        component: Register,
+        loadComponent: () => import('./pages/public/register/register').then((m) => m.Register),
         title: "Register",
     },
     {
         path:'activate-account/:token',
-        component: ActivateAccount,
+        loadComponent: () => import('./pages/public/activate-account/activate-account').then((m) => m.ActivateAccount),
         title: 'Activate Account',
     },
     {
         path: '',
-        component: Public,
+        loadComponent: () => import('./shared/layouts/public/public').then((m) => m.Public),
         children: [
             {
                 path: '',
@@ -111,7 +66,7 @@ export const routes: Routes = [
             },
             {
                 path: 'become-a-host',
-                component: BecomeHost,
+                loadComponent: () => import('./pages/public/become-host/become-host').then((m) => m.BecomeHost),
                 title: 'Become a Host',
             },
             {
@@ -126,7 +81,7 @@ export const routes: Routes = [
             },
             {
                 path: 'search',
-                component: Search,
+                loadComponent: () => import('./pages/public/search/search').then((m) => m.Search),
                 title: 'Search Homestays',
             },
 
@@ -137,22 +92,22 @@ export const routes: Routes = [
             },
             {
                 path: 'stay/:slug',
-                component: Property,
+                loadComponent: () => import('./pages/public/properties/property/property').then((m) => m.Property),
                 title: 'Property Detail',
             },
             {
                 path: 'checkout',
-                component: Checkout,
+                loadComponent: () => import('./pages/public/checkout/checkout').then((m) => m.Checkout),
                 title: 'Checkout & Reserve',
             },
             {
                 path: 'checkout/:slug',
-                component: Checkout,
+                loadComponent: () => import('./pages/public/checkout/checkout').then((m) => m.Checkout),
                 title: 'Checkout & Reserve',
             },
             {
                 path: 'stay/:slug/checkout',
-                component: Checkout,
+                loadComponent: () => import('./pages/public/checkout/checkout').then((m) => m.Checkout),
                 title: 'Checkout & Reserve',
             },
             {
@@ -215,81 +170,81 @@ export const routes: Routes = [
     {
         path: '',
         canActivateChild: [authGuard],
-        component: Authenticate,
+        loadComponent: () => import('./shared/layouts/authenticate/authenticate').then((m) => m.Authenticate),
         children: [
             {
                 path: 'admin',
                 canActivate: [adminGuard],
-                component: Admin,
+                loadComponent: () => import('./shared/layouts/authenticate/admin/admin').then((m) => m.Admin),
                 children: [
                     {
                         path: '',
-                        component: AdminDashboard,
+                        loadComponent: () => import('./pages/authenticate/admin/admin-dashboard/admin-dashboard').then((m) => m.AdminDashboard),
                         title: 'Admin Dashboard',
                     },
                     {
                         path: 'profile',
-                        component: AdminProfile,
+                        loadComponent: () => import('./pages/authenticate/admin/profile/profile').then((m) => m.AdminProfile),
                         title: 'Admin Profile',
                     },
                     {
                         path: 'setting',
-                        component: Setting,
+                        loadComponent: () => import('./pages/authenticate/admin/setting/setting').then((m) => m.Setting),
                         title: 'Application Setting',
                     },
                     {
                         path: 'country-management',
-                        component: CountryManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/country-management/country-management').then((m) => m.CountryManagement),
                         title: 'Country Management',
                     },
                     {
                         path: 'city-management',
-                        component: CityManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/city-management/city-management').then((m) => m.CityManagement),
                         title: 'City Management',
                     },
                     {
                         path: 'location-management',
-                        component: LocationManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/location-management/location-management').then((m) => m.LocationManagement),
                         title: 'Location Management',
                     },
                     {
                         path: 'facility-management',
-                        component: FacilityManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/facility-management/facility-management').then((m) => m.FacilityManagement),
                         title: 'Facility Management'
                     },
                     {
                         path: 'amenity-management',
-                        component: AmenityManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/amenity-management/amenity-management').then((m) => m.AmenityManagement),
                         title: 'Amenity Management'
                     },
                     {
                         path: 'room-type-management',
-                        component: RoomTypeManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/room-type-management/room-type-management').then((m) => m.RoomTypeManagement),
                         title: 'Room Type Management'
                     },
                     {
                         path: 'property-management',
-                        component: PropertyManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/property-management/property-management').then((m) => m.PropertyManagement),
                         title: 'Property Management'
                     },
                     {
                         path: 'property-management/create',
-                        component: CreateProperty,
+                        loadComponent: () => import('./pages/authenticate/admin/property-management/create-property/create-property').then((m) => m.CreateProperty),
                         title: 'Create Property'
                     },
                     {
                         path: 'property-management/:id/edit',
-                        component: EditProperty,
+                        loadComponent: () => import('./pages/authenticate/admin/property-management/edit-property/edit-property').then((m) => m.EditProperty),
                         title: 'Edit Property'
                     },
                     {
                         path: 'customer-management',
-                        component: CustomerManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/customer-management/customer-management').then((m) => m.CustomerManagement),
                         title: 'Customer Management'
                     },
                     {
                         path: 'customer-management/:id/edit',
-                        component: EditCustomer,
+                        loadComponent: () => import('./pages/authenticate/admin/customer-management/edit-customer/edit-customer').then((m) => m.EditCustomer),
                         title: 'Edit Customer'
                     },
                     {
@@ -299,17 +254,17 @@ export const routes: Routes = [
                     },
                     {
                         path: 'vendor-management',
-                        component: VendorManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/vendor-management/vendor-management').then((m) => m.VendorManagement),
                         title: 'Vendor Management'
                     },
                     {
                         path: 'vendor-management/:id/edit',
-                        component: EditVendor,
+                        loadComponent: () => import('./pages/authenticate/admin/vendor-management/edit-vendor/edit-vendor').then((m) => m.EditVendor),
                         title: 'Edit Vendor'
                     },
                     {
                         path: 'host-management',
-                        component: HostManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/host-management/host-management').then((m) => m.HostManagement),
                         title: 'Host Applications'
                     },
                     {
@@ -319,12 +274,12 @@ export const routes: Routes = [
                     },
                     {
                         path: 'booking-management',
-                        component: AdminBookingManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/booking-management/booking-management').then((m) => m.AdminBookingManagement),
                         title: 'Booking Management'
                     },
                     {
                         path: 'room-blocks',
-                        component: AdminRoomBlockManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/room-block-management/room-block-management').then((m) => m.AdminRoomBlockManagement),
                         title: 'Room Blocks & Availability'
                     },
                     {
@@ -335,13 +290,13 @@ export const routes: Routes = [
                     {
                         path: 'staff-management',
                         canActivate: [adminOnlyGuard],
-                        component: StaffManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/staff-management/staff-management').then((m) => m.StaffManagement),
                         title: 'Staff Management'
                     },
                     {
                         path: 'staff-management/:id/edit',
                         canActivate: [adminOnlyGuard],
-                        component: EditStaff,
+                        loadComponent: () => import('./pages/authenticate/admin/staff-management/edit-staff/edit-staff').then((m) => m.EditStaff),
                         title: 'Edit Staff'
                     },
                     {
@@ -352,7 +307,7 @@ export const routes: Routes = [
                     {
                         path: 'refund-management',
                         canActivate: [adminOnlyGuard],
-                        component: RefundManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/refund-management/refund-management').then((m) => m.RefundManagement),
                         title: 'Refund Management'
                     },
                     {
@@ -363,7 +318,7 @@ export const routes: Routes = [
                     {
                         path: 'finance/payouts',
                         canActivate: [adminOnlyGuard],
-                        component: PayoutManagement,
+                        loadComponent: () => import('./pages/authenticate/admin/payout-management/payout-management').then((m) => m.PayoutManagement),
                         title: 'Payout Management'
                     },
                     {
@@ -381,41 +336,41 @@ export const routes: Routes = [
             {
                 path:'vendor',
                 canActivate: [vendorGuard],
-                component: Vendor,
+                loadComponent: () => import('./shared/layouts/authenticate/vendor/vendor').then((m) => m.Vendor),
                 children:[
                     {
                         path:'',
-                        component:Dashboard,
+                        loadComponent: () => import('./pages/authenticate/vendor/dashboard/dashboard').then((m) => m.Dashboard),
                         title:'Vendor Dashboard'
                     },
                     {
                         path: 'profile',
-                        component: VendorProfile,
+                        loadComponent: () => import('./pages/authenticate/vendor/profile/profile').then((m) => m.VendorProfile),
                         title: 'Vendor Profile'
                     },
                     {
                         path:'property-management',
-                        component:VendorPropertyManagement,
+                        loadComponent: () => import('./pages/authenticate/vendor/vendor-property-management/vendor-property-management').then((m) => m.VendorPropertyManagement),
                         title:'Vendor Property Management'
                     },
                     {
                         path:'property-management/create',
-                        component:CreateVendorProperty,
+                        loadComponent: () => import('./pages/authenticate/vendor/vendor-property-management/create-property/create-property').then((m) => m.CreateVendorProperty),
                         title:'Create Property'
                     },
                     {
                         path:'property-management/:id/edit',
-                        component:EditVendorProperty,
+                        loadComponent: () => import('./pages/authenticate/vendor/vendor-property-management/edit-property/edit-property').then((m) => m.EditVendorProperty),
                         title:'Edit Property'
                     },
                     {
                         path: 'booking-management',
-                        component: VendorBookingManagement,
+                        loadComponent: () => import('./pages/authenticate/vendor/booking-management/booking-management').then((m) => m.VendorBookingManagement),
                         title: 'Booking Management'
                     },
                     {
                         path: 'room-blocks',
-                        component: VendorRoomBlockManagement,
+                        loadComponent: () => import('./pages/authenticate/vendor/room-block-management/room-block-management').then((m) => m.VendorRoomBlockManagement),
                         title: 'Room Blocks & Availability'
                     },
                     {
@@ -433,11 +388,11 @@ export const routes: Routes = [
             {
                 path: 'user',
                 canActivate: [userGuard],
-                component: UserLayout,
+                loadComponent: () => import('./shared/layouts/authenticate/user/user').then((m) => m.User),
                 children: [
                     {
                         path: '',
-                        component: Profile,
+                        loadComponent: () => import('./pages/authenticate/user/profile/profile').then((m) => m.Profile),
                         title: 'Your Profile',
                     },
                     {

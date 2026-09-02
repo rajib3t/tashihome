@@ -547,22 +547,31 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const isMobile = window.innerWidth < 768;
+      this.reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches || isMobile;
 
       this.initRevealObserver();
       this.initStatsObserver();
 
-      // Loop-driven effects run outside Angular's zone so rAF /
-      // scroll / mousemove don't trigger change detection every frame.
-      this.zone.runOutsideAngular(() => {
-        this.mistCleanupFns.push(this.initHeroCanvas('#mistCanvas'));
-        this.mistCleanupFns.push(this.initStaysCanvas('#staysCanvas'));
-        this.mistCleanupFns.push(this.initExpCanvas('#expCanvas'));
-        this.mistCleanupFns.push(this.initConstellationCanvas('#constellationCanvas'));
-        this.mistCleanupFns.push(this.initFooterCanvas('#mistCanvasFooter'));
-        this.tiltCleanupFn = this.initCardTilt('.card-tilt');
-        this.parallaxCleanupFn = this.initParallax('#ridgeParallax', 0.15);
-      });
+      // Defer decorative canvas and motion effects to idle time so they do not block initial paint
+      if (!this.reduceMotion) {
+        const scheduleIdle = typeof window.requestIdleCallback === 'function'
+          ? (fn: () => void) => (window as any).requestIdleCallback(fn, { timeout: 1500 })
+          : (fn: () => void) => setTimeout(fn, 300);
+
+        scheduleIdle(() => {
+          if (this.destroyed) return;
+          this.zone.runOutsideAngular(() => {
+            this.mistCleanupFns.push(this.initHeroCanvas('#mistCanvas'));
+            this.mistCleanupFns.push(this.initStaysCanvas('#staysCanvas'));
+            this.mistCleanupFns.push(this.initExpCanvas('#expCanvas'));
+            this.mistCleanupFns.push(this.initConstellationCanvas('#constellationCanvas'));
+            this.mistCleanupFns.push(this.initFooterCanvas('#mistCanvasFooter'));
+            this.tiltCleanupFn = this.initCardTilt('.card-tilt');
+            this.parallaxCleanupFn = this.initParallax('#ridgeParallax', 0.15);
+          });
+        });
+      }
     }
   }
 

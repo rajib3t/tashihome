@@ -6,7 +6,7 @@
 
 .activate-account-page {
   position: relative;
-  background: #F3FAFB url('/images/property-bg.jpg') center / cover no-repeat;
+  background: #F3FAFB url('/images/property-bg.webp') center / cover no-repeat;
 }
 
 .activate-account-page::before {

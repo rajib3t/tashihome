@@ -5,6 +5,7 @@
           <img *ngIf="item.feature_image?.file_url"
             [src]="assetUrl + (item.feature_image?.file_url || '')"
             [alt]="item.name || 'Property image'"
+            loading="lazy" decoding="async"
             class="w-full h-full object-cover"
             (error)="onImageError($event)" />
           <div *ngIf="!item.feature_image?.file_url"

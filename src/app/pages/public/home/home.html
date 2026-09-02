@@ -1,6 +1,15 @@
-<!-- ============ HERO ============ -->
 <section id="top" class="bg-hero-img relative text-cloud pt-36 pb-40 md:pt-44 md:pb-52 z-30 overflow-visible"
-  style="background: url('/images/hero-himalaya.jpg') center/cover no-repeat;">
+  style="background: #0F5461 url('/images/hero-himalaya.webp') center/cover no-repeat;">
+  
+  <!-- Pre-rendered / early discoverable LCP hero image with high fetchpriority -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+    <picture>
+      <source media="(max-width: 767px)" srcset="/images/hero-himalaya-mobile.webp" type="image/webp">
+      <source media="(min-width: 768px)" srcset="/images/hero-himalaya.webp" type="image/webp">
+      <img src="/images/hero-himalaya.webp" alt="Himalayan Mountain Range" fetchpriority="high" decoding="sync"
+        class="w-full h-full object-cover object-center pointer-events-none" />
+    </picture>
+  </div>
   
   <!-- Contained atmospheric background layers & mist canvas -->
   <div class="absolute inset-0 overflow-hidden pointer-events-none">
@@ -326,7 +335,7 @@
 <section class="stat-section pt-32 md:pt-36 pb-20 relative overflow-hidden border-b border-ink/5">
   <!-- Background image: misty terraced rice fields + Himalayan mountains -->
   <div class="pointer-events-none absolute inset-0 z-0"
-    style="background: url('/images/stats-bg.jpg') center 40%/cover no-repeat;"></div>
+    style="background: url('/images/stats-bg.webp') center 40%/cover no-repeat;"></div>
   <!-- Reduced overlay so image is clearly visible -->
   <div class="pointer-events-none absolute inset-0 z-0"
     style="background: linear-gradient(160deg, rgba(255,253,248,0.60) 0%, rgba(240,250,244,0.55) 50%, rgba(255,253,248,0.62) 100%);">
@@ -373,7 +382,7 @@
 <section id="stays" class="py-24 md:py-32 relative overflow-hidden">
   <!-- Background: Himalayan village nestled in pine forest at golden hour -->
   <div class="pointer-events-none absolute inset-0 z-0"
-    style="background: url('/images/listings-bg.jpg') center 30%/cover no-repeat;"></div>
+    style="background: url('/images/listings-bg.webp') center 30%/cover no-repeat;"></div>
   <!-- Warm light overlay – keeps cards & text very readable -->
   <div class="pointer-events-none absolute inset-0 z-0"
     style="background: linear-gradient(180deg, rgba(245,250,246,0.78) 0%, rgba(252,250,244,0.72) 50%, rgba(245,250,246,0.80) 100%);">
@@ -445,7 +454,7 @@
 
 <!-- ============ EXPERIENCES (With Serene Himalayan Tea Hills Background & Canvas) ============ -->
 <section id="experiences" class="bg-experiences-img relative text-cloud py-24 md:py-32 overflow-hidden"
-  style="background: url('/images/experiences-bg.jpg') center/cover no-repeat;">
+  style="background: url('/images/experiences-bg.webp') center/cover no-repeat;">
   <!-- Balanced atmospheric overlay that keeps the scenic tea hills clearly visible while maintaining contrast -->
   <div class="absolute inset-0 bg-gradient-to-b from-pine/85 via-black/40 to-pine/90"></div>
 
@@ -484,7 +493,8 @@
           (click)="onCityCardClick(item.id)"
           class="reveal exp-card glass-card-dark rounded-2xl overflow-hidden border border-white/20 shadow-xl flex flex-col group cursor-pointer">
           <div class="h-40 relative overflow-hidden">
-            <img [src]="item.image_url ? (assetUrl + item.image_url) : '/images/exp-tea.jpg'" [alt]="item.name || 'Himalayan region'"
+            <img [src]="item.image_url ? (assetUrl + item.image_url) : '/images/exp-tea.webp'" [alt]="item.name || 'Himalayan region'"
+              loading="lazy" decoding="async"
               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
             <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
             <span
@@ -530,8 +540,9 @@
     </div>
     <div
       class="reveal order-1 lg:order-2 rounded-3xl overflow-hidden h-80 md:h-[28rem] shadow-2xl relative border-4 border-white/80 animate-float-gentle">
-      <img src="/images/host-spotlight.jpg"
+      <img src="/images/host-spotlight.webp"
         alt="Yangchen and Tenzin Bhutia on the porch of their homestay in Rumtek, Sikkim"
+        loading="lazy" decoding="async"
         class="w-full h-full object-cover object-center" />
       <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
       <div
@@ -544,7 +555,7 @@
 
 <!-- ============ HOW IT WORKS (Himalayan Night Pine Forest & Constellation Canvas) ============ -->
 <section id="how" class="bg-how-img relative text-cloud py-24 md:py-32 overflow-hidden"
-  style="background: url('/images/how-it-works-bg.jpg') center/cover no-repeat;">
+  style="background: url('/images/how-it-works-bg.webp') center/cover no-repeat;">
   <!-- Dark pine & starry night atmospheric overlay -->
   <div class="absolute inset-0 bg-gradient-to-b from-pine/95 via-pine/80 to-pine/95"></div>
 
@@ -651,7 +662,7 @@
 
 <!-- ============ NEWSLETTER CTA (Alpine Golden Hour Snow Peaks & Floating Embers Canvas) ============ -->
 <section class="bg-newsletter-img relative text-cloud py-24 md:py-32 overflow-hidden"
-  style="background: url('/images/newsletter-bg.jpg') center/cover no-repeat;">
+  style="background: url('/images/newsletter-bg.webp') center/cover no-repeat;">
   <!-- Dark alpine sunset overlay -->
   <div class="absolute inset-0 bg-gradient-to-b from-pine/90 via-black/60 to-pine/95"></div>
 

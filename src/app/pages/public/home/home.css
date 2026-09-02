@@ -15,19 +15,19 @@
 
 /* ---------- Section Background Images ---------- */
 .bg-hero-img {
-    background: url('/images/hero-himalaya.jpg') center/cover no-repeat;
+    background: url('/images/hero-himalaya.webp') center/cover no-repeat;
 }
 
 .bg-experiences-img {
-    background: url('/images/experiences-bg.jpg') center/cover no-repeat;
+    background: url('/images/experiences-bg.webp') center/cover no-repeat;
 }
 
 .bg-how-img {
-    background: url('/images/how-it-works-bg.jpg') center/cover no-repeat;
+    background: url('/images/how-it-works-bg.webp') center/cover no-repeat;
 }
 
 .bg-newsletter-img {
-    background: url('/images/newsletter-bg.jpg') center/cover no-repeat;
+    background: url('/images/newsletter-bg.webp') center/cover no-repeat;
 }
 
 /* ---------- Topo / Contour Pattern Backgrounds ---------- */
