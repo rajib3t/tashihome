@@ -76,7 +76,33 @@ export interface OccupancyToday {
   today_check_ins: number;
   today_check_outs: number;
   active_guests: number;
+  blocked_units_today?: number;
 }
+
+export interface RoomBlockStats {
+  total: number;
+  active: number;
+  upcoming: number;
+  past: number;
+  total_units_blocked_today: number;
+}
+
+export type RoomBlocksSummary = RoomBlockStats;
+
+export interface RecentRoomBlock {
+  id: string;
+  property_name: string | null;
+  property_slug: string | null;
+  room_type_name: string | null;
+  block_start_date: string; // YYYY-MM-DD
+  block_end_date: string;   // YYYY-MM-DD
+  units_blocked: number;
+  reason: string | null;
+  created_by_name: string | null;
+  created_at: string | null;
+}
+
+export type DashboardRoomBlockItem = RecentRoomBlock;
 
 export interface ReviewsSummary {
   total_reviews: number;
@@ -194,6 +220,7 @@ export interface AdminDashboardData {
   users_summary: UsersSummary;
   refunds_summary: RefundsSummary;
   payouts_summary?: PayoutStats;
+  room_blocks_summary?: RoomBlockStats;
   occupancy_today: OccupancyToday;
   revenue_trends: RevenueTrend[];
   recent_bookings: RecentBooking[];
@@ -201,6 +228,7 @@ export interface AdminDashboardData {
   recent_users: RecentUser[];
   recent_refund_requests?: DashboardRefundItem[];
   recent_payouts?: DashboardPayoutItem[];
+  recent_room_blocks?: RecentRoomBlock[];
   top_properties: TopProperty[];
 }
 
@@ -211,6 +239,7 @@ export interface AdminDashboardSummaryData {
   users_summary: UsersSummary;
   refunds_summary: RefundsSummary;
   payouts_summary?: PayoutStats;
+  room_blocks_summary?: RoomBlockStats;
   occupancy_today: OccupancyToday;
 }
 
@@ -234,11 +263,13 @@ export interface VendorDashboardData {
   properties_summary: PropertiesSummary;
   payouts_summary?: PayoutStats;
   reviews_summary: ReviewsSummary;
+  room_blocks_summary?: RoomBlockStats;
   occupancy_today: OccupancyToday;
   revenue_trends: RevenueTrend[];
   recent_bookings: RecentBooking[];
   upcoming_bookings: RecentBooking[];
   recent_payouts?: DashboardPayoutItem[];
+  recent_room_blocks?: RecentRoomBlock[];
   top_properties: TopProperty[];
 }
 
@@ -248,6 +279,7 @@ export interface VendorDashboardSummaryData {
   properties_summary: PropertiesSummary;
   payouts_summary?: PayoutStats;
   reviews_summary: ReviewsSummary;
+  room_blocks_summary?: RoomBlockStats;
   occupancy_today: OccupancyToday;
 }
 

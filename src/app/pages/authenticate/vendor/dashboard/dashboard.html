@@ -105,6 +105,73 @@
 
   <!-- ─── Main Content ─────────────────────────────────────────────────────── -->
   @if (dashboardData(); as data) {
+    <!-- ─── TODAY'S PROPERTY PULSE & OCCUPANCY STRIP ──────────────────────── -->
+    @if (data.occupancy_today || data.room_blocks_summary) {
+      <div class="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Today Check-ins -->
+        <div class="flex items-center gap-3.5 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-3.5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Today Check-Ins</p>
+            <p class="text-xl font-bold text-slate-900 dark:text-white">{{ data.occupancy_today?.today_check_ins || 0 }}</p>
+          </div>
+        </div>
+
+        <!-- Today Check-outs -->
+        <div class="flex items-center gap-3.5 rounded-2xl border border-purple-100 bg-purple-50/50 p-3.5 dark:border-purple-900/40 dark:bg-purple-950/20">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-600 text-white shadow-xs">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Today Check-Outs</p>
+            <p class="text-xl font-bold text-slate-900 dark:text-white">{{ data.occupancy_today?.today_check_outs || 0 }}</p>
+          </div>
+        </div>
+
+        <!-- Active Guests In-House -->
+        <div class="flex items-center gap-3.5 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3.5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Active In-House</p>
+            <p class="text-xl font-bold text-slate-900 dark:text-white">{{ data.occupancy_today?.active_guests || 0 }}</p>
+          </div>
+        </div>
+
+        <!-- Blocked Room Units -->
+        <div class="flex items-center gap-3.5 rounded-2xl border border-amber-200/80 bg-amber-50/60 p-3.5 dark:border-amber-900/50 dark:bg-amber-950/25">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Blocked Room Units</p>
+            <div class="flex items-center justify-between gap-1">
+              <p class="text-xl font-bold text-slate-900 dark:text-white">
+                {{ data.occupancy_today?.blocked_units_today ?? data.room_blocks_summary?.total_units_blocked_today ?? 0 }}
+                <span class="text-xs font-normal text-slate-400">Units</span>
+              </p>
+              <a routerLink="/vendor/room-blocks" class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 hover:underline dark:bg-amber-900/50 dark:text-amber-300 shrink-0">
+                Manage &rarr;
+              </a>
+            </div>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+              {{ data.room_blocks_summary?.active ?? 0 }} active hold{{ (data.room_blocks_summary?.active ?? 0) === 1 ? '' : 's' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    }
 
     <!-- ─── TOP KPI METRICS STRIP ─────────────────────────────────────────── -->
     <div class="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -202,10 +269,19 @@
         <p class="mt-2 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
           {{ data.occupancy_today?.active_guests || 0 }} <span class="text-sm font-normal text-slate-400">Active Guests</span>
         </p>
-        <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
-          <span class="text-blue-600 dark:text-blue-400">↓ {{ data.occupancy_today?.today_check_ins || 0 }} Arriving</span>
-          <span>·</span>
-          <span class="text-purple-600 dark:text-purple-400">↑ {{ data.occupancy_today?.today_check_outs || 0 }} Departing</span>
+        <div class="mt-2 flex flex-wrap items-center justify-between gap-1 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+          <div class="flex items-center gap-1.5">
+            <span class="text-blue-600 dark:text-blue-400">↓ {{ data.occupancy_today?.today_check_ins || 0 }} Arr.</span>
+            <span>·</span>
+            <span class="text-purple-600 dark:text-purple-400">↑ {{ data.occupancy_today?.today_check_outs || 0 }} Dep.</span>
+          </div>
+          <a
+            routerLink="/vendor/room-blocks"
+            class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold text-[10px] bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60 hover:underline"
+            title="Manage blocked room units"
+          >
+            <span>🔒 {{ data.occupancy_today?.blocked_units_today ?? data.room_blocks_summary?.total_units_blocked_today ?? 0 }} Blocked</span>
+          </a>
         </div>
       </div>
 
@@ -561,7 +637,154 @@
       </div>
     </div>
 
-    <!-- ─── SECTION 3: RECENT PAYOUTS & TOP PROPERTIES GRID ─────────────────── -->
+    <!-- ─── SECTION 3: ROOM HOLDS & INVENTORY BLOCKS ────────────────────────── -->
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+      <div>
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <span class="inline-flex h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+              <span>🔒 Room Holds & Inventory Blocks</span>
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {{ data.room_blocks_summary?.total_units_blocked_today || 0 }} unit{{ (data.room_blocks_summary?.total_units_blocked_today || 0) === 1 ? '' : 's' }} blocked today across {{ data.room_blocks_summary?.active || 0 }} active hold{{ (data.room_blocks_summary?.active || 0) === 1 ? '' : 's' }}
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <a
+              routerLink="/vendor/room-blocks"
+              class="cursor-pointer inline-flex items-center gap-1 rounded-xl bg-amber-500 hover:bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+            >
+              + Block Dates
+            </a>
+            <a
+              routerLink="/vendor/room-blocks"
+              class="cursor-pointer inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+              Manage Blocks &rarr;
+            </a>
+          </div>
+        </div>
+
+        <!-- Mini KPI Chips -->
+        <div class="grid grid-cols-3 gap-2.5 mb-4">
+          <div class="rounded-xl border border-amber-200/80 bg-amber-50/50 p-3 text-center dark:border-amber-900/40 dark:bg-amber-950/20">
+            <p class="text-[11px] font-medium text-amber-800 dark:text-amber-300">Active Today</p>
+            <p class="text-lg sm:text-xl font-bold text-amber-900 dark:text-amber-100 mt-0.5">
+              {{ data.room_blocks_summary?.active || 0 }}
+            </p>
+          </div>
+          <div class="rounded-xl border border-blue-200/80 bg-blue-50/50 p-3 text-center dark:border-blue-900/40 dark:bg-blue-950/20">
+            <p class="text-[11px] font-medium text-blue-800 dark:text-blue-300">Upcoming Holds</p>
+            <p class="text-lg sm:text-xl font-bold text-blue-900 dark:text-blue-100 mt-0.5">
+              {{ data.room_blocks_summary?.upcoming || 0 }}
+            </p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-center dark:border-slate-700/60 dark:bg-slate-800/40">
+            <p class="text-[11px] font-medium text-slate-600 dark:text-slate-400">Total Holds</p>
+            <p class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-0.5">
+              {{ data.room_blocks_summary?.total || 0 }}
+            </p>
+          </div>
+        </div>
+
+        @if (recentRoomBlocks().length > 0) {
+          <div class="w-full overflow-x-auto">
+            <table class="min-w-[620px] w-full divide-y divide-slate-100 text-left text-xs dark:divide-slate-800">
+              <thead class="bg-slate-50 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-900/60 dark:text-slate-400">
+                <tr>
+                  <th class="py-2.5 px-3">Property / Room Type</th>
+                  <th class="py-2.5 px-3">Dates & Nights</th>
+                  <th class="py-2.5 px-2 text-center">Units</th>
+                  <th class="py-2.5 px-3">Reason / Held By</th>
+                  <th class="py-2.5 px-3 text-center">Status</th>
+                  <th class="py-2.5 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                @for (block of recentRoomBlocks().slice(0, 5); track block.id) {
+                  <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                    <td class="py-3 px-3">
+                      <p class="font-medium text-slate-900 dark:text-white truncate max-w-[180px]">
+                        {{ block.property_name || 'Property' }}
+                      </p>
+                      <p class="text-[10px] text-slate-400 truncate max-w-[180px]">
+                        {{ block.room_type_name || 'All Units' }}
+                      </p>
+                    </td>
+                    <td class="py-3 px-3 whitespace-nowrap">
+                      <p class="font-medium text-slate-800 dark:text-slate-200">
+                        {{ formatDate(block.block_start_date) }} &ndash; {{ formatDate(block.block_end_date) }}
+                      </p>
+                      <p class="text-[10px] text-slate-400">
+                        ({{ calculateNights(block.block_start_date, block.block_end_date) }} night{{ calculateNights(block.block_start_date, block.block_end_date) === 1 ? '' : 's' }})
+                      </p>
+                    </td>
+                    <td class="py-3 px-2 text-center whitespace-nowrap">
+                      <span class="inline-flex px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 font-bold text-slate-800 dark:text-slate-200 text-xs">
+                        {{ block.units_blocked }}
+                      </span>
+                    </td>
+                    <td class="py-3 px-3">
+                      <p class="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[180px]">
+                        {{ block.reason || 'Host manual hold' }}
+                      </p>
+                      @if (block.created_by_name) {
+                        <p class="text-[10px] text-slate-400 truncate max-w-[180px]">
+                          By: {{ block.created_by_name }}
+                        </p>
+                      }
+                    </td>
+                    <td class="py-3 px-3 text-center whitespace-nowrap">
+                      @let status = getRoomBlockStatus(block.block_start_date, block.block_end_date);
+                      <span
+                        class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-semibold border"
+                        [ngClass]="getRoomBlockStatusBadgeClass(status)"
+                      >
+                        @if (status === 'active') { Active Now }
+                        @else if (status === 'upcoming') { Upcoming }
+                        @else { Expired }
+                      </span>
+                    </td>
+                    <td class="py-3 px-3 text-right whitespace-nowrap">
+                      <a
+                        routerLink="/vendor/room-blocks"
+                        class="cursor-pointer text-xs font-semibold text-primary hover:underline"
+                      >
+                        View &rarr;
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="py-10 text-center text-xs text-slate-500 dark:text-slate-400">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <p class="font-medium text-slate-700 dark:text-slate-300">No recent room holds or blockages recorded.</p>
+            <p class="mt-0.5 text-[11px] text-slate-400">Temporarily take rooms off the calendar for maintenance, repairs, or personal use.</p>
+            <a
+              routerLink="/vendor/room-blocks"
+              class="mt-3 inline-flex items-center gap-1 rounded-xl bg-amber-500 hover:bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+            >
+              + Block Dates
+            </a>
+          </div>
+        }
+      </div>
+
+      <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+        <span>{{ data.room_blocks_summary?.total || 0 }} Total Inventory Holds</span>
+        <a routerLink="/vendor/room-blocks" class="text-primary hover:underline font-medium">Manage Room Blocks &rarr;</a>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 4: RECENT PAYOUTS & TOP PROPERTIES GRID ─────────────────── -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
       <!-- Recent Payout Transfers (Left) -->

@@ -7,6 +7,8 @@ import {
   DashboardBookingItem,
   DashboardPayoutItem,
   PayoutStats,
+  RecentRoomBlock,
+  RoomBlockStats,
   TopPropertyItem,
   VendorDashboardData,
 } from '../../../../services/dashboard/dashboard.model';
@@ -80,11 +82,13 @@ export class Dashboard implements OnInit {
     };
   });
   readonly reviewsSummary = computed(() => this.dashboardData()?.reviews_summary);
+  readonly roomBlocksSummary = computed(() => this.dashboardData()?.room_blocks_summary);
   readonly occupancyToday = computed(() => this.dashboardData()?.occupancy_today);
   readonly revenueTrends = computed(() => this.dashboardData()?.revenue_trends || []);
   readonly recentBookings = computed(() => this.dashboardData()?.recent_bookings || []);
   readonly upcomingBookings = computed(() => this.dashboardData()?.upcoming_bookings || []);
   readonly recentPayouts = computed(() => this.dashboardData()?.recent_payouts || []);
+  readonly recentRoomBlocks = computed(() => this.dashboardData()?.recent_room_blocks || []);
   readonly topProperties = computed(() => this.dashboardData()?.top_properties || []);
 
   readonly propertiesByType = computed(() => {
@@ -262,6 +266,35 @@ export class Dashboard implements OnInit {
   getStarArray(rating: number = 0): { filled: boolean }[] {
     const rounded = Math.round(rating);
     return Array.from({ length: 5 }, (_, i) => ({ filled: i < rounded }));
+  }
+
+  getRoomBlockStatus(startDate?: string | null, endDate?: string | null): 'active' | 'upcoming' | 'past' {
+    if (!startDate || !endDate) return 'past';
+    const s = startDate.split('T')[0];
+    const e = endDate.split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    if (e < today) return 'past';
+    if (s <= today && e >= today) return 'active';
+    return 'upcoming';
+  }
+
+  getRoomBlockStatusBadgeClass(status: string): string {
+    const s = status?.toLowerCase();
+    if (s === 'active') {
+      return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50';
+    }
+    if (s === 'upcoming') {
+      return 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50';
+    }
+    return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700';
+  }
+
+  calculateNights(startDate?: string | null, endDate?: string | null): number {
+    if (!startDate || !endDate) return 0;
+    const s = new Date(startDate.split('T')[0]);
+    const e = new Date(endDate.split('T')[0]);
+    const diffDays = Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
   }
 
   resolveAssetUrl(url?: string | null): string {

@@ -42,7 +42,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class Properties implements OnInit, AfterViewInit, OnDestroy {
   public readonly assetUrl = environment.assetUrl;
-
+  public  readonly appName = environment.applicationName;
   // Services
   public readonly propertyService = inject(PropertyService);
   public readonly cityService = inject(CityService);

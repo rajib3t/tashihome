@@ -1,49 +1,53 @@
 <!-- ============ STAYS HERO & SEARCH HEADER ============ -->
 <section
-  class="relative bg-pine text-cloud overflow-hidden pt-32 pb-24 md:pt-40 md:pb-32"
+  class="relative bg-pine text-cloud overflow-hidden pt-32 pb-24 md:pt-40 md:pb-32 motion-safe:[&_.mist-anim]:block"
   style="background: url('/images/listings-bg.jpg') center/cover no-repeat;"
 >
   <!-- Deep atmospheric gradient overlays -->
   <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-pine/75 to-pine/95"></div>
 
-  <!-- Interactive canvas for drifting mountain mist & golden stardust -->
-  <canvas id="staysHeroCanvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+  <!-- Interactive canvas for drifting mountain mist & golden stardust. Disabled for users who prefer reduced motion. -->
+  <canvas
+    id="staysHeroCanvas"
+    class="absolute inset-0 w-full h-full pointer-events-none motion-reduce:hidden"
+    aria-hidden="true"
+  ></canvas>
 
-  <!-- Ambient glowing backdrop orbs -->
-  <div class="pointer-events-none absolute -top-24 right-0 w-[42rem] h-[42rem] bg-moss/20 rounded-full blur-[130px] animate-mist-a"></div>
-  <div class="pointer-events-none absolute bottom-0 left-0 w-[34rem] h-[34rem] bg-ochre/15 rounded-full blur-[130px] animate-mist-b"></div>
+  <!-- Ambient glowing backdrop orbs (motion paused for prefers-reduced-motion via .animate-mist-a/b in global CSS) -->
+  <div class="pointer-events-none absolute -top-24 right-0 w-[42rem] h-[42rem] bg-moss/20 rounded-full blur-[130px] motion-safe:animate-mist-a" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute bottom-0 left-0 w-[34rem] h-[34rem] bg-ochre/15 rounded-full blur-[130px] motion-safe:animate-mist-b" aria-hidden="true"></div>
 
   <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10">
     <div class="max-w-3xl">
       <!-- Breadcrumb / Badge Pill -->
       <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-6 reveal">
-        <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
-        <p class="eyebrow text-mist text-[11px] tracking-wider m-0">Tashihomes Register • Eastern Himalaya</p>
+        <span class="w-2 h-2 rounded-full bg-ochre motion-safe:animate-pulse" aria-hidden="true"></span>
+        <p class="text-mist text-xs m-0">{{ appName }} Register · Eastern Himalaya</p>
       </div>
 
       <!-- Main Headline -->
       <h1 class="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight reveal">
-        Discover genuine <em class="hero-accent font-accent not-italic text-ochre">homestays</em> in the hills.
+        Discover genuine homestays in the hills.
       </h1>
 
       <p class="mt-6 text-cloud/85 text-base sm:text-lg md:text-xl font-light leading-relaxed reveal">
-        Hand-picked, visited on foot, and run by Himalayan families. Find quiet cottages, tea-estate porches, and hearth-warmed rooms across North Bengal & Sikkim.
+        Hand-picked, visited on foot, and run by Himalayan families. Find quiet cottages, tea-estate porches, and hearth-warmed rooms across North Bengal &amp; Sikkim.
       </p>
     </div>
 
     <!-- ============ FLOATING SEARCH & FILTER CARD ============ -->
     <div class="mt-12 reveal">
       <div class="bg-white/95 dark:bg-pine/90 text-ink dark:text-cloud backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-2xl border border-white/30 dark:border-cloud/10">
-        
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-center">
-          
+
+        <form class="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-start" (submit)="$event.preventDefault()">
+
           <!-- Keyword / Search Input -->
           <div class="md:col-span-4 relative">
-            <label for="search-input" class="block text-[11px] font-semibold uppercase tracking-wider text-ink/60 dark:text-cloud/60 mb-1.5">
-              Search Homestay
+            <label for="search-input" class="block text-xs font-semibold text-ink/60 dark:text-cloud/60 mb-1.5">
+              Search homestay
             </label>
             <div class="relative flex items-center">
-              <span class="absolute left-3.5 text-moss shrink-0 pointer-events-none">
+              <span class="absolute left-3.5 text-moss shrink-0 pointer-events-none" aria-hidden="true">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
@@ -54,27 +58,28 @@
                 [value]="searchKeyword()"
                 (input)="onSearchInput($event)"
                 placeholder="Homestay name, village, or host..."
-                class="w-full pl-10 pr-9 py-2.5 bg-cloud/80 dark:bg-black/20 border border-ink/15 dark:border-cloud/15 rounded-xl text-sm focus:bg-white dark:focus:bg-black/40 focus:border-ochre transition-all text-ink dark:text-cloud placeholder:text-ink/40 dark:placeholder:text-cloud/40"
+                class="w-full pl-10 pr-9 py-2.5 bg-cloud/80 dark:bg-black/20 border border-ink/15 dark:border-cloud/15 rounded-xl text-sm focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-2 focus:ring-ochre focus:border-ochre transition-all text-ink dark:text-cloud placeholder:text-ink/40 dark:placeholder:text-cloud/40"
               />
-              <button
-                *ngIf="searchKeyword()"
-                type="button"
-                (click)="clearSearch()"
-                class="absolute right-2.5 p-1 text-ink/40 hover:text-ink dark:text-cloud/40 dark:hover:text-cloud transition-colors text-xs"
-                title="Clear search"
-              >
-                ✕
-              </button>
+              @if (searchKeyword()) {
+                <button
+                  type="button"
+                  (click)="clearSearch()"
+                  aria-label="Clear search"
+                  class="absolute right-2.5 p-1 text-ink/40 hover:text-ink dark:text-cloud/40 dark:hover:text-cloud focus:outline-none focus:ring-2 focus:ring-ochre rounded transition-colors text-xs"
+                >
+                  <span aria-hidden="true">✕</span>
+                </button>
+              }
             </div>
           </div>
 
           <!-- Destination / City Dropdown -->
           <div class="md:col-span-3">
-            <label for="city-select" class="block text-[11px] font-semibold uppercase tracking-wider text-ink/60 dark:text-cloud/60 mb-1.5">
-              Destination / Region
+            <label for="city-select" class="block text-xs font-semibold text-ink/60 dark:text-cloud/60 mb-1.5">
+              Destination / region
             </label>
             <div class="relative">
-              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-moss shrink-0 pointer-events-none">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-moss shrink-0 pointer-events-none" aria-hidden="true">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -84,14 +89,14 @@
                 id="city-select"
                 [value]="selectedCityId()"
                 (change)="onCitySelect($any($event.target).value)"
-                class="w-full pl-10 pr-8 py-2.5 bg-cloud/80 dark:bg-black/20 border border-ink/15 dark:border-cloud/15 rounded-xl text-sm focus:bg-white dark:focus:bg-black/40 focus:border-ochre transition-all text-ink dark:text-cloud cursor-pointer appearance-none"
+                class="w-full pl-10 pr-8 py-2.5 bg-cloud/80 dark:bg-black/20 border border-ink/15 dark:border-cloud/15 rounded-xl text-sm focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-2 focus:ring-ochre focus:border-ochre transition-all text-ink dark:text-cloud cursor-pointer appearance-none"
               >
-                <option value="">All North Bengal & Hills</option>
+                <option value="">All North Bengal &amp; Hills</option>
                 @for (city of cities(); track city.id) {
                   <option [value]="city.id">{{ city.name }}</option>
                 }
               </select>
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ink/40 dark:text-cloud/40 text-xs">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ink/40 dark:text-cloud/40 text-xs" aria-hidden="true">
                 ▼
               </span>
             </div>
@@ -99,11 +104,11 @@
 
           <!-- Property Type Dropdown -->
           <div class="md:col-span-3">
-            <label for="type-select" class="block text-[11px] font-semibold uppercase tracking-wider text-ink/60 dark:text-cloud/60 mb-1.5">
-              Property Type
+            <label for="type-select" class="block text-xs font-semibold text-ink/60 dark:text-cloud/60 mb-1.5">
+              Property type
             </label>
             <div class="relative">
-              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-moss shrink-0 pointer-events-none">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-moss shrink-0 pointer-events-none" aria-hidden="true">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
@@ -112,14 +117,14 @@
                 id="type-select"
                 [value]="selectedType()"
                 (change)="onTypeSelect($any($event.target).value)"
-                class="w-full pl-10 pr-8 py-2.5 bg-cloud/80 dark:bg-black/20 border border-ink/15 dark:border-cloud/15 rounded-xl text-sm focus:bg-white dark:focus:bg-black/40 focus:border-ochre transition-all text-ink dark:text-cloud cursor-pointer appearance-none"
+                class="w-full pl-10 pr-8 py-2.5 bg-cloud/80 dark:bg-black/20 border border-ink/15 dark:border-cloud/15 rounded-xl text-sm focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-2 focus:ring-ochre focus:border-ochre transition-all text-ink dark:text-cloud cursor-pointer appearance-none"
               >
-                <option value="">All Types of Stays</option>
+                <option value="">All types of stays</option>
                 @for (t of propertyTypes; track t) {
                   <option [value]="t">{{ propertyTypeLabels[t] || t }}</option>
                 }
               </select>
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ink/40 dark:text-cloud/40 text-xs">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ink/40 dark:text-cloud/40 text-xs" aria-hidden="true">
                 ▼
               </span>
             </div>
@@ -130,23 +135,24 @@
             <button
               type="button"
               (click)="toggleFeatured()"
-              class="w-full py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer shadow-xs"
+              [attr.aria-pressed]="isFeaturedOnly()"
+              class="w-full py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-ochre"
               [ngClass]="isFeaturedOnly()
                 ? 'bg-ochre text-cloud border-ochre shadow-md shadow-ochre/30'
                 : 'bg-cloud/80 dark:bg-black/20 text-ink/80 dark:text-cloud/80 border-ink/15 dark:border-cloud/15 hover:bg-cloud hover:text-ink'"
             >
-              <span class="text-sm">★</span>
-              <span>{{ isFeaturedOnly() ? 'Featured Only' : 'Show Featured' }}</span>
+              <span class="text-sm" aria-hidden="true">★</span>
+              <span>{{ isFeaturedOnly() ? 'Featured only' : 'Show featured' }}</span>
             </button>
           </div>
 
-        </div>
+        </form>
 
         <!-- Destination Quick Chips Row -->
         @if (cities().length > 0) {
           <div class="mt-4 pt-4 border-t border-ink/10 dark:border-cloud/10 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
             <span class="text-xs font-medium text-ink/50 dark:text-cloud/50 whitespace-nowrap shrink-0 flex items-center gap-1">
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
               Popular:
@@ -154,18 +160,20 @@
             <button
               type="button"
               (click)="onCitySelect('')"
-              class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border"
+              [attr.aria-pressed]="selectedCityId() === ''"
+              class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border focus:outline-none focus:ring-2 focus:ring-ochre"
               [ngClass]="selectedCityId() === ''
                 ? 'bg-pine text-cloud border-pine dark:bg-ochre dark:text-ink dark:border-ochre font-semibold shadow-xs'
                 : 'bg-cloud dark:bg-black/30 text-ink/70 dark:text-cloud/70 border-ink/10 dark:border-cloud/10 hover:border-moss hover:text-pine'"
             >
-              All Destinations
+              All destinations
             </button>
             @for (city of cities(); track city.id) {
               <button
                 type="button"
                 (click)="onCitySelect(city.id)"
-                class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border"
+                [attr.aria-pressed]="selectedCityId() === city.id"
+                class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border focus:outline-none focus:ring-2 focus:ring-ochre"
                 [ngClass]="selectedCityId() === city.id
                   ? 'bg-pine text-cloud border-pine dark:bg-ochre dark:text-ink dark:border-ochre font-semibold shadow-xs'
                   : 'bg-cloud dark:bg-black/30 text-ink/70 dark:text-cloud/70 border-ink/10 dark:border-cloud/10 hover:border-moss hover:text-pine'"
@@ -181,7 +189,7 @@
   </div>
 
   <!-- Decorative mountain silhouette wave -->
-  <div class="absolute bottom-0 inset-x-0 pointer-events-none opacity-80">
+  <div class="absolute bottom-0 inset-x-0 pointer-events-none opacity-80" aria-hidden="true">
     <svg viewBox="0 0 1440 100" class="w-full h-auto" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M0 50L160 25L320 65L480 15L640 55L800 10L960 50L1120 25L1280 60L1440 30V100H0V50Z" fill="#F3FAFB" />
     </svg>
@@ -194,18 +202,18 @@
 
     <!-- Control & Metadata Bar -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-ink/10">
-      
+
       <!-- Left: Result summary count & active filters -->
       <div class="space-y-2">
         <div class="flex items-center gap-2.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-moss animate-pulse"></span>
-          <h2 class="font-display text-2xl md:text-3xl text-ink">
+          <span class="w-2.5 h-2.5 rounded-full bg-moss motion-safe:animate-pulse" aria-hidden="true"></span>
+          <h2 class="font-display text-2xl md:text-3xl text-ink" aria-live="polite">
             @if (loading()) {
               <span>Searching mountain homes...</span>
             } @else if (meta().total > 0) {
-              <span>Showing {{ getShowingFrom() }}–{{ getShowingTo() }} of {{ meta().total }} Homestays</span>
+              <span>Showing {{ getShowingFrom() }}–{{ getShowingTo() }} of {{ meta().total }} homestays</span>
             } @else {
-              <span>No Homestays Found</span>
+              <span>No homestays found</span>
             }
           </h2>
         </div>
@@ -214,39 +222,39 @@
         @if (hasActiveFilters()) {
           <div class="flex flex-wrap items-center gap-2 pt-1">
             <span class="text-xs text-ink/50 font-medium">Active filters:</span>
-            
+
             @if (searchKeyword().trim()) {
               <span class="inline-flex items-center gap-1 text-xs bg-white border border-ink/15 px-2.5 py-0.5 rounded-full text-ink shadow-xs">
                 Keyword: "{{ searchKeyword() }}"
-                <button type="button" (click)="clearSearch()" class="hover:text-red-500 font-bold ml-1">✕</button>
+                <button type="button" (click)="clearSearch()" aria-label="Remove keyword filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded">✕</button>
               </span>
             }
 
             @if (selectedCityId()) {
               <span class="inline-flex items-center gap-1 text-xs bg-white border border-ink/15 px-2.5 py-0.5 rounded-full text-ink shadow-xs">
-                📍 {{ getSelectedCityName() }}
-                <button type="button" (click)="onCitySelect('')" class="hover:text-red-500 font-bold ml-1">✕</button>
+                {{ getSelectedCityName() }}
+                <button type="button" (click)="onCitySelect('')" aria-label="Remove destination filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded">✕</button>
               </span>
             }
 
             @if (selectedType()) {
               <span class="inline-flex items-center gap-1 text-xs bg-white border border-ink/15 px-2.5 py-0.5 rounded-full text-ink shadow-xs">
-                🏡 {{ getSelectedTypeLabel() }}
-                <button type="button" (click)="onTypeSelect('')" class="hover:text-red-500 font-bold ml-1">✕</button>
+                {{ getSelectedTypeLabel() }}
+                <button type="button" (click)="onTypeSelect('')" aria-label="Remove property type filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded">✕</button>
               </span>
             }
 
             @if (isFeaturedOnly()) {
               <span class="inline-flex items-center gap-1 text-xs bg-white border border-ink/15 px-2.5 py-0.5 rounded-full text-ink shadow-xs">
-                ★ Featured
-                <button type="button" (click)="toggleFeatured()" class="hover:text-red-500 font-bold ml-1">✕</button>
+                Featured
+                <button type="button" (click)="toggleFeatured()" aria-label="Remove featured filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded">✕</button>
               </span>
             }
 
             <button
               type="button"
               (click)="resetAllFilters()"
-              class="text-xs text-ochreD hover:text-ochre font-semibold ml-1 underline transition-colors"
+              class="text-xs text-ochreD hover:text-ochre font-semibold ml-1 underline transition-colors focus:outline-none focus:ring-2 focus:ring-ochre rounded"
             >
               Clear all
             </button>
@@ -256,51 +264,53 @@
 
       <!-- Right: Sort Dropdown, Page Size, and View Switcher -->
       <div class="flex flex-wrap items-center gap-3 self-end md:self-center">
-        
+
         <!-- Sort By Dropdown -->
         <div class="flex items-center gap-2">
-          <label for="sort-select" class="text-xs font-semibold text-ink/60 uppercase tracking-wider hidden sm:inline-block">
+          <label for="sort-select" class="text-xs font-semibold text-ink/60 hidden sm:inline-block">
             Sort by:
           </label>
           <select
             id="sort-select"
             [value]="sortOption()"
             (change)="onSortChange($any($event.target).value)"
-            class="py-2 pl-3 pr-8 bg-white border border-ink/15 rounded-xl text-xs font-medium text-ink focus:border-ochre focus:ring-1 focus:ring-ochre shadow-xs cursor-pointer"
+            class="py-2 pl-3 pr-8 bg-white border border-ink/15 rounded-xl text-xs font-medium text-ink focus:border-ochre focus:outline-none focus:ring-2 focus:ring-ochre shadow-xs cursor-pointer"
           >
-            <option value="default">Featured &amp; Recommended</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
+            <option value="default">Featured &amp; recommended</option>
+            <option value="price_asc">Price: low to high</option>
+            <option value="price_desc">Price: high to low</option>
             <option value="name_asc">Name: A to Z</option>
             <option value="name_desc">Name: Z to A</option>
           </select>
         </div>
 
         <!-- View Mode Switcher -->
-        <div class="inline-flex items-center bg-white border border-ink/15 rounded-xl p-1 shadow-xs">
+        <div class="inline-flex items-center bg-white border border-ink/15 rounded-xl p-1 shadow-xs" role="group" aria-label="Switch view">
           <button
             type="button"
             (click)="setViewMode('grid')"
+            [attr.aria-pressed]="viewMode() === 'grid'"
             [class.bg-pine]="viewMode() === 'grid'"
             [class.text-cloud]="viewMode() === 'grid'"
             [class.text-ink]="viewMode() !== 'grid'"
-            class="p-1.5 rounded-lg transition-colors cursor-pointer"
-            title="Grid View"
+            class="p-1.5 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ochre"
+            aria-label="Grid view"
           >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
             </svg>
           </button>
           <button
             type="button"
             (click)="setViewMode('list')"
+            [attr.aria-pressed]="viewMode() === 'list'"
             [class.bg-pine]="viewMode() === 'list'"
             [class.text-cloud]="viewMode() === 'list'"
             [class.text-ink]="viewMode() !== 'list'"
-            class="p-1.5 rounded-lg transition-colors cursor-pointer"
-            title="List View"
+            class="p-1.5 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ochre"
+            aria-label="List view"
           >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
@@ -312,9 +322,9 @@
 
     <!-- ============ LOADING SKELETON STATE ============ -->
     @if (loading()) {
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10" role="status" aria-label="Loading homestays">
         @for (item of [1, 2, 3, 4, 5, 6]; track item) {
-          <div class="bg-white rounded-2xl overflow-hidden border border-ink/10 shadow-md animate-pulse">
+          <div class="bg-white rounded-2xl overflow-hidden border border-ink/10 shadow-md motion-safe:animate-pulse">
             <div class="h-52 bg-slate-200 relative">
               <div class="absolute top-3 left-3 w-24 h-5 bg-slate-300 rounded-full"></div>
             </div>
@@ -337,20 +347,20 @@
 
     <!-- ============ ERROR STATE ============ -->
     @else if (error()) {
-      <div class="reveal mt-12 bg-white rounded-3xl p-10 max-w-xl mx-auto text-center border border-red-200 shadow-xl">
-        <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 grid place-items-center mx-auto text-2xl mb-4">
+      <div class="reveal mt-12 bg-white rounded-3xl p-10 max-w-xl mx-auto text-center border border-red-200 shadow-xl" role="alert">
+        <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 grid place-items-center mx-auto text-2xl mb-4" aria-hidden="true">
           ⚠️
         </div>
-        <h3 class="font-display text-2xl text-ink">Could Not Load Homestays</h3>
+        <h3 class="font-display text-2xl text-ink">Could not load homestays</h3>
         <p class="text-sm text-ink/70 mt-2 leading-relaxed">
           {{ error() }}
         </p>
         <button
           type="button"
           (click)="fetchProperties()"
-          class="mt-6 btn-anim inline-block bg-pine hover:bg-ink text-cloud text-sm font-semibold px-6 py-3 rounded-full transition-colors shadow-md"
+          class="mt-6 btn-anim inline-block bg-pine hover:bg-ink text-cloud text-sm font-semibold px-6 py-3 rounded-full transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-ochre"
         >
-          Try Again
+          Try again
         </button>
       </div>
     }
@@ -358,27 +368,27 @@
     <!-- ============ EMPTY STATE ============ -->
     @else if (properties().length === 0) {
       <div class="reveal mt-12 bg-white rounded-3xl p-10 sm:p-14 max-w-2xl mx-auto text-center border border-ink/10 shadow-xl">
-        <div class="stamp w-20 h-20 mx-auto grid place-items-center text-ochre bg-ochre/10 rounded-full mb-6">
+        <div class="stamp w-20 h-20 mx-auto grid place-items-center text-ochre bg-ochre/10 rounded-full mb-6" aria-hidden="true">
           <span class="font-display text-3xl">🏔️</span>
         </div>
-        <h3 class="font-display text-3xl text-ink">No Stays Found Matching Criteria</h3>
+        <h3 class="font-display text-3xl text-ink">No stays found matching criteria</h3>
         <p class="text-base text-ink/70 mt-3 max-w-md mx-auto leading-relaxed">
           We couldn't find any verified homestays matching your current filters. Try changing your search terms or exploring all regions.
         </p>
-        
+
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
             (click)="resetAllFilters()"
-            class="btn-anim bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-6 py-3 rounded-full transition-colors shadow-md shadow-ochre/25"
+            class="btn-anim bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-6 py-3 rounded-full transition-colors shadow-md shadow-ochre/25 focus:outline-none focus:ring-2 focus:ring-ink"
           >
-            Reset All Filters
+            Reset all filters
           </button>
           <a
             routerLink="/"
-            class="bg-cloud text-pine hover:bg-cloud2 text-sm font-semibold px-6 py-3 rounded-full border border-pine/20 transition-colors"
+            class="bg-cloud text-pine hover:bg-cloud2 text-sm font-semibold px-6 py-3 rounded-full border border-pine/20 transition-colors focus:outline-none focus:ring-2 focus:ring-pine"
           >
-            Back to Home
+            Back to home
           </a>
         </div>
 
@@ -390,7 +400,7 @@
                 <button
                   type="button"
                   (click)="onCitySelect(city.id)"
-                  class="px-3 py-1 bg-cloud hover:bg-cloud2 rounded-full border border-ink/10 text-ink/80 transition-colors"
+                  class="px-3 py-1 bg-cloud hover:bg-cloud2 rounded-full border border-ink/10 text-ink/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ochre"
                 >
                   {{ city.name }}
                 </button>
@@ -401,205 +411,128 @@
       </div>
     }
 
-    <!-- ============ GRID VIEW RESULTS ============ -->
-    @else if (viewMode() === 'grid') {
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
+    <!-- ============ RESULTS (GRID OR LIST) ============ -->
+    @else {
+      <div
+        [class]="viewMode() === 'grid' ? 'grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10' : 'space-y-6 mt-10'"
+      >
         @for (item of properties(); track item.id) {
-          <article
-            (click)="goToPropertyDetail(item.slug, $event)"
-            class="listing-card card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/10 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
-          >
-            <div>
-              <!-- Photo Thumbnail & Badges -->
-              <div class="h-56 relative overflow-hidden card-illus">
-                <img
-                  *ngIf="item.feature_image?.file_url"
-                  [src]="assetUrl + (item.feature_image?.file_url || '')"
-                  [alt]="item.name || 'Property image'"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  (error)="onImageError($event)"
-                />
-                <div
-                  *ngIf="!item.feature_image?.file_url"
-                  class="w-full h-full"
-                  style="background: linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)"
-                ></div>
-                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/15"></div>
+          @if (viewMode() === 'grid') {
+            <a
+              [routerLink]="['/stay', item.slug]"
+              class="listing-card card-tilt group bg-white rounded-2xl overflow-hidden border border-ink/10 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-ochre focus-visible:ring-offset-2"
+            >
+              <div>
+                <div class="h-56 relative overflow-hidden card-illus">
+                  <ng-container *ngTemplateOutlet="cardImage; context: { item: item }"></ng-container>
+                  <ng-container *ngTemplateOutlet="cardBadges; context: { item: item }"></ng-container>
+                </div>
 
-                <!-- Verified Badge -->
-                <span class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1 bg-black/40 backdrop-blur-sm">
-                  HOST VERIFIED
-                </span>
+                <div class="p-6">
+                  <h3 class="font-display text-2xl leading-tight group-hover:text-pine transition-colors text-ink">
+                    {{ item.name }}
+                  </h3>
 
-                <!-- Stay Type Tag -->
-                @if (item.type) {
-                  <span class="absolute top-3 right-3 bg-pine/85 text-cloud backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide border border-white/20">
-                    {{ propertyTypeLabels[item.type] || item.type }}
-                  </span>
-                }
+                  <p class="text-sm text-ink/65 mt-1.5 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-moss shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="font-medium text-ink/80">{{ item.city?.name || 'Himalayan stay' }}</span>
+                    @if (item.location?.name) {
+                      <span>· {{ item.location?.name }}</span>
+                    }
+                  </p>
 
-                <!-- Rating -->
-                <span class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-ink flex items-center gap-1 shadow-sm">
-                  <span class="text-ochre">★</span> 4.9
-                </span>
-              </div>
-
-              <!-- Property Content -->
-              <div class="p-6">
-                <h3 class="font-display text-2xl leading-tight group-hover:text-pine transition-colors text-ink">
-                  {{ item.name }}
-                </h3>
-
-                <!-- Location Line -->
-                <p class="text-sm text-ink/65 mt-1.5 flex items-center gap-1.5">
-                  <svg class="w-4 h-4 text-moss shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span class="font-medium text-ink/80">{{ item.city?.name || 'Himalayan stay' }}</span>
-                  @if (item.location?.name) {
-                    <span>• {{ item.location?.name }}</span>
-                  }
-                </p>
-
-                <!-- Food & Amenity Badges -->
-                <div class="flex flex-wrap gap-1.5 mt-4">
-                  @for (tag of getFoodOptionTags(item); track tag) {
-                    <span class="text-xs bg-cloud2/90 border border-ink/5 px-2.5 py-1 rounded-full text-ink/75 font-medium">
-                      {{ tag }}
-                    </span>
-                  }
+                  <div class="flex flex-wrap gap-1.5 mt-4">
+                    @for (tag of getFoodOptionTags(item); track tag) {
+                      <span class="text-xs bg-cloud2/90 border border-ink/5 px-2.5 py-1 rounded-full text-ink/75 font-medium">
+                        {{ tag }}
+                      </span>
+                    }
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Price & Action Footer -->
-            <div class="p-6 pt-0">
-              <div class="flex items-center justify-between pt-4 border-t border-ink/10">
-                <div>
+              <div class="p-6 pt-0">
+                <div class="flex items-center justify-between pt-4 border-t border-ink/10">
                   <p class="font-display text-2xl text-ink">
                     ₹{{ (item.price_per_night ?? item.sale_price ?? 0) | number }}
                     <span class="text-xs font-body font-normal text-ink/50">/ night</span>
                   </p>
+                  <span class="inline-flex items-center gap-1 text-sm font-semibold text-ochreD group-hover:text-ochre transition-colors group-hover:translate-x-1">
+                    View stay
+                  </span>
                 </div>
-                <span class="inline-flex items-center gap-1 text-sm font-semibold text-ochreD group-hover:text-ochre transition-colors group-hover:translate-x-1">
-                  View stay →
-                </span>
               </div>
-            </div>
-          </article>
-        }
-      </div>
-    }
+            </a>
+          } @else {
+            <a
+              [routerLink]="['/stay', item.slug]"
+              class="listing-card card-tilt group bg-white rounded-3xl overflow-hidden border border-ink/10 shadow-md hover:shadow-xl transition-all duration-300 grid grid-cols-1 md:grid-cols-12 gap-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-ochre focus-visible:ring-offset-2"
+            >
+              <div class="md:col-span-4 h-64 md:h-full relative overflow-hidden card-illus min-h-[220px]">
+                <ng-container *ngTemplateOutlet="cardImage; context: { item: item }"></ng-container>
+                <ng-container *ngTemplateOutlet="cardBadges; context: { item: item }"></ng-container>
+              </div>
 
-    <!-- ============ LIST VIEW RESULTS ============ -->
-    @else {
-      <div class="space-y-6 mt-10">
-        @for (item of properties(); track item.id) {
-          <article
-            (click)="goToPropertyDetail(item.slug, $event)"
-            class="listing-card card-tilt group bg-white rounded-3xl overflow-hidden border border-ink/10 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer grid grid-cols-1 md:grid-cols-12 gap-0"
-          >
-            <!-- Left: Image Preview -->
-            <div class="md:col-span-4 h-64 md:h-full relative overflow-hidden card-illus min-h-[220px]">
-              <img
-                *ngIf="item.feature_image?.file_url"
-                [src]="assetUrl + (item.feature_image?.file_url || '')"
-                [alt]="item.name || 'Property image'"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                (error)="onImageError($event)"
-              />
-              <div
-                *ngIf="!item.feature_image?.file_url"
-                class="w-full h-full"
-                style="background: linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)"
-              ></div>
-              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/15"></div>
+              <div class="md:col-span-8 p-6 sm:p-8 flex flex-col justify-between">
+                <div>
+                  <h3 class="font-display text-2xl sm:text-3xl text-ink group-hover:text-pine transition-colors">
+                    {{ item.name }}
+                  </h3>
+                  <p class="text-sm text-ink/65 mt-1 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-moss shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <strong class="text-ink/85">{{ item.city?.name || 'Himalayan stay' }}</strong>
+                    @if (item.location?.name) {
+                      <span>· {{ item.location?.name }}</span>
+                    }
+                    @if (item.address) {
+                      <span class="text-ink/50 text-xs hidden sm:inline">({{ item.address }})</span>
+                    }
+                  </p>
 
-              <span class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1 bg-black/40 backdrop-blur-sm">
-                HOST VERIFIED
-              </span>
-
-              @if (item.type) {
-                <span class="absolute top-3 right-3 bg-pine/85 text-cloud backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide border border-white/20">
-                  {{ propertyTypeLabels[item.type] || item.type }}
-                </span>
-              }
-
-              <span class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-ink flex items-center gap-1 shadow-sm">
-                <span class="text-ochre">★</span> 4.9
-              </span>
-            </div>
-
-            <!-- Right: Content & Pricing Details -->
-            <div class="md:col-span-8 p-6 sm:p-8 flex flex-col justify-between">
-              <div>
-                <div class="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <h3 class="font-display text-2xl sm:text-3xl text-ink group-hover:text-pine transition-colors">
-                      {{ item.name }}
-                    </h3>
-                    <p class="text-sm text-ink/65 mt-1 flex items-center gap-1.5">
-                      <svg class="w-4 h-4 text-moss shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <strong class="text-ink/85">{{ item.city?.name || 'Himalayan stay' }}</strong>
-                      @if (item.location?.name) {
-                        <span>• {{ item.location?.name }}</span>
-                      }
-                      @if (item.address) {
-                        <span class="text-ink/50 text-xs hidden sm:inline">({{ item.address }})</span>
-                      }
+                  @if (item.description) {
+                    <p class="text-sm text-ink/75 mt-3 line-clamp-2 leading-relaxed">
+                      {{ item.description }}
                     </p>
+                  }
+
+                  <div class="flex flex-wrap gap-2 mt-4">
+                    @for (tag of getFoodOptionTags(item); track tag) {
+                      <span class="text-xs bg-cloud2/90 border border-ink/5 px-3 py-1 rounded-full text-ink/80 font-medium">
+                        {{ tag }}
+                      </span>
+                    }
                   </div>
                 </div>
 
-                <!-- Description Excerpt if available -->
-                @if (item.description) {
-                  <p class="text-sm text-ink/75 mt-3 line-clamp-2 leading-relaxed">
-                    {{ item.description }}
-                  </p>
-                }
-
-                <!-- Food & Amenities Badges -->
-                <div class="flex flex-wrap gap-2 mt-4">
-                  @for (tag of getFoodOptionTags(item); track tag) {
-                    <span class="text-xs bg-cloud2/90 border border-ink/5 px-3 py-1 rounded-full text-ink/80 font-medium">
-                      {{ tag }}
-                    </span>
-                  }
+                <div class="mt-6 pt-4 border-t border-ink/10 flex items-center justify-between">
+                  <div>
+                    <span class="text-xs text-ink/50 block">Direct host rate</span>
+                    <p class="font-display text-2xl sm:text-3xl text-ink">
+                      ₹{{ (item.price_per_night ?? item.sale_price ?? 0) | number }}
+                      <span class="text-xs font-body font-normal text-ink/50">/ night</span>
+                    </p>
+                  </div>
+                  <span class="btn-anim bg-pine group-hover:bg-ink text-cloud text-xs sm:text-sm font-semibold px-6 py-3 rounded-full transition-colors shadow-md shadow-pine/15">
+                    Explore stay
+                  </span>
                 </div>
               </div>
-
-              <!-- Bottom Price Callout & Action -->
-              <div class="mt-6 pt-4 border-t border-ink/10 flex items-center justify-between">
-                <div>
-                  <span class="text-xs text-ink/50 uppercase tracking-wider block">Direct Host Rate</span>
-                  <p class="font-display text-2xl sm:text-3xl text-ink">
-                    ₹{{ (item.price_per_night ?? item.sale_price ?? 0) | number }}
-                    <span class="text-xs font-body font-normal text-ink/50">/ night</span>
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  (click)="goToPropertyDetail(item.slug, $event)"
-                  class="btn-anim bg-pine hover:bg-ink text-cloud text-xs sm:text-sm font-semibold px-6 py-3 rounded-full transition-colors shadow-md shadow-pine/15 flex items-center gap-1.5"
-                >
-                  <span>Explore stay</span>
-                  <span>→</span>
-                </button>
-              </div>
-            </div>
-          </article>
+            </a>
+          }
         }
       </div>
     }
 
     <!-- ============ PAGINATION SECTION ============ -->
     @if (!loading() && meta().total > 0) {
-      <div class="mt-16 pt-8 border-t border-ink/10 flex flex-col sm:flex-row items-center justify-between gap-6">
-        
+      <nav class="mt-16 pt-8 border-t border-ink/10 flex flex-col sm:flex-row items-center justify-between gap-6" aria-label="Pagination">
+
         <!-- Page Size Selector -->
         <div class="flex items-center gap-2 text-xs text-ink/65">
           <label for="bottom-size-select" class="font-medium">Homestays per page:</label>
@@ -607,7 +540,7 @@
             id="bottom-size-select"
             [value]="meta().size"
             (change)="onPageSizeChange($event)"
-            class="py-1 px-2.5 bg-white border border-ink/15 rounded-lg text-xs font-semibold text-ink cursor-pointer focus:border-ochre shadow-2xs"
+            class="py-1 px-2.5 bg-white border border-ink/15 rounded-lg text-xs font-semibold text-ink cursor-pointer focus:border-ochre focus:outline-none focus:ring-2 focus:ring-ochre shadow-2xs"
           >
             @for (size of pageSizeOptions; track size) {
               <option [value]="size">{{ size }}</option>
@@ -618,29 +551,29 @@
 
         <!-- Page Numbers & Previous/Next Buttons -->
         <div class="inline-flex items-center gap-1.5">
-          <!-- Prev Button -->
           <button
             type="button"
             (click)="onPageChange(meta().page - 1)"
             [disabled]="meta().page === 1"
-            class="p-2.5 rounded-xl border border-ink/15 bg-white text-ink text-xs font-semibold hover:bg-cloud disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs cursor-pointer flex items-center gap-1"
-            title="Previous Page"
+            aria-label="Previous page"
+            class="p-2.5 rounded-xl border border-ink/15 bg-white text-ink text-xs font-semibold hover:bg-cloud disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs cursor-pointer flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-ochre"
           >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
             <span class="hidden sm:inline">Prev</span>
           </button>
 
-          <!-- Number Buttons -->
           @for (page of getPageNumbers(); track $index) {
             @if (page === '...') {
-              <span class="px-2 py-1 text-xs text-ink/40 font-bold">...</span>
+              <span class="px-2 py-1 text-xs text-ink/40 font-bold" aria-hidden="true">...</span>
             } @else {
               <button
                 type="button"
                 (click)="onPageChange(page)"
-                class="w-9 h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer border"
+                [attr.aria-current]="page === meta().page ? 'page' : null"
+                [attr.aria-label]="'Page ' + page"
+                class="w-9 h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer border focus:outline-none focus:ring-2 focus:ring-ochre"
                 [ngClass]="page === meta().page
                   ? 'bg-ochre text-cloud border-ochre font-bold shadow-md shadow-ochre/25 scale-105'
                   : 'bg-white text-ink/80 border-ink/15 hover:bg-cloud hover:border-moss'"
@@ -650,22 +583,21 @@
             }
           }
 
-          <!-- Next Button -->
           <button
             type="button"
             (click)="onPageChange(meta().page + 1)"
             [disabled]="meta().page === getTotalPages()"
-            class="p-2.5 rounded-xl border border-ink/15 bg-white text-ink text-xs font-semibold hover:bg-cloud disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs cursor-pointer flex items-center gap-1"
-            title="Next Page"
+            aria-label="Next page"
+            class="p-2.5 rounded-xl border border-ink/15 bg-white text-ink text-xs font-semibold hover:bg-cloud disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs cursor-pointer flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-ochre"
           >
             <span class="hidden sm:inline">Next</span>
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
 
-      </div>
+      </nav>
     }
 
   </div>
@@ -673,15 +605,14 @@
 
 <!-- ============ BOTTOM HOST INVITATION BANNER ============ -->
 <section class="py-20 bg-pine text-cloud relative overflow-hidden">
-  <!-- Subtle dark overlay -->
-  <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-pine via-pine2 to-pine opacity-90"></div>
-  
+  <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-pine via-pine2 to-pine opacity-90" aria-hidden="true"></div>
+
   <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
     <div class="grid md:grid-cols-12 gap-8 items-center">
       <div class="md:col-span-8 space-y-4">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-mist border border-white/20 backdrop-blur-md">
-          <span class="w-1.5 h-1.5 rounded-full bg-ochre animate-pulse"></span>
-          <p class="eyebrow text-mist text-[10px] m-0">Generational Hospitality</p>
+          <span class="w-1.5 h-1.5 rounded-full bg-ochre motion-safe:animate-pulse" aria-hidden="true"></span>
+          <p class="text-mist text-xs m-0">Generational hospitality</p>
         </div>
         <h2 class="font-display text-3xl sm:text-4xl text-cloud leading-tight">
           Are you a homestay host in North Bengal?
@@ -694,17 +625,57 @@
       <div class="md:col-span-4 flex flex-col sm:flex-row md:flex-col gap-3 justify-center">
         <a
           routerLink="/become-a-host"
-          class="btn-anim text-center bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold py-3.5 px-6 rounded-full transition-colors shadow-lg shadow-ochre/25"
+          class="btn-anim text-center bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold py-3.5 px-6 rounded-full transition-colors shadow-lg shadow-ochre/25 focus:outline-none focus:ring-2 focus:ring-white"
         >
-          Become a Host Partner
+          Become a host partner
         </a>
         <a
           routerLink="/our-story"
-          class="text-center bg-white/10 hover:bg-white/20 text-cloud text-sm font-semibold py-3.5 px-6 rounded-full border border-white/20 transition-colors"
+          class="text-center bg-white/10 hover:bg-white/20 text-cloud text-sm font-semibold py-3.5 px-6 rounded-full border border-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
         >
-          Read Our Story
+          Read our story
         </a>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ============ SHARED CARD SUB-TEMPLATES ============ -->
+<!-- Used via *ngTemplateOutlet in both grid and list cards to avoid duplicating markup. -->
+<ng-template #cardImage let-item="item">
+  @if (item.feature_image?.file_url) {
+    <img
+      [src]="assetUrl + item.feature_image.file_url"
+      [alt]="item.name || 'Property image'"
+      loading="lazy"
+      decoding="async"
+      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      (error)="onImageError($event)"
+    />
+  } @else {
+    <div
+      class="w-full h-full"
+      style="background: linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)"
+    ></div>
+  }
+  <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/15" aria-hidden="true"></div>
+</ng-template>
+
+<ng-template #cardBadges let-item="item">
+  @if (item.is_verified) {
+    <span class="absolute top-3 left-3 stamp text-cloud text-[10px] font-semibold px-3 py-1 bg-black/40 backdrop-blur-sm">
+      Host verified
+    </span>
+  }
+  @if (item.type) {
+    <span class="absolute top-3 right-3 bg-pine/85 text-cloud backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide border border-white/20">
+      {{ propertyTypeLabels[item.type] || item.type }}
+    </span>
+  }
+  @if (item.rating) {
+    <span class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-ink flex items-center gap-1 shadow-sm">
+      <span class="text-ochre" aria-hidden="true">★</span>
+      <span>{{ item.rating | number:'1.1-1' }}</span>
+    </span>
+  }
+</ng-template>
