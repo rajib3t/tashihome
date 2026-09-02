@@ -35,19 +35,36 @@ export class Logo {
   getLogoSrc(theme: string | null): string {
     const settings = this.settingService.settingsData();
 
+    // Prefer ultra-crisp vector SVG logo (<1KB) over oversized remote raster uploads
     if (this.variant === 'white') {
-      return this.assetUrl + (settings?.['white_logo'] || '/images/tashi-logo-white.svg');
+      const custom = settings?.['white_logo'];
+      if (custom && custom.endsWith('.svg')) {
+        return custom.startsWith('http') ? custom : this.assetUrl + custom;
+      }
+      return '/images/tashi-logo-white.svg';
     }
 
     if (this.variant === 'dark') {
-      return this.assetUrl + (settings?.['app_logo'] || '/images/tashi-logo-blue.svg');
+      const custom = settings?.['app_logo'];
+      if (custom && custom.endsWith('.svg')) {
+        return custom.startsWith('http') ? custom : this.assetUrl + custom;
+      }
+      return '/images/tashi-logo-blue.svg';
     }
 
     // 'auto' based on active theme
     if (theme === 'dark') {
-      return this.assetUrl + (settings?.['white_logo'] || settings?.['app_logo'] || '/images/tashi-logo-white.svg');
+      const custom = settings?.['white_logo'] || settings?.['app_logo'];
+      if (custom && custom.endsWith('.svg')) {
+        return custom.startsWith('http') ? custom : this.assetUrl + custom;
+      }
+      return '/images/tashi-logo-white.svg';
     }
-    return this.assetUrl + (settings?.['app_logo'] || '/images/tashi-logo-blue.svg');
+    const custom = settings?.['app_logo'];
+    if (custom && custom.endsWith('.svg')) {
+      return custom.startsWith('http') ? custom : this.assetUrl + custom;
+    }
+    return '/images/tashi-logo-blue.svg';
   }
 
   getTextClass(theme: string | null): string {
