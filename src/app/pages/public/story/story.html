@@ -50,6 +50,11 @@
               <span>{{ city.name }}</span>@if (!last) {<span class="text-cloud/40">•</span>}
             }
           </div>
+        } @else if (loadingCities()) {
+          <div class="inline-flex items-center gap-2 text-xs text-cloud/50 animate-pulse">
+            <span class="w-1.5 h-1.5 rounded-full bg-moss/50"></span>
+            <span>Discovering circuits...</span>
+          </div>
         }
       </div>
     </div>
@@ -299,7 +304,7 @@
 </section>
 
 <!-- ============ LAUNCH REGIONS (FEATURED CITIES FROM API) ============ -->
-@if (cities().length > 0) {
+@if (cities().length > 0 || loadingCities()) {
   <section class="py-24 md:py-32 bg-pine text-cloud relative overflow-hidden"
     style="background: url('/images/experiences-bg.jpg') center/cover no-repeat;">
     <!-- Dark teal/pine atmospheric overlay -->
@@ -323,21 +328,38 @@
         </p>
       </div>
 
-      <!-- Region selector pills from Public City API -->
-      <div class="flex flex-wrap justify-center gap-2 md:gap-3 mt-10 reveal">
-        @for (reg of cities(); track reg.id; let idx = $index) {
-          <button
-            type="button"
-            (click)="selectRegion(idx)"
-            class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer border"
-            [ngClass]="activeRegionIndex() === idx 
-              ? 'bg-ochre text-cloud border-ochre shadow-lg shadow-ochre/30 scale-105' 
-              : 'bg-white/10 text-cloud/80 border-white/20 hover:bg-white/20 hover:text-cloud'"
-          >
-            {{ reg.name }}
-          </button>
-        }
-      </div>
+      @if (loadingCities()) {
+        <div class="flex flex-wrap justify-center gap-2 md:gap-3 mt-10">
+          @for (i of [1, 2, 3, 4, 5]; track i) {
+            <div class="h-10 w-28 bg-white/10 rounded-full animate-pulse border border-white/10"></div>
+          }
+        </div>
+        <div class="mt-10 max-w-4xl mx-auto bg-white/10 border border-white/20 rounded-3xl p-6 sm:p-10 animate-pulse h-80">
+          <div class="grid md:grid-cols-12 gap-8 items-center h-full">
+            <div class="md:col-span-7 space-y-4">
+              <div class="h-6 w-32 bg-white/15 rounded-full"></div>
+              <div class="h-10 w-48 bg-white/20 rounded-md"></div>
+              <div class="h-16 w-full bg-white/10 rounded-md"></div>
+            </div>
+            <div class="md:col-span-5 h-48 bg-white/15 rounded-2xl"></div>
+          </div>
+        </div>
+      } @else {
+        <!-- Region selector pills from Public City API -->
+        <div class="flex flex-wrap justify-center gap-2 md:gap-3 mt-10 reveal">
+          @for (reg of cities(); track reg.id; let idx = $index) {
+            <button
+              type="button"
+              (click)="selectRegion(idx)"
+              class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer border"
+              [ngClass]="activeRegionIndex() === idx 
+                ? 'bg-ochre text-cloud border-ochre shadow-lg shadow-ochre/30 scale-105' 
+                : 'bg-white/10 text-cloud/80 border-white/20 hover:bg-white/20 hover:text-cloud'"
+            >
+              {{ reg.name }}
+            </button>
+          }
+        </div>
 
       <!-- Active Region Showcase Card -->
       @if (cities()[activeRegionIndex()]; as current) {
@@ -397,8 +419,9 @@
           </div>
         </div>
       }
-    </div>
-  </section>
+    }
+  </div>
+</section>
 }
 
 <!-- ============ FOUNDING PARTNERS / HOST SPOTLIGHT ============ -->

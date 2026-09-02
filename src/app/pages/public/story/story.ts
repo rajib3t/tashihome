@@ -12,16 +12,16 @@ import {
   DestroyRef,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { catchError, of, retry, timeout } from 'rxjs';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery } from '../../../services/city/city-model';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-story',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterModule],
   templateUrl: './story.html',
   styleUrl: './story.css',
 })
@@ -36,6 +36,7 @@ export class Story implements OnInit, AfterViewInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
 
   public cities = signal<City[]>([]);
+  public loadingCities = signal<boolean>(true);
   public activeRegionIndex = signal<number>(0);
 
   private revealObserver?: IntersectionObserver;
@@ -128,6 +129,9 @@ export class Story implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadCities(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.loadingCities.set(true);
+
     const cityQuery: CityQuery = {
       search: {
         is_featured: true,
@@ -140,12 +144,15 @@ export class Story implements OnInit, AfterViewInit, OnDestroy {
       .getCities(cityQuery)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
+        timeout({ first: 8000 }),
+        retry(2),
         catchError((error) => {
           console.warn('Could not load public featured cities for story page:', error);
           return of({ data: [], total: 0, page: 1, size: 10 });
         })
       )
       .subscribe((response) => {
+        this.loadingCities.set(false);
         const data = response?.data || [];
         this.cities.set(data);
         this.cdr.markForCheck();
@@ -155,30 +162,48 @@ export class Story implements OnInit, AfterViewInit, OnDestroy {
 
   private refreshRevealObserver(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    queueMicrotask(() => this.initRevealObserver());
+
+    setTimeout(() => {
+      requestAnimationFrame(() => this.initRevealObserver());
+    }, 50);
   }
 
   private initRevealObserver(): void {
-    this.revealObserver?.disconnect();
+    if (!isPlatformBrowser(this.platformId)) return;
 
-    const revealEls = this.el.nativeElement.querySelectorAll('.reveal');
+    const revealEls: NodeListOf<HTMLElement> = this.el.nativeElement.querySelectorAll('.reveal');
+    if (!revealEls.length) return;
+
     if (!('IntersectionObserver' in window)) {
-      revealEls.forEach((el: Element) => el.classList.add('in', 'is-visible'));
+      revealEls.forEach((el) => el.classList.add('in', 'is-visible'));
       return;
     }
 
-    this.revealObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('in', 'is-visible');
-            this.revealObserver?.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12 }
-    );
-    revealEls.forEach((el: Element) => this.revealObserver?.observe(el));
+    if (!this.revealObserver) {
+      this.revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in', 'is-visible');
+              this.revealObserver?.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.08, rootMargin: '60px' }
+      );
+    }
+
+    revealEls.forEach((el) => {
+      if (el.classList.contains('in') || el.classList.contains('is-visible')) {
+        return;
+      }
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight + 60 && rect.bottom > -60) {
+        el.classList.add('in', 'is-visible');
+      } else {
+        this.revealObserver?.observe(el);
+      }
+    });
   }
 
   private initHeroMistCanvas(selector: string): () => void {

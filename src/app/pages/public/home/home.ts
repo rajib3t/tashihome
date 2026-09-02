@@ -17,7 +17,7 @@ import { FormsModule } from '@angular/forms';
 import { PropertyService } from '../../../services/property/property-service';
 import { PropertyData, PropertyQuery, PropertySearch } from '../../../services/property/property.model';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { filter, catchError, of } from 'rxjs';
+import { filter, catchError, of, forkJoin, retry, timeout } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery, CitySearch } from '../../../services/city/city-model';
@@ -69,6 +69,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   public readonly assetUrl = environment.assetUrl;
   public properties = signal<Partial<PropertyData>[]>([]);
   public cities = signal<Partial<City>[]>([]);
+  public loadingProperties = signal<boolean>(true);
+  public loadingCities = signal<boolean>(true);
+  public loadingStats = signal<boolean>(true);
+  private statsAnimated = false;
   public readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly zone = inject(NgZone);
@@ -118,23 +122,32 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.generateCalendar();
-    this.loadProperties();
-    this.loadCities();
-    this.loadStats();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadAllData();
+    }
 
+    let initialNav = true;
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((event) => {
+        if (initialNav) {
+          initialNav = false;
+          return;
+        }
         if (event.urlAfterRedirects === '/' || event.urlAfterRedirects.startsWith('/?')) {
-          this.loadProperties();
-          this.loadCities();
-          this.loadStats();
           if (isPlatformBrowser(this.platformId)) {
+            this.loadAllData();
             window.scrollTo({ top: 0, behavior: 'auto' });
           }
         }
       });
+  }
+
+  private loadAllData(): void {
+    this.loadProperties();
+    this.loadCities();
+    this.loadStats();
   }
 
   getFoodOptionTags(item: Partial<PropertyData>): string[] {
@@ -426,31 +439,45 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadStats(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.loadingStats.set(true);
+
     this.dashboardService
       .getPublicStats()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
+        timeout({ first: 8000 }),
+        retry(2),
         catchError((error) => {
           console.warn('Could not load public stats:', error);
           return of(null);
         })
       )
       .subscribe((response) => {
+        this.loadingStats.set(false);
         if (response?.data?.stats && response.data.stats.length > 0) {
+          const wasAnimated = this.statsAnimated;
           this.stats = response.data.stats.map((s) => ({
             key: s.key,
             target: s.target,
-            current: 0,
+            current: wasAnimated ? s.target : 0,
             suffix: s.suffix || undefined,
             decimals: s.decimals || 0,
             label: s.label,
           }));
           this.cdr.markForCheck();
+
+          if (!wasAnimated && this.isStatSectionVisible()) {
+            this.animateStats();
+          }
         }
       });
   }
 
   private loadCities(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.loadingCities.set(true);
+
     const query: CitySearch = {
       is_featured: true,
     };
@@ -464,12 +491,15 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       .getCities(cityQuery)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
+        timeout({ first: 8000 }),
+        retry(2),
         catchError((error) => {
           console.warn('Could not load public cities:', error);
           return of({ data: [], total: 0, page: 1, size: 8 });
         })
       )
       .subscribe((response) => {
+        this.loadingCities.set(false);
         const data = response?.data || [];
         this.cities.set(data);
         this.cdr.markForCheck();
@@ -478,6 +508,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadProperties(cityId?: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.loadingProperties.set(true);
+
     const search: PropertySearch = {
       is_featured: true,
     };
@@ -496,12 +529,15 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       .public.getProperties(query)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
+        timeout({ first: 8000 }),
+        retry(2),
         catchError((error) => {
           console.warn('Could not load featured properties:', error);
           return of({ data: [], total: 0, page: 1, size: 6 });
         })
       )
       .subscribe((response) => {
+        this.loadingProperties.set(false);
         this.properties.set(response?.data || []);
         this.cdr.markForCheck();
         this.refreshRevealObserver();
@@ -546,39 +582,70 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initRevealObserver(): void {
-    this.revealObserver?.disconnect();
+    if (!isPlatformBrowser(this.platformId)) return;
 
-    const revealEls = this.el.nativeElement.querySelectorAll('.reveal');
+    const revealEls: NodeListOf<HTMLElement> = this.el.nativeElement.querySelectorAll('.reveal');
+    if (!revealEls.length) return;
+
     if (!('IntersectionObserver' in window)) {
-      revealEls.forEach((el: Element) => {
+      revealEls.forEach((el) => {
         el.classList.add('in', 'is-visible');
       });
       return;
     }
 
-    this.revealObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('in', 'is-visible');
-            this.revealObserver?.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.15 }
-    );
-    revealEls.forEach((el: Element) => this.revealObserver?.observe(el));
+    if (!this.revealObserver) {
+      this.revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in', 'is-visible');
+              this.revealObserver?.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.08, rootMargin: '60px' }
+      );
+    }
+
+    revealEls.forEach((el) => {
+      if (el.classList.contains('in') || el.classList.contains('is-visible')) {
+        return;
+      }
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight + 60 && rect.bottom > -60) {
+        el.classList.add('in', 'is-visible');
+      } else {
+        this.revealObserver?.observe(el);
+      }
+    });
   }
 
   private refreshRevealObserver(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    queueMicrotask(() => this.initRevealObserver());
+    // Allow Angular change detection to complete template stamping
+    setTimeout(() => {
+      requestAnimationFrame(() => this.initRevealObserver());
+    }, 50);
+  }
+
+  private isStatSectionVisible(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    const statSection = this.el.nativeElement.querySelector('.stat-section');
+    if (!statSection) return false;
+    const rect = statSection.getBoundingClientRect();
+    return rect.top < window.innerHeight && rect.bottom > 0;
   }
 
   private initStatsObserver(): void {
     const statSection = this.el.nativeElement.querySelector('.stat-section');
     if (!statSection) return;
+
+    if (this.isStatSectionVisible()) {
+      this.animateStats();
+      return;
+    }
 
     this.statsObserver?.disconnect();
     this.statsObserver = new IntersectionObserver(
@@ -590,13 +657,22 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
           }
         });
       },
-      { threshold: 0.4 }
+      { threshold: 0.15 }
     );
 
     this.statsObserver.observe(statSection);
   }
 
   private animateStats(): void {
+    this.statsAnimated = true;
+    if (this.reduceMotion) {
+      this.stats.forEach((stat) => {
+        stat.current = stat.target;
+      });
+      this.cdr.markForCheck();
+      return;
+    }
+
     const duration = 1400;
     const startTime = performance.now();
 
@@ -621,6 +697,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       }
     };
 
+    if (this.statsAnimationFrame !== undefined) {
+      cancelAnimationFrame(this.statsAnimationFrame);
+    }
     this.statsAnimationFrame = requestAnimationFrame(update);
   }
 

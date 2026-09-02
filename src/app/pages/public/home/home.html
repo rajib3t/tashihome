@@ -406,25 +406,40 @@
       </p>
     </div>
 
-    <div id="listing-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-      @for (item of properties(); track item.id) {
-        <app-single-property [item]="item"></app-single-property>
-      }
-    </div>
+    @if (loadingProperties()) {
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="bg-white rounded-2xl overflow-hidden border border-ink/10 shadow-md animate-pulse">
+            <div class="h-52 bg-ink/10"></div>
+            <div class="p-6 space-y-4">
+              <div class="h-6 bg-ink/10 rounded-md w-3/4"></div>
+              <div class="h-4 bg-ink/10 rounded-md w-1/2"></div>
+              <div class="h-8 bg-ink/10 rounded-full w-1/3"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div id="listing-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        @for (item of properties(); track item.id) {
+          <app-single-property [item]="item"></app-single-property>
+        }
+      </div>
 
-    <div class="mt-14 text-center reveal">
-      <a
-        routerLink="/stays"
-        class="btn-anim inline-flex items-center gap-2 bg-pine hover:bg-ink text-cloud text-sm font-semibold px-8 py-4 rounded-full transition-colors shadow-lg shadow-pine/20"
-      >
-        <span>Explore all homestays on the register</span>
-        <span>→</span>
-      </a>
-    </div>
+      <div *ngIf="properties().length > 0" class="mt-14 text-center reveal">
+        <a
+          routerLink="/stays"
+          class="btn-anim inline-flex items-center gap-2 bg-pine hover:bg-ink text-cloud text-sm font-semibold px-8 py-4 rounded-full transition-colors shadow-lg shadow-pine/20"
+        >
+          <span>Explore all homestays on the register</span>
+          <span>→</span>
+        </a>
+      </div>
 
-    <p *ngIf="properties().length === 0" id="empty-state" class="text-center text-ink/50 mt-14 text-base">
-      No homes on the register for that landscape yet.
-    </p>
+      <p *ngIf="properties().length === 0" id="empty-state" class="text-center text-ink/50 mt-14 text-base">
+        No homes on the register for that landscape yet.
+      </p>
+    }
   </div>
 </section>
 
@@ -449,27 +464,41 @@
       </p>
     </div>
 
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
-      <!-- Experiences / Featured Public Cities -->
-      @for (item of cities(); track $index) {
-      <div
-        (click)="onCityCardClick(item.id)"
-        class="reveal exp-card glass-card-dark rounded-2xl overflow-hidden border border-white/20 shadow-xl flex flex-col group cursor-pointer">
-        <div class="h-40 relative overflow-hidden">
-          <img [src]="item.image_url ? (assetUrl + item.image_url) : '/images/exp-tea.jpg'" [alt]="item.name || 'Himalayan region'"
-            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-          <span
-            class="absolute bottom-3 left-3 text-[10px] font-bold text-cloud bg-ochre/90 backdrop-blur-sm px-3 py-1 rounded-full shadow">{{item.name}}</span>
-        </div>
-        <div class="p-6 flex-1 flex flex-col bg-pine/30">
-          <h3 class="font-display text-2xl text-cloud group-hover:text-ochre transition-colors">{{item.tag_line || item.name}}
-          </h3>
-          <p class="text-sm text-cloud/75 mt-2.5 leading-relaxed flex-1">{{item.short_description || 'Immersive homestays and seasonal traditions rooted in hill life.'}}</p>
-        </div>
+    @if (loadingCities()) {
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="rounded-2xl overflow-hidden border border-white/15 bg-white/5 animate-pulse h-72">
+            <div class="h-40 bg-white/10"></div>
+            <div class="p-6 space-y-3">
+              <div class="h-5 bg-white/20 rounded w-2/3"></div>
+              <div class="h-4 bg-white/10 rounded w-full"></div>
+            </div>
+          </div>
+        }
       </div>
-      }
-    </div>
+    } @else {
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+        <!-- Experiences / Featured Public Cities -->
+        @for (item of cities(); track $index) {
+        <div
+          (click)="onCityCardClick(item.id)"
+          class="reveal exp-card glass-card-dark rounded-2xl overflow-hidden border border-white/20 shadow-xl flex flex-col group cursor-pointer">
+          <div class="h-40 relative overflow-hidden">
+            <img [src]="item.image_url ? (assetUrl + item.image_url) : '/images/exp-tea.jpg'" [alt]="item.name || 'Himalayan region'"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <span
+              class="absolute bottom-3 left-3 text-[10px] font-bold text-cloud bg-ochre/90 backdrop-blur-sm px-3 py-1 rounded-full shadow">{{item.name}}</span>
+          </div>
+          <div class="p-6 flex-1 flex flex-col bg-pine/30">
+            <h3 class="font-display text-2xl text-cloud group-hover:text-ochre transition-colors">{{item.tag_line || item.name}}
+            </h3>
+            <p class="text-sm text-cloud/75 mt-2.5 leading-relaxed flex-1">{{item.short_description || 'Immersive homestays and seasonal traditions rooted in hill life.'}}</p>
+          </div>
+        </div>
+        }
+      </div>
+    }
   </div>
 </section>
 
