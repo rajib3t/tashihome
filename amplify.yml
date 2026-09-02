@@ -1,0 +1,26 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm install 24.15.0
+        - nvm use 24.15.0
+        - node -v
+        - curl -fsSL https://bun.sh/install | bash
+        - export BUN_INSTALL="$HOME/.bun"
+        - export PATH="$BUN_INSTALL/bin:$PATH"
+        - bun --version
+        - bun install
+    build:
+      commands:
+        - bun run build
+        - if [ -f dist/tashhome-app/browser/index.csr.html ] && [ ! -f dist/tashhome-app/browser/index.html ]; then cp dist/tashhome-app/browser/index.csr.html dist/tashhome-app/browser/index.html; fi
+  artifacts:
+    baseDirectory: dist/tashhome-app/browser
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - ~/.bun/install/cache/**/*
+      - node_modules/**/*
+

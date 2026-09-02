@@ -43,7 +43,44 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client
   },
 
-  // These pages gate on localStorage tokens; SSR/Prerender always
+  // ── Dynamic public pages (live API data: properties, cities, stats) ──
+  {
+    path: '',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'home',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'our-story',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'story',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'brand-story',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'stays',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'search',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'become-a-host',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'become-host',
+    renderMode: RenderMode.Client
+  },
+
   // produces a no-auth shell, causing the header to show neither the
   // logged-in view nor the login button when opened in a new tab.
   {
