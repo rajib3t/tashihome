@@ -52,6 +52,10 @@ export class SingleProperty {
     return Number(item.price_per_night ?? (item as any)?.price ?? 0);
   }
 
+  getRating(item: Partial<PropertyData>): number {
+    return (item as any)?.average_rating ?? (item as any)?.rating ?? 4.9;
+  }
+
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';

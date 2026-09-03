@@ -609,55 +609,300 @@
   </div>
 </section>
 
-<!-- ============ TESTIMONIALS ============ -->
-<section class="bg-cloud2 bg-topo-pattern py-20 md:py-28 relative">
-  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+<!-- ============ TESTIMONIALS & STORIES ============ -->
+<section id="testimonials" class="bg-cloud2 bg-topo-pattern py-20 md:py-28 relative overflow-hidden">
+  <!-- Subtle ambient glow -->
+  <div class="pointer-events-none absolute -top-10 right-10 w-80 h-80 bg-ochre/10 rounded-full blur-[100px]"></div>
+  <div class="pointer-events-none absolute -bottom-10 left-10 w-80 h-80 bg-moss/10 rounded-full blur-[100px]"></div>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 reveal">
       <div>
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-moss/10 text-moss mb-3">
           <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
-          <p class="eyebrow text-moss text-[10px] m-0">From the guest book</p>
+          <p class="eyebrow text-moss text-[10px] m-0">From the guest book &amp; hearth</p>
         </div>
         <h2 class="font-display text-4xl md:text-5xl text-ink">What people write before they leave</h2>
       </div>
-      <p class="max-w-xs text-ink/60 text-sm">Real journal entries from travelers across Himalayan circuits.</p>
+      
+      <!-- Right actions: Filters and Share story trigger -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Filter Pills -->
+        <div class="inline-flex p-1 bg-white/80 rounded-full border border-ink/10 shadow-xs">
+          <button
+            type="button"
+            (click)="setTestimonialTab('all')"
+            class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
+            [class.bg-pine]="testimonialTab() === 'all'"
+            [class.text-cloud]="testimonialTab() === 'all'"
+            [class.text-ink/70]="testimonialTab() !== 'all'"
+            [class.hover:text-ink]="testimonialTab() !== 'all'"
+          >
+            All Stories
+          </button>
+          <button
+            type="button"
+            (click)="setTestimonialTab('guest')"
+            class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
+            [class.bg-pine]="testimonialTab() === 'guest'"
+            [class.text-cloud]="testimonialTab() === 'guest'"
+            [class.text-ink/70]="testimonialTab() !== 'guest'"
+            [class.hover:text-ink]="testimonialTab() !== 'guest'"
+          >
+            Guests
+          </button>
+          <button
+            type="button"
+            (click)="setTestimonialTab('host')"
+            class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
+            [class.bg-pine]="testimonialTab() === 'host'"
+            [class.text-cloud]="testimonialTab() === 'host'"
+            [class.text-ink/70]="testimonialTab() !== 'host'"
+            [class.hover:text-ink]="testimonialTab() !== 'host'"
+          >
+            Hosts
+          </button>
+        </div>
+
+        <!-- Share Your Story Button -->
+        <button
+          type="button"
+          (click)="openSubmitTestimonial()"
+          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-ochre hover:bg-ochreD text-cloud text-xs font-semibold transition-all shadow-xs cursor-pointer hover:shadow-md"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4v16m-8-8h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+          </svg>
+          <span>Share your story</span>
+        </button>
+      </div>
     </div>
 
-    <div class="grid md:grid-cols-3 gap-8 mt-14">
-      <blockquote class="reveal testimonial-card bg-white rounded-2xl p-8 border border-ink/10 shadow-sm relative">
-        <div class="text-ochre text-2xl mb-3">★★★★★</div>
-        <p class="font-display text-xl leading-snug text-ink">"Woke up to prayer flags and the smell of someone's
-          breakfast fire.
-          Didn't want the three days to end."</p>
-        <footer class="mt-6 pt-4 border-t border-ink/10 text-sm font-medium text-ink/60 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-moss"></span>
-          Ritika, Nongriat Bridgehouse
-        </footer>
-      </blockquote>
+    <!-- Cards Grid -->
+    @if (loadingTestimonials()) {
+      <div class="grid md:grid-cols-3 gap-8 mt-14">
+        @for (i of [1,2,3]; track i) {
+          <div class="bg-white rounded-2xl p-8 border border-ink/10 shadow-sm animate-pulse space-y-4">
+            <div class="h-4 bg-ink/10 rounded w-1/3"></div>
+            <div class="h-16 bg-ink/10 rounded"></div>
+            <div class="h-6 bg-ink/10 rounded w-2/3 pt-4 border-t border-ink/10"></div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="grid md:grid-cols-3 gap-8 mt-14">
+        @for (t of getFilteredTestimonials(); track t.id) {
+          <blockquote class="reveal testimonial-card bg-white rounded-2xl p-8 border border-ink/10 shadow-sm relative flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <!-- Star Rating -->
+                <div class="text-ochre text-lg tracking-wider flex items-center">
+                  @for (star of [1,2,3,4,5]; track star) {
+                    <span>{{ star <= (t.rating || 5) ? '★' : '☆' }}</span>
+                  }
+                </div>
+                <!-- Role Tag -->
+                <span
+                  class="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
+                  [class.bg-moss/10]="t.user_role !== 'vendor'"
+                  [class.text-mossD]="t.user_role !== 'vendor'"
+                  [class.bg-ochre/15]="t.user_role === 'vendor'"
+                  [class.text-ochreD]="t.user_role === 'vendor'"
+                >
+                  {{ t.user_role === 'vendor' ? 'Host Story' : 'Guest Journal' }}
+                </span>
+              </div>
 
-      <blockquote class="reveal testimonial-card bg-white rounded-2xl p-8 border border-ink/10 shadow-sm relative">
-        <div class="text-ochre text-2xl mb-3">★★★★★</div>
-        <p class="font-display text-xl leading-snug text-ink">"Our host taught my daughter to read the clouds for rain.
-          She still
-          does it at home."</p>
-        <footer class="mt-6 pt-4 border-t border-ink/10 text-sm font-medium text-ink/60 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-moss"></span>
-          Farhan, Ziro Paddy House
-        </footer>
-      </blockquote>
+              <!-- Quote Content -->
+              <p class="font-display text-xl leading-snug text-ink">
+                &ldquo;{{ t.content }}&rdquo;
+              </p>
+            </div>
 
-      <blockquote class="reveal testimonial-card bg-white rounded-2xl p-8 border border-ink/10 shadow-sm relative">
-        <div class="text-ochre text-2xl mb-3">★★★★★</div>
-        <p class="font-display text-xl leading-snug text-ink">"No wifi, no problem. Best sleep I've had in years, under
-          three
-          extra quilts."</p>
-        <footer class="mt-6 pt-4 border-t border-ink/10 text-sm font-medium text-ink/60 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-moss"></span>
-          Meera, Komic Stone House
-        </footer>
-      </blockquote>
-    </div>
+            <!-- Author Footer -->
+            <footer class="mt-6 pt-4 border-t border-ink/10 text-sm font-medium text-ink/70 flex items-center gap-3">
+              @if (t.avatar_url) {
+                <img [src]="t.avatar_url.startsWith('http') ? t.avatar_url : (assetUrl + t.avatar_url)" [alt]="t.name" class="w-9 h-9 rounded-full object-cover border border-ink/10 shrink-0" />
+              } @else {
+                <div class="w-9 h-9 rounded-full bg-moss/10 text-mossD font-display font-bold text-xs grid place-items-center shrink-0 border border-moss/20">
+                  {{ (t.name || 'G').slice(0, 2).toUpperCase() }}
+                </div>
+              }
+              <div class="truncate">
+                <p class="font-semibold text-ink text-sm leading-tight truncate m-0">{{ t.name }}</p>
+                <p class="text-xs text-ink/50 leading-tight truncate m-0 mt-0.5">{{ t.designation || 'Himalayan Homestay Traveler' }}</p>
+              </div>
+            </footer>
+          </blockquote>
+        }
+      </div>
+    }
   </div>
+
+  <!-- Testimonial Submission Modal Popup -->
+  @if (isSubmitTestimonialOpen()) {
+    <div
+      class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      (click)="closeSubmitTestimonial()"
+    >
+      <div
+        class="bg-white text-ink w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/40 relative animate-in zoom-in-95 duration-200"
+        (click)="$event.stopPropagation()"
+      >
+        <button
+          type="button"
+          (click)="closeSubmitTestimonial()"
+          class="absolute top-5 right-5 w-8 h-8 rounded-full bg-cloud2/80 hover:bg-cloud2 flex items-center justify-center text-ink/60 hover:text-ink cursor-pointer transition-colors"
+        >
+          ✕
+        </button>
+
+        @if (testimonialSubmitSuccess()) {
+          <div class="text-center py-8 space-y-3 animate-in fade-in duration-300">
+            <div class="w-14 h-14 rounded-full bg-moss/15 text-mossD grid place-items-center mx-auto text-2xl font-bold">
+              ✓
+            </div>
+            <h3 class="font-display text-2xl text-ink">Thank you for sharing!</h3>
+            <p class="text-sm text-ink/70 max-w-xs mx-auto">
+              Your story has been added to our guest book register and will appear on the homepage once reviewed.
+            </p>
+          </div>
+        } @else {
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-2 h-2 rounded-full bg-ochre"></span>
+              <p class="eyebrow text-mossD text-[11px] m-0">Leave your words in the guest book</p>
+            </div>
+            <h3 class="font-display text-2xl text-ink">Share your Himalayan journey</h3>
+            <p class="text-xs text-ink/60 mt-1 mb-6">
+              Tell future travelers about the mountain breezes, warm chai, or village hospitality.
+            </p>
+
+            @if (testimonialSubmitError()) {
+              <div class="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200">
+                {{ testimonialSubmitError() }}
+              </div>
+            }
+
+            <form (submit)="onSubmitTestimonial(); $event.preventDefault()" class="space-y-4">
+              <!-- Role selector -->
+              <div>
+                <label class="block text-xs font-semibold text-ink/70 mb-1.5">I am sharing as:</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    (click)="testimonialForm.role = 'user'"
+                    class="py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer"
+                    [class.border-pine]="testimonialForm.role === 'user'"
+                    [class.bg-pine/10]="testimonialForm.role === 'user'"
+                    [class.text-pine]="testimonialForm.role === 'user'"
+                    [class.border-ink/15]="testimonialForm.role !== 'user'"
+                    [class.text-ink/70]="testimonialForm.role !== 'user'"
+                  >
+                    Guest / Traveler
+                  </button>
+                  <button
+                    type="button"
+                    (click)="testimonialForm.role = 'vendor'"
+                    class="py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer"
+                    [class.border-pine]="testimonialForm.role === 'vendor'"
+                    [class.bg-pine/10]="testimonialForm.role === 'vendor'"
+                    [class.text-pine]="testimonialForm.role === 'vendor'"
+                    [class.border-ink/15]="testimonialForm.role !== 'vendor'"
+                    [class.text-ink/70]="testimonialForm.role !== 'vendor'"
+                  >
+                    Homestay Host
+                  </button>
+                </div>
+              </div>
+
+              <!-- Rating Picker -->
+              <div>
+                <label class="block text-xs font-semibold text-ink/70 mb-1.5">Rating</label>
+                <div class="flex items-center gap-1.5">
+                  @for (star of [1, 2, 3, 4, 5]; track star) {
+                    <button
+                      type="button"
+                      (click)="setTestimonialRating(star)"
+                      class="text-2xl cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+                      [class.text-ochre]="star <= testimonialForm.rating"
+                      [class.text-ink/20]="star > testimonialForm.rating"
+                    >
+                      ★
+                    </button>
+                  }
+                  <span class="text-xs font-semibold text-ink/60 ml-2">({{ testimonialForm.rating }} / 5 stars)</span>
+                </div>
+              </div>
+
+              <!-- Name & Location / Designation -->
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-ink/70 mb-1">Your Name</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="testimonialForm.name"
+                    name="testimonialName"
+                    placeholder="e.g. Tenzing Norbu"
+                    required
+                    class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-ink/70 mb-1">
+                    {{ testimonialForm.role === 'vendor' ? 'Homestay & Location' : 'Where are you from / stayed?' }}
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="testimonialForm.designation"
+                    name="testimonialDesignation"
+                    placeholder="e.g. Rumtek Prayer House, Sikkim"
+                    class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine"
+                  />
+                </div>
+              </div>
+
+              <!-- Content / Story -->
+              <div>
+                <label class="block text-xs font-semibold text-ink/70 mb-1">Your Story or Thoughts</label>
+                <textarea
+                  rows="3"
+                  [(ngModel)]="testimonialForm.content"
+                  name="testimonialContent"
+                  placeholder="Tell us what touched you most about the stay, food, mountains, or hosts..."
+                  required
+                  class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine resize-none"
+                ></textarea>
+              </div>
+
+              <!-- Modal Submit Button -->
+              <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-ink/10">
+                <button
+                  type="button"
+                  (click)="closeSubmitTestimonial()"
+                  class="px-4 py-2.5 rounded-full text-xs font-semibold text-ink/60 hover:text-ink transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  [disabled]="isSubmittingTestimonial()"
+                  class="px-6 py-2.5 rounded-full bg-pine hover:bg-ink text-cloud text-xs font-semibold transition-colors shadow-md shadow-pine/20 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  @if (isSubmittingTestimonial()) {
+                    <div class="w-3.5 h-3.5 border-2 border-cloud border-t-transparent rounded-full animate-spin"></div>
+                    <span>Submitting...</span>
+                  } @else {
+                    <span>Publish to Guest Book</span>
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        }
+      </div>
+    </div>
+  }
 </section>
 
 <!-- ============ NEWSLETTER CTA (Alpine Golden Hour Snow Peaks & Floating Embers Canvas) ============ -->

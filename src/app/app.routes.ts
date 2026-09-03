@@ -288,6 +288,26 @@ export const routes: Routes = [
                         pathMatch: 'full'
                     },
                     {
+                        path: 'review-management',
+                        loadComponent: () => import('./pages/authenticate/admin/review-management/review-management').then((m) => m.AdminReviewManagement),
+                        title: 'Review Moderation'
+                    },
+                    {
+                        path: 'reviews',
+                        redirectTo: 'review-management',
+                        pathMatch: 'full'
+                    },
+                    {
+                        path: 'testimonial-management',
+                        loadComponent: () => import('./pages/authenticate/admin/testimonial-management/testimonial-management').then((m) => m.AdminTestimonialManagement),
+                        title: 'Testimonial Moderation'
+                    },
+                    {
+                        path: 'testimonials',
+                        redirectTo: 'testimonial-management',
+                        pathMatch: 'full'
+                    },
+                    {
                         path: 'staff-management',
                         canActivate: [adminOnlyGuard],
                         loadComponent: () => import('./pages/authenticate/admin/staff-management/staff-management').then((m) => m.StaffManagement),
@@ -376,6 +396,16 @@ export const routes: Routes = [
                     {
                         path: 'room-block-management',
                         redirectTo: 'room-blocks',
+                        pathMatch: 'full'
+                    },
+                    {
+                        path: 'review-management',
+                        loadComponent: () => import('./pages/authenticate/vendor/review-management/review-management').then((m) => m.VendorReviewManagement),
+                        title: 'Host Reviews & Ratings'
+                    },
+                    {
+                        path: 'reviews',
+                        redirectTo: 'review-management',
                         pathMatch: 'full'
                     }
                 ]

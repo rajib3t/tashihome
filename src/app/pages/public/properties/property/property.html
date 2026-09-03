@@ -48,7 +48,7 @@
         </span>
         <span
           class="inline-flex items-center gap-1 text-cloud/90 text-[10px] font-semibold px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15">
-          ★ 4.9 rated stay
+          ★ {{ getTotalReviewsCount() > 0 ? ((getAverageRating() | number:'1.1-1') + ' rated stay (' + getTotalReviewsCount() + ')') : 'New homestay' }}
         </span>
       </div>
 
@@ -591,6 +591,292 @@
           </div>
         </div>
 
+        <!-- ============ REVIEWS & RATINGS SECTION ============ -->
+        <div id="reviews" class="reveal">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-[3px] rounded-full bg-ochre"></span>
+                <p class="eyebrow text-mossD">Guest notes &amp; ratings</p>
+              </div>
+              <h2 class="font-display text-3xl text-ink mt-2">What guests remember</h2>
+            </div>
+            
+            <button
+              type="button"
+              (click)="openWriteReview()"
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-pine/10 hover:bg-pine text-pine hover:text-cloud text-xs font-semibold transition-all cursor-pointer border border-pine/20"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <path d="M12 4v16m-8-8h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+              </svg>
+              <span>Write a review</span>
+            </button>
+          </div>
+
+          <!-- Rating Summary Scorecard (Only if reviews exist) -->
+          @if (getTotalReviewsCount() > 0) {
+            <div class="p-6 md:p-8 rounded-3xl glass-property-card border border-white/80 shadow-sm mt-6 grid md:grid-cols-12 gap-6 items-center">
+              <!-- Left: Big Rating Number -->
+              <div class="md:col-span-4 text-center md:text-left md:border-r md:border-ink/10 md:pr-6 flex flex-col items-center md:items-start justify-center">
+                <p class="font-display text-5xl sm:text-6xl text-ink tracking-tight m-0">
+                  {{ getAverageRating() | number:'1.1-2' }}
+                </p>
+                <div class="flex items-center gap-1 text-ochre text-lg mt-1">
+                  @for (star of [1, 2, 3, 4, 5]; track star) {
+                    <span>{{ star <= getAverageRating() ? '★' : '☆' }}</span>
+                  }
+                </div>
+                <p class="text-xs font-medium text-ink/60 mt-1 m-0">
+                  Based on {{ getTotalReviewsCount() }} verified guest reviews
+                </p>
+              </div>
+
+              <!-- Right: Rating Breakdown Bars -->
+              <div class="md:col-span-8 space-y-2">
+                @for (star of [5, 4, 3, 2, 1]; track star) {
+                  <div class="flex items-center gap-3 text-xs text-ink/70">
+                    <span class="w-12 font-medium flex items-center gap-1">
+                      <span>{{ star }}</span>
+                      <span class="text-ochre">★</span>
+                    </span>
+                    <div class="flex-1 h-2 rounded-full bg-cloud2/80 overflow-hidden border border-black/5">
+                      <div
+                        class="h-full bg-ochre rounded-full transition-all duration-500"
+                        [style.width.%]="getRatingPercent(star)"
+                      ></div>
+                    </div>
+                    <span class="w-10 text-right text-[11px] text-ink/50 font-mono">
+                      {{ getRatingPercent(star) }}%
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Reviews List -->
+          @if (loadingReviews()) {
+            <div class="space-y-4 mt-6">
+              @for (i of [1, 2]; track i) {
+                <div class="p-6 rounded-2xl glass-property-card border border-white/80 shadow-sm animate-pulse space-y-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-ink/10"></div>
+                    <div class="space-y-1.5 flex-1">
+                      <div class="h-4 bg-ink/10 rounded w-1/4"></div>
+                      <div class="h-3 bg-ink/10 rounded w-1/6"></div>
+                    </div>
+                  </div>
+                  <div class="h-12 bg-ink/10 rounded"></div>
+                </div>
+              }
+            </div>
+          } @else if (reviews().length === 0) {
+            <div class="p-8 md:p-10 rounded-3xl glass-property-card border border-white/80 shadow-sm mt-6 text-center space-y-3">
+              <div class="w-12 h-12 rounded-full bg-ochre/10 text-ochre grid place-items-center mx-auto text-xl">
+                ★
+              </div>
+              <h3 class="font-display text-2xl text-ink">Be the first to review</h3>
+              <p class="text-ink/60 text-xs sm:text-sm max-w-md mx-auto">
+                No guest reviews have been submitted for this homestay yet. If you have completed a stay here, leave your note for future travelers!
+              </p>
+              <button
+                type="button"
+                (click)="openWriteReview()"
+                class="mt-2 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-pine hover:bg-ink text-cloud text-xs font-semibold transition-all cursor-pointer shadow-md shadow-pine/20"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 4v16m-8-8h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                </svg>
+                <span>Write the first review</span>
+              </button>
+            </div>
+          } @else {
+            <div class="space-y-4 mt-6">
+              @for (item of reviews(); track item.id) {
+                <div class="p-6 md:p-7 rounded-3xl glass-property-card border border-white/80 shadow-sm transition-all hover:shadow-md">
+                  <!-- Reviewer Header -->
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                      @if (item.guest?.is_profile_image_url) {
+                        <img
+                          [src]="item.guest?.is_profile_image_url?.startsWith('http') ? item.guest?.is_profile_image_url : (assetUrl + item.guest?.is_profile_image_url)"
+                          [alt]="item.guest?.full_name || 'Guest'"
+                          class="w-10 h-10 rounded-full object-cover border border-white shadow-xs"
+                        />
+                      } @else {
+                        <div class="w-10 h-10 rounded-full bg-pine/10 text-pine font-display font-bold text-xs grid place-items-center border border-pine/20">
+                          {{ (item.guest?.full_name || 'Guest').slice(0, 2).toUpperCase() }}
+                        </div>
+                      }
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <p class="font-semibold text-ink text-sm m-0">{{ item.guest?.full_name || 'Verified Guest' }}</p>
+                          <span class="inline-flex items-center gap-1 text-[9px] font-semibold text-mossD bg-moss/10 px-2 py-0.5 rounded-full border border-moss/20">
+                            ✓ Verified Stay
+                          </span>
+                        </div>
+                        <p class="text-[11px] text-ink/45 m-0 mt-0.5">
+                          {{ item.created_at | date:'mediumDate' }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Stars -->
+                    <div class="text-ochre text-sm tracking-wider flex items-center">
+                      @for (star of [1, 2, 3, 4, 5]; track star) {
+                        <span>{{ star <= item.rating ? '★' : '☆' }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Review Text -->
+                  <p class="text-sm text-ink/80 leading-relaxed mt-4 m-0">
+                    {{ item.comment }}
+                  </p>
+
+                  <!-- Host Reply (if available) -->
+                  @if (item.host_reply) {
+                    <div class="mt-4 p-4 rounded-2xl bg-cloud2/80 border border-ink/5 space-y-1.5">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2 h-2 rounded-full bg-ochre"></span>
+                          <p class="font-semibold text-xs text-ink m-0">Response from Host</p>
+                        </div>
+                        @if (item.host_replied_at) {
+                          <span class="text-[10px] text-ink/40">{{ item.host_replied_at | date:'mediumDate' }}</span>
+                        }
+                      </div>
+                      <p class="text-xs text-ink/70 leading-relaxed m-0 italic">
+                        &ldquo;{{ item.host_reply }}&rdquo;
+                      </p>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Write Review Modal Popup -->
+        @if (isWriteReviewOpen()) {
+          <div
+            class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+            (click)="closeWriteReview()"
+          >
+            <div
+              class="bg-white text-ink w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/40 relative animate-in zoom-in-95 duration-200"
+              (click)="$event.stopPropagation()"
+            >
+              <button
+                type="button"
+                (click)="closeWriteReview()"
+                class="absolute top-5 right-5 w-8 h-8 rounded-full bg-cloud2/80 hover:bg-cloud2 flex items-center justify-center text-ink/60 hover:text-ink cursor-pointer transition-colors"
+              >
+                ✕
+              </button>
+
+              @if (reviewSubmitSuccess()) {
+                <div class="text-center py-8 space-y-3 animate-in fade-in duration-300">
+                  <div class="w-14 h-14 rounded-full bg-moss/15 text-mossD grid place-items-center mx-auto text-2xl font-bold">
+                    ✓
+                  </div>
+                  <h3 class="font-display text-2xl text-ink">Review Submitted!</h3>
+                  <p class="text-sm text-ink/70 max-w-xs mx-auto">
+                    Thank you for sharing your experience. Your review will be published upon moderation.
+                  </p>
+                </div>
+              } @else {
+                <div>
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="w-2 h-2 rounded-full bg-ochre"></span>
+                    <p class="eyebrow text-mossD text-[11px] m-0">Share your stay experience</p>
+                  </div>
+                  <h3 class="font-display text-2xl text-ink">Review this Homestay</h3>
+                  <p class="text-xs text-ink/60 mt-1 mb-6">
+                    Help future guests and thank your Himalayan hosts with thoughtful feedback.
+                  </p>
+
+                  @if (reviewSubmitError()) {
+                    <div class="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200">
+                      {{ reviewSubmitError() }}
+                    </div>
+                  }
+
+                  <form (submit)="onSubmitReview(); $event.preventDefault()" class="space-y-4">
+                    <!-- Rating Picker -->
+                    <div>
+                      <label class="block text-xs font-semibold text-ink/70 mb-1.5">Your Overall Rating</label>
+                      <div class="flex items-center gap-1.5">
+                        @for (star of [1, 2, 3, 4, 5]; track star) {
+                          <button
+                            type="button"
+                            (click)="setReviewRating(star)"
+                            class="text-2xl cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+                            [class.text-ochre]="star <= reviewForm.rating"
+                            [class.text-ink/20]="star > reviewForm.rating"
+                          >
+                            ★
+                          </button>
+                        }
+                        <span class="text-xs font-semibold text-ink/60 ml-2">({{ reviewForm.rating }} / 5 stars)</span>
+                      </div>
+                    </div>
+
+                    <!-- Booking Reference / ID -->
+                    <div>
+                      <label class="block text-xs font-semibold text-ink/70 mb-1">Booking Reference / ID (Optional)</label>
+                      <input
+                        type="text"
+                        [(ngModel)]="reviewForm.booking_id"
+                        name="bookingReference"
+                        placeholder="e.g. BK-202609-8921"
+                        class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine"
+                      />
+                    </div>
+
+                    <!-- Comment Textarea -->
+                    <div>
+                      <label class="block text-xs font-semibold text-ink/70 mb-1">Your Review</label>
+                      <textarea
+                        rows="4"
+                        [(ngModel)]="reviewForm.comment"
+                        name="reviewComment"
+                        placeholder="What did you enjoy about the homestay, the rooms, meals, morning views, or hosts?"
+                        required
+                        class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine resize-none"
+                      ></textarea>
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-ink/10">
+                      <button
+                        type="button"
+                        (click)="closeWriteReview()"
+                        class="px-4 py-2.5 rounded-full text-xs font-semibold text-ink/60 hover:text-ink transition-colors cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        [disabled]="isSubmittingReview()"
+                        class="px-6 py-2.5 rounded-full bg-pine hover:bg-ink text-cloud text-xs font-semibold transition-colors shadow-md shadow-pine/20 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        @if (isSubmittingReview()) {
+                          <div class="w-3.5 h-3.5 border-2 border-cloud border-t-transparent rounded-full animate-spin"></div>
+                          <span>Submitting...</span>
+                        } @else {
+                          <span>Submit Review</span>
+                        }
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
       </div>
 
       <!-- RIGHT: booking sidebar -->
@@ -611,8 +897,10 @@
               <span class="text-sm font-body text-ink/50">/ night</span>
             </p>
             <span
-              class="flex items-center gap-1 text-sm text-ink/70 bg-cloud2/80 px-2.5 py-1 rounded-full border border-white/80">★
-              4.9</span>
+              class="flex items-center gap-1 text-sm text-ink/70 bg-cloud2/80 px-2.5 py-1 rounded-full border border-white/80">
+              <span class="text-ochre">★</span>
+              {{ getTotalReviewsCount() > 0 ? (getAverageRating() | number:'1.1-1') : 'New' }}
+            </span>
           </div>
           <p class="text-xs text-ink/45 mt-1">Direct homestay rate · Instant booking</p>
 

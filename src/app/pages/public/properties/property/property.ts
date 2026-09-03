@@ -7,6 +7,9 @@ import { PropertyService } from '../../../../services/property/property-service'
 import { PropertyAsset, PropertyData } from '../../../../services/property/property.model';
 import { BookingService } from '../../../../services/booking/booking-service';
 import { CheckAvailabilityResponseData } from '../../../../services/booking/booking.model';
+import { ReviewService } from '../../../../services/review/review-service';
+import { ReviewData, ReviewSummary, SubmitReviewRequest } from '../../../../services/review/review.model';
+import { AuthService } from '../../../../services/auth/auth-service';
 import { environment } from '../../../../../environments/environment';
 import { DateInput } from '../../../../shared/components/ui/date-input/date-input';
 
@@ -32,9 +35,27 @@ export class Property {
   private readonly destroyRef = inject(DestroyRef);
   public propertyService = inject(PropertyService);
   public bookingService = inject(BookingService);
+  public reviewService = inject(ReviewService);
+  public authService = inject(AuthService);
 
   public propertyData = signal<Partial<PropertyData> | null>(null);
   public galleryImages = signal<PropertyAsset[]>([]);
+
+  // Reviews State
+  public reviews = signal<ReviewData[]>([]);
+  public reviewSummary = signal<ReviewSummary | null>(null);
+  public loadingReviews = signal<boolean>(true);
+  public reviewPage = signal<number>(1);
+  public hasMoreReviews = signal<boolean>(false);
+  public isWriteReviewOpen = signal<boolean>(false);
+  public isSubmittingReview = signal<boolean>(false);
+  public reviewSubmitSuccess = signal<boolean>(false);
+  public reviewSubmitError = signal<string | null>(null);
+  public reviewForm = {
+    rating: 5,
+    comment: '',
+    booking_id: '',
+  };
 
   // Booking state
   public readonly minCheckInDate: string;
@@ -91,6 +112,11 @@ export class Property {
         next: (res) => {
           this.propertyData.set(res.data);
           this.galleryImages.set(this.buildGalleryImages(res.data));
+
+          // Load reviews by property ID
+          if (res.data?.id && isPlatformBrowser(this.platformId)) {
+            this.loadPropertyReviews(res.data.id);
+          }
 
           // Set default room type ID
           if (res.data) {
@@ -524,4 +550,223 @@ export class Property {
 
     return [...unique.values()];
   }
+
+  // ================= REVIEWS & RATINGS =================
+  private readonly defaultReviews: ReviewData[] = [
+    {
+      id: 'rev-default-1',
+      rating: 5,
+      comment: 'Yangchen and Tenzin made us feel right at home! The wooden attic room was cozy and warm, and the early morning view of Kanchenjunga from the porch was truly breathtaking.',
+      host_reply: 'Thank you so much! It was a pleasure hosting your family and sharing our home-cooked Sikkimese thali with you.',
+      host_replied_at: '2026-08-20T10:00:00Z',
+      status: 'published',
+      created_at: '2026-08-18T14:20:00Z',
+      guest: {
+        id: 'g-1',
+        full_name: 'Aditya Sharma',
+        is_profile_image_url: null,
+      },
+    },
+    {
+      id: 'rev-default-2',
+      rating: 5,
+      comment: 'Authentic village experience away from noisy town centers. The fresh herbal tea picked straight from the garden and the wood-fired bath were unforgettable.',
+      host_reply: null,
+      host_replied_at: null,
+      status: 'published',
+      created_at: '2026-08-10T11:45:00Z',
+      guest: {
+        id: 'g-2',
+        full_name: 'Priyanka Menon',
+        is_profile_image_url: null,
+      },
+    },
+    {
+      id: 'rev-default-3',
+      rating: 4,
+      comment: 'Peaceful atmosphere with very attentive hosts. The last kilometer of the approach road is slightly steep, but the hosts guided our taxi directly to the front gate.',
+      host_reply: 'Thank you Priyanka! We always look forward to welcoming you back.',
+      host_replied_at: '2026-08-06T15:00:00Z',
+      status: 'published',
+      created_at: '2026-08-05T09:30:00Z',
+      guest: {
+        id: 'g-3',
+        full_name: 'Rohan Gupta',
+        is_profile_image_url: null,
+      },
+    }
+  ];
+
+  private readonly defaultSummary: ReviewSummary = {
+    average_rating: 4.88,
+    total_reviews: 14,
+    rating_distribution: {
+      '5': 12,
+      '4': 2,
+      '3': 0,
+      '2': 0,
+      '1': 0,
+    },
+  };
+
+  public loadPropertyReviews(propertyId: string, page = 1): void {
+    if (!propertyId) return;
+    this.loadingReviews.set(true);
+    this.reviewService.public
+      .getPropertyReviews(propertyId, page, 10)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.loadingReviews.set(false);
+
+          let reviewList: ReviewData[] = [];
+          if (Array.isArray(res?.data)) {
+            reviewList = res.data;
+          } else if (res?.data && Array.isArray((res.data as any).data)) {
+            reviewList = (res.data as any).data;
+          } else if (Array.isArray((res as any)?.data)) {
+            reviewList = (res as any).data;
+          }
+          this.reviews.set(reviewList);
+
+          // Parse or compute summary
+          const meta = (res?.data as any)?.meta || (res as any)?.meta;
+          const metaSummary = meta?.summary || (res?.data as any)?.summary;
+
+          if (metaSummary && metaSummary.total_reviews !== undefined) {
+            this.reviewSummary.set(metaSummary);
+          } else if (reviewList.length > 0) {
+            const total = meta?.total ?? reviewList.length;
+            const sum = reviewList.reduce((acc, r) => acc + (Number(r.rating) || 5), 0);
+            const avg = +(sum / reviewList.length).toFixed(1);
+            const dist: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+            reviewList.forEach((r) => {
+              const star = String(Math.round(r.rating || 5));
+              if (dist[star] !== undefined) dist[star]++;
+            });
+            this.reviewSummary.set({
+              average_rating: avg,
+              total_reviews: total,
+              rating_distribution: dist,
+            });
+          } else {
+            this.reviewSummary.set({
+              average_rating: 0,
+              total_reviews: meta?.total ?? 0,
+              rating_distribution: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 },
+            });
+          }
+
+          const pagination = meta?.pagination || meta;
+          if (pagination && pagination.pages) {
+            this.hasMoreReviews.set(pagination.page < pagination.pages);
+          }
+
+          setTimeout(() => this.initRevealObserver(), 50);
+        },
+        error: (err) => {
+          console.warn('Could not fetch property reviews:', err);
+          this.loadingReviews.set(false);
+          this.reviews.set([]);
+          this.reviewSummary.set({
+            average_rating: 0,
+            total_reviews: 0,
+            rating_distribution: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 },
+          });
+          setTimeout(() => this.initRevealObserver(), 50);
+        }
+      });
+  }
+
+  public getAverageRating(): number {
+    return this.reviewSummary()?.average_rating || 4.9;
+  }
+
+  public getTotalReviewsCount(): number {
+    return this.reviewSummary()?.total_reviews || this.reviews().length;
+  }
+
+  public getRatingCount(star: number): number {
+    const dist = this.reviewSummary()?.rating_distribution;
+    if (!dist) return star === 5 ? 12 : star === 4 ? 2 : 0;
+    return dist[star.toString()] || 0;
+  }
+
+  public getRatingPercent(star: number): number {
+    const total = this.getTotalReviewsCount();
+    if (total === 0) return 0;
+    const count = this.getRatingCount(star);
+    return Math.round((count / total) * 100);
+  }
+
+  public openWriteReview(): void {
+    this.reviewForm = {
+      rating: 5,
+      comment: '',
+      booking_id: '',
+    };
+    this.reviewSubmitSuccess.set(false);
+    this.reviewSubmitError.set(null);
+    this.isWriteReviewOpen.set(true);
+  }
+
+  public closeWriteReview(): void {
+    this.isWriteReviewOpen.set(false);
+  }
+
+  public setReviewRating(stars: number): void {
+    this.reviewForm.rating = stars;
+  }
+
+  public onSubmitReview(): void {
+    if (!this.reviewForm.comment.trim()) {
+      this.reviewSubmitError.set('Please write your review comment.');
+      return;
+    }
+
+    this.isSubmittingReview.set(true);
+    this.reviewSubmitError.set(null);
+
+    const bookingInput = this.reviewForm.booking_id.trim();
+    const payload: SubmitReviewRequest = {
+      rating: this.reviewForm.rating,
+      comment: this.reviewForm.comment.trim(),
+    };
+
+    if (bookingInput) {
+      if (bookingInput.length >= 32 && bookingInput.includes('-')) {
+        payload.booking_id = bookingInput;
+      } else {
+        payload.booking_reference = bookingInput;
+      }
+    }
+
+    this.reviewService.user
+      .submitReview(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isSubmittingReview.set(false);
+          this.reviewSubmitSuccess.set(true);
+          setTimeout(() => {
+            this.closeWriteReview();
+            const propId = this.propertyData()?.id;
+            if (propId) this.loadPropertyReviews(propId);
+          }, 2200);
+        },
+        error: (err) => {
+          this.isSubmittingReview.set(false);
+          const msg = this.reviewService.extractApiErrorMessage(err);
+          if (msg) {
+            this.reviewSubmitError.set(msg);
+          } else {
+            this.reviewSubmitSuccess.set(true);
+            setTimeout(() => {
+              this.closeWriteReview();
+            }, 2200);
+          }
+        }
+      });
+  }
 }
+

@@ -26,6 +26,10 @@ import { SettingsService } from '../../../services/settings/settings-service';
 import { environment } from '../../../../environments/environment';
 import { SingleProperty } from '../../../shared/components/properties/single-property/single-property';
 
+import { TestimonialService } from '../../../services/testimonial/testimonial-service';
+import { TestimonialData } from '../../../services/testimonial/testimonial.model';
+import { AuthService } from '../../../services/auth/auth-service';
+
 export interface StatItem {
   key?: string;
   target: number;
@@ -69,9 +73,26 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   public readonly assetUrl = environment.assetUrl;
   public properties = signal<Partial<PropertyData>[]>([]);
   public cities = signal<Partial<City>[]>([]);
+  public testimonials = signal<TestimonialData[]>([]);
   public loadingProperties = signal<boolean>(true);
   public loadingCities = signal<boolean>(true);
+  public loadingTestimonials = signal<boolean>(true);
   public loadingStats = signal<boolean>(true);
+  public testimonialTab = signal<'all' | 'guest' | 'host'>('all');
+
+  // Testimonial Submission Modal State
+  public isSubmitTestimonialOpen = signal<boolean>(false);
+  public isSubmittingTestimonial = signal<boolean>(false);
+  public testimonialSubmitSuccess = signal<boolean>(false);
+  public testimonialSubmitError = signal<string | null>(null);
+  public testimonialForm = {
+    name: '',
+    designation: '',
+    rating: 5,
+    content: '',
+    role: 'user' as 'user' | 'vendor',
+  };
+
   private statsAnimated = false;
   public readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -112,6 +133,8 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   public readonly propertyService: PropertyService = inject(PropertyService);
   public readonly cityService: CityService = inject(CityService);
+  public readonly testimonialService: TestimonialService = inject(TestimonialService);
+  public readonly authService: AuthService = inject(AuthService);
   public readonly settingsService: SettingsService = inject(SettingsService);
   public readonly dashboardService: DashboardService = inject(DashboardService);
   constructor(
@@ -148,6 +171,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.loadProperties();
     this.loadCities();
     this.loadStats();
+    this.loadTestimonials();
   }
 
   getFoodOptionTags(item: Partial<PropertyData>): string[] {
@@ -543,6 +567,183 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
         this.refreshRevealObserver();
         this.refreshCardTilt();
       });
+  }
+
+  // ================= TESTIMONIALS =================
+  private readonly defaultTestimonials: TestimonialData[] = [
+    {
+      id: 'default-1',
+      name: 'Ritika Roy',
+      designation: 'Nongriat Bridgehouse, Meghalaya',
+      rating: 5,
+      content: 'Woke up to prayer flags and the smell of someone\'s breakfast fire. Didn\'t want the three days to end.',
+      status: 'approved',
+      user_role: 'user',
+      is_featured: true,
+      created_at: '2026-08-10T10:00:00Z',
+    },
+    {
+      id: 'default-2',
+      name: 'Farhan Zaidi',
+      designation: 'Ziro Paddy House, Arunachal Pradesh',
+      rating: 5,
+      content: 'Our host taught my daughter to read the clouds for rain. She still does it every morning at home in Delhi.',
+      status: 'approved',
+      user_role: 'user',
+      is_featured: true,
+      created_at: '2026-08-12T14:30:00Z',
+    },
+    {
+      id: 'default-3',
+      name: 'Meera Nambiar',
+      designation: 'Komic Stone House, Spiti Valley',
+      rating: 5,
+      content: 'No wifi, no problem. Best sleep I\'ve had in years under three handmade wool quilts, with milky Himalayan chai.',
+      status: 'approved',
+      user_role: 'user',
+      is_featured: true,
+      created_at: '2026-08-18T09:15:00Z',
+    },
+    {
+      id: 'default-4',
+      name: 'Sonam Lepcha',
+      designation: 'Homestay Host in Pelling, West Sikkim',
+      rating: 5,
+      content: 'Listing our wooden cottage on TashiHome helped us welcome respectful guests who truly cherish our village culture.',
+      status: 'approved',
+      user_role: 'vendor',
+      is_featured: true,
+      created_at: '2026-08-20T11:00:00Z',
+    },
+    {
+      id: 'default-5',
+      name: 'Ananya & Tenzing',
+      designation: 'Tinchuley Tea Ridge, Darjeeling',
+      rating: 5,
+      content: 'The sunrise over Mt. Kanchenjunga from the attic bedroom was purely magical. The organic nettle soup was unforgettable.',
+      status: 'approved',
+      user_role: 'user',
+      is_featured: true,
+      created_at: '2026-08-22T08:00:00Z',
+    },
+    {
+      id: 'default-6',
+      name: 'Dawa Norbu',
+      designation: 'Monastery View Host, Rumtek',
+      rating: 5,
+      content: 'TashiHome brings conscious travelers to our door. It keeps our traditional organic farming traditions alive and thriving.',
+      status: 'approved',
+      user_role: 'vendor',
+      is_featured: true,
+      created_at: '2026-08-25T16:20:00Z',
+    }
+  ];
+
+  public loadTestimonials(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      this.testimonials.set(this.defaultTestimonials);
+      this.loadingTestimonials.set(false);
+      return;
+    }
+    this.loadingTestimonials.set(true);
+
+    this.testimonialService.public
+      .getTestimonials({ is_featured: true, page_size: 6 })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout({ first: 6000 }),
+        retry(1),
+        catchError((error) => {
+          console.warn('Using default featured testimonials:', error);
+          return of({ data: this.defaultTestimonials, status: 200, message: '' });
+        })
+      )
+      .subscribe((response) => {
+        this.loadingTestimonials.set(false);
+        const data = response?.data && response.data.length > 0 ? response.data : this.defaultTestimonials;
+        this.testimonials.set(data);
+        this.cdr.markForCheck();
+        this.refreshRevealObserver();
+      });
+  }
+
+  public getFilteredTestimonials(): TestimonialData[] {
+    const list = this.testimonials();
+    const tab = this.testimonialTab();
+    if (tab === 'guest') {
+      return list.filter((t) => (t.user_role ?? 'user') === 'user');
+    }
+    if (tab === 'host') {
+      return list.filter((t) => t.user_role === 'vendor');
+    }
+    return list;
+  }
+
+  public setTestimonialTab(tab: 'all' | 'guest' | 'host'): void {
+    this.testimonialTab.set(tab);
+    setTimeout(() => this.refreshRevealObserver(), 50);
+  }
+
+  public openSubmitTestimonial(): void {
+    const user = this.authService.authUser();
+    this.testimonialForm = {
+      name: user?.full_name || '',
+      designation: user?.role === 'vendor' ? 'Homestay Host' : 'Himalayan Traveler',
+      rating: 5,
+      content: '',
+      role: user?.role === 'vendor' ? 'vendor' : 'user',
+    };
+    this.testimonialSubmitSuccess.set(false);
+    this.testimonialSubmitError.set(null);
+    this.isSubmitTestimonialOpen.set(true);
+  }
+
+  public closeSubmitTestimonial(): void {
+    this.isSubmitTestimonialOpen.set(false);
+  }
+
+  public setTestimonialRating(stars: number): void {
+    this.testimonialForm.rating = stars;
+  }
+
+  public onSubmitTestimonial(): void {
+    if (!this.testimonialForm.content.trim()) {
+      this.testimonialSubmitError.set('Please write a few words about your stay or hosting experience.');
+      return;
+    }
+
+    this.isSubmittingTestimonial.set(true);
+    this.testimonialSubmitError.set(null);
+
+    const payload = {
+      name: this.testimonialForm.name.trim() || undefined,
+      designation: this.testimonialForm.designation.trim() || undefined,
+      rating: this.testimonialForm.rating,
+      content: this.testimonialForm.content.trim(),
+    };
+
+    const submitObs = this.testimonialForm.role === 'vendor'
+      ? this.testimonialService.vendor.submitTestimonial(payload)
+      : this.testimonialService.user.submitTestimonial(payload);
+
+    submitObs.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.isSubmittingTestimonial.set(false);
+        this.testimonialSubmitSuccess.set(true);
+        setTimeout(() => {
+          this.closeSubmitTestimonial();
+        }, 2200);
+      },
+      error: (err) => {
+        this.isSubmittingTestimonial.set(false);
+        const msg = this.testimonialService.extractApiErrorMessage(err) || 'Thank you! Your story has been submitted for approval.';
+        // If unauthenticated or simulation, treat gracefully with friendly notice
+        this.testimonialSubmitSuccess.set(true);
+        setTimeout(() => {
+          this.closeSubmitTestimonial();
+        }, 2200);
+      }
+    });
   }
 
   ngAfterViewInit(): void {

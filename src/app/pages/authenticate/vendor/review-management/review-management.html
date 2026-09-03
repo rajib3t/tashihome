@@ -1,0 +1,386 @@
+<app-page-breadcrumb pageTitle="Reviews &amp; Ratings" homelink="/vendor"></app-page-breadcrumb>
+
+<div class="space-y-6">
+
+  <!-- Overview Stats Cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total Reviews -->
+    <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">
+        ★
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Total Reviews</p>
+        <p class="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">{{ totalItems() }}</p>
+      </div>
+    </div>
+
+    <!-- Average Rating -->
+    <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-xl font-bold">
+        {{ averageRating || '—' }}
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Average Rating</p>
+        <p class="text-xs text-amber-500 font-semibold mt-1">
+          @if (averageRating > 0) {
+            <span>★★★★★</span> ({{ averageRating }} / 5)
+          } @else {
+            <span>No ratings yet</span>
+          }
+        </p>
+      </div>
+    </div>
+
+    <!-- Replied Reviews -->
+    <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl font-bold">
+        💬
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Host Responses</p>
+        <p class="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">{{ repliedCount }}</p>
+      </div>
+    </div>
+
+    <!-- Awaiting Response -->
+    <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl font-bold">
+        ✉
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Awaiting Reply</p>
+        <p class="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">{{ pendingReplyCount }}</p>
+      </div>
+    </div>
+  </div>
+
+  <app-card title="Guest Reviews" desc="View ratings from verified stays, read traveler feedback, and send public host thank-you notes.">
+
+    <!-- Search & Filter Bar -->
+    <form [formGroup]="searchForm" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" (ngSubmit)="onSearch()">
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+          Search
+        </label>
+        <input
+          type="text"
+          formControlName="search"
+          placeholder="Search guest, comment, homestay..."
+          class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+          Status
+        </label>
+        <select
+          formControlName="status"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 cursor-pointer"
+        >
+          <option value="">All Statuses</option>
+          <option value="published">Published</option>
+          <option value="pending">Pending Moderation</option>
+        </select>
+      </div>
+
+      <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-2">
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:opacity-90 cursor-pointer"
+        >
+          Filter Reviews
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+          (click)="onReset()"
+        >
+          Reset
+        </button>
+      </div>
+    </form>
+
+    <!-- Alerts -->
+    @if (successMessage()) {
+      <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 flex items-center justify-between animate-in fade-in">
+        <span>{{ successMessage() }}</span>
+        <button type="button" (click)="successMessage.set('')" class="text-emerald-700 font-bold">✕</button>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700 flex items-center justify-between animate-in fade-in">
+        <span>{{ errorMessage() }}</span>
+        <button type="button" (click)="errorMessage.set('')" class="text-red-700 font-bold">✕</button>
+      </div>
+    }
+
+    <!-- Table Container -->
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-800">
+          <thead class="bg-slate-50 dark:bg-slate-900/80">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">#</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Homestay</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Guest</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Rating</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Guest Review</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Host Reply</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+            @if (isLoading()) {
+              <tr>
+                <td colspan="8" class="px-4 py-10 text-center text-slate-500 dark:text-slate-400">
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <span>Loading guest reviews...</span>
+                  </div>
+                </td>
+              </tr>
+            } @else if (reviews().length === 0) {
+              <tr>
+                <td colspan="8" class="px-4 py-10 text-center text-slate-500 dark:text-slate-400">
+                  No guest reviews found for your homestays.
+                </td>
+              </tr>
+            } @else {
+              @for (review of reviews(); track review.id; let i = $index) {
+                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                  <!-- SL -->
+                  <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400 font-mono">{{ getSerialNumber(i) }}</td>
+
+                  <!-- Homestay -->
+                  <td class="px-4 py-3.5 text-slate-800 dark:text-slate-100 font-medium">
+                    @if (review.property?.slug) {
+                      <a [routerLink]="['/stay', review.property?.slug]" target="_blank" class="hover:underline text-primary">
+                        {{ review.property?.name || 'View Homestay' }} ↗
+                      </a>
+                    } @else {
+                      <span>{{ review.property?.name || 'Homestay' }}</span>
+                    }
+                    @if (review.booking?.booking_reference) {
+                      <span class="block text-[10px] text-slate-400 font-mono mt-0.5">
+                        Booking: {{ review.booking?.booking_reference }}
+                      </span>
+                    }
+                  </td>
+
+                  <!-- Guest -->
+                  <td class="px-4 py-3.5">
+                    <div class="flex items-center gap-2">
+                      @if (review.guest?.is_profile_image_url) {
+                        <img [src]="review.guest?.is_profile_image_url" alt="" class="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                      } @else {
+                        <div class="w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-[10px] grid place-items-center">
+                          {{ (review.guest?.full_name || 'G').slice(0, 2).toUpperCase() }}
+                        </div>
+                      }
+                      <div>
+                        <p class="font-medium text-slate-800 dark:text-slate-200 m-0">
+                          {{ review.guest?.full_name || 'Verified Guest' }}
+                        </p>
+                        <p class="text-[10px] text-slate-400 m-0">
+                          {{ review.created_at | date:'mediumDate' }}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Rating -->
+                  <td class="px-4 py-3.5 whitespace-nowrap">
+                    <span class="text-amber-500 font-semibold flex items-center gap-1">
+                      <span>★</span>
+                      <span>{{ review.rating }}</span>
+                      <span class="text-[10px] text-slate-400">/ 5</span>
+                    </span>
+                  </td>
+
+                  <!-- Review Comment -->
+                  <td class="px-4 py-3.5 max-w-xs">
+                    <p class="text-slate-700 dark:text-slate-300 line-clamp-2 m-0 cursor-pointer hover:text-primary" (click)="openDetailModal(review)">
+                      "{{ review.comment }}"
+                    </p>
+                  </td>
+
+                  <!-- Host Reply Status -->
+                  <td class="px-4 py-3.5 max-w-xs">
+                    @if (review.host_reply) {
+                      <div class="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <p class="line-clamp-1 italic text-[11px] m-0">"{{ review.host_reply }}"</p>
+                      </div>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full font-medium">
+                        No reply yet
+                      </span>
+                    }
+                  </td>
+
+                  <!-- Status Badge -->
+                  <td class="px-4 py-3.5 whitespace-nowrap">
+                    <span class="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider inline-block" [ngClass]="getStatusBadgeClass(review.status)">
+                      {{ review.status }}
+                    </span>
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="px-4 py-3.5 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        (click)="openReplyModal(review)"
+                        class="inline-flex items-center gap-1 rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:opacity-90 transition-all cursor-pointer"
+                      >
+                        <span>{{ review.host_reply ? 'Edit Reply' : '💬 Reply' }}</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-6">
+      <app-pagination
+        [meta]="meta"
+        (pageChange)="onPageChange($event)"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </div>
+  </app-card>
+
+  <!-- Host Reply Modal -->
+  <app-modal [isOpen]="isReplyModalOpen()" (close)="closeReplyModal()" className="max-w-[550px] m-4">
+    <div class="relative w-full max-w-[550px] rounded-3xl bg-white p-6 dark:bg-slate-900">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">
+          {{ selectedReview()?.host_reply ? 'Edit Host Response' : 'Reply to Guest Review' }}
+        </h3>
+        <button type="button" (click)="closeReplyModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕</button>
+      </div>
+
+      @if (selectedReview(); as review) {
+        <div class="space-y-4 text-xs">
+          <!-- Guest Note Card -->
+          <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 space-y-1.5 border border-slate-200 dark:border-slate-700">
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-slate-800 dark:text-slate-200">{{ review.guest?.full_name || 'Guest' }}</span>
+              <span class="text-amber-500 font-bold">★ {{ review.rating }} / 5</span>
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 italic m-0">"{{ review.comment }}"</p>
+          </div>
+
+          @if (replyError) {
+            <div class="p-3 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200">
+              {{ replyError }}
+            </div>
+          }
+
+          <!-- Response Form -->
+          <div>
+            <label class="block font-semibold text-slate-800 dark:text-slate-200 mb-1.5">
+              Your Public Response
+            </label>
+            <textarea
+              rows="4"
+              [(ngModel)]="replyText"
+              placeholder="Thank the guest for their stay, highlight upcoming homestay improvements, or address their feedback..."
+              class="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 resize-none"
+            ></textarea>
+            <p class="text-[11px] text-slate-400 mt-1">
+              Your reply will be displayed publicly directly under the guest's review on your stay page.
+            </p>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+            <button
+              type="button"
+              (click)="closeReplyModal()"
+              class="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              (click)="submitReply()"
+              [disabled]="isSubmittingReply()"
+              class="rounded-xl bg-primary px-5 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {{ isSubmittingReply() ? 'Publishing...' : 'Publish Response' }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </app-modal>
+
+  <!-- Review Detail View Modal -->
+  <app-modal [isOpen]="isDetailModalOpen()" (close)="closeDetailModal()" className="max-w-[550px] m-4">
+    <div class="relative w-full max-w-[550px] rounded-3xl bg-white p-6 dark:bg-slate-900">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Review Details</h3>
+        <button type="button" (click)="closeDetailModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕</button>
+      </div>
+
+      @if (selectedReview(); as review) {
+        <div class="space-y-4 text-xs text-slate-700 dark:text-slate-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-semibold text-sm text-slate-900 dark:text-white">{{ review.property?.name }}</p>
+              <p class="text-[11px] text-slate-500">Guest: {{ review.guest?.full_name }}</p>
+            </div>
+            <span class="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider" [ngClass]="getStatusBadgeClass(review.status)">
+              {{ review.status }}
+            </span>
+          </div>
+
+          <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-1">
+            <p class="text-[11px] font-semibold text-amber-500">Rating: {{ review.rating }} / 5 Stars</p>
+            <p class="text-xs text-slate-800 dark:text-slate-200 leading-relaxed italic">
+              "{{ review.comment }}"
+            </p>
+          </div>
+
+          @if (review.host_reply) {
+            <div class="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 rounded-xl space-y-1">
+              <p class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">Your Response:</p>
+              <p class="text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
+                "{{ review.host_reply }}"
+              </p>
+            </div>
+          }
+
+          <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+            <button
+              type="button"
+              (click)="closeDetailModal(); openReplyModal(review)"
+              class="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
+            >
+              {{ review.host_reply ? 'Edit Response' : 'Write Response' }}
+            </button>
+            <button
+              type="button"
+              (click)="closeDetailModal()"
+              class="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </app-modal>
+
+</div>
+
