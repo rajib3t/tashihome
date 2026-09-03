@@ -1,0 +1,401 @@
+<app-page-breadcrumb pageTitle="Host Stories &amp; Testimonials" homelink="/vendor"></app-page-breadcrumb>
+
+<div class="space-y-6">
+  <app-card title="Your Shared Stories" desc="View, submit, and manage the stories and testimonials you've shared with the TashiHome community.">
+
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+      <div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 m-0">
+          Share your experience as a homestay host to inspire travelers and fellow hosts.
+        </p>
+      </div>
+      <div>
+        <button
+          type="button"
+          (click)="openCreateModal()"
+          class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:opacity-90 cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>Share Host Story</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (successMessage()) {
+      <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 flex items-center justify-between animate-in fade-in">
+        <span>{{ successMessage() }}</span>
+        <button type="button" (click)="successMessage.set('')" class="text-emerald-700 font-bold cursor-pointer">✕</button>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700 flex items-center justify-between animate-in fade-in">
+        <span>{{ errorMessage() }}</span>
+        <button type="button" (click)="errorMessage.set('')" class="text-red-700 font-bold cursor-pointer">✕</button>
+      </div>
+    }
+
+    <!-- Table Container -->
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-800">
+          <thead class="bg-slate-50 dark:bg-slate-900/80">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">#</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Designation / Title</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Rating</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Your Story</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 text-center">Featured</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Date</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+            @if (isLoading()) {
+              <tr>
+                <td colspan="8" class="px-4 py-10 text-center text-slate-500 dark:text-slate-400">
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <span>Loading testimonials...</span>
+                  </div>
+                </td>
+              </tr>
+            } @else if (testimonials().length === 0) {
+              <tr>
+                <td colspan="8" class="px-4 py-10 text-center text-slate-500 dark:text-slate-400">
+                  <p class="mb-2">You haven't shared any host stories or testimonials yet.</p>
+                  <button
+                    type="button"
+                    (click)="openCreateModal()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary/5 text-xs font-semibold cursor-pointer"
+                  >
+                    Share your first story
+                  </button>
+                </td>
+              </tr>
+            } @else {
+              @for (t of testimonials(); track t.id; let i = $index) {
+                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                  <!-- SL -->
+                  <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400 font-mono">{{ getSerialNumber(i) }}</td>
+
+                  <!-- Designation -->
+                  <td class="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">
+                    {{ t.designation || 'Homestay Host' }}
+                  </td>
+
+                  <!-- Rating -->
+                  <td class="px-4 py-3.5 whitespace-nowrap">
+                    <span class="text-amber-500 font-semibold flex items-center gap-1">
+                      <span>★</span>
+                      <span>{{ t.rating || 5 }}</span>
+                    </span>
+                  </td>
+
+                  <!-- Content / Quote -->
+                  <td class="px-4 py-3.5 max-w-sm">
+                    <p class="text-slate-700 dark:text-slate-300 line-clamp-2 m-0 cursor-pointer hover:text-primary" (click)="openDetailModal(t)">
+                      &ldquo;{{ t.content }}&rdquo;
+                    </p>
+                  </td>
+
+                  <!-- Featured -->
+                  <td class="px-4 py-3.5 text-center whitespace-nowrap">
+                    @if (t.is_featured) {
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300">
+                        ★ Featured
+                      </span>
+                    } @else {
+                      <span class="text-slate-400 text-xs">-</span>
+                    }
+                  </td>
+
+                  <!-- Status Badge -->
+                  <td class="px-4 py-3.5 whitespace-nowrap">
+                    <span class="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider inline-block" [ngClass]="getStatusBadgeClass(t.status)">
+                      {{ t.status }}
+                    </span>
+                  </td>
+
+                  <!-- Date -->
+                  <td class="px-4 py-3.5 text-slate-500 whitespace-nowrap">
+                    {{ t.created_at | date:'mediumDate' }}
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="px-4 py-3.5 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1.5">
+                      <!-- View Detail -->
+                      <button
+                        type="button"
+                        (click)="openDetailModal(t)"
+                        class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-primary hover:border-primary transition-colors cursor-pointer"
+                        title="View Details"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                      </button>
+
+                      <!-- Edit button -->
+                      <button
+                        type="button"
+                        (click)="openEditModal(t)"
+                        class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-primary hover:border-primary transition-colors cursor-pointer"
+                        title="Edit Testimonial"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                        </svg>
+                      </button>
+
+                      <!-- Delete button -->
+                      <button
+                        type="button"
+                        (click)="openDeleteModal(t)"
+                        class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                        title="Delete Testimonial"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-6">
+      <app-pagination
+        [meta]="meta"
+        (pageChange)="onPageChange($event)"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </div>
+  </app-card>
+
+  <!-- Create Testimonial Modal -->
+  <app-modal [isOpen]="isCreateModalOpen()" (close)="closeCreateModal()" className="max-w-[550px] m-4">
+    <div class="relative w-full max-w-[550px] rounded-3xl bg-white p-6 dark:bg-slate-900">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Share Your Host Story</h3>
+        <button type="button" (click)="closeCreateModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">✕</button>
+      </div>
+
+      <form [formGroup]="createForm" (ngSubmit)="submitCreate()" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Your Title / Homestay Designation *</label>
+          <input
+            type="text"
+            formControlName="designation"
+            placeholder="e.g. Homestay Host in Pelling, Sikkim"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          />
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Rating *</label>
+          <div class="flex items-center gap-2">
+            @for (star of [1, 2, 3, 4, 5]; track star) {
+              <button
+                type="button"
+                (click)="setCreateRating(star)"
+                class="text-2xl cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+                [class.text-amber-400]="star <= (createForm.get('rating')?.value || 5)"
+                [class.text-slate-200]="star > (createForm.get('rating')?.value || 5)"
+              >
+                ★
+              </button>
+            }
+            <span class="text-xs text-slate-500 ml-2">({{ createForm.get('rating')?.value || 5 }} / 5 stars)</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Your Story &amp; Experience *</label>
+          <textarea
+            rows="4"
+            formControlName="content"
+            placeholder="Share how listing your property on TashiHome has connected you with wonderful travelers..."
+            class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 resize-none"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+          <button
+            type="button"
+            (click)="closeCreateModal()"
+            class="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="isSubmitting()"
+            class="rounded-xl bg-primary px-5 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50 cursor-pointer"
+          >
+            {{ isSubmitting() ? 'Submitting...' : 'Submit Story' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </app-modal>
+
+  <!-- Edit Testimonial Modal -->
+  <app-modal [isOpen]="isEditModalOpen()" (close)="closeEditModal()" className="max-w-[550px] m-4">
+    <div class="relative w-full max-w-[550px] rounded-3xl bg-white p-6 dark:bg-slate-900">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Edit Host Story</h3>
+        <button type="button" (click)="closeEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">✕</button>
+      </div>
+
+      <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Your Title / Designation *</label>
+          <input
+            type="text"
+            formControlName="designation"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          />
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Rating *</label>
+          <div class="flex items-center gap-2">
+            @for (star of [1, 2, 3, 4, 5]; track star) {
+              <button
+                type="button"
+                (click)="setEditRating(star)"
+                class="text-2xl cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+                [class.text-amber-400]="star <= (editForm.get('rating')?.value || 5)"
+                [class.text-slate-200]="star > (editForm.get('rating')?.value || 5)"
+              >
+                ★
+              </button>
+            }
+            <span class="text-xs text-slate-500 ml-2">({{ editForm.get('rating')?.value || 5 }} / 5 stars)</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Your Story *</label>
+          <textarea
+            rows="4"
+            formControlName="content"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 resize-none"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+          <button
+            type="button"
+            (click)="closeEditModal()"
+            class="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="isUpdating()"
+            class="rounded-xl bg-primary px-5 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50 cursor-pointer"
+          >
+            {{ isUpdating() ? 'Updating...' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </app-modal>
+
+  <!-- Delete Modal -->
+  <app-modal [isOpen]="isDeleteModalOpen()" (close)="closeDeleteModal()" className="max-w-[450px] m-4">
+    <div class="relative w-full max-w-[450px] rounded-3xl bg-white p-6 dark:bg-slate-900 text-center space-y-4">
+      <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 grid place-items-center mx-auto text-xl">
+        🗑
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Delete Host Story?</h3>
+        <p class="text-xs text-slate-500 mt-1">
+          Are you sure you want to delete this story? This action cannot be undone.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeDeleteModal()"
+          class="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmDelete()"
+          [disabled]="isDeleting()"
+          class="rounded-xl bg-red-600 px-5 py-2 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50 cursor-pointer"
+        >
+          {{ isDeleting() ? 'Deleting...' : 'Yes, Delete' }}
+        </button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Detail Modal -->
+  <app-modal [isOpen]="isDetailModalOpen()" (close)="closeDetailModal()" className="max-w-[550px] m-4">
+    <div class="relative w-full max-w-[550px] rounded-3xl bg-white p-6 dark:bg-slate-900">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Host Story Details</h3>
+        <button type="button" (click)="closeDetailModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">✕</button>
+      </div>
+
+      @if (selectedTestimonial(); as t) {
+        <div class="space-y-4 text-xs text-slate-700 dark:text-slate-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-semibold text-sm text-slate-900 dark:text-white">{{ t.name }}</p>
+              <p class="text-[11px] text-slate-500">{{ t.designation || 'Homestay Host' }}</p>
+            </div>
+            <span class="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider" [ngClass]="getStatusBadgeClass(t.status)">
+              {{ t.status }}
+            </span>
+          </div>
+
+          <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-2">
+            <p class="text-xs font-semibold text-amber-500">Rating: {{ t.rating || 5 }} / 5 Stars</p>
+            <p class="text-xs text-slate-800 dark:text-slate-200 leading-relaxed italic">
+              &ldquo;{{ t.content }}&rdquo;
+            </p>
+          </div>
+
+          <div class="flex items-center justify-between text-[11px] text-slate-500">
+            <span>Featured on Landing Page: <strong>{{ t.is_featured ? 'Yes' : 'No' }}</strong></span>
+            <span>Date: {{ t.created_at | date:'mediumDate' }}</span>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+            <button
+              type="button"
+              (click)="closeDetailModal()"
+              class="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </app-modal>
+</div>
+

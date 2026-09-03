@@ -68,7 +68,11 @@ export class Vendor {
         name: 'Reviews',
         path: '/vendor/review-management'
       },
-     
+      {
+        icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+        name: 'Stories & Testimonials',
+        path: '/vendor/testimonials'
+      },
     ];
 
 

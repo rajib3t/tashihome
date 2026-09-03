@@ -18,9 +18,16 @@ import {
   generateIdempotencyKey,
   generatePaymentVerificationKey,
 } from '../../../../utils/idempotency';
+import { TestimonialService } from '../../../../services/testimonial/testimonial-service';
+import {
+  SubmitTestimonialRequest,
+  TestimonialData,
+  TestimonialStatus,
+  UpdateTestimonialRequest,
+  UserTestimonialsParams,
+} from '../../../../services/testimonial/testimonial.model';
 
-
-export type ProfileTab = 'trips' | 'saved' | 'reviews' | 'account' | 'security';
+export type ProfileTab = 'trips' | 'saved' | 'reviews' | 'testimonials' | 'account' | 'security';
 
 @Component({
   selector: 'app-profile',
@@ -40,6 +47,7 @@ export class Profile implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
   public readonly bookingService = inject(BookingService);
+  public readonly testimonialService = inject(TestimonialService);
   private readonly razorpayService = inject(RazorpayService);
   private readonly settingsService = inject(SettingsService);
   private readonly destroyRef = inject(DestroyRef);
@@ -91,6 +99,33 @@ export class Profile implements OnInit {
   public readonly paymentSuccessMessage = signal<string | null>(null);
   public readonly paymentErrorMessage = signal<string | null>(null);
 
+  // Testimonial States
+  public readonly userTestimonials = signal<TestimonialData[]>([]);
+  public readonly isLoadingTestimonials = signal<boolean>(false);
+  public readonly testimonialSuccessMessage = signal<string | null>(null);
+  public readonly testimonialErrorMessage = signal<string | null>(null);
+
+  public readonly isCreateTestimonialOpen = signal<boolean>(false);
+  public readonly isSubmittingTestimonial = signal<boolean>(false);
+  public readonly testimonialCreateForm = this.fb.group({
+    designation: ['Himalayan Traveler', [Validators.required]],
+    rating: [5, [Validators.required, Validators.min(1), Validators.max(5)]],
+    content: ['', [Validators.required, Validators.minLength(10)]],
+  });
+
+  public readonly isEditTestimonialOpen = signal<boolean>(false);
+  public readonly isUpdatingTestimonial = signal<boolean>(false);
+  public readonly selectedTestimonialToEdit = signal<TestimonialData | null>(null);
+  public readonly testimonialEditForm = this.fb.group({
+    designation: ['', [Validators.required]],
+    rating: [5, [Validators.required, Validators.min(1), Validators.max(5)]],
+    content: ['', [Validators.required, Validators.minLength(10)]],
+  });
+
+  public readonly isDeleteTestimonialOpen = signal<boolean>(false);
+  public readonly isDeletingTestimonial = signal<boolean>(false);
+  public readonly selectedTestimonialToDelete = signal<TestimonialData | null>(null);
+
   public readonly infoForm = this.fb.group({
     full_name: ['', [Validators.required, Validators.minLength(2)]],
     phone: ['', [Validators.required]],
@@ -115,9 +150,13 @@ export class Profile implements OnInit {
     this.infoErrorMessage.set(null);
     this.passwordSuccessMessage.set(null);
     this.passwordErrorMessage.set(null);
+    this.testimonialSuccessMessage.set(null);
+    this.testimonialErrorMessage.set(null);
 
     if (tab === 'trips') {
       this.loadUserBookings();
+    } else if (tab === 'testimonials') {
+      this.loadUserTestimonials();
     }
   }
 
@@ -528,5 +567,193 @@ export class Profile implements OnInit {
     const base = this.assetUrl.endsWith('/') ? this.assetUrl : `${this.assetUrl}/`;
     const cleanPath = url.startsWith('/') ? url.substring(1) : url;
     return `${base}${cleanPath}`;
+  }
+
+  // ================= USER TESTIMONIAL METHODS =================
+  public loadUserTestimonials(): void {
+    this.isLoadingTestimonials.set(true);
+    this.testimonialErrorMessage.set(null);
+
+    const params: UserTestimonialsParams = {
+      page: 1,
+      page_size: 20,
+      sort_order: 'desc',
+    };
+
+    this.testimonialService.user.getTestimonials(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          let list: TestimonialData[] = [];
+          if (Array.isArray(res?.data)) {
+            list = res.data;
+          } else if (res?.data && Array.isArray((res.data as any).data)) {
+            list = (res.data as any).data;
+          }
+          this.userTestimonials.set(list);
+          this.isLoadingTestimonials.set(false);
+        },
+        error: (err) => {
+          this.isLoadingTestimonials.set(false);
+          const msg = this.testimonialService.extractApiErrorMessage(err) || 'Failed to load your testimonials.';
+          this.testimonialErrorMessage.set(msg);
+        },
+      });
+  }
+
+  public openCreateTestimonialModal(): void {
+    this.testimonialCreateForm.reset({
+      designation: 'Himalayan Traveler',
+      rating: 5,
+      content: '',
+    });
+    this.testimonialErrorMessage.set(null);
+    this.isCreateTestimonialOpen.set(true);
+  }
+
+  public closeCreateTestimonialModal(): void {
+    this.isCreateTestimonialOpen.set(false);
+  }
+
+  public setCreateTestimonialRating(star: number): void {
+    this.testimonialCreateForm.patchValue({ rating: star });
+  }
+
+  public submitCreateTestimonial(): void {
+    if (this.testimonialCreateForm.invalid) {
+      this.testimonialCreateForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmittingTestimonial.set(true);
+    this.testimonialErrorMessage.set(null);
+
+    const formVal = this.testimonialCreateForm.value;
+    const payload: SubmitTestimonialRequest = {
+      designation: formVal.designation?.trim() || undefined,
+      rating: Number(formVal.rating) || 5,
+      content: formVal.content?.trim() || '',
+    };
+
+    this.testimonialService.user.submitTestimonial(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isSubmittingTestimonial.set(false);
+          this.closeCreateTestimonialModal();
+          this.testimonialSuccessMessage.set('Thank you! Your story has been submitted for moderation.');
+          this.loadUserTestimonials();
+          setTimeout(() => this.testimonialSuccessMessage.set(null), 4000);
+        },
+        error: (err) => {
+          this.isSubmittingTestimonial.set(false);
+          const msg = this.testimonialService.extractApiErrorMessage(err) || 'Failed to submit testimonial.';
+          this.testimonialErrorMessage.set(msg);
+        },
+      });
+  }
+
+  public openEditTestimonialModal(t: TestimonialData): void {
+    this.selectedTestimonialToEdit.set(t);
+    this.testimonialEditForm.reset({
+      designation: t.designation || '',
+      rating: t.rating || 5,
+      content: t.content || '',
+    });
+    this.testimonialErrorMessage.set(null);
+    this.isEditTestimonialOpen.set(true);
+  }
+
+  public closeEditTestimonialModal(): void {
+    this.isEditTestimonialOpen.set(false);
+    this.selectedTestimonialToEdit.set(null);
+  }
+
+  public setEditTestimonialRating(star: number): void {
+    this.testimonialEditForm.patchValue({ rating: star });
+  }
+
+  public submitEditTestimonial(): void {
+    const t = this.selectedTestimonialToEdit();
+    if (!t) return;
+
+    if (this.testimonialEditForm.invalid) {
+      this.testimonialEditForm.markAllAsTouched();
+      return;
+    }
+
+    this.isUpdatingTestimonial.set(true);
+    this.testimonialErrorMessage.set(null);
+
+    const formVal = this.testimonialEditForm.value;
+    const payload: UpdateTestimonialRequest = {
+      designation: formVal.designation?.trim() || undefined,
+      rating: Number(formVal.rating) || 5,
+      content: formVal.content?.trim() || '',
+    };
+
+    this.testimonialService.user.updateTestimonial(t.id, payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isUpdatingTestimonial.set(false);
+          this.closeEditTestimonialModal();
+          this.testimonialSuccessMessage.set('Testimonial updated successfully.');
+          this.loadUserTestimonials();
+          setTimeout(() => this.testimonialSuccessMessage.set(null), 4000);
+        },
+        error: (err) => {
+          this.isUpdatingTestimonial.set(false);
+          const msg = this.testimonialService.extractApiErrorMessage(err) || 'Failed to update testimonial.';
+          this.testimonialErrorMessage.set(msg);
+        },
+      });
+  }
+
+  public openDeleteTestimonialModal(t: TestimonialData): void {
+    this.selectedTestimonialToDelete.set(t);
+    this.isDeleteTestimonialOpen.set(true);
+  }
+
+  public closeDeleteTestimonialModal(): void {
+    this.isDeleteTestimonialOpen.set(false);
+    this.selectedTestimonialToDelete.set(null);
+  }
+
+  public confirmDeleteTestimonial(): void {
+    const t = this.selectedTestimonialToDelete();
+    if (!t) return;
+
+    this.isDeletingTestimonial.set(true);
+    this.testimonialService.user.deleteTestimonial(t.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isDeletingTestimonial.set(false);
+          this.closeDeleteTestimonialModal();
+          this.testimonialSuccessMessage.set('Testimonial deleted successfully.');
+          this.loadUserTestimonials();
+          setTimeout(() => this.testimonialSuccessMessage.set(null), 4000);
+        },
+        error: (err) => {
+          this.isDeletingTestimonial.set(false);
+          const msg = this.testimonialService.extractApiErrorMessage(err) || 'Failed to delete testimonial.';
+          this.testimonialErrorMessage.set(msg);
+        },
+      });
+  }
+
+  public getTestimonialStatusBadgeClass(status: TestimonialStatus): string {
+    switch (status) {
+      case 'approved':
+        return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      case 'pending':
+        return 'bg-amber-50 text-amber-700 border border-amber-200';
+      case 'rejected':
+        return 'bg-rose-50 text-rose-700 border border-rose-200';
+      case 'hidden':
+      default:
+        return 'bg-slate-100 text-slate-700 border border-slate-200';
+    }
   }
 }

@@ -114,6 +114,13 @@
         class="cursor-pointer profile-tab">
         Reviews
       </button>
+      <button
+        type="button"
+        (click)="selectTab('testimonials')"
+        [class.profile-tab-active]="activeTab() === 'testimonials'"
+        class="cursor-pointer profile-tab">
+        Stories &amp; Testimonials
+      </button>
     </div>
 
     <!-- Tab 1: Account details (Edit Profile Info) -->
@@ -512,8 +519,272 @@
         <p class="mt-2 text-sm text-ink/60">Reviews you write after completed homestays will appear here.</p>
       </div>
     }
+
+    <!-- Tab 6: Stories & Testimonials -->
+    @else if (activeTab() === 'testimonials') {
+      <div class="profile-panel">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h2 class="font-display text-2xl text-ink">Stories &amp; Testimonials</h2>
+            <p class="mt-1 text-sm text-ink/60">Share your Himalayan journey experiences with future travelers.</p>
+          </div>
+          <button
+            type="button"
+            (click)="openCreateTestimonialModal()"
+            class="cursor-pointer inline-flex items-center gap-2 rounded-full bg-pine px-5 py-2.5 text-xs font-semibold text-cloud hover:bg-ink transition-colors shadow-xs">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>Write a Story</span>
+          </button>
+        </div>
+
+        @if (testimonialSuccessMessage()) {
+          <div class="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium">
+            {{ testimonialSuccessMessage() }}
+          </div>
+        }
+
+        @if (testimonialErrorMessage()) {
+          <div class="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
+            {{ testimonialErrorMessage() }}
+          </div>
+        }
+
+        @if (isLoadingTestimonials()) {
+          <div class="py-16 text-center text-ink/50 flex flex-col items-center justify-center gap-3">
+            <div class="w-6 h-6 border-2 border-pine border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-sm font-medium">Loading your shared stories...</p>
+          </div>
+        } @else if (userTestimonials().length === 0) {
+          <div class="rounded-3xl border border-dashed border-ink/15 p-12 text-center">
+            <div class="w-12 h-12 rounded-full bg-moss/10 text-mossD grid place-items-center mx-auto text-xl mb-3">
+              ✍️
+            </div>
+            <h3 class="font-display text-lg text-ink">No stories shared yet</h3>
+            <p class="mt-1 text-sm text-ink/60 max-w-sm mx-auto">
+              Tell the community about your homestay experiences, cozy hearth moments, or warm village hospitality.
+            </p>
+            <button
+              type="button"
+              (click)="openCreateTestimonialModal()"
+              class="mt-5 inline-flex items-center gap-2 rounded-full bg-ochre px-6 py-2.5 text-xs font-semibold text-cloud hover:bg-ochreD transition-colors cursor-pointer">
+              Share your story
+            </button>
+          </div>
+        } @else {
+          <div class="grid gap-4 sm:grid-cols-2">
+            @for (t of userTestimonials(); track t.id) {
+              <div class="rounded-2xl border border-ink/10 bg-white p-5 shadow-xs flex flex-col justify-between hover:shadow-sm transition-shadow">
+                <div>
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="text-ochre text-sm flex items-center">
+                      @for (star of [1, 2, 3, 4, 5]; track star) {
+                        <span>{{ star <= (t.rating || 5) ? '★' : '☆' }}</span>
+                      }
+                    </div>
+                    <span class="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider inline-block" [ngClass]="getTestimonialStatusBadgeClass(t.status)">
+                      {{ t.status }}
+                    </span>
+                  </div>
+
+                  <p class="text-xs text-ink/50 font-medium mb-2">{{ t.designation || 'Himalayan Traveler' }}</p>
+
+                  <p class="text-sm text-ink leading-relaxed italic">
+                    &ldquo;{{ t.content }}&rdquo;
+                  </p>
+                </div>
+
+                <div class="mt-5 pt-3 border-t border-ink/10 flex items-center justify-between text-xs text-ink/50">
+                  <span>{{ t.created_at | appDate:'mediumDate' }}</span>
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      (click)="openEditTestimonialModal(t)"
+                      class="px-2.5 py-1 rounded-lg border border-ink/15 text-ink/70 hover:text-pine hover:border-pine text-[11px] font-medium transition-colors cursor-pointer">
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      (click)="openDeleteTestimonialModal(t)"
+                      class="px-2.5 py-1 rounded-lg text-red-600 hover:bg-red-50 text-[11px] font-medium transition-colors cursor-pointer">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
   </div>
 </section>
+
+<!-- Create User Testimonial Modal -->
+<app-modal [isOpen]="isCreateTestimonialOpen()" (close)="closeCreateTestimonialModal()">
+  <div class="p-6">
+    <div class="flex items-center justify-between border-b border-ink/10 pb-3 mb-4">
+      <h3 class="font-display text-xl text-ink">Share Your Story</h3>
+      <button type="button" (click)="closeCreateTestimonialModal()" class="text-ink/40 hover:text-ink cursor-pointer">✕</button>
+    </div>
+
+    <form [formGroup]="testimonialCreateForm" (ngSubmit)="submitCreateTestimonial()" class="space-y-4 text-xs">
+      <div>
+        <label class="block font-semibold text-ink/70 mb-1">Your Title / Traveler Bio *</label>
+        <input
+          type="text"
+          formControlName="designation"
+          placeholder="e.g. Solo Traveler from Delhi"
+          class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine"
+        />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-ink/70 mb-1">Rating *</label>
+        <div class="flex items-center gap-1.5">
+          @for (star of [1, 2, 3, 4, 5]; track star) {
+            <button
+              type="button"
+              (click)="setCreateTestimonialRating(star)"
+              class="text-2xl cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+              [class.text-ochre]="star <= (testimonialCreateForm.get('rating')?.value || 5)"
+              [class.text-ink/20]="star > (testimonialCreateForm.get('rating')?.value || 5)"
+            >
+              ★
+            </button>
+          }
+          <span class="text-xs font-semibold text-ink/60 ml-2">({{ testimonialCreateForm.get('rating')?.value || 5 }} / 5 stars)</span>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-semibold text-ink/70 mb-1">Your Story &amp; Experience *</label>
+        <textarea
+          rows="4"
+          formControlName="content"
+          placeholder="Tell future travelers about the homestay warmth, delicious local meals, scenic views..."
+          class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine resize-none"
+        ></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-ink/10">
+        <button
+          type="button"
+          (click)="closeCreateTestimonialModal()"
+          class="px-4 py-2 rounded-full text-xs font-semibold text-ink/60 hover:text-ink transition-colors cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="isSubmittingTestimonial()"
+          class="px-6 py-2.5 rounded-full bg-pine hover:bg-ink text-cloud text-xs font-semibold transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+        >
+          {{ isSubmittingTestimonial() ? 'Submitting...' : 'Submit for Moderation' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</app-modal>
+
+<!-- Edit User Testimonial Modal -->
+<app-modal [isOpen]="isEditTestimonialOpen()" (close)="closeEditTestimonialModal()">
+  <div class="p-6">
+    <div class="flex items-center justify-between border-b border-ink/10 pb-3 mb-4">
+      <h3 class="font-display text-xl text-ink">Edit Story</h3>
+      <button type="button" (click)="closeEditTestimonialModal()" class="text-ink/40 hover:text-ink cursor-pointer">✕</button>
+    </div>
+
+    <form [formGroup]="testimonialEditForm" (ngSubmit)="submitEditTestimonial()" class="space-y-4 text-xs">
+      <div>
+        <label class="block font-semibold text-ink/70 mb-1">Your Title / Traveler Bio *</label>
+        <input
+          type="text"
+          formControlName="designation"
+          class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine"
+        />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-ink/70 mb-1">Rating *</label>
+        <div class="flex items-center gap-1.5">
+          @for (star of [1, 2, 3, 4, 5]; track star) {
+            <button
+              type="button"
+              (click)="setEditTestimonialRating(star)"
+              class="text-2xl cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+              [class.text-ochre]="star <= (testimonialEditForm.get('rating')?.value || 5)"
+              [class.text-ink/20]="star > (testimonialEditForm.get('rating')?.value || 5)"
+            >
+              ★
+            </button>
+          }
+          <span class="text-xs font-semibold text-ink/60 ml-2">({{ testimonialEditForm.get('rating')?.value || 5 }} / 5 stars)</span>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-semibold text-ink/70 mb-1">Your Story &amp; Experience *</label>
+        <textarea
+          rows="4"
+          formControlName="content"
+          class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine resize-none"
+        ></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-ink/10">
+        <button
+          type="button"
+          (click)="closeEditTestimonialModal()"
+          class="px-4 py-2 rounded-full text-xs font-semibold text-ink/60 hover:text-ink transition-colors cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="isUpdatingTestimonial()"
+          class="px-6 py-2.5 rounded-full bg-pine hover:bg-ink text-cloud text-xs font-semibold transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+        >
+          {{ isUpdatingTestimonial() ? 'Updating...' : 'Save Changes' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</app-modal>
+
+<!-- Delete User Testimonial Confirmation Modal -->
+<app-modal [isOpen]="isDeleteTestimonialOpen()" (close)="closeDeleteTestimonialModal()">
+  <div class="p-6 text-center space-y-4">
+    <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 grid place-items-center mx-auto text-xl">
+      🗑
+    </div>
+    <div>
+      <h3 class="font-display text-xl text-ink">Delete Story?</h3>
+      <p class="text-xs text-ink/60 mt-1">
+        Are you sure you want to delete this story? This action cannot be undone.
+      </p>
+    </div>
+
+    <div class="flex items-center justify-center gap-3 pt-2">
+      <button
+        type="button"
+        (click)="closeDeleteTestimonialModal()"
+        class="rounded-full border border-ink/20 px-4 py-2 text-xs font-semibold text-ink hover:bg-cloud cursor-pointer"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        (click)="confirmDeleteTestimonial()"
+        [disabled]="isDeletingTestimonial()"
+        class="rounded-full bg-red-600 px-5 py-2 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50 cursor-pointer"
+      >
+        {{ isDeletingTestimonial() ? 'Deleting...' : 'Yes, Delete' }}
+      </button>
+    </div>
+  </div>
+</app-modal>
 
 <!-- Delete Profile Photo Modal -->
 <app-modal [isOpen]="isDeleteModalOpen()" (close)="closeDeleteModal()">

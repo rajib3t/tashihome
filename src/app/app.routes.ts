@@ -407,6 +407,16 @@ export const routes: Routes = [
                         path: 'reviews',
                         redirectTo: 'review-management',
                         pathMatch: 'full'
+                    },
+                    {
+                        path: 'testimonial-management',
+                        loadComponent: () => import('./pages/authenticate/vendor/testimonial-management/testimonial-management').then((m) => m.VendorTestimonialManagement),
+                        title: 'Host Stories & Testimonials'
+                    },
+                    {
+                        path: 'testimonials',
+                        redirectTo: 'testimonial-management',
+                        pathMatch: 'full'
                     }
                 ]
             },

@@ -102,7 +102,7 @@ export class TestimonialService {
       idempotencyKey?: string
     ): Observable<ApiResponse<TestimonialData>> => {
       const key = idempotencyKey || generateIdempotencyKey();
-      return this.apiService.protectedPost<TestimonialData>('/user/testimonials', data, {
+      return this.apiService.protectedPost<TestimonialData>('/user/testimonials/', data, {
         idempotencyKey: key,
       });
     },
@@ -114,7 +114,7 @@ export class TestimonialService {
       params?: UserTestimonialsParams
     ): Observable<ApiResponse<TestimonialData[]>> => {
       const queryParams = params ? buildUserTestimonialParams(params) : undefined;
-      return this.apiService.protectedGet<TestimonialData[]>('/user/testimonials', {
+      return this.apiService.protectedGet<TestimonialData[]>('/user/testimonials/', {
         params: queryParams,
       });
     },
