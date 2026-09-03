@@ -776,7 +776,44 @@
                 ✕
               </button>
 
-              @if (reviewSubmitSuccess()) {
+              @if (!authService.isAuthenticated()) {
+                <div class="text-center py-6 space-y-4 animate-in fade-in duration-300">
+                  <div class="w-14 h-14 rounded-full bg-pine/10 text-pine grid place-items-center mx-auto text-2xl border border-pine/20">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="font-display text-2xl text-ink">Sign in to write a review</h3>
+                    <p class="text-xs sm:text-sm text-ink/65 max-w-sm mx-auto mt-2 leading-relaxed">
+                      To ensure genuine experiences from real guests, you need to be signed in to submit a review for this homestay.
+                    </p>
+                  </div>
+
+                  <div class="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      (click)="closeWriteReview()"
+                      class="w-full sm:w-auto px-5 py-2.5 rounded-full text-xs font-semibold text-ink/60 hover:text-ink bg-cloud hover:bg-cloud2 transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      (click)="redirectToLogin()"
+                      class="w-full sm:w-auto px-6 py-2.5 rounded-full bg-pine hover:bg-ink text-cloud text-xs font-semibold transition-all shadow-md shadow-pine/20 cursor-pointer"
+                    >
+                      Sign In to Review
+                    </button>
+                  </div>
+
+                  <p class="text-[11px] text-ink/50 pt-2 m-0">
+                    Don't have an account?
+                    <a (click)="redirectToRegister()" class="text-pine font-semibold hover:underline cursor-pointer">Register now</a>
+                  </p>
+                </div>
+              } @else if (reviewSubmitSuccess()) {
                 <div class="text-center py-8 space-y-3 animate-in fade-in duration-300">
                   <div class="w-14 h-14 rounded-full bg-moss/15 text-mossD grid place-items-center mx-auto text-2xl font-bold">
                     ✓

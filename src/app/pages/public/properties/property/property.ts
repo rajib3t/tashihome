@@ -714,11 +714,30 @@ export class Property {
     this.isWriteReviewOpen.set(false);
   }
 
+  public redirectToLogin(): void {
+    this.closeWriteReview();
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl: this.router.url },
+    });
+  }
+
+  public redirectToRegister(): void {
+    this.closeWriteReview();
+    this.router.navigate(['/register'], {
+      queryParams: { returnUrl: this.router.url },
+    });
+  }
+
   public setReviewRating(stars: number): void {
     this.reviewForm.rating = stars;
   }
 
   public onSubmitReview(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.reviewSubmitError.set('Please log in to submit a review.');
+      return;
+    }
+
     if (!this.reviewForm.comment.trim()) {
       this.reviewSubmitError.set('Please write your review comment.');
       return;
@@ -757,14 +776,10 @@ export class Property {
         error: (err) => {
           this.isSubmittingReview.set(false);
           const msg = this.reviewService.extractApiErrorMessage(err);
-          if (msg) {
-            this.reviewSubmitError.set(msg);
-          } else {
-            this.reviewSubmitSuccess.set(true);
-            setTimeout(() => {
-              this.closeWriteReview();
-            }, 2200);
-          }
+          this.reviewSubmitError.set(
+            msg || 'Failed to submit review. Please ensure you have a completed stay for this booking.'
+          );
+          this.reviewSubmitSuccess.set(false);
         }
       });
   }

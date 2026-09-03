@@ -3,7 +3,7 @@ import { Component, DestroyRef, inject, signal, AfterViewInit, computed } from '
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth/auth-service';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LoginRequest } from '../../../services/auth/auth.model';
 import { Logo } from '../../../shared/components/common/logo/logo';
 import { SettingsService } from '../../../services/settings/settings-service';
@@ -26,6 +26,7 @@ export class Login implements AfterViewInit {
   private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   public readonly settingsData = computed(() => this.settingService.settingsData());
   public readonly loginForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email]],
@@ -69,14 +70,17 @@ export class Login implements AfterViewInit {
         console.log('Login response:', response);
         if (response.status === 'success' || response.status === 200) {
           const userRole = response.data.user.role?.toLowerCase();
-          if (userRole === 'admin' || userRole === 'staff') {
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+
+          if (returnUrl) {
+            this.router.navigateByUrl(returnUrl);
+          } else if (userRole === 'admin' || userRole === 'staff') {
             this.router.navigate(['/admin']);
-          } else if (userRole === 'user') {
+          } else if (userRole === 'vendor') {
+            this.router.navigate(['/vendor']);
+          } else {
             this.router.navigate(['/profile']);
           }
-          else if (userRole === 'vendor') {
-            this.router.navigate(['/vendor']);
-          } 
         } else {
           this.errorMessage.set(response.message || 'Login failed. Please try again.');
         }
