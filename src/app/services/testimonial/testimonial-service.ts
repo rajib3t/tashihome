@@ -11,6 +11,7 @@ import {
   TestimonialData,
   TestimonialStatus,
   UpdateTestimonialRequest,
+  UserTestimonialsParams,
 } from './testimonial.model';
 import { generateIdempotencyKey } from '../../utils/idempotency';
 
@@ -30,6 +31,16 @@ function buildPublicTestimonialParams(
     query['user_role'] = params.user_role;
   }
 
+  return query;
+}
+
+function buildUserTestimonialParams(
+  params?: UserTestimonialsParams
+): Record<string, string | number> {
+  const query: Record<string, string | number> = {};
+  if (params?.page !== undefined) query['page'] = params.page;
+  if (params?.page_size !== undefined) query['page_size'] = params.page_size;
+  if (params?.sort_order !== undefined) query['sort_order'] = params.sort_order;
   return query;
 }
 
@@ -99,9 +110,12 @@ export class TestimonialService {
     /**
      * Get user's submitted testimonials
      */
-    getTestimonials: (query?: any): Observable<ApiResponse<TestimonialData[]>> => {
+    getTestimonials: (
+      params?: UserTestimonialsParams
+    ): Observable<ApiResponse<TestimonialData[]>> => {
+      const queryParams = params ? buildUserTestimonialParams(params) : undefined;
       return this.apiService.protectedGet<TestimonialData[]>('/user/testimonials', {
-        params: query,
+        params: queryParams,
       });
     },
 
@@ -146,9 +160,12 @@ export class TestimonialService {
     /**
      * Get vendor's submitted testimonials
      */
-    getTestimonials: (query?: any): Observable<ApiResponse<TestimonialData[]>> => {
+    getTestimonials: (
+      params?: UserTestimonialsParams
+    ): Observable<ApiResponse<TestimonialData[]>> => {
+      const queryParams = params ? buildUserTestimonialParams(params) : undefined;
       return this.apiService.protectedGet<TestimonialData[]>('/vendor/testimonials', {
-        params: query,
+        params: queryParams,
       });
     },
 
@@ -184,7 +201,7 @@ export class TestimonialService {
       query?: AdminTestimonialQuery
     ): Observable<ApiResponse<TestimonialData[]>> => {
       const params = buildAdminTestimonialParams(query);
-      return this.apiService.protectedGet<TestimonialData[]>('/admin/testimonials', {
+      return this.apiService.protectedGet<TestimonialData[]>('/admin/testimonials/', {
         params,
       });
     },

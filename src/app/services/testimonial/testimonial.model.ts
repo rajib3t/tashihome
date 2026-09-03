@@ -23,6 +23,12 @@ export interface PublicTestimonialsParams {
   sort_order?: 'asc' | 'desc';
 }
 
+export interface UserTestimonialsParams {
+  page?: number;
+  page_size?: number;
+  sort_order?: 'asc' | 'desc';
+}
+
 export interface SubmitTestimonialRequest {
   name?: string;
   designation?: string;

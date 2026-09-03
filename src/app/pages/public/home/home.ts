@@ -685,7 +685,11 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public openSubmitTestimonial(): void {
-    const user = this.authService.authUser();
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/#testimonials' } });
+      return;
+    }
+    const user = this.authService.authUser() || this.authService.getUser();
     this.testimonialForm = {
       name: user?.full_name || '',
       designation: user?.role === 'vendor' ? 'Homestay Host' : 'Himalayan Traveler',
@@ -736,12 +740,8 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err) => {
         this.isSubmittingTestimonial.set(false);
-        const msg = this.testimonialService.extractApiErrorMessage(err) || 'Thank you! Your story has been submitted for approval.';
-        // If unauthenticated or simulation, treat gracefully with friendly notice
-        this.testimonialSubmitSuccess.set(true);
-        setTimeout(() => {
-          this.closeSubmitTestimonial();
-        }, 2200);
+        const msg = this.testimonialService.extractApiErrorMessage(err) || 'Failed to submit testimonial. Please try again.';
+        this.testimonialSubmitError.set(msg);
       }
     });
   }

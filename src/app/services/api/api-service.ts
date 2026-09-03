@@ -143,6 +143,7 @@ export class ApiService {
     // Attach Idempotency-Key if provided in options
     if (options?.idempotencyKey) {
       headers = headers.set('Idempotency-Key', options.idempotencyKey);
+      headers = headers.set('X-Idempotency-Key', options.idempotencyKey);
     }
 
     // Don't set Content-Type for FormData - let Angular auto-set with boundary

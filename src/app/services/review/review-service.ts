@@ -118,7 +118,7 @@ export class ReviewService {
      */
     getReviews: (query?: ReviewQuery): Observable<ApiResponse<ReviewData[]>> => {
       const params = buildReviewQueryParams(query);
-      return this.apiService.protectedGet<ReviewData[]>('/vendor/reviews/', { params });
+      return this.apiService.protectedGet<ReviewData[]>('/vendor/reviews', { params });
     },
 
     /**
