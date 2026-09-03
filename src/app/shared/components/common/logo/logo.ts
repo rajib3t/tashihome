@@ -37,7 +37,7 @@ export class Logo {
 
     const resolveUrl = (path: string | null | undefined): string | null => {
       if (!path) return null;
-      return path.startsWith('http') ? path : `${this.assetUrl}${path.startsWith('/') ? path : '/' + path}`;
+      return path.startsWith('http') ? path : `${this.assetUrl}${path}`;
     };
 
     if (this.variant === 'white') {
