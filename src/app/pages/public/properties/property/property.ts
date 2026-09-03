@@ -228,7 +228,25 @@ export class Property {
 
   public getRatePerNight(): number {
     const prop = this.propertyData();
-    return prop?.sale_per_night ?? prop?.price_per_night ?? prop?.sale_price ?? 0;
+    if (!prop) return 0;
+    const sale = Number(prop.sale_per_night ?? prop.sale_price ?? 0);
+    if (sale > 0) {
+      return sale;
+    }
+    return Number(prop.price_per_night ?? (prop as any).price ?? 0);
+  }
+
+  public hasDiscount(): boolean {
+    const prop = this.propertyData();
+    if (!prop) return false;
+    const sale = Number(prop.sale_per_night ?? prop.sale_price ?? 0);
+    const regular = Number(prop.price_per_night ?? (prop as any).price ?? 0);
+    return sale > 0 && regular > sale;
+  }
+
+  public getRegularPrice(): number {
+    const prop = this.propertyData();
+    return Number(prop?.price_per_night ?? (prop as any)?.price ?? 0);
   }
 
   public getCalculatedTotal(): number {

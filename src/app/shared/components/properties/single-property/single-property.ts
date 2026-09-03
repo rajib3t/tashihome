@@ -34,6 +34,24 @@ export class SingleProperty {
       .map(option => option.name);
   }
 
+  getEffectivePrice(item: Partial<PropertyData>): number {
+    const sale = Number(item.sale_per_night ?? item.sale_price ?? 0);
+    if (sale > 0) {
+      return sale;
+    }
+    return Number(item.price_per_night ?? (item as any)?.price ?? 0);
+  }
+
+  hasDiscount(item: Partial<PropertyData>): boolean {
+    const sale = Number(item.sale_per_night ?? item.sale_price ?? 0);
+    const regular = Number(item.price_per_night ?? (item as any)?.price ?? 0);
+    return sale > 0 && regular > sale;
+  }
+
+  getRegularPrice(item: Partial<PropertyData>): number {
+    return Number(item.price_per_night ?? (item as any)?.price ?? 0);
+  }
+
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';

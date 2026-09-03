@@ -461,6 +461,24 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
     return included.length > 0 ? included.slice(0, 3) : ['Himalayan tea & breakfast'];
   }
 
+  public getEffectivePrice(item: Partial<PropertyData>): number {
+    const sale = Number(item.sale_per_night ?? item.sale_price ?? 0);
+    if (sale > 0) {
+      return sale;
+    }
+    return Number(item.price_per_night ?? (item as any)?.price ?? 0);
+  }
+
+  public hasDiscount(item: Partial<PropertyData>): boolean {
+    const sale = Number(item.sale_per_night ?? item.sale_price ?? 0);
+    const regular = Number(item.price_per_night ?? (item as any)?.price ?? 0);
+    return sale > 0 && regular > sale;
+  }
+
+  public getRegularPrice(item: Partial<PropertyData>): number {
+    return Number(item.price_per_night ?? (item as any)?.price ?? 0);
+  }
+
   public getRoomTypeNames(item: Partial<PropertyData>): string {
     if (item.room_type?.name) {
       return item.room_type.name;

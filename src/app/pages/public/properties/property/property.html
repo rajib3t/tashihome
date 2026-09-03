@@ -59,7 +59,10 @@
 
       <div class="property-meta-row mt-5 text-cloud/85 text-sm">
         <span class="flex items-center gap-1.5 font-medium text-cloud">
-          <span class="text-ochre">₹</span>{{ propertyData()?.price_per_night ?? 0 | number }}
+          <span class="text-ochre">₹</span>{{ getRatePerNight() | number }}
+          @if (hasDiscount()) {
+          <span class="text-xs text-cloud/50 line-through">₹{{ getRegularPrice() | number }}</span>
+          }
           <span class="text-cloud/55 font-normal">/ night</span>
         </span>
         @if (propertyData()?.city?.name) {
@@ -599,7 +602,12 @@
 
           <div class="relative flex items-baseline justify-between">
             <p class="font-display text-3xl text-ink">
-              {{ propertyData()?.currency ?? '₹' }}{{ (propertyData()?.sale_per_night ?? propertyData()?.price_per_night ?? propertyData()?.sale_price ?? 0) | number }}
+              {{ propertyData()?.currency ?? '₹' }}{{ getRatePerNight() | number }}
+              @if (hasDiscount()) {
+                <span class="text-sm font-normal text-ink/40 line-through ml-1">
+                  {{ propertyData()?.currency ?? '₹' }}{{ getRegularPrice() | number }}
+                </span>
+              }
               <span class="text-sm font-body text-ink/50">/ night</span>
             </p>
             <span

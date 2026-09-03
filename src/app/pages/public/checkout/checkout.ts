@@ -357,7 +357,12 @@ export class Checkout implements OnInit {
 
   public getRatePerNight(): number {
     const prop = this.property();
-    return prop?.sale_per_night ?? prop?.price_per_night ?? prop?.sale_price ?? 0;
+    if (!prop) return 0;
+    const sale = Number(prop.sale_per_night ?? prop.sale_price ?? 0);
+    if (sale > 0) {
+      return sale;
+    }
+    return Number(prop.price_per_night ?? (prop as any)?.price ?? 0);
   }
 
   public getBaseTotal(): number {

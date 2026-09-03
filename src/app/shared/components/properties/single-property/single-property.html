@@ -46,7 +46,10 @@
 
           <div class="flex items-center justify-between mt-5 pt-4 border-t border-ink/10">
             <p class="font-display text-xl text-ink">
-              ₹{{ (item.price_per_night ?? item.sale_price ?? 0) | number }}
+              ₹{{ getEffectivePrice(item) | number }}
+              <span *ngIf="hasDiscount(item)" class="text-xs font-normal text-ink/40 line-through ml-1">
+                ₹{{ getRegularPrice(item) | number }}
+              </span>
               <span class="text-xs font-body font-normal text-ink/50">/ night</span>
             </p>
             <a href="" (click)="$event.preventDefault(); $event.stopPropagation(); goToPropertyDetail()"
