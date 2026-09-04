@@ -1,0 +1,644 @@
+<!-- ============ HERO SECTION ============ -->
+<section
+  class="bg-hero-img relative text-cloud pt-36 pb-32 md:pt-44 md:pb-40 z-30 overflow-hidden"
+  style="background: #0F5461 url('/images/experiences-bg.webp') center/cover no-repeat;"
+>
+  <!-- Atmospheric backdrop layers -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black/75 via-pine/75 to-pine/95"></div>
+  <canvas id="experiencesCanvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+
+  <div class="pointer-events-none absolute -top-24 right-0 w-[42rem] h-[42rem] bg-moss/25 rounded-full blur-[130px] animate-mist-a"></div>
+  <div class="pointer-events-none absolute bottom-0 left-0 w-[32rem] h-[32rem] bg-ochre/20 rounded-full blur-[120px] animate-mist-b"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10 text-center">
+    <div
+      class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-6 reveal"
+    >
+      <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
+      <p class="eyebrow text-mist text-[11px] tracking-wider m-0">Mountain Stories &amp; Living Traditions</p>
+    </div>
+
+    <h1 class="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight max-w-4xl mx-auto text-cloud reveal">
+      The moments you remember<br class="hidden sm:inline">
+      <em class="font-accent not-italic text-ochre">long after</em> the mist clears.
+    </h1>
+
+    <p class="mt-6 max-w-2xl mx-auto text-cloud/85 text-base md:text-lg font-light leading-relaxed reveal">
+      Not an itinerary or tourist bucket list. Real stories written in guest books, hearthside conversations with host families, and mountain traditions passed down through generations.
+    </p>
+
+    <!-- Trust / Rating Strip -->
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-8 reveal">
+      <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
+        <span class="text-ochre text-lg">★</span>
+        <span class="font-display text-base font-bold text-cloud">{{ averageRating() | number:'1.1-1' }}</span>
+        <span class="text-xs text-cloud/70">Average Guest Rating</span>
+      </div>
+
+      <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
+        <span class="w-2 h-2 rounded-full bg-moss"></span>
+        <span class="font-display text-base font-bold text-cloud">{{ verifiedStaysPercent() }}%</span>
+        <span class="text-xs text-cloud/70">Visited In-Person</span>
+      </div>
+
+      <button
+        type="button"
+        (click)="openSubmitModal()"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-ochre hover:bg-ochreD text-cloud text-xs font-semibold shadow-lg shadow-ochre/30 transition-all cursor-pointer hover:scale-105"
+      >
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M12 4v16m-8-8h16" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+        <span>Share Your Story</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS & GUEST STORIES SHOWCASE ============ -->
+<section id="stories" class="py-20 md:py-28 bg-cloud relative overflow-hidden">
+  <!-- Subtle topo backdrop pattern -->
+  <div class="pointer-events-none absolute inset-0 bg-topo-pattern opacity-60"></div>
+  <div class="pointer-events-none absolute top-10 right-10 w-96 h-96 bg-moss/10 rounded-full blur-[100px]"></div>
+  <div class="pointer-events-none absolute bottom-10 left-10 w-96 h-96 bg-ochre/10 rounded-full blur-[100px]"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 reveal">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-moss/10 text-moss mb-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+          <p class="eyebrow text-moss text-[10px] m-0">Words from the Guest Book</p>
+        </div>
+        <h2 class="font-display text-3xl md:text-4xl lg:text-5xl text-ink">
+          Authentic Guest &amp; Host Reflections
+        </h2>
+        <p class="text-ink/70 text-sm md:text-base mt-2 max-w-xl">
+          Genuine journals from travelers who woke to sunrise views, and heartfelt words from local families who welcomed them in.
+        </p>
+      </div>
+
+      <!-- Actions & Filters -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Tab selector -->
+        <div class="inline-flex p-1 bg-white/90 rounded-full border border-ink/10 shadow-xs">
+          <button
+            type="button"
+            (click)="setFilter('all')"
+            class="px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
+            [class.bg-pine]="selectedFilter() === 'all'"
+            [class.text-cloud]="selectedFilter() === 'all'"
+            [class.text-ink/70]="selectedFilter() !== 'all'"
+            [class.hover:text-ink]="selectedFilter() !== 'all'"
+          >
+            All ({{ testimonials().length }})
+          </button>
+          <button
+            type="button"
+            (click)="setFilter('guest')"
+            class="px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
+            [class.bg-pine]="selectedFilter() === 'guest'"
+            [class.text-cloud]="selectedFilter() === 'guest'"
+            [class.text-ink/70]="selectedFilter() !== 'guest'"
+            [class.hover:text-ink]="selectedFilter() !== 'guest'"
+          >
+            Guest Journals
+          </button>
+          <button
+            type="button"
+            (click)="setFilter('host')"
+            class="px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
+            [class.bg-pine]="selectedFilter() === 'host'"
+            [class.text-cloud]="selectedFilter() === 'host'"
+            [class.text-ink/70]="selectedFilter() !== 'host'"
+            [class.hover:text-ink]="selectedFilter() !== 'host'"
+          >
+            Host Stories
+          </button>
+          <button
+            type="button"
+            (click)="setFilter('top_rated')"
+            class="px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
+            [class.bg-pine]="selectedFilter() === 'top_rated'"
+            [class.text-cloud]="selectedFilter() === 'top_rated'"
+            [class.text-ink/70]="selectedFilter() !== 'top_rated'"
+            [class.hover:text-ink]="selectedFilter() !== 'top_rated'"
+          >
+            5-Star Stays
+          </button>
+        </div>
+
+        <!-- Share Trigger -->
+        <button
+          type="button"
+          (click)="openSubmitModal()"
+          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-ochre hover:bg-ochreD text-cloud text-xs font-semibold shadow-sm hover:shadow transition-all cursor-pointer"
+        >
+          <span>+ Add your experience</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Rating Quick Filter Pills & Search -->
+    <div class="mt-8 flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white/70 border border-ink/10 backdrop-blur-xs">
+      <div class="flex items-center gap-2 flex-wrap text-xs">
+        <span class="font-semibold text-ink/70 mr-1">Filter by stars:</span>
+        <button
+          type="button"
+          (click)="setRatingFilter(null)"
+          class="px-2.5 py-1 rounded-lg font-medium border transition-colors cursor-pointer"
+          [class.bg-pine]="selectedRatingFilter() === null"
+          [class.text-cloud]="selectedRatingFilter() === null"
+          [class.border-pine]="selectedRatingFilter() === null"
+          [class.bg-white]="selectedRatingFilter() !== null"
+          [class.text-ink/70]="selectedRatingFilter() !== null"
+          [class.border-ink/15]="selectedRatingFilter() !== null"
+        >
+          All Stars
+        </button>
+        @for (star of [5, 4, 3]; track star) {
+          <button
+            type="button"
+            (click)="setRatingFilter(star)"
+            class="px-2.5 py-1 rounded-lg font-medium border transition-colors cursor-pointer flex items-center gap-1"
+            [class.bg-pine]="selectedRatingFilter() === star"
+            [class.text-cloud]="selectedRatingFilter() === star"
+            [class.border-pine]="selectedRatingFilter() === star"
+            [class.bg-white]="selectedRatingFilter() !== star"
+            [class.text-ink/70]="selectedRatingFilter() !== star"
+            [class.border-ink/15]="selectedRatingFilter() !== star"
+          >
+            <span>{{ star }}</span>
+            <span class="text-ochre">★</span>
+          </button>
+        }
+      </div>
+
+      <!-- Search Box -->
+      <div class="w-full sm:w-64">
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            placeholder="Search by keyword, host, stay..."
+            class="w-full bg-white px-3.5 py-2 pl-8 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine placeholder:text-ink/40 shadow-xs"
+          />
+          <svg class="w-3.5 h-3.5 text-ink/40 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          @if (searchQuery()) {
+            <button
+              type="button"
+              (click)="searchQuery.set('')"
+              class="absolute right-2.5 top-2 text-xs text-ink/40 hover:text-ink cursor-pointer"
+            >
+              ✕
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Testimonials Grid -->
+    @if (loadingTestimonials()) {
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+          <div class="bg-white rounded-3xl p-8 border border-ink/10 shadow-sm animate-pulse space-y-4">
+            <div class="h-4 bg-ink/10 rounded w-1/3"></div>
+            <div class="h-20 bg-ink/10 rounded"></div>
+            <div class="h-10 bg-ink/10 rounded-full w-2/3 pt-4 border-t border-ink/10"></div>
+          </div>
+        }
+      </div>
+    } @else if (filteredTestimonials().length === 0) {
+      <div class="mt-14 p-12 text-center bg-white rounded-3xl border border-ink/10 max-w-lg mx-auto">
+        <p class="text-3xl mb-2">🏔️</p>
+        <h3 class="font-display text-xl text-ink">No experiences found</h3>
+        <p class="text-sm text-ink/60 mt-1">Try clearing your filters or search keywords.</p>
+        <button
+          type="button"
+          (click)="resetFilters()"
+          class="mt-4 px-4 py-2 rounded-full bg-pine text-cloud text-xs font-semibold cursor-pointer"
+        >
+          Reset Filters
+        </button>
+      </div>
+    } @else {
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        @for (t of filteredTestimonials(); track t.id) {
+          <blockquote
+            class="reveal testimonial-card bg-white rounded-3xl p-8 border border-ink/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative flex flex-col justify-between group"
+          >
+            <div>
+              <!-- Top bar: Stars & Badge -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-ochre text-lg tracking-wider flex items-center">
+                  @for (star of [1, 2, 3, 4, 5]; track star) {
+                    <span>{{ star <= (t.rating || 5) ? '★' : '☆' }}</span>
+                  }
+                  <span class="text-xs font-bold text-ink/60 ml-2">{{ t.rating || 5 }}.0</span>
+                </div>
+
+                <span
+                  class="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
+                  [class.bg-moss/10]="t.user_role !== 'vendor'"
+                  [class.text-mossD]="t.user_role !== 'vendor'"
+                  [class.bg-ochre/15]="t.user_role === 'vendor'"
+                  [class.text-ochreD]="t.user_role === 'vendor'"
+                >
+                  {{ t.user_role === 'vendor' ? 'Host Story' : 'Guest Journal' }}
+                </span>
+              </div>
+
+              <!-- Quote Body -->
+              <p class="font-display text-xl leading-snug text-ink group-hover:text-pine transition-colors">
+                &ldquo;{{ t.content }}&rdquo;
+              </p>
+            </div>
+
+            <!-- Footer: Author profile & verification -->
+            <footer class="mt-8 pt-5 border-t border-ink/10 flex items-center justify-between">
+              <div class="flex items-center gap-3 truncate">
+                @if (t.avatar_url) {
+                  <img
+                    [src]="t.avatar_url.startsWith('http') ? t.avatar_url : (assetUrl + t.avatar_url)"
+                    [alt]="t.name"
+                    class="w-10 h-10 rounded-full object-cover border border-ink/10 shrink-0"
+                  />
+                } @else {
+                  <div class="w-10 h-10 rounded-full bg-moss/10 text-mossD font-display font-bold text-xs grid place-items-center shrink-0 border border-moss/20">
+                    {{ (t.name || 'G').slice(0, 2).toUpperCase() }}
+                  </div>
+                }
+
+                <div class="truncate">
+                  <p class="font-semibold text-ink text-sm leading-tight truncate m-0">{{ t.name }}</p>
+                  <p class="text-xs text-ink/50 leading-tight truncate m-0 mt-0.5">
+                    {{ t.designation || (t.user_role === 'vendor' ? 'Homestay Host' : 'Himalayan Traveler') }}
+                  </p>
+                </div>
+              </div>
+
+              <span class="text-[11px] text-moss shrink-0 flex items-center gap-1 font-medium bg-moss/10 px-2 py-0.5 rounded-full" title="Visited in person">
+                ✓ Verified
+              </span>
+            </footer>
+          </blockquote>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ============ CURATED MOUNTAIN EXPERIENCES ============ -->
+<section class="py-24 md:py-32 bg-pine text-cloud relative overflow-hidden">
+  <!-- Atmospheric gradients & lights -->
+  <div class="pointer-events-none absolute -top-20 left-1/3 w-[36rem] h-[36rem] bg-moss/20 rounded-full blur-[140px]"></div>
+  <div class="pointer-events-none absolute -bottom-20 right-1/4 w-[36rem] h-[36rem] bg-ochre/15 rounded-full blur-[140px]"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10">
+    <div class="text-center max-w-3xl mx-auto reveal">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cloud/10 text-mist border border-cloud/20 backdrop-blur-md mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-ochre animate-pulse"></span>
+        <p class="eyebrow text-mist text-[10px] m-0">Signature Host Invitations</p>
+      </div>
+      <h2 class="font-display text-4xl md:text-5xl text-cloud">
+        Living Experiences Rooted in Hill Culture
+      </h2>
+      <p class="text-cloud/80 text-base md:text-lg mt-3">
+        Every host family invites you into their everyday rhythm — from tea plucking to dawn prayers.
+      </p>
+    </div>
+
+    <!-- 4 Feature Experience Cards -->
+    <div class="grid md:grid-cols-2 gap-8 mt-16">
+      @for (item of curatedExperiences; track item.id) {
+        <div class="reveal glass-card-dark rounded-3xl overflow-hidden border border-white/20 shadow-2xl flex flex-col justify-between group hover:border-ochre/50 transition-all duration-300">
+          <div class="h-64 relative overflow-hidden">
+            <img
+              [src]="item.image"
+              [alt]="item.title"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              onerror="this.src='/images/exp-tea.webp'"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+
+            <div class="absolute top-4 left-4 flex items-center gap-2">
+              <span class="text-xs font-semibold px-3 py-1 rounded-full bg-ochre text-cloud shadow">
+                {{ item.tag }}
+              </span>
+              <span class="text-xs font-semibold px-3 py-1 rounded-full bg-black/50 text-cloud backdrop-blur-sm">
+                ⏱ {{ item.duration }}
+              </span>
+            </div>
+
+            <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between text-xs text-cloud/90">
+              <span class="font-semibold flex items-center gap-1">📍 {{ item.region }}</span>
+              <span>🗓 {{ item.season }}</span>
+            </div>
+          </div>
+
+          <div class="p-8 flex-1 flex flex-col justify-between bg-pine/40">
+            <div>
+              <h3 class="font-display text-2xl md:text-3xl text-cloud group-hover:text-ochre transition-colors leading-tight">
+                {{ item.title }}
+              </h3>
+              <p class="text-sm font-medium text-ochre mt-1">{{ item.subtitle }}</p>
+              <p class="text-cloud/80 text-sm md:text-base mt-4 leading-relaxed">{{ item.description }}</p>
+
+              <!-- Host Note Callout -->
+              <div class="mt-6 p-4 rounded-2xl bg-white/10 border border-white/10 text-xs italic text-cloud/90">
+                &ldquo;{{ item.hostQuote }}&rdquo;
+                <div class="mt-2 not-italic font-semibold text-mist">— {{ item.hostName }}</div>
+              </div>
+            </div>
+
+            <div class="mt-8 pt-5 border-t border-white/15 flex items-center justify-between">
+              <div class="flex items-center gap-1 text-ochre text-sm font-bold">
+                <span>★</span>
+                <span>{{ item.rating }} Experience Rating</span>
+              </div>
+
+              <a
+                routerLink="/stays"
+                class="inline-flex items-center gap-1.5 text-xs font-semibold text-ochre hover:text-cloud transition-colors"
+              >
+                <span>Find stays nearby</span>
+                <span>→</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXPLORE BY HILL CIRCUIT / REGION ============ -->
+<section class="py-20 md:py-28 bg-cloud2 relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center max-w-2xl mx-auto reveal">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-moss/10 text-moss mb-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+        <p class="eyebrow text-moss text-[10px] m-0">Hill Circuits &amp; Regions</p>
+      </div>
+      <h2 class="font-display text-3xl md:text-4xl lg:text-5xl text-ink">
+        Choose Your Mountain Landscape
+      </h2>
+      <p class="text-ink/70 text-sm md:text-base mt-2">
+        Each valley in the Eastern Himalaya holds its own distinct dialect, food, and microclimate.
+      </p>
+    </div>
+
+    @if (loadingCities()) {
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="rounded-3xl bg-white border border-ink/10 h-72 animate-pulse"></div>
+        }
+      </div>
+    } @else {
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+        @for (city of cities(); track city.id) {
+          <div
+            (click)="exploreRegion(city.id)"
+            class="reveal exp-card bg-white rounded-3xl overflow-hidden border border-ink/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group cursor-pointer"
+          >
+            <div class="h-44 relative overflow-hidden">
+              <img
+                [src]="city.image_url ? (assetUrl + city.image_url) : '/images/exp-tea.webp'"
+                [alt]="city.name"
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                onerror="this.src='/images/exp-tea.webp'"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+              <span class="absolute bottom-3 left-3 text-[11px] font-bold text-cloud bg-ochre/90 backdrop-blur-sm px-3 py-1 rounded-full shadow">
+                {{ city.name }}
+              </span>
+            </div>
+
+            <div class="p-6 flex-1 flex flex-col justify-between">
+              <div>
+                <h3 class="font-display text-xl text-ink group-hover:text-pine transition-colors">
+                  {{ city.tag_line || city.name }}
+                </h3>
+                <p class="text-xs text-ink/70 mt-2 line-clamp-3 leading-relaxed">
+                  {{ city.short_description || 'Authentic homestays, fresh organic meals, and friendly local hosts.' }}
+                </p>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-ink/10 flex items-center justify-between text-xs font-semibold text-pine group-hover:text-ochre transition-colors">
+                <span>View homestays</span>
+                <span>→</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ============ FEATURED HOMESTAYS IN THESE REGIONS ============ -->
+<section class="py-20 md:py-28 bg-cloud relative overflow-hidden border-t border-ink/10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 reveal">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-moss/10 text-moss mb-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-moss"></span>
+          <p class="eyebrow text-moss text-[10px] m-0">Stay Where It Happens</p>
+        </div>
+        <h2 class="font-display text-3xl md:text-4xl lg:text-5xl text-ink">
+          Featured Homestays with Living Experiences
+        </h2>
+      </div>
+
+      <a
+        routerLink="/stays"
+        class="inline-flex items-center gap-1.5 text-sm font-semibold text-ochreD hover:text-ochre transition-colors"
+      >
+        <span>Browse all verified stays</span>
+        <span>→</span>
+      </a>
+    </div>
+
+    @if (loadingProperties()) {
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="bg-white rounded-2xl h-80 animate-pulse border border-ink/10"></div>
+        }
+      </div>
+    } @else {
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        @for (item of properties(); track item.id) {
+          <app-single-property [item]="item"></app-single-property>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ============ MODAL: SUBMIT EXPERIENCE / TESTIMONIAL ============ -->
+@if (isSubmitModalOpen()) {
+  <div
+    class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+    (click)="closeSubmitModal()"
+  >
+    <div
+      class="bg-white text-ink w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/40 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
+      (click)="$event.stopPropagation()"
+    >
+      <button
+        type="button"
+        (click)="closeSubmitModal()"
+        class="absolute top-5 right-5 w-8 h-8 rounded-full bg-cloud2/80 hover:bg-cloud2 flex items-center justify-center text-ink/60 hover:text-ink cursor-pointer transition-colors"
+      >
+        ✕
+      </button>
+
+      @if (submitSuccess()) {
+        <div class="text-center py-8 space-y-3 animate-in fade-in duration-300">
+          <div class="w-14 h-14 rounded-full bg-moss/15 text-mossD grid place-items-center mx-auto text-2xl font-bold">
+            ✓
+          </div>
+          <h3 class="font-display text-2xl text-ink">Thank you for sharing your experience!</h3>
+          <p class="text-sm text-ink/70 max-w-xs mx-auto">
+            Your story has been added to our guest register and will appear on the experiences page once reviewed.
+          </p>
+        </div>
+      } @else {
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-2 h-2 rounded-full bg-ochre"></span>
+            <p class="eyebrow text-mossD text-[11px] m-0">Guest Book &amp; Host Journal</p>
+          </div>
+          <h3 class="font-display text-2xl text-ink">Share Your Mountain Experience</h3>
+          <p class="text-xs text-ink/60 mt-1 mb-6">
+            Tell fellow travelers about the mist, wood-fired meals, monastery visits, or host family warmth.
+          </p>
+
+          @if (submitError()) {
+            <div class="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200">
+              {{ submitError() }}
+            </div>
+          }
+
+          <form (submit)="onSubmitModalForm(); $event.preventDefault()" class="space-y-4">
+            <!-- Role Toggle -->
+            <div>
+              <label class="block text-xs font-semibold text-ink/70 mb-1.5">I am sharing as:</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  (click)="testimonialForm.role = 'user'"
+                  class="py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer"
+                  [class.border-pine]="testimonialForm.role === 'user'"
+                  [class.bg-pine/10]="testimonialForm.role === 'user'"
+                  [class.text-pine]="testimonialForm.role === 'user'"
+                  [class.border-ink/15]="testimonialForm.role !== 'user'"
+                  [class.text-ink/70]="testimonialForm.role !== 'user'"
+                >
+                  Guest / Traveler
+                </button>
+                <button
+                  type="button"
+                  (click)="testimonialForm.role = 'vendor'"
+                  class="py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer"
+                  [class.border-pine]="testimonialForm.role === 'vendor'"
+                  [class.bg-pine/10]="testimonialForm.role === 'vendor'"
+                  [class.text-pine]="testimonialForm.role === 'vendor'"
+                  [class.border-ink/15]="testimonialForm.role !== 'vendor'"
+                  [class.text-ink/70]="testimonialForm.role !== 'vendor'"
+                >
+                  Homestay Host
+                </button>
+              </div>
+            </div>
+
+            <!-- Star Rating -->
+            <div>
+              <label class="block text-xs font-semibold text-ink/70 mb-1.5">Experience Rating</label>
+              <div class="flex items-center gap-1.5">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                  <button
+                    type="button"
+                    (click)="setModalRating(star)"
+                    class="text-2xl cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+                    [class.text-ochre]="star <= testimonialForm.rating"
+                    [class.text-ink/20]="star > testimonialForm.rating"
+                  >
+                    ★
+                  </button>
+                }
+                <span class="text-xs font-semibold text-ink/60 ml-2">({{ testimonialForm.rating }} / 5 stars)</span>
+              </div>
+            </div>
+
+            <!-- Name and Designation -->
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-ink/70 mb-1">Your Name</label>
+                <input
+                  type="text"
+                  [(ngModel)]="testimonialForm.name"
+                  name="modalName"
+                  placeholder="e.g. Maya Lepcha"
+                  required
+                  class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-ink/70 mb-1">
+                  {{ testimonialForm.role === 'vendor' ? 'Homestay & Region' : 'Stayed At / City' }}
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="testimonialForm.designation"
+                  name="modalDesignation"
+                  placeholder="e.g. Makaibari Ridge, Kurseong"
+                  class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine"
+                />
+              </div>
+            </div>
+
+            <!-- Content Area -->
+            <div>
+              <label class="block text-xs font-semibold text-ink/70 mb-1">Your Experience Story</label>
+              <textarea
+                rows="4"
+                [(ngModel)]="testimonialForm.content"
+                name="modalContent"
+                placeholder="What made this mountain stay special? Describe the views, food, tea walks, or warm conversations..."
+                required
+                class="w-full bg-cloud px-3.5 py-2.5 rounded-xl border border-ink/15 text-xs text-ink focus:outline-none focus:border-pine resize-none"
+              ></textarea>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-ink/10">
+              <button
+                type="button"
+                (click)="closeSubmitModal()"
+                class="px-4 py-2.5 rounded-full text-xs font-semibold text-ink/60 hover:text-ink transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="px-6 py-2.5 rounded-full bg-pine hover:bg-ink text-cloud text-xs font-semibold transition-colors shadow-md shadow-pine/20 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+              >
+                @if (isSubmitting()) {
+                  <div class="w-3.5 h-3.5 border-2 border-cloud border-t-transparent rounded-full animate-spin"></div>
+                  <span>Submitting...</span>
+                } @else {
+                  <span>Publish to Guest Book</span>
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+    </div>
+  </div>
+}
+

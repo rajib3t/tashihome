@@ -80,6 +80,16 @@ export const routes: Routes = [
                 title: 'Stays',
             },
             {
+                path: 'experiences',
+                loadComponent: () => import('./pages/public/experiences/experiences').then((m) => m.Experiences),
+                title: 'Himalayan Experiences & Guest Stories | Tashi Homes',
+            },
+            {
+                path: 'experience',
+                redirectTo: 'experiences',
+                pathMatch: 'full',
+            },
+            {
                 path: 'search',
                 loadComponent: () => import('./pages/public/search/search').then((m) => m.Search),
                 title: 'Search Homestays',

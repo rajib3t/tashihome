@@ -21,9 +21,9 @@
         Search
       </a>
       <a routerLink="/stays" class="hover:text-ochre transition-colors">Stays</a>
+      <a routerLink="/experiences" class="hover:text-ochre transition-colors">Experiences</a>
       <a routerLink="/our-story" class="hover:text-ochre transition-colors">Our Story</a>
       <a routerLink="/become-a-host" class="hover:text-ochre transition-colors">Become a Host</a>
-      <a routerLink="/" fragment="experiences" class="hover:text-ochre transition-colors">Experiences</a>
       <a routerLink="/" fragment="how" class="hover:text-ochre transition-colors">How it works</a>
     </nav>
 
@@ -72,9 +72,9 @@
       Search Homestays
     </a>
     <a routerLink="/stays" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Stays</a>
+    <a routerLink="/experiences" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Experiences</a>
     <a routerLink="/our-story" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Our Story</a>
     <a routerLink="/become-a-host" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Become a Host</a>
-    <a routerLink="/" fragment="experiences" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">Experiences</a>
     <a routerLink="/" fragment="how" (click)="closeMenu()" class="block text-sm font-medium hover:text-ochre">How it works</a>
     <ng-container *ngIf="isAuthenticated(); else mobileLoginTemplate">
       <div class="flex items-center gap-3">
