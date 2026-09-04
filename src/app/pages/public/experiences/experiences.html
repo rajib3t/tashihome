@@ -210,17 +210,29 @@
         }
       </div>
     } @else if (filteredTestimonials().length === 0) {
-      <div class="mt-14 p-12 text-center bg-white rounded-3xl border border-ink/10 max-w-lg mx-auto">
-        <p class="text-3xl mb-2">🏔️</p>
-        <h3 class="font-display text-xl text-ink">No experiences found</h3>
-        <p class="text-sm text-ink/60 mt-1">Try clearing your filters or search keywords.</p>
-        <button
-          type="button"
-          (click)="resetFilters()"
-          class="mt-4 px-4 py-2 rounded-full bg-pine text-cloud text-xs font-semibold cursor-pointer"
-        >
-          Reset Filters
-        </button>
+      <div class="mt-14 p-12 text-center bg-white rounded-3xl border border-ink/10 max-w-lg mx-auto shadow-sm">
+        <p class="text-4xl mb-3">🏔️</p>
+        <h3 class="font-display text-2xl text-ink">No experiences published yet</h3>
+        <p class="text-sm text-ink/65 mt-2 leading-relaxed">
+          Be the first traveler or host to share your Himalayan story and add your words to the guest book.
+        </p>
+        <div class="mt-6 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            (click)="openSubmitModal()"
+            class="px-5 py-2.5 rounded-full bg-ochre hover:bg-ochreD text-cloud text-xs font-semibold cursor-pointer shadow-md transition-all"
+          >
+            + Share your story
+          </button>
+          <button
+            type="button"
+            *ngIf="searchQuery() || selectedRatingFilter() !== null || selectedFilter() !== 'all'"
+            (click)="resetFilters()"
+            class="px-4 py-2.5 rounded-full border border-ink/15 text-ink/70 hover:text-ink text-xs font-semibold cursor-pointer"
+          >
+            Reset Filters
+          </button>
+        </div>
       </div>
     } @else {
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
@@ -258,9 +270,9 @@
             <!-- Footer: Author profile & verification -->
             <footer class="mt-8 pt-5 border-t border-ink/10 flex items-center justify-between">
               <div class="flex items-center gap-3 truncate">
-                @if (t.avatar_url) {
+                @if (getTestimonialAvatarUrl(t)) {
                   <img
-                    [src]="t.avatar_url.startsWith('http') ? t.avatar_url : (assetUrl + t.avatar_url)"
+                    [src]="getTestimonialAvatarUrl(t)"
                     [alt]="t.name"
                     class="w-10 h-10 rounded-full object-cover border border-ink/10 shrink-0"
                   />

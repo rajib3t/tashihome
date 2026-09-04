@@ -570,78 +570,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ================= TESTIMONIALS =================
-  private readonly defaultTestimonials: TestimonialData[] = [
-    {
-      id: 'default-1',
-      name: 'Ritika Roy',
-      designation: 'Nongriat Bridgehouse, Meghalaya',
-      rating: 5,
-      content: 'Woke up to prayer flags and the smell of someone\'s breakfast fire. Didn\'t want the three days to end.',
-      status: 'approved',
-      user_role: 'user',
-      is_featured: true,
-      created_at: '2026-08-10T10:00:00Z',
-    },
-    {
-      id: 'default-2',
-      name: 'Farhan Zaidi',
-      designation: 'Ziro Paddy House, Arunachal Pradesh',
-      rating: 5,
-      content: 'Our host taught my daughter to read the clouds for rain. She still does it every morning at home in Delhi.',
-      status: 'approved',
-      user_role: 'user',
-      is_featured: true,
-      created_at: '2026-08-12T14:30:00Z',
-    },
-    {
-      id: 'default-3',
-      name: 'Meera Nambiar',
-      designation: 'Komic Stone House, Spiti Valley',
-      rating: 5,
-      content: 'No wifi, no problem. Best sleep I\'ve had in years under three handmade wool quilts, with milky Himalayan chai.',
-      status: 'approved',
-      user_role: 'user',
-      is_featured: true,
-      created_at: '2026-08-18T09:15:00Z',
-    },
-    {
-      id: 'default-4',
-      name: 'Sonam Lepcha',
-      designation: 'Homestay Host in Pelling, West Sikkim',
-      rating: 5,
-      content: 'Listing our wooden cottage on TashiHome helped us welcome respectful guests who truly cherish our village culture.',
-      status: 'approved',
-      user_role: 'vendor',
-      is_featured: true,
-      created_at: '2026-08-20T11:00:00Z',
-    },
-    {
-      id: 'default-5',
-      name: 'Ananya & Tenzing',
-      designation: 'Tinchuley Tea Ridge, Darjeeling',
-      rating: 5,
-      content: 'The sunrise over Mt. Kanchenjunga from the attic bedroom was purely magical. The organic nettle soup was unforgettable.',
-      status: 'approved',
-      user_role: 'user',
-      is_featured: true,
-      created_at: '2026-08-22T08:00:00Z',
-    },
-    {
-      id: 'default-6',
-      name: 'Dawa Norbu',
-      designation: 'Monastery View Host, Rumtek',
-      rating: 5,
-      content: 'TashiHome brings conscious travelers to our door. It keeps our traditional organic farming traditions alive and thriving.',
-      status: 'approved',
-      user_role: 'vendor',
-      is_featured: true,
-      created_at: '2026-08-25T16:20:00Z',
-    }
-  ];
-
   public loadTestimonials(): void {
     if (!isPlatformBrowser(this.platformId)) {
-      this.testimonials.set(this.defaultTestimonials);
+      this.testimonials.set([]);
       this.loadingTestimonials.set(false);
       return;
     }
@@ -654,24 +585,37 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
         timeout({ first: 6000 }),
         retry(1),
         catchError((error) => {
-          console.warn('Using default featured testimonials:', error);
-          return of({ data: this.defaultTestimonials, status: 200, message: '' });
+          console.warn('Could not load public testimonials from API:', error);
+          return of({ data: [], status: 200, message: '' });
         })
       )
-      .subscribe((response) => {
+      .subscribe((response: any) => {
         this.loadingTestimonials.set(false);
-        const data = response?.data && response.data.length > 0 ? response.data : this.defaultTestimonials;
-        this.testimonials.set(data);
+        let list: TestimonialData[] = [];
+        if (Array.isArray(response?.data)) {
+          list = response.data;
+        } else if (response?.data && Array.isArray((response.data as any).data)) {
+          list = (response.data as any).data;
+        } else if (Array.isArray(response)) {
+          list = response;
+        }
+        this.testimonials.set(list);
         this.cdr.markForCheck();
         this.refreshRevealObserver();
       });
+  }
+
+  public getTestimonialAvatarUrl(t: TestimonialData): string | null {
+    const raw = t.avatar_url || (t as any).user?.is_profile_image_url;
+    if (!raw) return null;
+    return raw.startsWith('http') ? raw : (this.assetUrl + raw);
   }
 
   public getFilteredTestimonials(): TestimonialData[] {
     const list = this.testimonials();
     const tab = this.testimonialTab();
     if (tab === 'guest') {
-      return list.filter((t) => (t.user_role ?? 'user') === 'user');
+      return list.filter((t) => t.user_role !== 'vendor');
     }
     if (tab === 'host') {
       return list.filter((t) => t.user_role === 'vendor');

@@ -679,11 +679,11 @@ export class Property {
   }
 
   public getAverageRating(): number {
-    return this.reviewSummary()?.average_rating || 4.9;
+    return this.reviewSummary()?.average_rating ?? this.propertyData()?.average_rating ?? 0;
   }
 
   public getTotalReviewsCount(): number {
-    return this.reviewSummary()?.total_reviews || this.reviews().length;
+    return this.reviewSummary()?.total_reviews ?? this.propertyData()?.total_reviews ?? this.reviews().length;
   }
 
   public getRatingCount(star: number): number {

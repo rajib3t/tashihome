@@ -221,6 +221,21 @@ export interface PropertyAsset {
   status?: string;
 }
 
+export interface RatingDistribution {
+  '1': number;
+  '2': number;
+  '3': number;
+  '4': number;
+  '5': number;
+  [key: string]: number;
+}
+
+export interface RatingSummary {
+  average_rating: number;
+  total_reviews: number;
+  rating_distribution?: RatingDistribution | Record<string, number>;
+}
+
 export interface PropertyData {
   id: string;
   name: string;
@@ -249,6 +264,9 @@ export interface PropertyData {
   gallery_images?: PropertyAsset[];
   feature_image?: PropertyAsset | null;
   cover_image?: PropertyAsset | null;
+  average_rating?: number;
+  total_reviews?: number;
+  rating_summary?: RatingSummary;
 }
 
 export interface Vendor {

@@ -873,6 +873,24 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
     return Number(item.price_per_night ?? (item as any)?.price ?? 0);
   }
 
+  public getRating(item: Partial<PropertyData>): number {
+    return Number(item?.average_rating ?? (item as any)?.rating ?? 0);
+  }
+
+  public getReviewsCount(item: Partial<PropertyData>): number {
+    return Number(item?.total_reviews ?? item?.rating_summary?.total_reviews ?? (item as any)?.reviews_count ?? (item as any)?.review_count ?? 0);
+  }
+
+  public getReviewTag(item: Partial<PropertyData>): string {
+    const count = this.getReviewsCount(item);
+    const rating = this.getRating(item);
+    if (count === 0 || rating === 0) return 'New Stay';
+    if (rating >= 4.8) return 'Guest Favorite';
+    if (rating >= 4.5) return 'Top Rated';
+    if (rating >= 4.0) return 'Highly Rated';
+    return 'Verified Stay';
+  }
+
   public onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';

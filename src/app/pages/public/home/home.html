@@ -620,6 +620,7 @@
 </section>
 
 <!-- ============ TESTIMONIALS & STORIES ============ -->
+@if (loadingTestimonials() || testimonials().length > 0) {
 <section id="testimonials" class="bg-cloud2 bg-topo-pattern py-20 md:py-28 relative overflow-hidden">
   <!-- Subtle ambient glow -->
   <div class="pointer-events-none absolute -top-10 right-10 w-80 h-80 bg-ochre/10 rounded-full blur-[100px]"></div>
@@ -731,8 +732,8 @@
 
             <!-- Author Footer -->
             <footer class="mt-6 pt-4 border-t border-ink/10 text-sm font-medium text-ink/70 flex items-center gap-3">
-              @if (t.avatar_url) {
-                <img [src]="t.avatar_url.startsWith('http') ? t.avatar_url : (assetUrl + t.avatar_url)" [alt]="t.name" class="w-9 h-9 rounded-full object-cover border border-ink/10 shrink-0" />
+              @if (getTestimonialAvatarUrl(t)) {
+                <img [src]="getTestimonialAvatarUrl(t)" [alt]="t.name" class="w-9 h-9 rounded-full object-cover border border-ink/10 shrink-0" />
               } @else {
                 <div class="w-9 h-9 rounded-full bg-moss/10 text-mossD font-display font-bold text-xs grid place-items-center shrink-0 border border-moss/20">
                   {{ (t.name || 'G').slice(0, 2).toUpperCase() }}
@@ -925,6 +926,7 @@
     </div>
   }
 </section>
+}
 
 <!-- ============ NEWSLETTER CTA (Alpine Golden Hour Snow Peaks & Floating Embers Canvas) ============ -->
 <section class="bg-newsletter-img relative text-cloud py-24 md:py-32 overflow-hidden"

@@ -163,76 +163,6 @@ export class Experiences implements OnInit, AfterViewInit, OnDestroy {
     },
   ];
 
-  // Default fallback testimonials
-  private readonly defaultTestimonials: TestimonialData[] = [
-    {
-      id: 'default-1',
-      name: 'Ritika Roy',
-      designation: 'Nongriat Bridgehouse, Meghalaya',
-      rating: 5,
-      content: 'Woke up to prayer flags and the smell of someone\'s breakfast fire. Didn\'t want the three days to end.',
-      status: 'approved',
-      user_role: 'user',
-      is_featured: true,
-      created_at: '2026-08-10T10:00:00Z',
-    },
-    {
-      id: 'default-2',
-      name: 'Farhan Zaidi',
-      designation: 'Ziro Paddy House, Arunachal Pradesh',
-      rating: 5,
-      content: 'Our host taught my daughter to read the clouds for rain. She still does it every morning at home in Delhi.',
-      status: 'approved',
-      user_role: 'user',
-      is_featured: true,
-      created_at: '2026-08-12T14:30:00Z',
-    },
-    {
-      id: 'default-3',
-      name: 'Meera Nambiar',
-      designation: 'Komic Stone House, Spiti Valley',
-      rating: 5,
-      content: 'No wifi, no problem. Best sleep I\'ve had in years under three handmade wool quilts, with milky Himalayan chai.',
-      status: 'approved',
-      user_role: 'user',
-      is_featured: true,
-      created_at: '2026-08-18T09:15:00Z',
-    },
-    {
-      id: 'default-4',
-      name: 'Sonam Lepcha',
-      designation: 'Homestay Host in Pelling, West Sikkim',
-      rating: 5,
-      content: 'Listing our wooden cottage on TashiHome helped us welcome respectful guests who truly cherish our village culture and organic garden.',
-      status: 'approved',
-      user_role: 'vendor',
-      is_featured: true,
-      created_at: '2026-08-20T11:00:00Z',
-    },
-    {
-      id: 'default-5',
-      name: 'Ananya & Tenzing',
-      designation: 'Tinchuley Tea Ridge, Darjeeling',
-      rating: 5,
-      content: 'The sunrise over Mt. Kanchenjunga from the attic bedroom was purely magical. The organic nettle soup and ginger honey tea were unforgettable.',
-      status: 'approved',
-      user_role: 'user',
-      is_featured: true,
-      created_at: '2026-08-22T08:00:00Z',
-    },
-    {
-      id: 'default-6',
-      name: 'Dawa Norbu',
-      designation: 'Monastery View Host, Rumtek',
-      rating: 5,
-      content: 'TashiHome brings conscious travelers to our door. It keeps our traditional organic farming and folklore traditions alive and thriving.',
-      status: 'approved',
-      user_role: 'vendor',
-      is_featured: true,
-      created_at: '2026-08-25T16:20:00Z',
-    },
-  ];
-
   // Observers and canvas
   private revealObserver?: IntersectionObserver;
   private canvasCleanupFn?: () => void;
@@ -246,7 +176,7 @@ export class Experiences implements OnInit, AfterViewInit, OnDestroy {
     const rating = this.selectedRatingFilter();
 
     if (filter === 'guest') {
-      list = list.filter((t) => (t.user_role ?? 'user') === 'user');
+      list = list.filter((t) => t.user_role !== 'vendor');
     } else if (filter === 'host') {
       list = list.filter((t) => t.user_role === 'vendor');
     } else if (filter === 'top_rated') {
@@ -267,6 +197,12 @@ export class Experiences implements OnInit, AfterViewInit, OnDestroy {
 
     return list;
   });
+
+  public getTestimonialAvatarUrl(t: TestimonialData): string | null {
+    const raw = t.avatar_url || (t as any).user?.is_profile_image_url;
+    if (!raw) return null;
+    return raw.startsWith('http') ? raw : (this.assetUrl + raw);
+  }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -320,7 +256,7 @@ export class Experiences implements OnInit, AfterViewInit, OnDestroy {
   // Load Testimonials
   public loadTestimonials(): void {
     if (!isPlatformBrowser(this.platformId)) {
-      this.testimonials.set(this.defaultTestimonials);
+      this.testimonials.set([]);
       this.loadingTestimonials.set(false);
       return;
     }
@@ -334,19 +270,26 @@ export class Experiences implements OnInit, AfterViewInit, OnDestroy {
         timeout({ first: 6000 }),
         retry(1),
         catchError((err) => {
-          console.warn('Using default experiences testimonials:', err);
-          return of({ data: this.defaultTestimonials, status: 200, message: '' });
+          console.warn('Could not load testimonials from API:', err);
+          return of({ data: [], status: 200, message: '' });
         })
       )
-      .subscribe((res) => {
+      .subscribe((res: any) => {
         this.loadingTestimonials.set(false);
-        const data = res?.data && res.data.length > 0 ? res.data : this.defaultTestimonials;
-        this.testimonials.set(data);
+        let list: TestimonialData[] = [];
+        if (Array.isArray(res?.data)) {
+          list = res.data;
+        } else if (res?.data && Array.isArray((res.data as any).data)) {
+          list = (res.data as any).data;
+        } else if (Array.isArray(res)) {
+          list = res;
+        }
+        this.testimonials.set(list);
 
         // Compute average rating from dynamic data
-        if (data.length > 0) {
-          const totalStars = data.reduce((sum, item) => sum + (item.rating || 5), 0);
-          const avg = Math.round((totalStars / data.length) * 10) / 10;
+        if (list.length > 0) {
+          const totalStars = list.reduce((sum, item) => sum + (item.rating || 5), 0);
+          const avg = Math.round((totalStars / list.length) * 10) / 10;
           this.averageRating.set(avg);
         }
 

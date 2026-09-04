@@ -86,7 +86,7 @@ export class TestimonialService {
       params?: PublicTestimonialsParams
     ): Observable<ApiResponse<TestimonialData[]>> => {
       const queryParams = buildPublicTestimonialParams(params);
-      return this.apiService.get<TestimonialData[]>('/public/testimonials', {
+      return this.apiService.get<TestimonialData[]>('/public/testimonials/', {
         params: queryParams,
       });
     },
