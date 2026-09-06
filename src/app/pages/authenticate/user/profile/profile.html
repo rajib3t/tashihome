@@ -430,6 +430,10 @@
                       </span>
                     </div>
                     <p class="text-xs text-ink/60 mt-1">
+                      @if (booking.room_type?.name) {
+                        <span class="font-medium text-mossD">{{ booking.room_type.name }}</span>
+                        <span> · </span>
+                      }
                       {{ booking.check_in_date | appDate }} — {{ booking.check_out_date | appDate }}
                       · {{ booking.num_guests }} guest{{ (booking.num_guests || 1) > 1 ? 's' : '' }} · {{ booking.num_rooms }} room{{ (booking.num_rooms || 1) > 1 ? 's' : '' }}
                     </p>

@@ -19,6 +19,7 @@ import {
   PropertyAsset,
   PropertyData,
   PropertyRequest,
+  PropertyRoomTypePrice,
   PropertyRoomTypeRequest,
   PropertyUpdateRequest,
 } from '../../../../../services/property/property.model';
@@ -638,10 +639,22 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     }
   }
 
+  decrementRoomTypeRowUnits(index: number): void {
+    const rows = this.getRoomTypeRows();
+    const currentUnits = rows[index]?.total_units ?? 1;
+    this.updateRoomTypeRowUnits(index, Math.max(1, currentUnits - 1));
+  }
+
+  incrementRoomTypeRowUnits(index: number): void {
+    const rows = this.getRoomTypeRows();
+    const currentUnits = rows[index]?.total_units ?? 1;
+    this.updateRoomTypeRowUnits(index, currentUnits + 1);
+  }
+
   onRoomTypeRowUnitsInput(index: number, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const val = parseInt(input.value, 10);
-    this.updateRoomTypeRowUnits(index, isNaN(val) ? 1 : val);
+    const input = event.target as HTMLInputElement | null;
+    const value = parseInt(input?.value ?? '1', 10);
+    this.updateRoomTypeRowUnits(index, isNaN(value) || value < 1 ? 1 : value);
   }
 
   updateRoomTypeRowUnits(index: number, units: number): void {
@@ -650,26 +663,168 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
       return;
     }
 
-    const safeUnits = Math.max(1, Math.floor(units || 1));
     const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
     if (index >= 0 && index < current.length) {
-      current[index] = { ...current[index], total_units: safeUnits };
+      current[index] = { ...current[index], total_units: Math.max(1, units) };
       control.setValue(current);
       this.propertyForm.markAsDirty();
     }
   }
 
-  incrementRoomTypeRowUnits(index: number): void {
-    const currentRows = this.getRoomTypeRows();
-    if (index >= 0 && index < currentRows.length) {
-      this.updateRoomTypeRowUnits(index, (currentRows[index].total_units || 1) + 1);
+  getRoomTypeCapacity(roomTypeId: string): number {
+    const matched = this.roomTypes().find((rt) => rt.id === roomTypeId);
+    return matched?.capacity || 4;
+  }
+
+  getRoomTypeName(roomTypeId: string): string {
+    const matched = this.roomTypes().find((rt) => rt.id === roomTypeId);
+    return matched?.name || 'Room';
+  }
+
+  updateRoomTypeBasePrice(index: number, price: number): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) return;
+
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    if (index >= 0 && index < current.length) {
+      current[index] = { ...current[index], price_per_night: Math.max(0, Number(price) || 0) };
+      control.setValue(current);
+      this.propertyForm.markAsDirty();
     }
   }
 
-  decrementRoomTypeRowUnits(index: number): void {
-    const currentRows = this.getRoomTypeRows();
-    if (index >= 0 && index < currentRows.length && currentRows[index].total_units > 1) {
-      this.updateRoomTypeRowUnits(index, currentRows[index].total_units - 1);
+  updateRoomTypeSalePrice(index: number, salePrice: number): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) return;
+
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    if (index >= 0 && index < current.length) {
+      const val = Number(salePrice);
+      current[index] = { ...current[index], sale_per_night: val > 0 ? val : undefined };
+      control.setValue(current);
+      this.propertyForm.markAsDirty();
+    }
+  }
+
+  getPricingTiers(roomTypeIndex: number): PropertyRoomTypePrice[] {
+    const rows = this.getRoomTypeRows();
+    return rows[roomTypeIndex]?.pricing_tiers ?? [];
+  }
+
+  canAddPricingTier(roomTypeIndex: number): boolean {
+    const rows = this.getRoomTypeRows();
+    const row = rows[roomTypeIndex];
+    if (!row?.room_type_id) return false;
+    const capacity = this.getRoomTypeCapacity(row.room_type_id);
+    const tiers = row.pricing_tiers ?? [];
+    return tiers.length < capacity;
+  }
+
+  addPricingTier(roomTypeIndex: number): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) return;
+
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    if (roomTypeIndex < 0 || roomTypeIndex >= current.length) return;
+
+    const row = current[roomTypeIndex];
+    const capacity = this.getRoomTypeCapacity(row.room_type_id);
+    const existingTiers = [...(row.pricing_tiers ?? [])];
+    const usedOccupancies = new Set(existingTiers.map((t) => Number(t.occupancy)));
+
+    let nextOccupancy = 1;
+    for (let i = 1; i <= capacity; i++) {
+      if (!usedOccupancies.has(i)) {
+        nextOccupancy = i;
+        break;
+      }
+    }
+
+    const defaultPrice = row.price_per_night || Number(this.propertyForm.get('price_per_night')?.value) || 1500;
+    const defaultSale = row.sale_per_night || Number(this.propertyForm.get('sale_price')?.value) || 0;
+
+    existingTiers.push({
+      occupancy: nextOccupancy,
+      price_per_night: defaultPrice,
+      sale_per_night: defaultSale > 0 ? defaultSale : undefined,
+    });
+
+    existingTiers.sort((a, b) => a.occupancy - b.occupancy);
+    current[roomTypeIndex] = { ...row, pricing_tiers: existingTiers };
+    control.setValue(current);
+    this.propertyForm.markAsDirty();
+  }
+
+  removePricingTier(roomTypeIndex: number, tierIndex: number): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) return;
+
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    if (roomTypeIndex < 0 || roomTypeIndex >= current.length) return;
+
+    const row = current[roomTypeIndex];
+    const existingTiers = [...(row.pricing_tiers ?? [])];
+    if (tierIndex >= 0 && tierIndex < existingTiers.length) {
+      existingTiers.splice(tierIndex, 1);
+      current[roomTypeIndex] = { ...row, pricing_tiers: existingTiers };
+      control.setValue(current);
+      this.propertyForm.markAsDirty();
+    }
+  }
+
+  updateTierOccupancy(roomTypeIndex: number, tierIndex: number, occupancy: number): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) return;
+
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    if (roomTypeIndex < 0 || roomTypeIndex >= current.length) return;
+
+    const row = current[roomTypeIndex];
+    const existingTiers = [...(row.pricing_tiers ?? [])];
+    if (tierIndex >= 0 && tierIndex < existingTiers.length) {
+      existingTiers[tierIndex] = { ...existingTiers[tierIndex], occupancy: Math.max(1, Number(occupancy) || 1) };
+      existingTiers.sort((a, b) => a.occupancy - b.occupancy);
+      current[roomTypeIndex] = { ...row, pricing_tiers: existingTiers };
+      control.setValue(current);
+      this.propertyForm.markAsDirty();
+    }
+  }
+
+  updateTierPrice(roomTypeIndex: number, tierIndex: number, price: number): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) return;
+
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    if (roomTypeIndex < 0 || roomTypeIndex >= current.length) return;
+
+    const row = current[roomTypeIndex];
+    const existingTiers = [...(row.pricing_tiers ?? [])];
+    if (tierIndex >= 0 && tierIndex < existingTiers.length) {
+      existingTiers[tierIndex] = { ...existingTiers[tierIndex], price_per_night: Math.max(0, Number(price) || 0) };
+      current[roomTypeIndex] = { ...row, pricing_tiers: existingTiers };
+      control.setValue(current);
+      this.propertyForm.markAsDirty();
+    }
+  }
+
+  updateTierSalePrice(roomTypeIndex: number, tierIndex: number, salePrice: number): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control) return;
+
+    const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
+    if (roomTypeIndex < 0 || roomTypeIndex >= current.length) return;
+
+    const row = current[roomTypeIndex];
+    const existingTiers = [...(row.pricing_tiers ?? [])];
+    if (tierIndex >= 0 && tierIndex < existingTiers.length) {
+      const val = Number(salePrice);
+      existingTiers[tierIndex] = {
+        ...existingTiers[tierIndex],
+        sale_per_night: val > 0 ? val : undefined,
+      };
+      current[roomTypeIndex] = { ...row, pricing_tiers: existingTiers };
+      control.setValue(current);
+      this.propertyForm.markAsDirty();
     }
   }
 
@@ -723,10 +878,24 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
       for (const item of property.property_room_types) {
         const id = item.room_type?.id || (item as any).room_type_id || (typeof item === 'string' ? item : (item as any).id);
         const units = Number(item.total_units || (item as any).units || (item as any).count || 1);
+        const pricePerNight = item.price_per_night ? Number(item.price_per_night) : undefined;
+        const salePerNight = item.sale_per_night ? Number(item.sale_per_night) : undefined;
+        const tiers: PropertyRoomTypePrice[] = Array.isArray(item.pricing_tiers)
+          ? item.pricing_tiers.map((t) => ({
+              id: t.id,
+              occupancy: Number(t.occupancy) || 1,
+              price_per_night: Number(t.price_per_night) || 0,
+              sale_per_night: t.sale_per_night ? Number(t.sale_per_night) : undefined,
+            }))
+          : [];
+
         if (id) {
           roomTypes.push({
             room_type_id: String(id),
             total_units: units > 0 ? units : 1,
+            price_per_night: pricePerNight,
+            sale_per_night: salePerNight,
+            pricing_tiers: tiers,
           });
         }
       }
@@ -737,10 +906,24 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
         } else if (item && typeof item === 'object') {
           const id = item.room_type_id || item.room_type?.id || item.id;
           const units = Number(item.total_units || item.units || item.count || 1);
+          const pricePerNight = item.price_per_night ? Number(item.price_per_night) : undefined;
+          const salePerNight = item.sale_per_night ? Number(item.sale_per_night) : undefined;
+          const tiers: PropertyRoomTypePrice[] = Array.isArray(item.pricing_tiers)
+            ? item.pricing_tiers.map((t: any) => ({
+                id: t.id,
+                occupancy: Number(t.occupancy) || 1,
+                price_per_night: Number(t.price_per_night) || 0,
+                sale_per_night: t.sale_per_night ? Number(t.sale_per_night) : undefined,
+              }))
+            : [];
+
           if (id) {
             roomTypes.push({
               room_type_id: String(id),
               total_units: units > 0 ? units : 1,
+              price_per_night: pricePerNight,
+              sale_per_night: salePerNight,
+              pricing_tiers: tiers,
             });
           }
         }
@@ -857,10 +1040,33 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     const raw = this.propertyForm.getRawValue();
     const roomTypes: PropertyRoomTypeRequest[] = ((raw.room_types as PropertyRoomTypeRequest[] | null) ?? [])
       .filter((rt) => !!rt.room_type_id?.trim())
-      .map((rt) => ({
-        room_type_id: rt.room_type_id.trim(),
-        total_units: Math.max(1, Number(rt.total_units) || 1),
-      }));
+      .map((rt) => {
+        const tiers = (rt.pricing_tiers || [])
+          .filter((t) => Number(t.occupancy) >= 1 && Number(t.price_per_night) >= 0)
+          .map((t) => ({
+            id: t.id,
+            occupancy: Number(t.occupancy),
+            price_per_night: Number(t.price_per_night) || 0,
+            sale_per_night:
+              t.sale_per_night !== undefined && t.sale_per_night !== null && Number(t.sale_per_night) > 0
+                ? Number(t.sale_per_night)
+                : undefined,
+          }));
+
+        return {
+          room_type_id: rt.room_type_id.trim(),
+          total_units: Math.max(1, Number(rt.total_units) || 1),
+          price_per_night:
+            rt.price_per_night !== undefined && rt.price_per_night !== null && Number(rt.price_per_night) > 0
+              ? Number(rt.price_per_night)
+              : undefined,
+          sale_per_night:
+            rt.sale_per_night !== undefined && rt.sale_per_night !== null && Number(rt.sale_per_night) > 0
+              ? Number(rt.sale_per_night)
+              : undefined,
+          pricing_tiers: tiers.length > 0 ? tiers : undefined,
+        };
+      });
 
     return {
       vendor_id: String(raw.vendor_id ?? ''),

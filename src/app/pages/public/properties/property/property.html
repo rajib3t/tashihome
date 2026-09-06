@@ -1038,6 +1038,46 @@
             </div>
           </div>
 
+          <!-- Occupancy-Based Variable Pricing Tiers Interactive Grid -->
+          @if (getPricingTiers().length > 0) {
+            <div class="mt-4 pt-4 border-t border-ink/10">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-semibold text-ink/70">Rates by Guest Count</span>
+                @if (getAppliedTier()) {
+                  <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    {{ getAppliedTier()?.occupancy }}-Guest Rate Applied
+                  </span>
+                }
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                @for (tier of getPricingTiers(); track tier.occupancy) {
+                  @let isCurrent = tier.occupancy === guestsPerRoom();
+                  @let effective = tier.sale_per_night && tier.sale_per_night > 0 && tier.sale_per_night < tier.price_per_night ? tier.sale_per_night : tier.price_per_night;
+                  <button
+                    type="button"
+                    (click)="selectOccupancyTier(tier.occupancy)"
+                    class="py-2 px-2 rounded-xl text-xs text-center border transition cursor-pointer"
+                    [class.border-emerald-600]="isCurrent"
+                    [class.bg-emerald-50]="isCurrent"
+                    [class.text-emerald-800]="isCurrent"
+                    [class.shadow-sm]="isCurrent"
+                    [class.ring-1]="isCurrent"
+                    [class.ring-emerald-600]="isCurrent"
+                    [class.border-ink/15]="!isCurrent"
+                    [class.bg-white/70]="!isCurrent"
+                    [class.text-ink/75]="!isCurrent"
+                    [class.hover:border-ink/30]="!isCurrent"
+                  >
+                    <div class="text-[10px] font-medium opacity-80">{{ tier.occupancy }} Guest{{ tier.occupancy > 1 ? 's' : '' }}</div>
+                    <div class="font-bold text-xs mt-0.5">
+                      {{ propertyData()?.currency ?? '₹' }}{{ effective | number }}
+                    </div>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
           <!-- Availability Feedback Messages -->
           @if (availabilityStatus() === 'available') {
             <div class="mt-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-start gap-2 animate-[fadeIn_.2s_ease-out]">
@@ -1102,7 +1142,7 @@
               @if (availabilityStatus() === 'unavailable') {
                 <span>🚫 Room Blocked / Unavailable</span>
               } @else {
-                <span>Reserve &amp; Checkout</span>
+                <span>Reserve &amp; Checkout ({{ numGuests() }} Guest{{ numGuests() > 1 ? 's' : '' }})</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                   class="transition-transform group-hover:translate-x-1">
                   <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
@@ -1122,11 +1162,18 @@
 
           <!-- Price Calculation Breakdown -->
           <div class="mt-6 pt-5 border-t border-ink/10 space-y-2.5 text-sm text-ink/70">
-            <div class="flex justify-between">
-              <span>
-                {{ propertyData()?.currency ?? '₹' }}{{ getRatePerNight() | number }} × {{ calculateNights() }} night{{ calculateNights() > 1 ? 's' : '' }}
-                @if (numRooms() > 1) { ({{ numRooms() }} rooms) }
-              </span>
+            <div class="flex justify-between items-start">
+              <div>
+                <span>
+                  {{ propertyData()?.currency ?? '₹' }}{{ getRatePerNight() | number }} × {{ calculateNights() }} night{{ calculateNights() > 1 ? 's' : '' }}
+                  @if (numRooms() > 1) { ({{ numRooms() }} rooms) }
+                </span>
+                @if (getAppliedTier()) {
+                  <span class="block text-[11px] text-emerald-700 font-medium mt-0.5">
+                    Tier for {{ getAppliedTier()?.occupancy }} guest{{ (getAppliedTier()?.occupancy || 1) > 1 ? 's' : '' }} applied
+                  </span>
+                }
+              </div>
               <span class="font-medium text-ink">
                 {{ propertyData()?.currency ?? '₹' }}{{ getCalculatedTotal() | number }}
               </span>

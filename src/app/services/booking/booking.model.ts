@@ -1,4 +1,4 @@
-import { PropertyAsset } from '../property/property.model';
+import { PropertyAsset, PropertyRoomTypePrice } from '../property/property.model';
 
 export interface CheckAvailabilityRequest {
   property_id: string;
@@ -9,10 +9,20 @@ export interface CheckAvailabilityRequest {
   num_guests?: number;
 }
 
+export interface AppliedPricingTier {
+  occupancy: number;
+  price_per_night: number;
+  sale_per_night: number;
+}
+
 export interface RoomTypeAvailability {
   property_room_type_id?: string;
   room_type_id: string;
   room_type_name?: string;
+  capacity?: number;
+  price_per_night?: number;
+  sale_per_night?: number;
+  pricing_tiers?: PropertyRoomTypePrice[];
   total_units: number;
   booked_units: number;
   blocked_units: number;
@@ -30,14 +40,20 @@ export interface BookingQuote {
   nights: number;
   num_rooms: number;
   num_guests: number;
-  base_price_per_night: number;
-  subtotal: number;
-  tax_amount: number;
-  cleaning_fee: number;
-  service_fee: number;
+  guests_per_room?: number;
+  price_per_night: number;
+  base_price_per_night?: number;
+  subtotal?: number;
+  base_amount: number;
   discount_amount: number;
+  tax_amount: number;
+  cleaning_fee?: number;
+  service_fee?: number;
   total_amount: number;
   currency: string;
+  applied_tier?: AppliedPricingTier;
+  room_type_id?: string;
+  room_type_name?: string;
   nightly_breakdown?: PricingQuoteItem[];
 }
 

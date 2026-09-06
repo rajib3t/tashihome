@@ -43,9 +43,19 @@ export const PROPERTY_TYPES_LABELS: Record<string, string> = {
 export type PropertyType = (typeof PROPERTY_TYPES)[number];
 export type PropertyStatus = 'draft' | 'active' | 'inactive';
 
+export interface PropertyRoomTypePrice {
+  id?: string;
+  occupancy: number; // 1, 2, 3, 4, etc.
+  price_per_night: number; // e.g. 2200.00
+  sale_per_night?: number; // e.g. 2000.00
+}
+
 export interface PropertyRoomTypeRequest {
   room_type_id: string;
   total_units: number;
+  price_per_night?: number;
+  sale_per_night?: number;
+  pricing_tiers?: PropertyRoomTypePrice[];
 }
 
 export interface PropertyRequest {
@@ -312,6 +322,9 @@ export interface PropertyRoomType {
   id: string;
   room_type: RoomType;
   total_units?: number;
+  price_per_night?: number;
+  sale_per_night?: number;
+  pricing_tiers?: PropertyRoomTypePrice[];
 }
 
 export interface Amenity {

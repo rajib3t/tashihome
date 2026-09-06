@@ -18,7 +18,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PropertyService } from '../../../services/property/property-service';
-import { PropertyData, RoomType } from '../../../services/property/property.model';
+import { PropertyData, RoomType, PropertyRoomType, PropertyRoomTypePrice } from '../../../services/property/property.model';
 import { BookingService } from '../../../services/booking/booking-service';
 import { AuthService } from '../../../services/auth/auth-service';
 import { UserService } from '../../../services/user/user-service';
@@ -26,6 +26,7 @@ import {
   BookingData,
   CheckAvailabilityResponseData,
   RazorpayVerifyRequest,
+  AppliedPricingTier,
 } from '../../../services/booking/booking.model';
 import { environment } from '../../../../environments/environment';
 import { RazorpayService } from '../../../services/booking/razorpay-service';
@@ -34,6 +35,7 @@ import {
   generateIdempotencyKey,
   generatePaymentVerificationKey,
 } from '../../../utils/idempotency';
+import { getRoomNightlyRate } from '../../../utils/pricing.utils';
 
 function toDateString(d: Date): string {
   const year = d.getFullYear();
@@ -85,6 +87,7 @@ export class Checkout implements OnInit {
   public isCheckingAvailability = signal<boolean>(false);
   public isAvailable = signal<boolean | null>(null);
   public availabilityMessage = signal<string | null>(null);
+  public availabilityResult = signal<CheckAvailabilityResponseData | null>(null);
 
   // Form & Process State
   public isSubmitting = signal<boolean>(false);
@@ -273,6 +276,66 @@ export class Checkout implements OnInit {
     this.verifyAvailability();
   }
 
+  public readonly selectedPropertyRoomType = computed<PropertyRoomType | null>(() => {
+    const prop = this.property();
+    if (!prop) return null;
+    const selectedRt = this.selectedRoomType();
+    const list = prop.property_room_types ?? [];
+    if (selectedRt?.id && list.length > 0) {
+      const match = list.find(
+        (prt) => prt.room_type?.id === selectedRt.id || prt.id === selectedRt.id
+      );
+      if (match) return match;
+    }
+    if (list.length > 0) return list[0];
+    if (prop.room_type) {
+      return {
+        id: prop.room_type.id,
+        room_type: prop.room_type,
+        total_units: 1,
+        price_per_night: prop.price_per_night,
+        sale_per_night: prop.sale_per_night,
+      };
+    }
+    return null;
+  });
+
+  public readonly guestsPerRoom = computed<number>(() => {
+    const rooms = Math.max(1, this.numRooms());
+    const guests = Math.max(1, this.numGuests());
+    return Math.ceil(guests / rooms);
+  });
+
+  public readonly pricingDetails = computed(() => {
+    const prop = this.property();
+    const room = this.selectedPropertyRoomType();
+    const fallbackPrice = Number(prop?.price_per_night ?? (prop as any)?.price ?? 0);
+    const fallbackSale = Number(prop?.sale_per_night ?? prop?.sale_price ?? 0);
+    return getRoomNightlyRate(room, this.guestsPerRoom(), fallbackPrice, fallbackSale);
+  });
+
+  public getPricingTiers(): PropertyRoomTypePrice[] {
+    const room = this.selectedPropertyRoomType();
+    return room?.pricing_tiers ?? [];
+  }
+
+  public getAppliedTier(): AppliedPricingTier | undefined {
+    const quote = this.availabilityResult()?.quote;
+    const selectedRt = this.selectedRoomType();
+    if (quote?.applied_tier && (quote.room_type_id === selectedRt?.id || !quote.room_type_id)) {
+      return quote.applied_tier;
+    }
+    const details = this.pricingDetails();
+    if (details.appliedOccupancy) {
+      return {
+        occupancy: details.appliedOccupancy,
+        price_per_night: details.standardPrice,
+        sale_per_night: details.effectivePrice,
+      };
+    }
+    return undefined;
+  }
+
   public verifyAvailability(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     const prop = this.property();
@@ -294,6 +357,7 @@ export class Checkout implements OnInit {
         next: (res) => {
           this.isCheckingAvailability.set(false);
           const data = res.data;
+          this.availabilityResult.set(data || null);
           const requestedRooms = this.numRooms() || 1;
           let isAvail = false;
           let isBlocked = false;
@@ -338,6 +402,7 @@ export class Checkout implements OnInit {
         },
         error: (err) => {
           this.isCheckingAvailability.set(false);
+          this.availabilityResult.set(null);
           const errorMsg = this.bookingService.extractApiErrorMessage(err);
           this.isAvailable.set(false);
           this.availabilityMessage.set(
@@ -356,16 +421,28 @@ export class Checkout implements OnInit {
   }
 
   public getRatePerNight(): number {
-    const prop = this.property();
-    if (!prop) return 0;
-    const sale = Number(prop.sale_per_night ?? prop.sale_price ?? 0);
-    if (sale > 0) {
-      return sale;
+    const quote = this.availabilityResult()?.quote;
+    const selectedRt = this.selectedRoomType();
+    if (quote?.price_per_night && (quote.room_type_id === selectedRt?.id || !quote.room_type_id)) {
+      return quote.price_per_night;
     }
-    return Number(prop.price_per_night ?? (prop as any)?.price ?? 0);
+    return this.pricingDetails().effectivePrice;
+  }
+
+  public hasDiscount(): boolean {
+    return this.pricingDetails().isDiscounted;
+  }
+
+  public getRegularPrice(): number {
+    return this.pricingDetails().standardPrice;
   }
 
   public getBaseTotal(): number {
+    const quote = this.availabilityResult()?.quote;
+    const selectedRt = this.selectedRoomType();
+    if (quote?.total_amount && (quote.room_type_id === selectedRt?.id || !quote.room_type_id)) {
+      return quote.total_amount;
+    }
     return this.getRatePerNight() * this.calculateNights() * this.numRooms();
   }
 
