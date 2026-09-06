@@ -51,6 +51,7 @@ export interface PropertyRoomTypePrice {
 }
 
 export interface PropertyRoomTypeRequest {
+  id?: string;
   room_type_id: string;
   total_units: number;
   price_per_night?: number;

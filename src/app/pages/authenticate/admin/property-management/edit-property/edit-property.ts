@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewChecked, Component, DestroyRef, ElementRef, OnDestroy, ViewChild, computed, inject, signal } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, DestroyRef, ElementRef, OnDestroy, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -51,6 +51,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
   private readonly roomTypeService = inject(RoomTypeService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly PROPERTY_TYPES_LABELS = PROPERTY_TYPES_LABELS;
   readonly wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media', 'Settings'];
@@ -164,7 +165,9 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     this.loadGoogleMapsScript();
 
     this.propertyForm.get('city_id')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((cityId) => {
-      this.propertyForm.get('location_id')?.reset('');
+      if (this.propertyForm.get('city_id')?.dirty) {
+        this.propertyForm.get('location_id')?.reset('');
+      }
       if (cityId) {
         this.loadLocations(cityId);
         return;
@@ -227,7 +230,10 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     this.currentStep = nextStep;
     this.isSaving.set(true);
     this.propertyService.admin.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
-      next: () => {
+      next: (response) => {
+        if (response?.data) {
+          this.patchPropertyForm(response.data);
+        }
         if (this.pendingStepBeforeSave === 3) {
           this.uploadPropertyMediaAndContinue();
           return;
@@ -263,7 +269,10 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
 
     this.isSaving.set(true);
     this.propertyService.admin.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
-      next: () => {
+      next: (response) => {
+        if (response?.data) {
+          this.patchPropertyForm(response.data);
+        }
         this.uploadPropertyMediaAndContinue(true);
       },
       error: () => {
@@ -706,6 +715,16 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     }
   }
 
+  getOccupancyOptions(roomTypeId: string, currentOccupancy: number = 1): number[] {
+    const capacity = this.getRoomTypeCapacity(roomTypeId);
+    const max = Math.max(10, capacity, Number(currentOccupancy) || 1);
+    const options: number[] = [];
+    for (let c = 1; c <= max; c++) {
+      options.push(c);
+    }
+    return options;
+  }
+
   getPricingTiers(roomTypeIndex: number): PropertyRoomTypePrice[] {
     const rows = this.getRoomTypeRows();
     return rows[roomTypeIndex]?.pricing_tiers ?? [];
@@ -717,7 +736,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     if (!row?.room_type_id) return false;
     const capacity = this.getRoomTypeCapacity(row.room_type_id);
     const tiers = row.pricing_tiers ?? [];
-    return tiers.length < capacity;
+    return tiers.length < Math.max(10, capacity);
   }
 
   addPricingTier(roomTypeIndex: number): void {
@@ -733,7 +752,8 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     const usedOccupancies = new Set(existingTiers.map((t) => Number(t.occupancy)));
 
     let nextOccupancy = 1;
-    for (let i = 1; i <= capacity; i++) {
+    const maxSearch = Math.max(10, capacity);
+    for (let i = 1; i <= maxSearch; i++) {
       if (!usedOccupancies.has(i)) {
         nextOccupancy = i;
         break;
@@ -753,6 +773,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     current[roomTypeIndex] = { ...row, pricing_tiers: existingTiers };
     control.setValue(current);
     this.propertyForm.markAsDirty();
+    this.cdr.markForCheck();
   }
 
   removePricingTier(roomTypeIndex: number, tierIndex: number): void {
@@ -769,6 +790,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
       current[roomTypeIndex] = { ...row, pricing_tiers: existingTiers };
       control.setValue(current);
       this.propertyForm.markAsDirty();
+      this.cdr.markForCheck();
     }
   }
 
@@ -783,10 +805,10 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     const existingTiers = [...(row.pricing_tiers ?? [])];
     if (tierIndex >= 0 && tierIndex < existingTiers.length) {
       existingTiers[tierIndex] = { ...existingTiers[tierIndex], occupancy: Math.max(1, Number(occupancy) || 1) };
-      existingTiers.sort((a, b) => a.occupancy - b.occupancy);
       current[roomTypeIndex] = { ...row, pricing_tiers: existingTiers };
       control.setValue(current);
       this.propertyForm.markAsDirty();
+      this.cdr.markForCheck();
     }
   }
 
@@ -870,28 +892,54 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
   }
 
   private patchPropertyForm(property: PropertyData): void {
+    if (!property) return;
+
     const amenityIds = property.property_amenities?.map((item) => item.amenity?.id ?? (item as any).amenity_id ?? item.id).filter(Boolean) ?? [];
     const facilityIds = property.property_facilities?.map((item) => item.facility?.id ?? (item as any).facility_id ?? item.id).filter(Boolean) ?? [];
 
     const roomTypes: PropertyRoomTypeRequest[] = [];
+    const existingFormRows = (this.propertyForm.get('room_types')?.value as PropertyRoomTypeRequest[] | null) ?? [];
+
     if (property.property_room_types && Array.isArray(property.property_room_types) && property.property_room_types.length > 0) {
-      for (const item of property.property_room_types) {
-        const id = item.room_type?.id || (item as any).room_type_id || (typeof item === 'string' ? item : (item as any).id);
+      for (let i = 0; i < property.property_room_types.length; i++) {
+        const item = property.property_room_types[i];
+        let resolvedRoomTypeId = '';
+        if (item.room_type?.id) {
+          resolvedRoomTypeId = String(item.room_type.id);
+        } else if ((item as any).room_type_id) {
+          resolvedRoomTypeId = String((item as any).room_type_id);
+        } else if (typeof item === 'string') {
+          resolvedRoomTypeId = item;
+        } else {
+          const matchingExisting = existingFormRows.find((r) => r.id === item.id) || existingFormRows[i];
+          if (matchingExisting?.room_type_id) {
+            resolvedRoomTypeId = matchingExisting.room_type_id;
+          } else if (this.roomTypes().some((rt) => rt.id === item.id)) {
+            resolvedRoomTypeId = item.id;
+          } else {
+            resolvedRoomTypeId = item.id;
+          }
+        }
+
         const units = Number(item.total_units || (item as any).units || (item as any).count || 1);
-        const pricePerNight = item.price_per_night ? Number(item.price_per_night) : undefined;
-        const salePerNight = item.sale_per_night ? Number(item.sale_per_night) : undefined;
+        const pricePerNight = Number(item.price_per_night) > 0 ? Number(item.price_per_night) : undefined;
+        const salePerNight = Number(item.sale_per_night) > 0 ? Number(item.sale_per_night) : undefined;
         const tiers: PropertyRoomTypePrice[] = Array.isArray(item.pricing_tiers)
-          ? item.pricing_tiers.map((t) => ({
+          ? item.pricing_tiers.map((t: any) => ({
               id: t.id,
               occupancy: Number(t.occupancy) || 1,
               price_per_night: Number(t.price_per_night) || 0,
-              sale_per_night: t.sale_per_night ? Number(t.sale_per_night) : undefined,
+              sale_per_night:
+                t.sale_per_night !== undefined && t.sale_per_night !== null && Number(t.sale_per_night) > 0
+                  ? Number(t.sale_per_night)
+                  : undefined,
             }))
           : [];
 
-        if (id) {
+        if (resolvedRoomTypeId) {
           roomTypes.push({
-            room_type_id: String(id),
+            id: item.id,
+            room_type_id: resolvedRoomTypeId,
             total_units: units > 0 ? units : 1,
             price_per_night: pricePerNight,
             sale_per_night: salePerNight,
@@ -900,25 +948,30 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
         }
       }
     } else if ((property as any).room_types && Array.isArray((property as any).room_types) && (property as any).room_types.length > 0) {
-      for (const item of (property as any).room_types) {
+      for (let i = 0; i < (property as any).room_types.length; i++) {
+        const item = (property as any).room_types[i];
         if (typeof item === 'string') {
           roomTypes.push({ room_type_id: item, total_units: 1 });
         } else if (item && typeof item === 'object') {
           const id = item.room_type_id || item.room_type?.id || item.id;
           const units = Number(item.total_units || item.units || item.count || 1);
-          const pricePerNight = item.price_per_night ? Number(item.price_per_night) : undefined;
-          const salePerNight = item.sale_per_night ? Number(item.sale_per_night) : undefined;
+          const pricePerNight = Number(item.price_per_night) > 0 ? Number(item.price_per_night) : undefined;
+          const salePerNight = Number(item.sale_per_night) > 0 ? Number(item.sale_per_night) : undefined;
           const tiers: PropertyRoomTypePrice[] = Array.isArray(item.pricing_tiers)
             ? item.pricing_tiers.map((t: any) => ({
                 id: t.id,
                 occupancy: Number(t.occupancy) || 1,
                 price_per_night: Number(t.price_per_night) || 0,
-                sale_per_night: t.sale_per_night ? Number(t.sale_per_night) : undefined,
+                sale_per_night:
+                  t.sale_per_night !== undefined && t.sale_per_night !== null && Number(t.sale_per_night) > 0
+                    ? Number(t.sale_per_night)
+                    : undefined,
               }))
             : [];
 
           if (id) {
             roomTypes.push({
+              id: item.id,
               room_type_id: String(id),
               total_units: units > 0 ? units : 1,
               price_per_night: pricePerNight,
@@ -937,27 +990,35 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     } else if (property.room_type?.id) {
       roomTypes.push({ room_type_id: String(property.room_type.id), total_units: 1 });
     }
-    const foodOptionIds = property.property_food_options?.filter((item) => item.is_included).map((item) => item.name) ?? [];
 
-    this.propertyForm.patchValue({
-      vendor_id: property.vendor?.id ?? '',
-      name: property.name ?? '',
-      type: property.type,
-      city_id: property.city?.id ?? '',
-      location_id: property.location?.id ?? '',
-      address: property.address ?? '',
-      description: property.description ?? '',
-      price_per_night: property.price_per_night ?? 0,
-      sale_price: property.sale_price ?? property.sale_per_night ?? 0,
-      is_featured: property.is_featured ?? false,
-      status: this.normalizePropertyStatus(property.status),
-      amenity_ids: amenityIds,
-      facility_ids: facilityIds,
-      room_types: roomTypes,
-      food_option_ids: foodOptionIds,
-      lat: property.latitude ?? null,
-      lon: property.longitude ?? null,
-    });
+    const foodOptionIds = property.property_food_options
+      ?.filter((item) => item.is_included)
+      .map((item) => (item.name ? item.name.toLowerCase() : item.id)) ?? [];
+
+    this.propertyForm.patchValue(
+      {
+        vendor_id: property.vendor?.id ?? '',
+        name: property.name ?? '',
+        type: property.type,
+        city_id: property.city?.id ?? '',
+        location_id: property.location?.id ?? '',
+        address: property.address ?? '',
+        description: property.description ?? '',
+        price_per_night: Number(property.price_per_night ?? (property as any).price ?? 0),
+        sale_price: Number(property.sale_price ?? property.sale_per_night ?? 0),
+        is_featured: property.is_featured ?? false,
+        status: this.normalizePropertyStatus(property.status),
+        amenity_ids: amenityIds,
+        facility_ids: facilityIds,
+        room_types: roomTypes,
+        food_option_ids: foodOptionIds,
+        lat: property.latitude ?? null,
+        lon: property.longitude ?? null,
+      },
+      { emitEvent: false }
+    );
+
+    this.propertyForm.get('room_types')?.setValue(roomTypes);
 
     // Extract gallery image URLs from gallery_images, property_assets, or legacy galleryImages
     const galleryUrls: string[] = [];
@@ -1032,8 +1093,28 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     if (property.city) {
       this.selectedCityLabel.set(property.city.name);
       this.citySearchTerm.set(property.city.name);
-      this.loadLocations(property.city.id);
+      this.loadingLocations.set(true);
+      this.locationService.admin
+        .getLocations({ page: 1, size: 100, search: { city_id: property.city.id } })
+        .pipe(take(1))
+        .subscribe({
+          next: (res) => {
+            this.locations.set(res.data);
+            this.loadingLocations.set(false);
+            if (property.location?.id) {
+              this.propertyForm.get('location_id')?.setValue(property.location.id);
+            }
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.locations.set([]);
+            this.loadingLocations.set(false);
+            this.cdr.markForCheck();
+          },
+        });
     }
+
+    this.cdr.markForCheck();
   }
 
   private buildUpdatePayload(): PropertyUpdateRequest {
@@ -1054,6 +1135,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
           }));
 
         return {
+          id: rt.id,
           room_type_id: rt.room_type_id.trim(),
           total_units: Math.max(1, Number(rt.total_units) || 1),
           price_per_night:
