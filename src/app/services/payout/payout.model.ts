@@ -1,6 +1,9 @@
+// ─── Enums & Literals ──────────────────────────────────────────────────────────
+
 export type PayoutStatus =
   | 'pending'
   | 'processing'
+  | 'queued'
   | 'paid'
   | 'failed'
   | 'reversed'
@@ -11,24 +14,28 @@ export type PayoutMode = 'NEFT' | 'IMPS' | 'RTGS' | 'UPI';
 
 export type BankAccountType = 'bank_account' | 'vpa';
 
+// ─── Entities ─────────────────────────────────────────────────────────────────
+
 export interface PayoutVendor {
-  public_id: string;
+  id?: string;
+  public_id?: string;
   email: string;
   phone: string | null;
   full_name: string | null;
 }
 
 export interface VendorBankAccount {
-  public_id: string;
+  id?: string;
+  public_id?: string;
   account_type: BankAccountType;
   account_holder_name: string;
-  account_number: string | null;
-  ifsc_code: string | null;
+  account_number: string | null; // null for VPA
+  ifsc_code: string | null;      // null for VPA
   bank_name: string | null;
   branch_name: string | null;
-  upi_id: string | null;
+  upi_id: string | null;         // null for bank_account
   is_primary: boolean;
-  is_verified: boolean;
+  is_verified: boolean;          // true = Razorpay Fund Account registered
   razorpay_contact_id: string | null;
   razorpay_fund_account_id: string | null;
   created_at: string;
@@ -36,19 +43,21 @@ export interface VendorBankAccount {
 }
 
 export interface Payout {
-  public_id: string;
-  amount: number; // Net amount in INR
+  id?: string;
+  public_id?: string;
+  amount: number;                // Net disbursement amount (INR)
   gross_amount: number | null;
   commission_amount: number | null;
+  commission_percentage?: number | null;
   currency: string;
-  period_start: string; // YYYY-MM-DD
-  period_end: string;   // YYYY-MM-DD
+  period_start: string;          // YYYY-MM-DD
+  period_end: string;            // YYYY-MM-DD
   status: PayoutStatus;
-  mode: PayoutMode;
+  mode: PayoutMode | null;
   transaction_id: string | null;
   razorpay_payout_id: string | null;
   razorpay_fund_account_id: string | null;
-  utr: string | null;
+  utr: string | null;            // Bank UTR after settlement
   failure_reason: string | null;
   notes: string | null;
   paid_at: string | null;
@@ -73,6 +82,22 @@ export interface VendorEarningsSummary {
   pending_payable_amount: number;
 }
 
+export interface RazorpayContactResponse {
+  id: string;
+  entity?: string;
+  name?: string;
+  contact?: string | null;
+  email?: string | null;
+  type?: string;
+  reference_id?: string;
+  active?: boolean;
+  already_exists?: boolean;
+}
+
+export type RazorpayContact = RazorpayContactResponse;
+
+// ─── Query & Payload Types ────────────────────────────────────────────────────
+
 export interface PayoutQueryParams {
   page?: number;
   size?: number;
@@ -82,6 +107,13 @@ export interface PayoutQueryParams {
   period_end?: string;
   sort_order?: 'asc' | 'desc';
   search?: string;
+}
+
+export interface CalculateEarningsParams {
+  vendor_id: string;
+  period_start?: string;
+  period_end?: string;
+  commission_percentage?: number;
 }
 
 export interface CreatePayoutPayload {
@@ -100,7 +132,8 @@ export interface CreatePayoutPayload {
 
 export interface ProcessPayoutPayload {
   mode?: PayoutMode;
-  narration?: string;
+  purpose?: string;
+  narration?: string; // Max 30 chars
   notes?: Record<string, string>;
 }
 
@@ -122,6 +155,8 @@ export interface PayoutMetrics {
   pendingCount: number;
   processingAmount: number;
   processingCount: number;
+  queuedAmount: number;
+  queuedCount: number;
   failedAmount: number;
   failedCount: number;
 }

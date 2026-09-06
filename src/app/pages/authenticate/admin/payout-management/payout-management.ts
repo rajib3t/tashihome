@@ -11,6 +11,7 @@ import {
   PayoutMode,
   PayoutStatus,
   ProcessPayoutPayload,
+  RazorpayContactResponse,
   VendorBankAccount,
   VendorEarningsSummary,
 } from '../../../../services/payout/payout.model';
@@ -85,7 +86,13 @@ export class PayoutManagement implements OnInit, OnDestroy {
     const processingAmount = processingList.reduce((sum, p) => sum + (p.amount || 0), 0);
     const processingCount = processingList.length;
 
-    const failedList = list.filter((p) => p.status === 'failed' || p.status === 'rejected' || p.status === 'reversed');
+    const queuedList = list.filter((p) => p.status === 'queued');
+    const queuedAmount = queuedList.reduce((sum, p) => sum + (p.amount || 0), 0);
+    const queuedCount = queuedList.length;
+
+    const failedList = list.filter((p) =>
+      ['failed', 'rejected', 'reversed'].includes(p.status)
+    );
     const failedAmount = failedList.reduce((sum, p) => sum + (p.amount || 0), 0);
     const failedCount = failedList.length;
 
@@ -95,6 +102,8 @@ export class PayoutManagement implements OnInit, OnDestroy {
       pendingCount,
       processingAmount,
       processingCount,
+      queuedAmount,
+      queuedCount,
       failedAmount,
       failedCount,
     };
@@ -110,6 +119,12 @@ export class PayoutManagement implements OnInit, OnDestroy {
 
   readonly vendorBankAccounts = signal<VendorBankAccount[]>([]);
   readonly isLoadingBankAccounts = signal(false);
+
+  readonly selectedCreateAccount = computed(() => {
+    const accountId = this.createPayoutForm.get('bank_account_id')?.value;
+    if (!accountId) return null;
+    return this.vendorBankAccounts().find((a) => this.getBankAccountId(a) === accountId) || null;
+  });
 
   readonly createPayoutForm: FormGroup = this.fb.group({
     vendor_id: ['', [Validators.required]],
@@ -128,6 +143,30 @@ export class PayoutManagement implements OnInit, OnDestroy {
   readonly isDetailDrawerOpen = signal(false);
   readonly selectedPayout = signal<Payout | null>(null);
   readonly isSyncingDetail = signal(false);
+
+  // ── Vendor Razorpay & Fund Accounts Manager State ─────────────────────────
+  readonly isVendorManagerOpen = signal(false);
+  readonly selectedVendorIdForManager = signal<string>('');
+  readonly selectedVendorForManager = computed(() => {
+    const id = this.selectedVendorIdForManager();
+    return this.vendors().find((v) => this.getUserId(v) === id) || null;
+  });
+  readonly managerBankAccounts = signal<VendorBankAccount[]>([]);
+  readonly isLoadingManagerAccounts = signal(false);
+  readonly isCreatingRazorpayContact = signal(false);
+  readonly managerContactError = signal('');
+  readonly managerAccountError = signal('');
+  readonly isSettingPrimaryId = signal<string | null>(null);
+  readonly isDeleteAccountModalOpen = signal(false);
+  readonly deleteAccountTarget = signal<VendorBankAccount | null>(null);
+  readonly isDeletingAccount = signal(false);
+  readonly deleteAccountError = signal('');
+  readonly isAddAccountInManagerOpen = signal(false);
+  readonly vendorRazorpayContactId = computed(() => {
+    const list = this.managerBankAccounts();
+    const withContact = list.find((a) => a.razorpay_contact_id);
+    return withContact?.razorpay_contact_id || null;
+  });
 
   // ── Bank Account Management Modal State ────────────────────────────────────
   readonly isBankModalOpen = signal(false);
@@ -155,6 +194,13 @@ export class PayoutManagement implements OnInit, OnDestroy {
   readonly isProcessingAction = signal(false);
   readonly actionErrorMessage = signal('');
 
+  // Process / Disburse action form (narration max 30 chars, mode override)
+  readonly processActionForm: FormGroup = this.fb.group({
+    mode: ['NEFT' as PayoutMode],
+    narration: ['', [Validators.maxLength(30)]],
+    purpose: ['payout'],
+  });
+
   // ── Receipt Modal State ────────────────────────────────────────────────────
   readonly isReceiptModalOpen = signal(false);
   readonly receiptPayout = signal<Payout | null>(null);
@@ -167,6 +213,7 @@ export class PayoutManagement implements OnInit, OnDestroy {
   readonly availableStatuses: PayoutStatus[] = [
     'pending',
     'processing',
+    'queued',
     'paid',
     'failed',
     'reversed',
@@ -185,6 +232,19 @@ export class PayoutManagement implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.copyTimeout) clearTimeout(this.copyTimeout);
     if (this.messageTimeout) clearTimeout(this.messageTimeout);
+  }
+
+  // ── Helper Getters for Safe IDs ──────────────────────────────────────────
+  getPayoutId(payout: Payout | null | undefined): string {
+    return payout?.id || payout?.public_id || '';
+  }
+
+  getBankAccountId(account: VendorBankAccount | null | undefined): string {
+    return account?.id || account?.public_id || '';
+  }
+
+  getUserId(user: User | null | undefined): string {
+    return user?.id || (user as any)?.public_id || '';
   }
 
   private initDefaultDates(): void {
@@ -367,7 +427,7 @@ export class PayoutManagement implements OnInit, OnDestroy {
 
           if (autoSelectPrimary && accounts.length > 0) {
             const primary = accounts.find((a) => a.is_primary) || accounts[0];
-            this.createPayoutForm.patchValue({ bank_account_id: primary.public_id });
+            this.createPayoutForm.patchValue({ bank_account_id: this.getBankAccountId(primary) });
           }
         } else {
           this.vendorBankAccounts.set([]);
@@ -501,7 +561,7 @@ export class PayoutManagement implements OnInit, OnDestroy {
     const val = this.createPayoutForm.getRawValue();
     if (!val.bank_account_id && this.vendorBankAccounts().length > 0) {
       const primary = this.vendorBankAccounts().find((a) => a.is_primary) || this.vendorBankAccounts()[0];
-      val.bank_account_id = primary.public_id;
+      val.bank_account_id = this.getBankAccountId(primary);
     }
 
     if (!val.bank_account_id) {
@@ -552,7 +612,7 @@ export class PayoutManagement implements OnInit, OnDestroy {
         catchError((error) => {
           this.isCreatingPayout.set(false);
           const errCode = error?.error?.code || error?.error?.error_code;
-          if (errCode === 'VENDOR_BANK_ACCOUNT_MISSING') {
+          if (errCode === 'VENDOR_BANK_ACCOUNT_MISSING' || errCode === 'BANK_ACCOUNT_NOT_FOUND') {
             this.createPayoutError.set('Vendor has no bank account configured. Please add bank details first.');
             this.openBankModalFromCreate();
           } else {
@@ -572,27 +632,32 @@ export class PayoutManagement implements OnInit, OnDestroy {
         }
 
         const createdPayout = res.data;
+        const payoutId = this.getPayoutId(createdPayout);
 
-        if (disburseImmediately && createdPayout.public_id) {
+        if (disburseImmediately && payoutId) {
           // Immediately process payout
+          const narrationText = `Payout ${payoutId.slice(0, 8)}`.slice(0, 30);
           this.payoutApi
-            .processPayout(createdPayout.public_id, {
+            .processPayout(payoutId, {
               mode: val.mode,
-              narration: `Payout ${createdPayout.public_id.slice(0, 8)}`,
+              narration: narrationText,
             })
             .pipe(
               finalize(() => this.isCreatingPayout.set(false)),
               catchError((procErr) => {
-                this.showSuccess('Payout created, but immediate processing failed. You can retry from the list.');
+                const msg = procErr?.error?.message || procErr?.message || 'Immediate processing failed.';
+                this.showSuccess(`Payout saved as Pending, but processing failed: ${msg}. You can retry from the table.`);
                 this.closeCreateModal();
                 this.loadPayouts();
                 return of(null);
               })
             )
             .subscribe((procRes) => {
-              this.showSuccess(
-                procRes?.message || 'Payout created and submitted to RazorpayX successfully!'
-              );
+              if (procRes) {
+                this.showSuccess(
+                  procRes?.message || 'Payout created and submitted to RazorpayX successfully!'
+                );
+              }
               this.closeCreateModal();
               this.loadPayouts();
             });
@@ -618,11 +683,12 @@ export class PayoutManagement implements OnInit, OnDestroy {
 
   syncDetailPayout(): void {
     const payout = this.selectedPayout();
-    if (!payout || !payout.public_id) return;
+    const payoutId = this.getPayoutId(payout);
+    if (!payoutId) return;
 
     this.isSyncingDetail.set(true);
     this.payoutApi
-      .syncPayout(payout.public_id)
+      .syncPayout(payoutId)
       .pipe(
         finalize(() => this.isSyncingDetail.set(false)),
         catchError((error) => {
@@ -640,6 +706,243 @@ export class PayoutManagement implements OnInit, OnDestroy {
       });
   }
 
+  // ── Vendor Razorpay & Fund Accounts Manager ──────────────────────────────
+  openVendorManager(vendorId?: string): void {
+    let targetVendorId = vendorId || this.createPayoutForm.get('vendor_id')?.value || '';
+    if (!targetVendorId && this.vendors().length > 0) {
+      targetVendorId = this.getUserId(this.vendors()[0]);
+    }
+
+    this.selectedVendorIdForManager.set(targetVendorId);
+    this.managerContactError.set('');
+    this.managerAccountError.set('');
+    this.isAddAccountInManagerOpen.set(false);
+    this.isVendorManagerOpen.set(true);
+
+    if (targetVendorId) {
+      this.loadManagerVendorAccounts(targetVendorId);
+    } else {
+      this.managerBankAccounts.set([]);
+    }
+  }
+
+  closeVendorManager(): void {
+    this.isVendorManagerOpen.set(false);
+    this.isAddAccountInManagerOpen.set(false);
+    this.managerContactError.set('');
+    this.managerAccountError.set('');
+  }
+
+  onSelectVendorInManager(vendorId: string): void {
+    this.selectedVendorIdForManager.set(vendorId);
+    this.isAddAccountInManagerOpen.set(false);
+    this.managerContactError.set('');
+    this.managerAccountError.set('');
+
+    if (vendorId) {
+      this.loadManagerVendorAccounts(vendorId);
+    } else {
+      this.managerBankAccounts.set([]);
+    }
+  }
+
+  loadManagerVendorAccounts(vendorId: string): void {
+    if (!vendorId) {
+      this.managerBankAccounts.set([]);
+      return;
+    }
+
+    this.isLoadingManagerAccounts.set(true);
+    this.managerAccountError.set('');
+
+    this.payoutApi
+      .getVendorBankAccounts(vendorId)
+      .pipe(
+        finalize(() => this.isLoadingManagerAccounts.set(false)),
+        catchError((err) => {
+          this.managerAccountError.set(
+            err?.error?.message || err?.message || 'Failed to load vendor accounts.'
+          );
+          return of(null);
+        })
+      )
+      .subscribe((res) => {
+        if (res && res.data) {
+          const accounts = Array.isArray(res.data) ? res.data : [];
+          this.managerBankAccounts.set(accounts);
+        } else {
+          this.managerBankAccounts.set([]);
+        }
+      });
+  }
+
+  createOrSyncRazorpayContact(vendorId?: string): void {
+    const targetId = vendorId || this.selectedVendorIdForManager();
+    if (!targetId) {
+      this.managerContactError.set('Please select a vendor first.');
+      return;
+    }
+
+    this.isCreatingRazorpayContact.set(true);
+    this.managerContactError.set('');
+
+    this.payoutApi
+      .createVendorRazorpayContact(targetId)
+      .pipe(
+        finalize(() => this.isCreatingRazorpayContact.set(false)),
+        catchError((err) => {
+          const msg =
+            err?.error?.message ||
+            err?.message ||
+            'Unable to create or sync Razorpay Contact.';
+          this.managerContactError.set(msg);
+          return of(null);
+        })
+      )
+      .subscribe((res) => {
+        if (!res || !res.data) return;
+        const data = res.data;
+        const contactId = data.id || 'Active';
+
+        if (data.already_exists) {
+          this.showSuccess(`Razorpay contact already exists — using existing contact (${contactId}).`);
+        } else {
+          this.showSuccess(`Razorpay Contact created / verified successfully! Contact ID: ${contactId}`);
+        }
+
+        this.loadManagerVendorAccounts(targetId);
+
+        // Also refresh create modal accounts if open
+        if (this.createPayoutForm.get('vendor_id')?.value === targetId) {
+          this.loadVendorAccounts(targetId, false);
+        }
+      });
+  }
+
+  setAccountAsPrimary(account: VendorBankAccount): void {
+    const vendorId = this.selectedVendorIdForManager() || this.createPayoutForm.get('vendor_id')?.value;
+    const accountId = this.getBankAccountId(account);
+    if (!vendorId || !accountId) return;
+
+    this.isSettingPrimaryId.set(accountId);
+    this.managerAccountError.set('');
+
+    this.payoutApi
+      .setPrimaryVendorBankAccount(vendorId, accountId)
+      .pipe(
+        finalize(() => this.isSettingPrimaryId.set(null)),
+        catchError((err) => {
+          const msg =
+            err?.error?.message ||
+            err?.message ||
+            'Failed to set account as primary.';
+          this.managerAccountError.set(msg);
+          return of(null);
+        })
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.showSuccess('Primary payout account updated successfully.');
+
+        // Update local arrays
+        this.managerBankAccounts.update((list) =>
+          list.map((a) => ({
+            ...a,
+            is_primary: this.getBankAccountId(a) === accountId,
+          }))
+        );
+
+        if (this.createPayoutForm.get('vendor_id')?.value === vendorId) {
+          this.vendorBankAccounts.update((list) =>
+            list.map((a) => ({
+              ...a,
+              is_primary: this.getBankAccountId(a) === accountId,
+            }))
+          );
+          this.createPayoutForm.patchValue({ bank_account_id: accountId });
+        }
+      });
+  }
+
+  openDeleteAccountModal(account: VendorBankAccount): void {
+    this.deleteAccountTarget.set(account);
+    this.deleteAccountError.set('');
+    this.isDeleteAccountModalOpen.set(true);
+  }
+
+  closeDeleteAccountModal(): void {
+    if (this.isDeletingAccount()) return;
+    this.isDeleteAccountModalOpen.set(false);
+    this.deleteAccountTarget.set(null);
+    this.deleteAccountError.set('');
+  }
+
+  confirmDeleteAccount(): void {
+    const target = this.deleteAccountTarget();
+    const targetId = this.getBankAccountId(target);
+    const vendorId = this.selectedVendorIdForManager() || this.createPayoutForm.get('vendor_id')?.value;
+    if (!target || !targetId || !vendorId) return;
+
+    this.isDeletingAccount.set(true);
+    this.deleteAccountError.set('');
+
+    this.payoutApi
+      .deleteVendorBankAccount(vendorId, targetId)
+      .pipe(
+        finalize(() => this.isDeletingAccount.set(false)),
+        catchError((err) => {
+          const msg =
+            err?.error?.message ||
+            err?.message ||
+            'Failed to delete vendor bank account.';
+          this.deleteAccountError.set(msg);
+          return of(null);
+        })
+      )
+      .subscribe((res) => {
+        if (!res) return;
+        this.showSuccess('Bank account removed successfully.');
+        this.closeDeleteAccountModal();
+
+        // Update local lists
+        this.managerBankAccounts.update((list) =>
+          list.filter((a) => this.getBankAccountId(a) !== targetId)
+        );
+
+        if (this.createPayoutForm.get('vendor_id')?.value === vendorId) {
+          this.vendorBankAccounts.update((list) =>
+            list.filter((a) => this.getBankAccountId(a) !== targetId)
+          );
+          if (this.createPayoutForm.get('bank_account_id')?.value === targetId) {
+            const nextPrimary = this.vendorBankAccounts().find((a) => a.is_primary) || this.vendorBankAccounts()[0];
+            this.createPayoutForm.patchValue({ bank_account_id: this.getBankAccountId(nextPrimary) });
+          }
+        }
+      });
+  }
+
+  toggleAddAccountInManager(): void {
+    const nextState = !this.isAddAccountInManagerOpen();
+    this.isAddAccountInManagerOpen.set(nextState);
+
+    if (nextState) {
+      const vendor = this.selectedVendorForManager();
+      const vendorName = vendor?.full_name || vendor?.email || '';
+      this.bankAccountError.set('');
+      this.bankAccountForm.reset({
+        account_type: 'bank_account',
+        account_holder_name: vendorName,
+        bank_name: '',
+        account_number: '',
+        confirm_account_number: '',
+        ifsc_code: '',
+        branch_name: '',
+        upi_id: '',
+        is_primary: this.managerBankAccounts().length === 0,
+      });
+    }
+  }
+
   // ── Bank Account Management Modal ──────────────────────────────────────────
   openBankModalFromCreate(): void {
     const vendorId = this.createPayoutForm.get('vendor_id')?.value;
@@ -647,7 +950,7 @@ export class PayoutManagement implements OnInit, OnDestroy {
       this.createPayoutError.set('Please select a vendor first before adding bank details.');
       return;
     }
-    const vendorObj = this.vendors().find((v) => v.id === vendorId);
+    const vendorObj = this.vendors().find((v) => this.getUserId(v) === vendorId);
     this.openBankModal(vendorId, vendorObj?.full_name || vendorObj?.email || 'Vendor');
   }
 
@@ -679,6 +982,15 @@ export class PayoutManagement implements OnInit, OnDestroy {
     this.bankAccountForm.patchValue({ account_type: type });
   }
 
+  onIfscInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input && input.value) {
+      const upper = input.value.toUpperCase();
+      this.bankAccountForm.patchValue({ ifsc_code: upper }, { emitEvent: false });
+      input.value = upper;
+    }
+  }
+
   submitBankAccount(): void {
     const type = this.bankAccountForm.get('account_type')?.value as BankAccountType;
     const holder = this.bankAccountForm.get('account_holder_name')?.value?.trim();
@@ -702,7 +1014,7 @@ export class PayoutManagement implements OnInit, OnDestroy {
       const branchName = this.bankAccountForm.get('branch_name')?.value?.trim();
 
       if (!accNum || accNum.length < 8) {
-        this.bankAccountError.set('Please enter a valid bank account number.');
+        this.bankAccountError.set('Please enter a valid bank account number (at least 8 digits).');
         return;
       }
       if (accNum !== confirmAcc) {
@@ -727,7 +1039,12 @@ export class PayoutManagement implements OnInit, OnDestroy {
       payload.upi_id = upi;
     }
 
-    const vendorId = this.bankModalVendorId();
+    const vendorId = this.bankModalVendorId() || this.selectedVendorIdForManager();
+    if (!vendorId) {
+      this.bankAccountError.set('Vendor must be selected to add bank account.');
+      return;
+    }
+
     this.isSavingBankAccount.set(true);
     this.bankAccountError.set('');
 
@@ -746,8 +1063,20 @@ export class PayoutManagement implements OnInit, OnDestroy {
       )
       .subscribe((res) => {
         if (!res) return;
-        this.showSuccess('Bank account added successfully.');
-        this.closeBankModal();
+        this.showSuccess('Bank account / Fund account added and registered on RazorpayX successfully.');
+
+        if (this.isBankModalOpen()) {
+          this.closeBankModal();
+        }
+
+        if (this.isAddAccountInManagerOpen()) {
+          this.isAddAccountInManagerOpen.set(false);
+        }
+
+        // Refresh vendor accounts in manager if open
+        if (this.isVendorManagerOpen()) {
+          this.loadManagerVendorAccounts(vendorId);
+        }
 
         // Refresh vendor accounts in Create Payout modal if open
         if (this.isCreateModalOpen() && this.createPayoutForm.get('vendor_id')?.value === vendorId) {
@@ -761,6 +1090,15 @@ export class PayoutManagement implements OnInit, OnDestroy {
     this.actionPayout.set(payout);
     this.actionType.set(type);
     this.actionErrorMessage.set('');
+
+    const payoutId = this.getPayoutId(payout);
+    const defaultNarration = `PO-${payoutId.slice(0, 8)}`.slice(0, 30);
+    this.processActionForm.reset({
+      mode: payout.mode || 'NEFT',
+      narration: defaultNarration,
+      purpose: 'payout',
+    });
+
     this.isActionModalOpen.set(true);
   }
 
@@ -775,17 +1113,22 @@ export class PayoutManagement implements OnInit, OnDestroy {
   confirmAction(): void {
     const payout = this.actionPayout();
     const action = this.actionType();
-    if (!payout || !action || !payout.public_id) return;
+    const payoutId = this.getPayoutId(payout);
+    if (!payout || !action || !payoutId) return;
 
     this.isProcessingAction.set(true);
     this.actionErrorMessage.set('');
 
     if (action === 'process' || action === 'retry') {
+      const formVal = this.processActionForm.getRawValue();
+      const payload: ProcessPayoutPayload = {
+        mode: formVal.mode || payout.mode || 'NEFT',
+        narration: formVal.narration ? formVal.narration.trim().slice(0, 30) : undefined,
+        purpose: formVal.purpose || 'payout',
+      };
+
       this.payoutApi
-        .processPayout(payout.public_id, {
-          mode: payout.mode,
-          narration: `Payout ${payout.public_id.slice(0, 8)}`,
-        })
+        .processPayout(payoutId, payload)
         .pipe(
           finalize(() => this.isProcessingAction.set(false)),
           catchError((err) => {
@@ -797,16 +1140,16 @@ export class PayoutManagement implements OnInit, OnDestroy {
         )
         .subscribe((res) => {
           if (!res) return;
-          this.showSuccess(res.message || 'Payout submitted to RazorpayX queue successfully.');
+          this.showSuccess(res.message || 'Payout submitted to RazorpayX successfully.');
           this.closeActionModal();
           this.loadPayouts();
-          if (this.selectedPayout()?.public_id === payout.public_id) {
+          if (this.getPayoutId(this.selectedPayout()) === payoutId) {
             this.selectedPayout.set(res.data);
           }
         });
     } else if (action === 'sync') {
       this.payoutApi
-        .syncPayout(payout.public_id)
+        .syncPayout(payoutId)
         .pipe(
           finalize(() => this.isProcessingAction.set(false)),
           catchError((err) => {
@@ -821,13 +1164,13 @@ export class PayoutManagement implements OnInit, OnDestroy {
           this.showSuccess(res.message || 'Payout status synced with Razorpay.');
           this.closeActionModal();
           this.loadPayouts();
-          if (this.selectedPayout()?.public_id === payout.public_id) {
+          if (this.getPayoutId(this.selectedPayout()) === payoutId) {
             this.selectedPayout.set(res.data);
           }
         });
     } else if (action === 'cancel') {
       this.payoutApi
-        .cancelPayout(payout.public_id)
+        .cancelPayout(payoutId)
         .pipe(
           finalize(() => this.isProcessingAction.set(false)),
           catchError((err) => {
@@ -842,7 +1185,7 @@ export class PayoutManagement implements OnInit, OnDestroy {
           this.showSuccess(res.message || 'Payout cancelled successfully.');
           this.closeActionModal();
           this.loadPayouts();
-          if (this.selectedPayout()?.public_id === payout.public_id) {
+          if (this.getPayoutId(this.selectedPayout()) === payoutId) {
             this.selectedPayout.set(res.data);
           }
         });
@@ -897,32 +1240,36 @@ export class PayoutManagement implements OnInit, OnDestroy {
   }
 
   statusBadgeClass(status: string): string {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'pending':
-        return 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30';
+        return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30';
       case 'processing':
-        return 'bg-blue-50 text-blue-800 border-blue-300 animate-pulse dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30';
+        return 'bg-blue-100 text-blue-800 border-blue-300 animate-pulse dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30';
+      case 'queued':
+        return 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-500/10 dark:text-orange-300 dark:border-orange-500/30';
       case 'paid':
-        return 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30';
+        return 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30';
       case 'failed':
-        return 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30';
+        return 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30';
       case 'rejected':
-        return 'bg-red-50 text-red-800 border-red-300 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/30';
+        return 'bg-red-100 text-red-800 border-red-300 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/30';
       case 'reversed':
-        return 'bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/30';
+        return 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/30';
       case 'cancelled':
         return 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600';
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
+        return 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
     }
   }
 
   statusDotClass(status: string): string {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'pending':
         return 'bg-amber-500';
       case 'processing':
         return 'bg-blue-500';
+      case 'queued':
+        return 'bg-orange-500';
       case 'paid':
         return 'bg-emerald-500';
       case 'failed':
@@ -933,17 +1280,19 @@ export class PayoutManagement implements OnInit, OnDestroy {
       case 'cancelled':
         return 'bg-slate-400';
       default:
-        return 'bg-gray-400';
+        return 'bg-slate-400';
     }
   }
 
   statusLabel(status: string): string {
     if (!status) return 'Unknown';
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'paid':
         return 'Paid';
       case 'processing':
         return 'Processing';
+      case 'queued':
+        return 'Queued';
       case 'pending':
         return 'Pending';
       case 'failed':
@@ -976,4 +1325,3 @@ export class PayoutManagement implements OnInit, OnDestroy {
     this.successMessage.set('');
   }
 }
-

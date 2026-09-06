@@ -75,7 +75,7 @@ export class AdminDashboard implements OnInit {
 
     const payouts = this.recentPayouts();
     const paidList = payouts.filter((p) => p.status?.toLowerCase() === 'paid');
-    const procList = payouts.filter((p) => p.status?.toLowerCase() === 'processing');
+    const procList = payouts.filter((p) => ['processing', 'queued'].includes(p.status?.toLowerCase()));
     const pendList = payouts.filter((p) => p.status?.toLowerCase() === 'pending');
     const failList = payouts.filter((p) => ['failed', 'rejected', 'reversed'].includes(p.status?.toLowerCase()));
     const lastPaid = paidList[0] || payouts[0];
@@ -258,6 +258,9 @@ export class AdminDashboard implements OnInit {
     if (s === 'processing') {
       return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/20';
     }
+    if (s === 'queued') {
+      return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/20';
+    }
     if (s === 'pending') {
       return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20';
     }
@@ -271,6 +274,7 @@ export class AdminDashboard implements OnInit {
     const s = status?.toLowerCase();
     if (s === 'paid') return 'bg-emerald-500';
     if (s === 'processing') return 'bg-blue-500 animate-pulse';
+    if (s === 'queued') return 'bg-orange-500';
     if (s === 'pending') return 'bg-amber-500';
     if (s === 'failed' || s === 'rejected' || s === 'reversed') return 'bg-rose-500';
     return 'bg-slate-400';

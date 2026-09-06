@@ -3,11 +3,13 @@ import { Observable, catchError, map } from 'rxjs';
 import { ApiResponse, PaginatedResponse } from '../api/api-response.model';
 import { ApiService } from '../api/api-service';
 import {
+  CalculateEarningsParams,
   CreateBankAccountPayload,
   CreatePayoutPayload,
   Payout,
   PayoutQueryParams,
   ProcessPayoutPayload,
+  RazorpayContactResponse,
   VendorBankAccount,
   VendorEarningsSummary,
 } from './payout.model';
@@ -44,6 +46,7 @@ export class PayoutService {
 
   /**
    * List all payouts with pagination and filter parameters
+   * GET /api/v1/admin/payouts/
    */
   getPayouts(query?: PayoutQueryParams): Observable<PaginatedResponse<Payout>> {
     return this.api
@@ -57,7 +60,8 @@ export class PayoutService {
   }
 
   /**
-   * Get single payout details by public ID
+   * Get single payout details by ID
+   * GET /api/v1/admin/payouts/{payout_id}
    */
   getPayoutById(id: string): Observable<ApiResponse<Payout>> {
     return this.api
@@ -70,13 +74,9 @@ export class PayoutService {
 
   /**
    * Calculate eligible dues and earnings summary for a vendor and settlement period
+   * GET /api/v1/admin/payouts/eligible
    */
-  calculateEligibleDues(params: {
-    vendor_id: string;
-    period_start?: string;
-    period_end?: string;
-    commission_percentage?: number;
-  }): Observable<ApiResponse<VendorEarningsSummary>> {
+  calculateEligibleDues(params: CalculateEarningsParams): Observable<ApiResponse<VendorEarningsSummary>> {
     const queryParams: Record<string, string | number> = {
       vendor_id: params.vendor_id.trim(),
     };
@@ -101,7 +101,8 @@ export class PayoutService {
   }
 
   /**
-   * Create a new Payout record (saved as pending or ready for disbursement)
+   * Create a new Payout record (saved as pending)
+   * POST /api/v1/admin/payouts/
    */
   createPayout(payload: CreatePayoutPayload): Observable<ApiResponse<Payout>> {
     return this.api
@@ -114,6 +115,7 @@ export class PayoutService {
 
   /**
    * Process/Disburse a payout via RazorpayX
+   * POST /api/v1/admin/payouts/{payout_id}/process
    */
   processPayout(
     payoutId: string,
@@ -132,6 +134,7 @@ export class PayoutService {
 
   /**
    * Sync payout live status and UTR directly from Razorpay
+   * POST /api/v1/admin/payouts/{payout_id}/sync
    */
   syncPayout(payoutId: string): Observable<ApiResponse<Payout>> {
     return this.api
@@ -147,6 +150,7 @@ export class PayoutService {
 
   /**
    * Cancel an in-system or queued payout
+   * POST /api/v1/admin/payouts/{payout_id}/cancel
    */
   cancelPayout(payoutId: string): Observable<ApiResponse<Payout>> {
     return this.api
@@ -162,6 +166,7 @@ export class PayoutService {
 
   /**
    * Retrieve vendor bank accounts and UPI VPAs
+   * GET /api/v1/admin/payouts/vendors/{vendor_id}/bank-accounts
    */
   getVendorBankAccounts(vendorId: string): Observable<ApiResponse<VendorBankAccount[]>> {
     return this.api
@@ -175,7 +180,8 @@ export class PayoutService {
   }
 
   /**
-   * Add a new Bank Account or UPI VPA for a vendor
+   * Add a new Bank Account or UPI VPA for a vendor (auto-registers on Razorpay)
+   * POST /api/v1/admin/payouts/vendors/{vendor_id}/bank-accounts
    */
   createVendorBankAccount(
     vendorId: string,
@@ -191,5 +197,57 @@ export class PayoutService {
         catchError(this.api.passthroughError)
       );
   }
-}
 
+  /**
+   * Explicitly Create or Sync Vendor Razorpay Contact
+   * POST /api/v1/admin/payouts/vendors/{vendor_id}/razorpay-contact
+   */
+  createVendorRazorpayContact(vendorId: string): Observable<ApiResponse<RazorpayContactResponse>> {
+    return this.api
+      .protectedPost<ApiResponse<RazorpayContactResponse>>(
+        `/admin/payouts/vendors/${encodeURIComponent(vendorId)}/razorpay-contact`,
+        {}
+      )
+      .pipe(
+        map((res) => res.data),
+        catchError(this.api.passthroughError)
+      );
+  }
+
+  /**
+   * Set a vendor bank account or UPI VPA as primary
+   * PATCH /api/v1/admin/payouts/vendors/{vendor_id}/bank-accounts/{bank_account_id}/primary
+   */
+  setPrimaryVendorBankAccount(
+    vendorId: string,
+    bankAccountId: string
+  ): Observable<ApiResponse<VendorBankAccount>> {
+    return this.api
+      .protectedPatch<ApiResponse<VendorBankAccount>>(
+        `/admin/payouts/vendors/${encodeURIComponent(vendorId)}/bank-accounts/${encodeURIComponent(bankAccountId)}/primary`,
+        {}
+      )
+      .pipe(
+        map((res) => res.data),
+        catchError(this.api.passthroughError)
+      );
+  }
+
+  /**
+   * Delete a vendor bank account or UPI VPA
+   * DELETE /api/v1/admin/payouts/vendors/{vendor_id}/bank-accounts/{bank_account_id}
+   */
+  deleteVendorBankAccount(
+    vendorId: string,
+    bankAccountId: string
+  ): Observable<ApiResponse<any>> {
+    return this.api
+      .protectedDelete<ApiResponse<any>>(
+        `/admin/payouts/vendors/${encodeURIComponent(vendorId)}/bank-accounts/${encodeURIComponent(bankAccountId)}`
+      )
+      .pipe(
+        map((res) => res.data),
+        catchError(this.api.passthroughError)
+      );
+  }
+}
