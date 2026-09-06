@@ -1,245 +1,538 @@
-<app-page-breadcrumb pageTitle="Application Setting"></app-page-breadcrumb>
+<app-page-breadcrumb pageTitle="System Settings"></app-page-breadcrumb>
 
-<app-card title="Application Setting" desc="Manage your application setting from here.">
-  <form [formGroup]="settingForm" (ngSubmit)="save()">
+<div class="space-y-6">
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <!-- TOP TAB BAR -->
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-2 dark:border-gray-800">
+    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+      <button
+        type="button"
+        (click)="setTab('general')"
+        class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold transition"
+        [ngClass]="activeTab() === 'general' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'">
+        <span>🏢</span> General &amp; Brand
+      </button>
 
-      <!-- Branding -->
-      <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+      <button
+        type="button"
+        (click)="setTab('contact')"
+        class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold transition"
+        [ngClass]="activeTab() === 'contact' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'">
+        <span>📞</span> Contact &amp; Support
+      </button>
 
-        <div class="mb-6 border-b border-gray-100 pb-4">
-          <h2 class="text-lg font-semibold text-gray-900">Branding</h2>
-          <p class="mt-1 text-sm text-gray-500">
-            Upload your app logo and favicon.
-          </p>
-        </div>
+      <button
+        type="button"
+        (click)="setTab('financials')"
+        class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold transition"
+        [ngClass]="activeTab() === 'financials' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'">
+        <span>🏡</span> Homestay &amp; Booking
+      </button>
 
-        <div class="space-y-6">
+      <button
+        type="button"
+        (click)="setTab('seo')"
+        class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold transition"
+        [ngClass]="activeTab() === 'seo' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'">
+        <span>🌐</span> Social &amp; SEO
+      </button>
 
-          <div class="upload-wrapper">
-            <app-upload-image
-            
-              [id]="'app_logo'"
-              [name]="'app_logo'"
-              [preview]="logoPreview()"
-              buttonText="Upload Logo"
-              emptyText="No Logo"
-              (previewChange)="logoPreview.set($event)"
-              (valueChange)="settingForm.controls.app_logo.setValue($event)">
-            </app-upload-image>
-          </div>
-          <div class="upload-wrapper">
-          <app-upload-image
-            
-            [id]="'white_logo'"
-            [name]="'white_logo'"
-            [preview]="whiteLogoPreview()"
-            buttonText="Upload White Logo"
-            emptyText="No White Logo"
-            (previewChange)="whiteLogoPreview.set($event)"
-            (valueChange)="settingForm.controls.white_logo.setValue($event)">
-          </app-upload-image>
-          </div>
-          <div class="upload-wrapper">
-          <app-upload-image
-            
-            [id]="'favicon'"
-            [name]="'favicon'"
-            [preview]="faviconPreview()"
-            buttonText="Upload Favicon"
-            emptyText="No Favicon"
-            (previewChange)="faviconPreview.set($event)"
-            (valueChange)="settingForm.controls.app_favicon.setValue($event)">
-          </app-upload-image>
-          </div>
-        </div>
+      <button
+        type="button"
+        (click)="setTab('coming-soon')"
+        class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold transition"
+        [ngClass]="activeTab() === 'coming-soon' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'">
+        <span>⏳</span> Maintenance / Coming Soon
+      </button>
+    </div>
 
+    <!-- Quick link to Tax & GST Rates -->
+    <a
+      routerLink="/admin/tax-management"
+      class="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/70 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">
+      <span>🧾</span> Tax &amp; GST Rates Dashboard →
+    </a>
+  </div>
+
+  <!-- MAIN CARD -->
+  <app-card title="System &amp; Platform Configuration" desc="Configure platform metadata, brand assets, homestay booking financials, and website policies.">
+
+    <!-- FEEDBACK MESSAGES -->
+    @if (errorMessage()) {
+      <div class="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+        {{ errorMessage() }}
       </div>
+    }
 
-      <!-- App Setting -->
-      <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md lg:col-span-2">
+    @if (successMessage()) {
+      <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs sm:text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300">
+        {{ successMessage() }}
+      </div>
+    }
 
-        <div class="mb-8 flex flex-col gap-4 border-b border-gray-100 pb-4 md:flex-row md:items-center md:justify-between">
+    <form [formGroup]="settingForm" (ngSubmit)="save()" class="space-y-6">
 
-          <div>
-            <h2 class="text-lg font-semibold text-gray-900">
-              App Settings
-            </h2>
-            <p class="mt-1 text-sm text-gray-500">
-              Update application configuration and preferences.
-            </p>
+      <!-- ========================================================= -->
+      <!-- TAB 1: GENERAL & BRAND -->
+      <!-- ========================================================= -->
+      @if (activeTab() === 'general') {
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+          <!-- BRANDING IMAGES COLUMN -->
+          <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-800 dark:bg-gray-900">
+            <div class="mb-5 border-b border-gray-100 pb-3 dark:border-gray-800">
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">Brand Assets</h3>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Logos and favicon for light &amp; dark themes.</p>
+            </div>
+
+            <div class="space-y-6">
+              <div>
+                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">Primary Brand Logo</label>
+                <div class="upload-wrapper">
+                  <app-upload-image
+                    [id]="'app_logo'"
+                    [name]="'app_logo'"
+                    [preview]="logoPreview()"
+                    buttonText="Upload Logo"
+                    emptyText="No Primary Logo"
+                    (previewChange)="logoPreview.set($event)"
+                    (valueChange)="settingForm.controls['app_logo'].setValue($event)">
+                  </app-upload-image>
+                </div>
+              </div>
+
+              <div>
+                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">White / Dark Mode Logo</label>
+                <div class="upload-wrapper">
+                  <app-upload-image
+                    [id]="'white_logo'"
+                    [name]="'white_logo'"
+                    [preview]="whiteLogoPreview()"
+                    buttonText="Upload White Logo"
+                    emptyText="No White Logo"
+                    (previewChange)="whiteLogoPreview.set($event)"
+                    (valueChange)="settingForm.controls['white_logo'].setValue($event)">
+                  </app-upload-image>
+                </div>
+              </div>
+
+              <div>
+                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">Browser Favicon (.ico / .png)</label>
+                <div class="upload-wrapper">
+                  <app-upload-image
+                    [id]="'app_favicon'"
+                    [name]="'app_favicon'"
+                    [preview]="faviconPreview()"
+                    buttonText="Upload Favicon"
+                    emptyText="No Favicon"
+                    (previewChange)="faviconPreview.set($event)"
+                    (valueChange)="settingForm.controls['app_favicon'].setValue($event)">
+                  </app-upload-image>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="flex gap-2">
+          <!-- GENERAL APP SETTINGS COLUMN -->
+          <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs lg:col-span-2 dark:border-gray-800 dark:bg-gray-900">
+            <div class="mb-5 border-b border-gray-100 pb-3 dark:border-gray-800">
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">Platform Preferences</h3>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Display name, currency symbols, and localization.</p>
+            </div>
 
-            <button
-              type="button"
-              (click)="reset()"
-              class="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
-              Reset
-            </button> 
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <!-- App Name -->
+              <div class="md:col-span-2">
+                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                  App Display Name <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  formControlName="app_name"
+                  placeholder="e.g. Tashi Homes"
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              </div>
 
-          <button
-              type="submit"
-              [disabled]="isSubmitting()"
-              class="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
-              {{ isSubmitting() ? 'Saving...' : 'Save Setting' }}
-            </button>
+              <!-- Default Currency -->
+              <div>
+                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                  Default Currency <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  formControlName="default_currency"
+                  placeholder="e.g. INR"
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 uppercase outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              </div>
 
+              <!-- Currency Symbol -->
+              <div>
+                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                  Currency Symbol <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  formControlName="currency_symbol"
+                  placeholder="e.g. ₹"
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              </div>
+
+              <!-- Timezone -->
+              <div>
+                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                  Timezone <span class="text-red-500">*</span>
+                </label>
+                <select
+                  formControlName="app_timezone"
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                  <option value="Asia/Kolkata">India Standard Time (IST - Asia/Kolkata)</option>
+                  <option value="UTC">Universal Coordinated Time (UTC)</option>
+                  <option value="America/New_York">Eastern Time (US/Canada)</option>
+                  <option value="Europe/London">London (GMT/BST)</option>
+                </select>
+              </div>
+
+              <!-- Date Format -->
+              <div>
+                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                  Date Format <span class="text-red-500">*</span>
+                </label>
+                <select
+                  formControlName="app_date_format"
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                  <option value="DD/MM/YYYY">DD/MM/YYYY (e.g. 06/09/2026)</option>
+                  <option value="MM/DD/YYYY">MM/DD/YYYY (e.g. 09/06/2026)</option>
+                  <option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2026-09-06)</option>
+                  <option value="DD MMM YYYY">DD MMM YYYY (e.g. 06 Sep 2026)</option>
+                  <option value="MMMM DD, YYYY">MMMM DD, YYYY (e.g. September 06, 2026)</option>
+                </select>
+              </div>
+
+              <!-- Time Format -->
+              <div>
+                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                  Time Format <span class="text-red-500">*</span>
+                </label>
+                <select
+                  formControlName="app_time_format"
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                  <option value="12h">12 Hours (12:00 PM / AM)</option>
+                  <option value="24h">24 Hours (14:00)</option>
+                </select>
+              </div>
+            </div>
           </div>
-
         </div>
+      }
 
-        <div>
-
-          <h3 class="mb-4 text-base font-semibold text-gray-900">
-            General
-          </h3>
+      <!-- ========================================================= -->
+      <!-- TAB 2: CONTACT & SUPPORT -->
+      <!-- ========================================================= -->
+      @if (activeTab() === 'contact') {
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-800 dark:bg-gray-900">
+          <div class="mb-5 border-b border-gray-100 pb-3 dark:border-gray-800">
+            <h3 class="text-base font-bold text-gray-900 dark:text-white">Contact &amp; Customer Support</h3>
+            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Helpline email, contact phone, and official registered address shown to guests.</p>
+          </div>
 
           <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-
-            <!-- App Name -->
+            <!-- Support Email -->
             <div>
-              <label for="app_name" class="mb-2 block text-sm font-medium text-gray-700">
-                App Name
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Support Email
               </label>
               <input
-                id="app_name"
+                type="email"
+                formControlName="contact_email"
+                placeholder="support@tashihomes.in"
+                class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            </div>
+
+            <!-- Support Phone -->
+            <div>
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Support Phone
+              </label>
+              <input
                 type="text"
-                formControlName="app_name"
-                placeholder="e.g. My Application"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                [class.border-red-400]="settingForm.controls.app_name.invalid && settingForm.controls.app_name.touched" />
-
-              <p
-                *ngIf="settingForm.controls.app_name.invalid && settingForm.controls.app_name.touched"
-                class="mt-1 text-sm text-red-500">
-                App Name is required.
-              </p>
+                formControlName="contact_phone"
+                placeholder="+91 9876543210"
+                class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
             </div>
 
-            <!-- Timezone -->
-            <div>
-              <label for="app_timezone" class="mb-2 block text-sm font-medium text-gray-700">
-                Timezone
+            <!-- Office Address -->
+            <div class="md:col-span-2">
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Office / Contact Address
               </label>
-              <select
-                id="app_timezone"
-                formControlName="app_timezone"
-                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                <option value="UTC">UTC</option>
-                <option value="Asia/Kolkata">India (IST)</option>
-                <option value="America/New_York">Eastern Time</option>
-              </select>
+              <textarea
+                formControlName="contact_address"
+                rows="3"
+                placeholder="MG Marg, Gangtok, Sikkim - 737101, India"
+                class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"></textarea>
             </div>
+          </div>
+        </div>
+      }
 
-            <!-- Date Format -->
+      <!-- ========================================================= -->
+      <!-- TAB 3: HOMESTAY & BOOKING FINANCIALS -->
+      <!-- ========================================================= -->
+      @if (activeTab() === 'financials') {
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-800 dark:bg-gray-900">
+          <div class="mb-5 flex flex-col justify-between gap-2 border-b border-gray-100 pb-3 sm:flex-row sm:items-center dark:border-gray-800">
             <div>
-              <label for="app_date_format" class="mb-2 block text-sm font-medium text-gray-700">
-                Date Format
-              </label>
-              <select
-                id="app_date_format"
-                formControlName="app_date_format"
-                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                <option value="DD/MM/YYYY">DD/MM/YYYY (e.g. 30/08/2026)</option>
-                <option value="MM/DD/YYYY">MM/DD/YYYY (e.g. 08/30/2026)</option>
-                <option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2026-08-30)</option>
-                <option value="DD-MM-YYYY">DD-MM-YYYY (e.g. 30-08-2026)</option>
-                <option value="DD.MM.YYYY">DD.MM.YYYY (e.g. 30.08.2026)</option>
-                <option value="DD MMM YYYY">DD MMM YYYY (e.g. 30 Aug 2026)</option>
-                <option value="MMM DD, YYYY">MMM DD, YYYY (e.g. Aug 30, 2026)</option>
-                <option value="MMMM DD, YYYY">MMMM DD, YYYY (e.g. August 30, 2026)</option>
-                <option value="D MMM, YYYY">D MMM, YYYY (e.g. 30 Aug, 2026)</option>
-              </select>
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">Homestay &amp; Booking Financials</h3>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Commission rates, service fees, check-in schedules, and stay boundaries.</p>
             </div>
-
-            <!-- Time Format -->
-            <div>
-              <label for="app_time_format" class="mb-2 block text-sm font-medium text-gray-700">
-                Time Format
-              </label>
-              <select
-                id="app_time_format"
-                formControlName="app_time_format"
-                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                <option value="12h">12 Hour (AM/PM)</option>
-                <option value="24h">24 Hour</option>
-              </select>
-            </div>
-
+            <a routerLink="/admin/tax-management" class="text-xs font-bold text-blue-600 hover:underline">
+              Manage GST Rates &amp; Taxes →
+            </a>
           </div>
 
+          <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+            <!-- Platform Commission -->
+            <div>
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Platform Commission (%)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                formControlName="default_commission_percentage"
+                placeholder="10.0"
+                class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              <p class="mt-1 text-[11px] text-gray-400">Default commission deducted from host payouts.</p>
+            </div>
+
+            <!-- Guest Service Fee -->
+            <div>
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Guest Service Fee (%)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                formControlName="service_fee_percentage"
+                placeholder="0.0"
+                class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              <p class="mt-1 text-[11px] text-gray-400">Optional fee charged to guest on checkout.</p>
+            </div>
+
+            <!-- Cancellation Grace Period -->
+            <div>
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Cancellation Grace Period (Hours)
+              </label>
+              <input
+                type="number"
+                min="0"
+                formControlName="cancellation_grace_period_hours"
+                placeholder="24"
+                class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              <p class="mt-1 text-[11px] text-gray-400">Hours before check-in for penalty-free refund.</p>
+            </div>
+
+            <!-- Standard Check-in Time -->
+            <div>
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Standard Check-in Time
+              </label>
+              <input
+                type="time"
+                formControlName="check_in_time"
+                class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            </div>
+
+            <!-- Standard Check-out Time -->
+            <div>
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Standard Check-out Time
+              </label>
+              <input
+                type="time"
+                formControlName="check_out_time"
+                class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            </div>
+
+            <!-- Stay Limits -->
+            <div>
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Min / Max Stay (Days)
+              </label>
+              <div class="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  formControlName="min_booking_days"
+                  placeholder="Min"
+                  class="w-1/2 rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                <span class="text-gray-400">-</span>
+                <input
+                  type="number"
+                  min="1"
+                  formControlName="max_booking_days"
+                  placeholder="Max"
+                  class="w-1/2 rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              </div>
+            </div>
+          </div>
         </div>
+      }
 
-        <div class="mt-8">
+      <!-- ========================================================= -->
+      <!-- TAB 4: SOCIAL & SEO -->
+      <!-- ========================================================= -->
+      @if (activeTab() === 'seo') {
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs space-y-6 dark:border-gray-800 dark:bg-gray-900">
+          <div class="border-b border-gray-100 pb-3 dark:border-gray-800">
+            <h3 class="text-base font-bold text-gray-900 dark:text-white">Social Media &amp; Search Engine Optimization (SEO)</h3>
+            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Social profile URLs, metadata tags for Google ranking, and legal policy pages.</p>
+          </div>
 
-          <h3 class="mb-4 text-base font-semibold text-gray-900">
-            Coming Soon
-          </h3>
+          <!-- Social Handles -->
+          <div>
+            <h4 class="mb-3 text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Social Media Links</h4>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <label class="mb-1 block text-xs text-gray-500">Facebook Page URL</label>
+                <input
+                  type="url"
+                  formControlName="facebook_url"
+                  placeholder="https://facebook.com/..."
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              </div>
+
+              <div>
+                <label class="mb-1 block text-xs text-gray-500">Instagram Profile URL</label>
+                <input
+                  type="url"
+                  formControlName="instagram_url"
+                  placeholder="https://instagram.com/..."
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              </div>
+
+              <div>
+                <label class="mb-1 block text-xs text-gray-500">Twitter / X URL</label>
+                <input
+                  type="url"
+                  formControlName="twitter_url"
+                  placeholder="https://x.com/..."
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              </div>
+            </div>
+          </div>
+
+          <!-- SEO Meta -->
+          <div class="border-t border-gray-100 pt-4 dark:border-gray-800">
+            <h4 class="mb-3 text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">SEO Meta Tags</h4>
+            <div class="space-y-4">
+              <div>
+                <label class="mb-1 block text-xs text-gray-500">Meta Title</label>
+                <input
+                  type="text"
+                  formControlName="meta_title"
+                  placeholder="Tashi Homes - Premium Homestays &amp; Stays"
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              </div>
+
+              <div>
+                <label class="mb-1 block text-xs text-gray-500">Meta Description</label>
+                <textarea
+                  formControlName="meta_description"
+                  rows="2"
+                  placeholder="Discover handpicked homestays and heritage retreats across Northeast India."
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"></textarea>
+              </div>
+
+              <div>
+                <label class="mb-1 block text-xs text-gray-500">Meta Keywords (Comma separated)</label>
+                <input
+                  type="text"
+                  formControlName="meta_keywords"
+                  placeholder="homestay, sikkim, gangtok, luxury stays"
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ========================================================= -->
+      <!-- TAB 5: COMING SOON / MAINTENANCE -->
+      <!-- ========================================================= -->
+      @if (activeTab() === 'coming-soon') {
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs space-y-5 dark:border-gray-800 dark:bg-gray-900">
+          <div class="border-b border-gray-100 pb-3 dark:border-gray-800">
+            <h3 class="text-base font-bold text-gray-900 dark:text-white">Maintenance &amp; Coming Soon Mode</h3>
+            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Put the public website into coming soon or scheduled launch mode.</p>
+          </div>
 
           <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-
-            <!-- Enable Coming Soon -->
+            <!-- Toggle switch -->
             <div class="flex items-center gap-3">
               <input
                 id="is_enabled_coming_soon"
                 type="checkbox"
                 formControlName="is_enabled_coming_soon"
-                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-              <label for="is_enabled_coming_soon" class="text-sm font-medium text-gray-700">
-                Enable Coming Soon Page
-              </label>
+                class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+              <div>
+                <label for="is_enabled_coming_soon" class="text-sm font-bold text-gray-900 dark:text-white cursor-pointer">
+                  Enable Coming Soon Splash Mode
+                </label>
+                <p class="text-xs text-gray-400">Public visitors will see the coming soon countdown page.</p>
+              </div>
             </div>
-            <div class="flex items-center gap-3">
-              <label for="launch_date" class="text-sm font-medium text-gray-700">
-                Launch Date
+
+            <!-- Launch Date -->
+            <div>
+              <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Official Launch Date
               </label>
               <input
-                id="launch_date"
                 type="date"
                 formControlName="launch_date"
-                placeholder="e.g. My Application"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                [class.border-red-400]="settingForm.controls.launch_date.invalid && settingForm.controls.launch_date.touched" />
-              
+                class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
             </div>
-            <!-- Coming Soon Message -->
+
+            <!-- Message -->
             <div class="md:col-span-2">
-              <label for="coming_soon_message" class="mb-2 block text-sm font-medium text-gray-700">
-                Coming Soon Message
+              <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Announcement Message
               </label>
               <textarea
-                id="coming_soon_message"
                 formControlName="coming_soon_message"
                 rows="3"
                 placeholder="Enter the message to display on the coming soon page"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></textarea>
+                class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"></textarea>
             </div>
 
-            <!-- Coming Soon Background Image -->
-            <div class="md:col-span-2">
-              <label class="mb-2 block text-sm font-medium text-gray-700">
-                Background Image
+            <!-- Background Image -->
+            <div>
+              <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Splash Background Image
               </label>
               <div class="upload-wrapper">
                 <app-upload-image
                   [id]="'coming_background_image'"
                   [name]="'coming_background_image'"
                   [preview]="comingBackgroundImagePreview()"
-                  buttonText="Upload Background Image"
-                  emptyText="No Background Image"
+                  buttonText="Upload Image"
+                  emptyText="No Background"
                   (previewChange)="comingBackgroundImagePreview.set($event)"
-                  (valueChange)="settingForm.controls.coming_background_image.setValue($event)">
+                  (valueChange)="settingForm.controls['coming_background_image'].setValue($event)">
                 </app-upload-image>
               </div>
             </div>
 
-            <!-- Coming Soon Video -->
-            <div class="md:col-span-2">
-              <label class="mb-2 block text-sm font-medium text-gray-700">
-                Coming Soon Video
+            <!-- Video -->
+            <div>
+              <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Background Video (MP4/WebM)
               </label>
               <div class="upload-wrapper">
                 <app-upload-image
@@ -250,18 +543,38 @@
                   buttonText="Upload Video"
                   emptyText="No Video"
                   (previewChange)="comingSoonVideoPreview.set($event)"
-                  (valueChange)="settingForm.controls.coming_soon_video.setValue($event)">
+                  (valueChange)="settingForm.controls['coming_soon_video'].setValue($event)">
                 </app-upload-image>
               </div>
             </div>
-
           </div>
-
         </div>
+      }
 
+      <!-- FORM SUBMISSION BAR -->
+      <div class="flex items-center justify-end gap-3 border-t border-gray-200 pt-5 dark:border-gray-800">
+        <button
+          type="button"
+          (click)="reset()"
+          class="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+          Reset Changes
+        </button>
+
+        <button
+          type="submit"
+          [disabled]="isSubmitting()"
+          class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition disabled:opacity-50">
+          @if (isSubmitting()) {
+            <svg class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Saving Settings...</span>
+          } @else {
+            <span>Save Settings 💾</span>
+          }
+        </button>
       </div>
 
-    </div>
-
-  </form>
-</app-card>
+    </form>
+  </app-card>
+</div>

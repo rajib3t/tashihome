@@ -147,7 +147,7 @@
             <div>
               <p class="text-xs text-ink/50">Total Amount</p>
               <p class="text-2xl font-display font-bold text-pine">
-                {{ property()?.currency ?? '₹' }}{{ (confirmedBooking()?.total_amount ?? getBaseTotal()) | number }}
+                {{ property()?.currency ?? '₹' }}{{ (confirmedBooking()?.total_amount ?? getTotalPayable()) | number:'1.2-2' }}
               </p>
             </div>
             <div class="flex items-center gap-3">
@@ -442,7 +442,7 @@
               } @else if (isAvailable() === false) {
                 <span>🚫 Room Blocked / Unavailable</span>
               } @else {
-                <span>Confirm &amp; Reserve ({{ property()?.currency ?? '₹' }}{{ getBaseTotal() | number }})</span>
+                <span>Confirm &amp; Reserve ({{ property()?.currency ?? '₹' }}{{ getTotalPayable() | number:'1.2-2' }})</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="transition-transform group-hover:translate-x-1">
                   <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
@@ -498,14 +498,15 @@
                 </div>
               }
 
+              <!-- Room Nights Subtotal -->
               <div class="flex justify-between">
                 <div>
                   <div class="flex items-baseline gap-1.5">
                     @if (hasDiscount()) {
-                      <span class="line-through text-xs text-ink/40">{{ property()?.currency ?? '₹' }}{{ getRegularPrice() | number }}</span>
+                      <span class="line-through text-xs text-ink/40">{{ property()?.currency ?? '₹' }}{{ getRegularPrice() | number:'1.2-2' }}</span>
                     }
                     <span class="font-semibold text-ink">
-                      {{ property()?.currency ?? '₹' }}{{ getRatePerNight() | number }}
+                      {{ property()?.currency ?? '₹' }}{{ getRatePerNight() | number:'1.2-2' }}
                     </span>
                     <span class="text-xs text-ink/60">× {{ calculateNights() }} night{{ calculateNights() > 1 ? 's' : '' }}</span>
                   </div>
@@ -514,31 +515,84 @@
                   }
                 </div>
                 <span class="font-medium text-ink">
-                  {{ property()?.currency ?? '₹' }}{{ getBaseTotal() | number }}
+                  {{ property()?.currency ?? '₹' }}{{ getRoomSubtotal() | number:'1.2-2' }}
                 </span>
               </div>
 
-              @if (getDepositAmount() > 0) {
-                <div class="flex justify-between text-xs text-ink/60">
-                  <span>Deposit Required</span>
-                  <span class="font-medium text-ink">{{ property()?.currency ?? '₹' }}{{ getDepositAmount() | number }}</span>
+              <!-- Discount if applicable -->
+              @if (getDiscountTotal() > 0) {
+                <div class="flex justify-between text-xs text-emerald-700">
+                  <span class="flex items-center gap-1">
+                    <span>Discount</span>
+                    <span class="text-[10px] bg-emerald-50 px-1.5 py-0.5 rounded-sm border border-emerald-200">Special Rate</span>
+                  </span>
+                  <span class="font-medium">− {{ property()?.currency ?? '₹' }}{{ getDiscountTotal() | number:'1.2-2' }}</span>
                 </div>
               }
 
-              <div class="flex justify-between text-xs text-ink/60">
-                <span>Service Fee &amp; Taxes</span>
-                <span class="text-emerald-700 font-medium">Included</span>
-              </div>
+              <!-- GST / Tax Breakdown (Setting Driven: Inclusive vs Exclusive) -->
+              @if (getTaxRate() > 0) {
+                <div class="space-y-1.5 pt-2 border-t border-dashed border-ink/10">
+                  <div class="flex justify-between text-xs text-ink/75">
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-medium text-ink">GST / Tax ({{ getTaxRate() }}% {{ getTaxName() }})</span>
+                      @if (isTaxInclusive()) {
+                        <span class="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-full border border-blue-200 font-medium">Included</span>
+                      }
+                    </div>
+                    @if (isTaxInclusive()) {
+                      <span class="text-ink/60 text-xs">Included in rate ({{ property()?.currency ?? '₹' }}{{ getTaxAmount() | number:'1.2-2' }})</span>
+                    } @else {
+                      <span class="font-bold text-ink">+ {{ property()?.currency ?? '₹' }}{{ getTaxAmount() | number:'1.2-2' }}</span>
+                    }
+                  </div>
+
+                  <!-- CGST & SGST Itemized Sub-rows -->
+                  @if (getCGSTAmount() !== undefined && getSGSTAmount() !== undefined) {
+                    <div class="pl-3 space-y-0.5 text-[11px] text-ink/55 font-mono">
+                      <div class="flex justify-between">
+                        <span>├ CGST ({{ getTaxRate() / 2 }}%):</span>
+                        <span>{{ property()?.currency ?? '₹' }}{{ getCGSTAmount() | number:'1.2-2' }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span>└ SGST ({{ getTaxRate() / 2 }}%):</span>
+                        <span>{{ property()?.currency ?? '₹' }}{{ getSGSTAmount() | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="flex justify-between text-xs text-ink/60">
+                  <span>Service Fee &amp; Taxes</span>
+                  <span class="text-emerald-700 font-medium">Included</span>
+                </div>
+              }
+
+              <!-- Deposit if applicable -->
+              @if (getDepositAmount() > 0) {
+                <div class="flex justify-between text-xs text-ink/60 pt-1 border-t border-dashed border-ink/10">
+                  <span>Deposit Required Today</span>
+                  <span class="font-medium text-ink">{{ property()?.currency ?? '₹' }}{{ getDepositAmount() | number:'1.2-2' }}</span>
+                </div>
+              }
             </div>
 
-            <!-- Total -->
+            <!-- Total Payable -->
             <div class="pt-4 flex items-baseline justify-between text-ink">
               <div>
                 <p class="text-sm font-semibold">Total Payable</p>
-                <p class="text-[11px] text-ink/50">Includes all local taxes</p>
+                @if (isTaxInclusive()) {
+                  <p class="text-[11px] text-emerald-700 font-medium flex items-center gap-1 mt-0.5">
+                    <span>✓</span> Includes all mandatory taxes &amp; local levies
+                  </p>
+                } @else {
+                  <p class="text-[11px] text-ink/60 font-medium flex items-center gap-1 mt-0.5">
+                    <span>✓</span> Room charges ({{ property()?.currency ?? '₹' }}{{ getRoomSubtotal() | number:'1.2-2' }}) + GST ({{ property()?.currency ?? '₹' }}{{ getTaxAmount() | number:'1.2-2' }})
+                  </p>
+                }
               </div>
               <p class="font-display text-3xl text-pine font-bold">
-                {{ property()?.currency ?? '₹' }}{{ getBaseTotal() | number }}
+                {{ property()?.currency ?? '₹' }}{{ getTotalPayable() | number:'1.2-2' }}
               </p>
             </div>
 

@@ -1,0 +1,688 @@
+<app-page-breadcrumb pageTitle="Tax &amp; GST Rates"></app-page-breadcrumb>
+
+<div class="space-y-6">
+
+  <!-- TOP STATS CARDS -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- Default Tax Rate -->
+    <div class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-gray-900">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Default Tax Rate</span>
+        <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+          ★ System Default
+        </span>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2">
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ defaultTaxItem() ? (defaultTaxItem()!.rate + '%') : '12.00%' }}
+        </p>
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+          ({{ defaultTaxItem()?.code || 'GST_12' }})
+        </span>
+      </div>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        {{ defaultTaxItem()?.name || 'Standard GST' }} · {{ defaultTaxItem()?.is_inclusive ? 'Inclusive' : 'Exclusive (Add-on)' }}
+      </p>
+    </div>
+
+    <!-- Active Tax Rules -->
+    <div class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-gray-900">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Active Tax Rules</span>
+        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-3">
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ activeTaxesCount() }} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">/ {{ taxes().length }} configured</span>
+        </p>
+      </div>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        Active in public booking calculation
+      </p>
+    </div>
+
+    <!-- Business GSTIN -->
+    <div class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-gray-900">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Business GSTIN</span>
+        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-300">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-3">
+        <p class="font-mono text-base font-bold text-gray-900 dark:text-white tracking-wide">
+          {{ primaryGSTIN() }}
+        </p>
+      </div>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        Registered for tax invoicing &amp; GST compliance
+      </p>
+    </div>
+
+    <!-- SAC Code -->
+    <div class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-gray-900">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">SAC / HSN Code</span>
+        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-300">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+          </svg>
+        </div>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2">
+        <p class="font-mono text-2xl font-bold text-gray-900 dark:text-white">
+          {{ primarySAC() }}
+        </p>
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">(Lodging &amp; Stay)</span>
+      </div>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        Hospitality accommodation services
+      </p>
+    </div>
+  </div>
+
+  <!-- MAIN CARD: FILTERS & TAX LIST TABLE -->
+  <app-card title="Tax &amp; GST Rules" desc="Configure Goods and Services Tax (GST) slabs, itemized invoice components, and default rates for homestay bookings.">
+
+    <!-- ACTION HEADER & FILTERS -->
+    <div class="mb-6 space-y-4">
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <!-- Search form -->
+        <form [formGroup]="filterForm" (ngSubmit)="onSearch()" class="flex flex-1 flex-wrap items-center gap-3">
+          <div class="relative min-w-[240px] flex-1">
+            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              formControlName="search"
+              placeholder="Search by Name, Code, GSTIN..."
+              class="w-full rounded-xl border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+          </div>
+
+          <!-- Status filter -->
+          <select
+            formControlName="status"
+            (change)="onSearch()"
+            class="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+            <option value="">Status: All</option>
+            <option value="active">Active Only</option>
+            <option value="inactive">Inactive Only</option>
+          </select>
+
+          <button
+            type="submit"
+            class="inline-flex items-center gap-1.5 rounded-xl bg-gray-100 px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+            Filter
+          </button>
+
+          <button
+            type="button"
+            (click)="onReset()"
+            class="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
+            Clear
+          </button>
+        </form>
+
+        <!-- Main CTA buttons -->
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            (click)="loadTaxes()"
+            title="Refresh List"
+            class="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white p-2 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+            <svg class="h-4 w-4" [class.animate-spin]="isLoading()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            (click)="openCreateModal()"
+            class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-blue-700">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add New Tax
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ERROR MESSAGE IF ANY -->
+    @if (errorMessage()) {
+      <div class="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- DATA TABLE -->
+    <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
+      <table class="w-full text-left text-sm text-gray-600 dark:text-gray-300">
+        <thead class="border-b border-gray-200 bg-gray-50/80 text-xs font-semibold uppercase tracking-wider text-gray-700 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-300">
+          <tr>
+            <th class="px-4 py-3.5">#</th>
+            <th class="px-4 py-3.5">Code</th>
+            <th class="px-4 py-3.5">Tax Name</th>
+            <th class="px-4 py-3.5">Rate (%)</th>
+            <th class="px-4 py-3.5">Type</th>
+            <th class="px-4 py-3.5">Inclusive?</th>
+            <th class="px-4 py-3.5">Default</th>
+            <th class="px-4 py-3.5">Breakdown</th>
+            <th class="px-4 py-3.5">Status</th>
+            <th class="px-4 py-3.5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+          @if (isLoading() && taxes().length === 0) {
+            <tr>
+              <td colspan="10" class="px-4 py-12 text-center text-gray-500">
+                <div class="flex items-center justify-center gap-2">
+                  <svg class="h-5 w-5 animate-spin text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Loading tax configurations...</span>
+                </div>
+              </td>
+            </tr>
+          } @else if (taxes().length === 0) {
+            <tr>
+              <td colspan="10" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                <p class="font-medium">No tax rules found.</p>
+                <p class="mt-1 text-xs text-gray-400">Click "Add New Tax" to create your first GST rate configuration.</p>
+              </td>
+            </tr>
+          } @else {
+            @for (tax of taxes(); track tax.id; let i = $index) {
+              <tr class="transition-colors hover:bg-gray-50/70 dark:hover:bg-gray-800/50">
+                <td class="px-4 py-3.5 text-xs text-gray-400 font-mono">{{ getSerialNumber(i) }}</td>
+                <td class="px-4 py-3.5 font-mono font-semibold text-gray-900 dark:text-white">
+                  <span class="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                    {{ tax.code }}
+                  </span>
+                </td>
+                <td class="px-4 py-3.5 font-medium text-gray-900 dark:text-white">
+                  <div>
+                    <span>{{ tax.name }}</span>
+                    @if (tax.description) {
+                      <p class="text-xs font-normal text-gray-400 truncate max-w-xs">{{ tax.description }}</p>
+                    }
+                  </div>
+                </td>
+                <td class="px-4 py-3.5 font-bold text-gray-900 dark:text-white">
+                  {{ tax.rate | number:'1.2-2' }}%
+                </td>
+                <td class="px-4 py-3.5 text-xs capitalize">
+                  {{ tax.tax_type || 'Percentage' }}
+                </td>
+                <td class="px-4 py-3.5">
+                  @if (tax.is_inclusive) {
+                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+                      Yes (Included)
+                    </span>
+                  } @else {
+                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                      No (Add-on)
+                    </span>
+                  }
+                </td>
+                <td class="px-4 py-3.5">
+                  @if (tax.is_default) {
+                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                      ★ Default
+                    </span>
+                  } @else {
+                    <span class="text-xs text-gray-400">—</span>
+                  }
+                </td>
+                <td class="px-4 py-3.5 text-xs text-gray-500">
+                  <span title="CGST / SGST Rate">
+                    CGST: {{ tax.cgst_rate ?? (tax.rate / 2) }}% · SGST: {{ tax.sgst_rate ?? (tax.rate / 2) }}%
+                  </span>
+                </td>
+                <td class="px-4 py-3.5">
+                  @if (tax.status === 'active') {
+                    <button
+                      type="button"
+                      (click)="openStatusModal(tax)"
+                      title="Click to toggle status"
+                      class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300">
+                      <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                      Active
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      (click)="openStatusModal(tax)"
+                      title="Click to toggle status"
+                      class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 transition hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300">
+                      <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                      Inactive
+                    </button>
+                  }
+                </td>
+                <td class="px-4 py-3.5 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button
+                      type="button"
+                      (click)="openEditModal(tax)"
+                      title="Edit Tax Rule"
+                      class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-blue-400">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="openStatusModal(tax)"
+                      title="Change Status"
+                      class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-amber-400">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="openDeleteModal(tax)"
+                      title="Delete Rule"
+                      class="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-red-400">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="mt-4">
+      <app-pagination
+        [meta]="meta"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)">
+      </app-pagination>
+    </div>
+
+  </app-card>
+</div>
+
+<!-- ========================================== -->
+<!-- CREATE / EDIT TAX MODAL -->
+<!-- ========================================== -->
+<app-modal
+  [isOpen]="isCreateModalOpen() || isEditModalOpen()"
+  [className]="'max-w-2xl'"
+  (close)="isCreateModalOpen() ? closeCreateModal() : closeEditModal()">
+
+  <div class="p-6">
+    <div class="flex items-center justify-between border-b border-gray-100 pb-4 dark:border-gray-800">
+      <div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+          {{ isCreateModalOpen() ? 'Create Tax / GST Rule' : 'Edit Tax / GST Rule' }}
+        </h3>
+        <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+          Configure GST slab details, compliance numbers, and itemized component breakdown.
+        </p>
+      </div>
+    </div>
+
+    <!-- Error banner inside modal -->
+    @if (modalErrorMessage()) {
+      <div class="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+        {{ modalErrorMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="taxForm" (ngSubmit)="isCreateModalOpen() ? onSubmitCreate() : onSubmitEdit()" class="mt-5 space-y-5">
+
+      <!-- Basic Tax Info -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <!-- Tax Name -->
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+            Tax Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="e.g. Standard GST 12%"
+            class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            [class.border-red-400]="taxForm.controls['name'].invalid && taxForm.controls['name'].touched" />
+          @if (taxForm.controls['name'].invalid && taxForm.controls['name'].touched) {
+            <p class="mt-1 text-xs text-red-500">Tax Name is required.</p>
+          }
+        </div>
+
+        <!-- Tax Code -->
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+            Tax Code <span class="text-red-500">*</span> <span class="text-[10px] text-gray-400">(e.g. GST_12)</span>
+          </label>
+          <input
+            type="text"
+            formControlName="code"
+            (input)="onCodeInput($event)"
+            placeholder="e.g. GST_12"
+            class="w-full font-mono rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 uppercase outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            [class.border-red-400]="taxForm.controls['code'].invalid && taxForm.controls['code'].touched" />
+          @if (taxForm.controls['code'].invalid && taxForm.controls['code'].touched) {
+            <p class="mt-1 text-xs text-red-500">Uppercase alphanumeric code is required.</p>
+          }
+        </div>
+
+        <!-- Tax Rate (%) -->
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+            Tax Rate (%) <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            max="100"
+            formControlName="rate"
+            (input)="onRateChange($any($event.target).value)"
+            placeholder="12.00"
+            class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            [class.border-red-400]="taxForm.controls['rate'].invalid && taxForm.controls['rate'].touched" />
+          @if (taxForm.controls['rate'].invalid && taxForm.controls['rate'].touched) {
+            <p class="mt-1 text-xs text-red-500">Valid rate between 0 and 100% is required.</p>
+          }
+        </div>
+
+        <!-- Tax Type -->
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+            Tax Type <span class="text-red-500">*</span>
+          </label>
+          <select
+            formControlName="tax_type"
+            class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+            <option value="percentage">Percentage (%)</option>
+            <option value="fixed">Fixed Amount</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Checkboxes -->
+      <div class="grid grid-cols-1 gap-3 rounded-xl border border-gray-100 bg-gray-50/70 p-3.5 sm:grid-cols-2 dark:border-gray-800 dark:bg-gray-800/40">
+        <label class="flex items-center gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            formControlName="is_inclusive"
+            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+          <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+            Price is inclusive of tax
+          </span>
+        </label>
+
+        <label class="flex items-center gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            formControlName="is_default"
+            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+          <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+            Set as system default tax rate
+          </span>
+        </label>
+      </div>
+
+      <!-- GST Compliance Section -->
+      <div class="rounded-xl border border-gray-200 p-4 space-y-3 dark:border-gray-800">
+        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+          <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span>GST Compliance Details (Optional)</span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label class="mb-1 block text-xs text-gray-600 dark:text-gray-400">Business GSTIN</label>
+            <input
+              type="text"
+              formControlName="gst_number"
+              placeholder="e.g. 27ABCDE1234F1Z5"
+              class="w-full font-mono rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 uppercase outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            @if (taxForm.controls['gst_number'].invalid && taxForm.controls['gst_number'].touched) {
+              <p class="mt-1 text-[11px] text-red-500">Must match GSTIN format (15 characters).</p>
+            }
+          </div>
+
+          <div>
+            <label class="mb-1 block text-xs text-gray-600 dark:text-gray-400">SAC / HSN Code</label>
+            <input
+              type="text"
+              formControlName="hsn_sac_code"
+              placeholder="996311"
+              class="w-full font-mono rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="mb-1 block text-xs text-gray-600 dark:text-gray-400">Registered Legal Business Name</label>
+            <input
+              type="text"
+              formControlName="legal_name"
+              placeholder="e.g. Tashi Homes Hospitality Private Limited"
+              class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="mb-1 block text-xs text-gray-600 dark:text-gray-400">Registered Tax Address</label>
+            <input
+              type="text"
+              formControlName="address"
+              placeholder="e.g. Plot 42, Green Valley Hills, Gangtok, Sikkim - 737101"
+              class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Component Breakdown Section -->
+      <div class="rounded-xl border border-gray-200 p-4 space-y-3 dark:border-gray-800">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+            <svg class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span>Component Breakdown (For Invoices)</span>
+          </div>
+          <span class="text-[11px] text-gray-400">Auto-split 50/50 CGST &amp; SGST</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="mb-1 block text-xs text-gray-600 dark:text-gray-400">CGST Rate (%)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              formControlName="cgst_rate"
+              class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-xs text-gray-600 dark:text-gray-400">SGST Rate (%)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              formControlName="sgst_rate"
+              class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-xs text-gray-600 dark:text-gray-400">IGST Rate (%)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              formControlName="igst_rate"
+              class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Description & Status -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+            Description / Notes
+          </label>
+          <input
+            type="text"
+            formControlName="description"
+            placeholder="e.g. Standard GST applied on homestay stays under ₹7,500/night"
+            class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+        </div>
+
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+            Status
+          </label>
+          <select
+            formControlName="status"
+            class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-4 dark:border-gray-800">
+        <button
+          type="button"
+          (click)="isCreateModalOpen() ? closeCreateModal() : closeEditModal()"
+          class="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          [disabled]="isSubmitting()"
+          class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50">
+          @if (isSubmitting()) {
+            <svg class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Saving...</span>
+          } @else {
+            <span>{{ isCreateModalOpen() ? 'Save Tax Rule' : 'Update Tax Rule' }}</span>
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+</app-modal>
+
+<!-- ========================================== -->
+<!-- TOGGLE STATUS CONFIRMATION MODAL -->
+<!-- ========================================== -->
+<app-modal
+  [isOpen]="isStatusModalOpen()"
+  [className]="'max-w-md'"
+  (close)="closeStatusModal()">
+
+  <div class="p-6 text-center">
+    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+      <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+
+    <h3 class="mt-4 text-base font-bold text-gray-900 dark:text-white">
+      {{ taxToToggleStatus()?.status === 'active' ? 'Deactivate Tax Rule?' : 'Activate Tax Rule?' }}
+    </h3>
+    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+      Are you sure you want to {{ taxToToggleStatus()?.status === 'active' ? 'disable' : 'enable' }}
+      <strong>{{ taxToToggleStatus()?.name }}</strong> ({{ taxToToggleStatus()?.code }})?
+    </p>
+
+    @if (modalErrorMessage()) {
+      <div class="mt-3 text-xs text-red-500">{{ modalErrorMessage() }}</div>
+    }
+
+    <div class="mt-6 flex justify-center gap-3">
+      <button
+        type="button"
+        (click)="closeStatusModal()"
+        class="rounded-xl border border-gray-300 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+        Cancel
+      </button>
+      <button
+        type="button"
+        (click)="confirmStatusToggle()"
+        [disabled]="isSubmitting()"
+        class="rounded-xl bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+        {{ isSubmitting() ? 'Updating...' : 'Confirm' }}
+      </button>
+    </div>
+  </div>
+</app-modal>
+
+<!-- ========================================== -->
+<!-- DELETE CONFIRMATION MODAL -->
+<!-- ========================================== -->
+<app-modal
+  [isOpen]="isDeleteModalOpen()"
+  [className]="'max-w-md'"
+  (close)="closeDeleteModal()">
+
+  <div class="p-6 text-center">
+    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-400">
+      <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+    </div>
+
+    <h3 class="mt-4 text-base font-bold text-gray-900 dark:text-white">
+      Delete Tax Rule?
+    </h3>
+    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+      Are you sure you want to delete <strong>{{ taxToDelete()?.name }}</strong>? This action will deactivate or remove this tax configuration.
+    </p>
+
+    @if (modalErrorMessage()) {
+      <div class="mt-3 text-xs text-red-500">{{ modalErrorMessage() }}</div>
+    }
+
+    <div class="mt-6 flex justify-center gap-3">
+      <button
+        type="button"
+        (click)="closeDeleteModal()"
+        class="rounded-xl border border-gray-300 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+        Cancel
+      </button>
+      <button
+        type="button"
+        (click)="confirmDelete(false)"
+        [disabled]="isSubmitting()"
+        class="rounded-xl bg-red-600 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50">
+        {{ isSubmitting() ? 'Deleting...' : 'Delete Tax Rule' }}
+      </button>
+    </div>
+  </div>
+</app-modal>
+

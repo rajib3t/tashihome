@@ -31,6 +31,8 @@ import {
 import { environment } from '../../../../environments/environment';
 import { RazorpayService } from '../../../services/booking/razorpay-service';
 import { SettingsService } from '../../../services/settings/settings-service';
+import { TaxService } from '../../../services/tax/tax-service';
+import { TaxItem, calculateBookingPrice, PriceCalculationResult } from '../../../services/tax/tax.model';
 import {
   generateIdempotencyKey,
   generatePaymentVerificationKey,
@@ -63,8 +65,12 @@ export class Checkout implements OnInit {
   public readonly bookingService = inject(BookingService);
   public readonly authService = inject(AuthService);
   public readonly userService = inject(UserService);
+  public readonly taxService = inject(TaxService);
   private readonly razorpayService = inject(RazorpayService);
-  private readonly settingsService = inject(SettingsService);
+  public readonly settingsService = inject(SettingsService);
+
+  // Tax State
+  public defaultTax = signal<TaxItem | null>(null);
 
   // Idempotency Keys (Persisted across retries, reset on form changes)
   private bookingIdempotencyKey: string = generateIdempotencyKey();
@@ -144,6 +150,15 @@ export class Checkout implements OnInit {
   }
 
   ngOnInit(): void {
+    // Load active default tax
+    this.taxService.loadDefaultTax()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (tax) => {
+          if (tax) this.defaultTax.set(tax);
+        },
+      });
+
     // If authenticated, also ensure latest full profile (with phone) is fetched
     if (isPlatformBrowser(this.platformId) && this.authService.isAuthenticated()) {
       this.userService.getProfile()
@@ -437,13 +452,74 @@ export class Checkout implements OnInit {
     return this.pricingDetails().standardPrice;
   }
 
+  public readonly priceCalculation = computed<PriceCalculationResult>(() => {
+    const rate = this.getRatePerNight();
+    const nights = this.calculateNights();
+    const rooms = this.numRooms();
+    const regularPrice = this.getRegularPrice();
+    const hasDisc = this.hasDiscount() && regularPrice > rate;
+    const baseNightly = hasDisc ? regularPrice : rate;
+    const discountAmount = hasDisc ? (regularPrice - rate) * nights * rooms : 0;
+    const activeTax = this.defaultTax() || this.taxService.defaultTax();
+
+    return calculateBookingPrice(
+      baseNightly,
+      nights,
+      rooms,
+      discountAmount,
+      activeTax
+        ? {
+            name: activeTax.name,
+            code: activeTax.code,
+            rate: activeTax.rate,
+            isInclusive: activeTax.is_inclusive,
+            cgstRate: activeTax.cgst_rate,
+            sgstRate: activeTax.sgst_rate,
+            igstRate: activeTax.igst_rate,
+          }
+        : undefined
+    );
+  });
+
+  public getRoomSubtotal(): number {
+    return this.priceCalculation().baseAmount;
+  }
+
+  public getDiscountTotal(): number {
+    return this.priceCalculation().discountAmount;
+  }
+
+  public getTaxAmount(): number {
+    return this.priceCalculation().taxAmount;
+  }
+
+  public getCGSTAmount(): number | undefined {
+    return this.priceCalculation().cgstAmount;
+  }
+
+  public getSGSTAmount(): number | undefined {
+    return this.priceCalculation().sgstAmount;
+  }
+
+  public isTaxInclusive(): boolean {
+    return this.priceCalculation().isInclusive;
+  }
+
+  public getTaxRate(): number {
+    return this.priceCalculation().taxRate;
+  }
+
+  public getTaxName(): string {
+    const activeTax = this.defaultTax() || this.taxService.defaultTax();
+    return activeTax?.name || 'Standard GST';
+  }
+
+  public getTotalPayable(): number {
+    return this.priceCalculation().totalAmount;
+  }
+
   public getBaseTotal(): number {
-    const quote = this.availabilityResult()?.quote;
-    const selectedRt = this.selectedRoomType();
-    if (quote?.total_amount && (quote.room_type_id === selectedRt?.id || !quote.room_type_id)) {
-      return quote.total_amount;
-    }
-    return this.getRatePerNight() * this.calculateNights() * this.numRooms();
+    return this.priceCalculation().totalAmount;
   }
 
   public getDepositAmount(): number {

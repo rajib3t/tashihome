@@ -203,6 +203,31 @@ export const routes: Routes = [
                         title: 'Application Setting',
                     },
                     {
+                        path: 'settings',
+                        redirectTo: 'setting',
+                        pathMatch: 'full',
+                    },
+                    {
+                        path: 'settings/taxes',
+                        loadComponent: () => import('./pages/authenticate/admin/tax-management/tax-management').then((m) => m.TaxManagement),
+                        title: 'Tax & GST Rates',
+                    },
+                    {
+                        path: 'setting/taxes',
+                        redirectTo: 'settings/taxes',
+                        pathMatch: 'full',
+                    },
+                    {
+                        path: 'tax-management',
+                        loadComponent: () => import('./pages/authenticate/admin/tax-management/tax-management').then((m) => m.TaxManagement),
+                        title: 'Tax & GST Management',
+                    },
+                    {
+                        path: 'taxes',
+                        redirectTo: 'tax-management',
+                        pathMatch: 'full',
+                    },
+                    {
                         path: 'country-management',
                         loadComponent: () => import('./pages/authenticate/admin/country-management/country-management').then((m) => m.CountryManagement),
                         title: 'Country Management',

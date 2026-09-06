@@ -2,12 +2,10 @@ import { computed, inject, Service, signal } from '@angular/core';
 import { ApiService } from '../api/api-service';
 import { catchError, finalize, map, Observable, tap, throwError } from 'rxjs';
 import { ApiResponse } from '../api/api-response.model';
-import { SettingItem } from './setting.model';
+import { SettingItem, SystemSettingsMap, toSettingsMap } from './setting.model';
 import { environment } from '../../../environments/environment';
 
-
-
-const normalizeSettingsPayload = (value: unknown) => {
+const normalizeSettingsPayload = (value: unknown): Record<string, string | null> => {
   if (!value) {
     return {} as Record<string, string | null>;
   }
@@ -111,118 +109,134 @@ export function applyDateTimeFormat(
 
 @Service()
 export class SettingsService {
-    public readonly apiService = inject(ApiService);
-    public readonly assetUrl = environment.assetUrl;
+  public readonly apiService = inject(ApiService);
+  public readonly assetUrl = environment.assetUrl;
 
-    #settingsData = signal<Record<string, string | null>>({});
-    #publicSettingsRequest: Observable<unknown> | null = null;
-    settingsData = computed(() => this.#settingsData());
-    dateFormat = computed(() => this.#settingsData()['app_date_format'] || 'DD/MM/YYYY');
-    timeFormat = computed(() => this.#settingsData()['app_time_format'] || '12h');
-    timezone = computed(() => this.#settingsData()['app_timezone'] || 'Asia/Kolkata');
+  #settingsData = signal<Record<string, string | null>>({});
+  #publicSettingsRequest: Observable<unknown> | null = null;
+  
+  settingsData = computed(() => this.#settingsData());
+  settingsMap = computed<SystemSettingsMap>(() => toSettingsMap(this.#settingsData()));
 
-    public formatDate(dateInput: string | Date | number | null | undefined, customFormat?: string): string {
-      const pattern = customFormat || this.#settingsData()['app_date_format'] || 'DD/MM/YYYY';
-      return applyDateFormat(dateInput, pattern);
+  appName = computed(() => this.#settingsData()['app_name'] || environment.applicationName || 'Tashi Homes');
+  dateFormat = computed(() => this.#settingsData()['app_date_format'] || 'DD/MM/YYYY');
+  timeFormat = computed(() => this.#settingsData()['app_time_format'] || '12h');
+  timezone = computed(() => this.#settingsData()['app_timezone'] || 'Asia/Kolkata');
+  defaultCurrency = computed(() => this.#settingsData()['default_currency'] || 'INR');
+  currencySymbol = computed(() => this.#settingsData()['currency_symbol'] || '₹');
+  contactEmail = computed(() => this.#settingsData()['contact_email'] || 'support@tashihomes.in');
+  contactPhone = computed(() => this.#settingsData()['contact_phone'] || '+91 9876543210');
+  contactAddress = computed(() => this.#settingsData()['contact_address'] || '');
+  checkInTime = computed(() => this.#settingsData()['check_in_time'] || '14:00');
+  checkOutTime = computed(() => this.#settingsData()['check_out_time'] || '11:00');
+  commissionPercentage = computed(() => Number(this.#settingsData()['default_commission_percentage'] ?? 10));
+  serviceFeePercentage = computed(() => Number(this.#settingsData()['service_fee_percentage'] ?? 0));
+
+  public formatDate(dateInput: string | Date | number | null | undefined, customFormat?: string): string {
+    const pattern = customFormat || this.#settingsData()['app_date_format'] || 'DD/MM/YYYY';
+    return applyDateFormat(dateInput, pattern);
+  }
+
+  public formatDateTime(
+    dateInput: string | Date | number | null | undefined,
+    customDateFormat?: string,
+    customTimeFormat?: string
+  ): string {
+    const datePattern = customDateFormat || this.#settingsData()['app_date_format'] || 'DD/MM/YYYY';
+    const timePattern = customTimeFormat || this.#settingsData()['app_time_format'] || '12h';
+    return applyDateTimeFormat(dateInput, datePattern, timePattern);
+  }
+
+  setSettingsData(data: any) {
+    const normalized = normalizeSettingsPayload(data);
+    this.#settingsData.set(normalized);
+    this.syncFavicon(normalized['app_favicon']);
+  }
+
+  private syncFavicon(faviconUrl: string | null | undefined) {
+    if (typeof document === 'undefined') {
+      return;
     }
 
-    public formatDateTime(
-      dateInput: string | Date | number | null | undefined,
-      customDateFormat?: string,
-      customTimeFormat?: string
-    ): string {
-      const datePattern = customDateFormat || this.#settingsData()['app_date_format'] || 'DD/MM/YYYY';
-      const timePattern = customTimeFormat || this.#settingsData()['app_time_format'] || '12h';
-      return applyDateTimeFormat(dateInput, datePattern, timePattern);
+    const resolvedHref = faviconUrl?.trim()
+      ? this.resolveAssetUrl(faviconUrl.trim())
+      : '/favicon.ico';
+
+    let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
     }
 
-    setSettingsData(data: any) {
-      const normalized = normalizeSettingsPayload(data);
-      this.#settingsData.set(normalized);
-      this.syncFavicon(normalized['app_favicon']);
+    link.type = 'image/x-icon';
+    link.href = resolvedHref;
+  }
+
+  public resolveAssetUrl(url: string): string {
+    if (!url) {
+      return '';
     }
 
-    private syncFavicon(faviconUrl: string | null | undefined) {
-      if (typeof document === 'undefined') {
-        return;
-      }
-
-      
-      const resolvedHref = faviconUrl?.trim()
-        ? this.resolveAssetUrl(faviconUrl.trim())
-        : '/favicon.ico';
-
-      let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.head.appendChild(link);
-      }
-
-      link.type = 'image/x-icon';
-      link.href = resolvedHref;
-      
+    if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) {
+      return url;
     }
 
-    public resolveAssetUrl(url: string): string {
-      if (!url) {
-        return '';
-      }
+    const base = environment.assetUrl
+      ? (environment.assetUrl.endsWith('/') ? environment.assetUrl : `${environment.assetUrl}/`)
+      : '';
+    const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+    return `${base}${cleanPath}`;
+  }
 
-      if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) {
-        console.log('Favicon URL is absolute or data/blob URL, using as is:', url);
-        return url;
-      }
+  saveSettings(formData: FormData): Observable<ApiResponse<SettingItem[]>> {
+    return this.apiService.protectedUpload<ApiResponse<SettingItem[]>>('admin/settings/', formData, {
+      headers: {
+        Accept: 'application/json',
+      },
+    }).pipe(
+      map(response => response.data),
+      catchError(this.apiService.passthroughError)
+    );
+  }
 
-      const base = environment.assetUrl
-        ? (environment.assetUrl.endsWith('/') ? environment.assetUrl : `${environment.assetUrl}/`)
-        : '';
-      const cleanPath = url.startsWith('/') ? url.substring(1) : url;
-      return `${base}${cleanPath}`;
-    }
+  getSettings(): Observable<any> {
+    return this.apiService.protectedGet<any>('/admin/settings/fetch').pipe(
+      map(response => response.data),
+      tap(data => this.setSettingsData(data.data)),
+      catchError(this.apiService.passthroughError)
+    );
+  }
 
-    saveSettings(formData: FormData): Observable<ApiResponse<SettingItem[]>> {
-      return this.apiService.protectedUpload<ApiResponse<SettingItem[]>>('admin/settings/', formData, {
-        headers: {
-          Accept: 'application/json',
-        },
-      }).pipe(
-        map(response => response.data),
-        catchError(this.apiService.passthroughError)
-      );
-    }
-
-
-    getSettings(): Observable<any> {
-      return this.apiService.protectedGet<any>('/admin/settings/fetch').pipe(
-        map(response => response.data),
-        tap(data => this.setSettingsData(data.data)),
-       catchError(this.apiService.passthroughError)
-      );
-    }
-
-    loadPublicSettings(): Observable<any> {
-      if (this.#publicSettingsRequest) {
-        return this.#publicSettingsRequest;
-      }
-
-      this.#publicSettingsRequest = this.apiService.get<any>('/admin/settings/fetch').pipe(
-        map(response => response.data),
-        tap(data => this.setSettingsData(data?.data ?? data)),
-        catchError((error) => {
-          this.setSettingsData({});
-          return throwError(() => error);
-        }),
-        finalize(() => {
-          this.#publicSettingsRequest = null;
-        })
-      );
-
+  loadPublicSettings(): Observable<any> {
+    if (this.#publicSettingsRequest) {
       return this.#publicSettingsRequest;
     }
 
-    getPublicSettings(): Observable<any> {
-      return this.loadPublicSettings();
-    }
+    this.#publicSettingsRequest = this.apiService.get<any>('/public/settings/').pipe(
+      map(response => response.data),
+      tap(data => this.setSettingsData(data?.data ?? data)),
+      catchError(() => {
+        // Fallback to admin/settings/fetch if public/settings route differs
+        return this.apiService.get<any>('/admin/settings/fetch').pipe(
+          map(response => response.data),
+          tap(data => this.setSettingsData(data?.data ?? data)),
+          catchError((error) => {
+            this.setSettingsData({});
+            return throwError(() => error);
+          })
+        );
+      }),
+      finalize(() => {
+        this.#publicSettingsRequest = null;
+      })
+    );
+
+    return this.#publicSettingsRequest;
+  }
+
+  getPublicSettings(): Observable<any> {
+    return this.loadPublicSettings();
+  }
 }
