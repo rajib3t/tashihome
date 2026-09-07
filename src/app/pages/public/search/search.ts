@@ -142,6 +142,8 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
       .subscribe((params) => {
         const search = params['search'] || params['q'] || '';
         const cityId = params['city_id'] || params['city'] || '';
+        const citySlug = params['city_slug'] || '';
+        const locationSlug = params['location_slug'] || '';
         const checkIn = params['check_in_date'] || '';
         const checkOut = params['check_out_date'] || '';
         const adultsVal = params['adults'] ? parseInt(params['adults'], 10) : (params['guests'] ? parseInt(params['guests'], 10) : 2);
@@ -157,7 +159,7 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
         const view = params['view'] === 'list' ? 'list' : 'grid';
 
         this.searchKeyword.set(search);
-        this.selectedCityId.set(cityId);
+        this.selectedCityId.set(cityId || citySlug);
         this.checkInDate.set(checkIn);
         this.checkOutDate.set(checkOut);
         this.adults.set(isNaN(adultsVal) ? 2 : adultsVal);
@@ -227,12 +229,15 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
       this.checkInDate() && this.checkOutDate() && this.checkOutDate() > this.checkInDate()
     );
 
+    const selectedCity = this.cities().find(c => c.id === this.selectedCityId() || c.slug === this.selectedCityId());
+
     const searchParams: PropertyPublicSearchParams = {
       page: this.meta().page,
       size: this.meta().size,
       search: this.searchKeyword().trim() || undefined,
       q: this.searchKeyword().trim() || undefined,
-      city_id: this.selectedCityId() || undefined,
+      city_id: selectedCity ? selectedCity.id : (this.selectedCityId() || undefined),
+      city_slug: selectedCity?.slug || undefined,
       check_in_date: hasValidDates ? this.checkInDate() : undefined,
       check_out_date: hasValidDates ? this.checkOutDate() : undefined,
       guests: totalGuests > 0 ? totalGuests : undefined,
@@ -243,6 +248,8 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
       max_price: this.maxPrice() !== null ? this.maxPrice()! : undefined,
       type: (this.selectedType() as PropertyType) || undefined,
       is_featured: this.isFeaturedOnly() ? true : undefined,
+      sort_by: sortBy,
+      sort_order: sortOrder,
       sortBy,
       sortOrder,
     };

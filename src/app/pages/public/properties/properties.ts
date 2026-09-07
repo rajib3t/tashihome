@@ -11,11 +11,12 @@ import {
   NgZone,
   inject,
   signal,
+  computed,
 } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Subject, of } from 'rxjs';
+import { Subject, of, combineLatest } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -30,10 +31,16 @@ import {
 } from '../../../services/property/property.model';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery } from '../../../services/city/city-model';
+import { LocationService } from '../../../services/location/location-service';
+import { LocationResponse, LocationQuery } from '../../../services/location/location-model';
 import { SettingsService } from '../../../services/settings/settings-service';
 import { PaginationMeta } from '../../../services/api/api-response.model';
 import { environment } from '../../../../environments/environment';
-import { computed } from '@angular/core';
+
+export interface BreadcrumbItem {
+  label: string;
+  url?: string;
+}
 
 @Component({
   selector: 'app-properties',
@@ -44,10 +51,12 @@ import { computed } from '@angular/core';
 })
 export class Properties implements OnInit, AfterViewInit, OnDestroy {
   public readonly assetUrl = environment.assetUrl;
-  public  readonly appName = environment.applicationName;
+  public readonly appName = environment.applicationName;
+
   // Services
   public readonly propertyService = inject(PropertyService);
   public readonly cityService = inject(CityService);
+  public readonly locationService = inject(LocationService);
   public readonly settingsService = inject(SettingsService);
   public readonly router = inject(Router);
   public readonly route = inject(ActivatedRoute);
@@ -60,21 +69,32 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
   public readonly currencySymbol = computed(() => this.settingsService.currencySymbol() || '₹');
   public properties = signal<Partial<PropertyData>[]>([]);
   public cities = signal<City[]>([]);
+  public locations = signal<LocationResponse[]>([]);
   public loading = signal<boolean>(true);
   public error = signal<string | null>(null);
   public viewMode = signal<'grid' | 'list'>('grid');
 
-  // Filter & Search Signals
+  // Route Path & Filter Signals
+  public citySlug = signal<string>('');
+  public locationSlug = signal<string>('');
   public searchKeyword = signal<string>('');
   public selectedCityId = signal<string>('');
+  public selectedLocationId = signal<string>('');
   public selectedType = signal<string>('');
   public isFeaturedOnly = signal<boolean>(false);
+  public minPrice = signal<number | null>(null);
+  public maxPrice = signal<number | null>(null);
   public sortOption = signal<string>('default');
+
+  // Price Modal / Temp input states
+  public showPriceModal = signal<boolean>(false);
+  public tempMinPrice = signal<number | null>(null);
+  public tempMaxPrice = signal<number | null>(null);
 
   // Pagination State
   public meta = signal<PaginationMeta>({
     page: 1,
-    size: 9,
+    size: 12,
     total: 0,
   });
   public readonly pageSizeOptions: number[] = [6, 9, 12, 18, 24];
@@ -82,6 +102,82 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
   // Constants
   public readonly propertyTypes = PROPERTY_TYPES;
   public readonly propertyTypeLabels = PROPERTY_TYPES_LABELS;
+
+  // Computed Helpers
+  public currentCity = computed(() => {
+    const slug = this.citySlug();
+    const id = this.selectedCityId();
+    if (slug) {
+      return this.cities().find((c) => c.slug === slug || c.name?.toLowerCase().replace(/\s+/g, '-') === slug) || null;
+    }
+    if (id) {
+      return this.cities().find((c) => c.id === id) || null;
+    }
+    return null;
+  });
+
+  public currentLocation = computed(() => {
+    const slug = this.locationSlug();
+    const id = this.selectedLocationId();
+    if (slug) {
+      return this.locations().find((l) => l.slug === slug || l.name?.toLowerCase().replace(/\s+/g, '-') === slug) || null;
+    }
+    if (id) {
+      return this.locations().find((l) => l.id === id) || null;
+    }
+    return null;
+  });
+
+  public breadcrumbs = computed<BreadcrumbItem[]>(() => {
+    const crumbs: BreadcrumbItem[] = [
+      { label: 'Home', url: '/' },
+      { label: 'Stays', url: '/stays' },
+    ];
+
+    const cSlug = this.citySlug();
+    const cName = this.currentCity()?.name || this.formatSlugToName(cSlug);
+
+    if (cSlug) {
+      crumbs.push({
+        label: cName,
+        url: this.locationSlug() ? `/stays/${cSlug}` : undefined,
+      });
+    }
+
+    const lSlug = this.locationSlug();
+    const lName = this.currentLocation()?.name || this.formatSlugToName(lSlug);
+    if (lSlug && cSlug) {
+      crumbs.push({
+        label: lName,
+      });
+    }
+
+    return crumbs;
+  });
+
+  public pageHeroTitle = computed(() => {
+    const lSlug = this.locationSlug();
+    const cSlug = this.citySlug();
+    const lName = this.currentLocation()?.name || this.formatSlugToName(lSlug);
+    const cName = this.currentCity()?.name || this.formatSlugToName(cSlug);
+
+    if (lSlug && cSlug) {
+      return `Homestays in ${lName}, ${cName}`;
+    }
+    if (cSlug) {
+      return `Homestays in ${cName}`;
+    }
+    return 'Discover genuine homestays in the hills.';
+  });
+
+  public pageHeroSubtitle = computed(() => {
+    const cSlug = this.citySlug();
+    const cName = this.currentCity()?.name || this.formatSlugToName(cSlug);
+    if (cSlug) {
+      return `Hand-picked verified stays and family cottages nestled in ${cName}. Visited on foot, hearth-warmed, and hosted with authentic Himalayan warmth.`;
+    }
+    return 'Hand-picked, visited on foot, and run by Himalayan families. Find quiet cottages, tea-estate porches, and hearth-warmed rooms across North Bengal & Sikkim.';
+  });
 
   // RxJS Search subject for debouncing
   private searchSubject = new Subject<string>();
@@ -106,26 +202,58 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
     // Load available cities for filter
     this.loadCities();
 
-    // Listen to query parameters from URL for deep linking & bookmarking
-    this.route.queryParams
+    // Listen to route params & query params combined
+    combineLatest([this.route.paramMap, this.route.queryParams])
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
-        const query = params['search'] || '';
-        const city = params['city'] || '';
-        const type = params['type'] || '';
-        const featured = params['featured'] === 'true';
-        const sort = params['sort'] || 'default';
-        const page = parseInt(params['page'], 10) || 1;
-        const size = parseInt(params['size'], 10) || 9;
-        const view = params['view'] === 'list' ? 'list' : 'grid';
+      .subscribe(([paramMap, queryParams]) => {
+        const pathCitySlug = paramMap.get('city_slug') || '';
+        const pathLocationSlug = paramMap.get('location_slug') || '';
 
+        const query = queryParams['search'] || '';
+        const cityParam = queryParams['city'] || queryParams['city_id'] || '';
+        const citySlugParam = queryParams['city_slug'] || pathCitySlug;
+        const locationParam = queryParams['location'] || queryParams['location_id'] || '';
+        const locationSlugParam = queryParams['location_slug'] || pathLocationSlug;
+        const type = queryParams['type'] || '';
+        const featured = queryParams['featured'] === 'true' || queryParams['is_featured'] === 'true';
+        const minP = queryParams['min_price'] ? Number(queryParams['min_price']) : null;
+        const maxP = queryParams['max_price'] ? Number(queryParams['max_price']) : null;
+        const sort = queryParams['sort'] || queryParams['sort_by'] || 'default';
+        const sortOrd = queryParams['sort_order'];
+        const page = parseInt(queryParams['page'], 10) || 1;
+        const size = parseInt(queryParams['size'], 10) || 12;
+        const view = queryParams['view'] === 'list' ? 'list' : 'grid';
+
+        this.citySlug.set(citySlugParam);
+        this.locationSlug.set(locationSlugParam);
         this.searchKeyword.set(query);
-        this.selectedCityId.set(city);
+        this.selectedCityId.set(cityParam);
+        this.selectedLocationId.set(locationParam);
         this.selectedType.set(type);
         this.isFeaturedOnly.set(featured);
-        this.sortOption.set(sort);
+        this.minPrice.set(minP);
+        this.maxPrice.set(maxP);
+        this.tempMinPrice.set(minP);
+        this.tempMaxPrice.set(maxP);
+
+        // Normalize sort option
+        if (sort === 'price' && sortOrd === 'asc') {
+          this.sortOption.set('price_asc');
+        } else if (sort === 'price' && sortOrd === 'desc') {
+          this.sortOption.set('price_desc');
+        } else if (sort === 'name' && sortOrd === 'asc') {
+          this.sortOption.set('name_asc');
+        } else if (sort === 'name' && sortOrd === 'desc') {
+          this.sortOption.set('name_desc');
+        } else {
+          this.sortOption.set(sort);
+        }
+
         this.viewMode.set(view);
         this.meta.set({ page, size, total: this.meta().total });
+
+        // Load locations for current city
+        this.loadLocationsForCity(citySlugParam, cityParam);
 
         this.fetchProperties();
       });
@@ -157,18 +285,33 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
     if (this.searchKeyword().trim()) {
       search.name = this.searchKeyword().trim();
     }
-    if (this.selectedCityId()) {
-      search.city_id = this.selectedCityId();
+    if (this.citySlug().trim()) {
+      search.city_slug = this.citySlug().trim();
     }
-    if (this.selectedType()) {
-      search.type = this.selectedType() as PropertyType;
+    if (this.selectedCityId().trim()) {
+      search.city_id = this.selectedCityId().trim();
+    }
+    if (this.locationSlug().trim()) {
+      search.location_slug = this.locationSlug().trim();
+    }
+    if (this.selectedLocationId().trim()) {
+      search.location_id = this.selectedLocationId().trim();
+    }
+    if (this.selectedType().trim()) {
+      search.type = this.selectedType().trim() as PropertyType;
     }
     if (this.isFeaturedOnly()) {
       search.is_featured = true;
     }
+    if (this.minPrice() !== null && this.minPrice() !== undefined) {
+      search.min_price = this.minPrice()!;
+    }
+    if (this.maxPrice() !== null && this.maxPrice() !== undefined) {
+      search.max_price = this.maxPrice()!;
+    }
 
-    let sortBy: string | undefined;
-    let sortOrder: 'asc' | 'desc' | undefined;
+    let sortBy: 'created_at' | 'name' | 'price' | string = 'created_at';
+    let sortOrder: 'asc' | 'desc' = 'desc';
 
     switch (this.sortOption()) {
       case 'price_asc':
@@ -187,15 +330,26 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
         sortBy = 'name';
         sortOrder = 'desc';
         break;
+      case 'created_at_desc':
+      case 'default':
       default:
-        sortBy = undefined;
-        sortOrder = undefined;
+        sortBy = 'created_at';
+        sortOrder = 'desc';
     }
 
     const query: PropertyQuery = {
       page: this.meta().page,
       size: this.meta().size,
       search,
+      city_slug: this.citySlug().trim() || undefined,
+      location_slug: this.locationSlug().trim() || undefined,
+      city_id: this.selectedCityId().trim() || undefined,
+      location_id: this.selectedLocationId().trim() || undefined,
+      min_price: this.minPrice() !== null ? this.minPrice()! : undefined,
+      max_price: this.maxPrice() !== null ? this.maxPrice()! : undefined,
+      is_featured: this.isFeaturedOnly() ? true : undefined,
+      sort_by: sortBy,
+      sort_order: sortOrder,
       sortBy,
       sortOrder,
     };
@@ -226,7 +380,7 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
           this.meta.set({
             total: res.meta.total,
             page: res.meta.page,
-            size: res.meta.size,
+            size: res.meta.size ?? this.meta().size,
           });
         }
         this.cdr.markForCheck();
@@ -257,6 +411,36 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
+  private loadLocationsForCity(citySlug?: string, cityId?: string): void {
+    if (!citySlug && !cityId) {
+      this.locations.set([]);
+      return;
+    }
+
+    const query: LocationQuery = {
+      page: 1,
+      size: 50,
+      city_slug: citySlug || undefined,
+      city_id: cityId || undefined,
+      sortBy: 'name',
+      sortOrder: 'asc',
+    };
+
+    this.locationService.public
+      .getLocations(query)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError((err) => {
+          console.warn('Could not load public locations:', err);
+          return of({ data: [], total: 0, page: 1, size: 50, status: '', message: '' });
+        })
+      )
+      .subscribe((res) => {
+        this.locations.set(res?.data || []);
+        this.cdr.markForCheck();
+      });
+  }
+
   // ================= USER INTERACTIONS =================
 
   public onSearchInput(event: Event): void {
@@ -270,10 +454,70 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
     this.updateUrlAndFetch();
   }
 
-  public onCitySelect(cityId: string): void {
-    this.selectedCityId.set(cityId);
+  public onCitySelect(cityIdOrSlug: string): void {
+    if (!cityIdOrSlug) {
+      this.citySlug.set('');
+      this.locationSlug.set('');
+      this.selectedCityId.set('');
+      this.selectedLocationId.set('');
+      this.meta.update((m) => ({ ...m, page: 1 }));
+      this.router.navigate(['/stays'], {
+        queryParams: this.buildCurrentQueryParams(),
+      });
+      return;
+    }
+
+    const city = this.cities().find((c) => c.id === cityIdOrSlug || c.slug === cityIdOrSlug);
+    const targetSlug = city?.slug || city?.name?.toLowerCase().replace(/\s+/g, '-') || cityIdOrSlug;
+
+    this.citySlug.set(targetSlug);
+    this.locationSlug.set('');
+    this.selectedCityId.set(city?.id || '');
+    this.selectedLocationId.set('');
     this.meta.update((m) => ({ ...m, page: 1 }));
-    this.updateUrlAndFetch();
+
+    this.router.navigate(['/stays', targetSlug], {
+      queryParams: this.buildCurrentQueryParams(),
+    });
+  }
+
+  public onLocationSelect(locationIdOrSlug: string): void {
+    const cSlug = this.citySlug();
+    if (!locationIdOrSlug) {
+      this.locationSlug.set('');
+      this.selectedLocationId.set('');
+      this.meta.update((m) => ({ ...m, page: 1 }));
+      if (cSlug) {
+        this.router.navigate(['/stays', cSlug], {
+          queryParams: this.buildCurrentQueryParams(),
+        });
+      } else {
+        this.router.navigate(['/stays'], {
+          queryParams: this.buildCurrentQueryParams(),
+        });
+      }
+      return;
+    }
+
+    const loc = this.locations().find((l) => l.id === locationIdOrSlug || l.slug === locationIdOrSlug);
+    const targetLocSlug = loc?.slug || loc?.name?.toLowerCase().replace(/\s+/g, '-') || locationIdOrSlug;
+
+    this.locationSlug.set(targetLocSlug);
+    this.selectedLocationId.set(loc?.id || '');
+    this.meta.update((m) => ({ ...m, page: 1 }));
+
+    if (cSlug) {
+      this.router.navigate(['/stays', cSlug, targetLocSlug], {
+        queryParams: this.buildCurrentQueryParams(),
+      });
+    } else {
+      this.router.navigate(['/stays'], {
+        queryParams: {
+          ...this.buildCurrentQueryParams(),
+          location_slug: targetLocSlug,
+        },
+      });
+    }
   }
 
   public onTypeSelect(type: string): void {
@@ -299,37 +543,93 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
     this.updateUrlAndFetch();
   }
 
-  public resetAllFilters(): void {
-    this.searchKeyword.set('');
-    this.selectedCityId.set('');
-    this.selectedType.set('');
-    this.isFeaturedOnly.set(false);
-    this.sortOption.set('default');
+  public applyPriceFilter(): void {
+    this.minPrice.set(this.tempMinPrice());
+    this.maxPrice.set(this.tempMaxPrice());
+    this.showPriceModal.set(false);
     this.meta.update((m) => ({ ...m, page: 1 }));
     this.updateUrlAndFetch();
+  }
+
+  public clearPriceFilter(): void {
+    this.minPrice.set(null);
+    this.maxPrice.set(null);
+    this.tempMinPrice.set(null);
+    this.tempMaxPrice.set(null);
+    this.showPriceModal.set(false);
+    this.meta.update((m) => ({ ...m, page: 1 }));
+    this.updateUrlAndFetch();
+  }
+
+  public resetAllFilters(): void {
+    this.searchKeyword.set('');
+    this.citySlug.set('');
+    this.locationSlug.set('');
+    this.selectedCityId.set('');
+    this.selectedLocationId.set('');
+    this.selectedType.set('');
+    this.isFeaturedOnly.set(false);
+    this.minPrice.set(null);
+    this.maxPrice.set(null);
+    this.tempMinPrice.set(null);
+    this.tempMaxPrice.set(null);
+    this.sortOption.set('default');
+    this.meta.update((m) => ({ ...m, page: 1 }));
+
+    this.router.navigate(['/stays']);
   }
 
   public hasActiveFilters(): boolean {
     return Boolean(
       this.searchKeyword().trim() ||
+        this.citySlug() ||
         this.selectedCityId() ||
+        this.locationSlug() ||
+        this.selectedLocationId() ||
         this.selectedType() ||
         this.isFeaturedOnly() ||
+        this.minPrice() !== null ||
+        this.maxPrice() !== null ||
         this.sortOption() !== 'default'
     );
   }
 
   public getSelectedCityName(): string {
+    if (this.currentCity()?.name) return this.currentCity()!.name;
     const cityId = this.selectedCityId();
-    if (!cityId) return '';
-    const found = this.cities().find((c) => c.id === cityId);
-    return found ? found.name : '';
+    if (cityId) {
+      const found = this.cities().find((c) => c.id === cityId);
+      if (found) return found.name;
+    }
+    const cSlug = this.citySlug();
+    if (cSlug) return this.formatSlugToName(cSlug);
+    return '';
+  }
+
+  public getSelectedLocationName(): string {
+    if (this.currentLocation()?.name) return this.currentLocation()!.name;
+    const locId = this.selectedLocationId();
+    if (locId) {
+      const found = this.locations().find((l) => l.id === locId);
+      if (found) return found.name;
+    }
+    const lSlug = this.locationSlug();
+    if (lSlug) return this.formatSlugToName(lSlug);
+    return '';
   }
 
   public getSelectedTypeLabel(): string {
     const type = this.selectedType();
     if (!type) return '';
     return this.propertyTypeLabels[type] || type;
+  }
+
+  public formatSlugToName(slug: string): string {
+    if (!slug) return '';
+    return slug
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   // ================= PAGINATION =================
@@ -411,14 +711,11 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private updateUrlAndFetch(): void {
+  private buildCurrentQueryParams(): Record<string, any> {
     const queryParams: Record<string, any> = {};
 
     if (this.searchKeyword().trim()) {
       queryParams['search'] = this.searchKeyword().trim();
-    }
-    if (this.selectedCityId()) {
-      queryParams['city'] = this.selectedCityId();
     }
     if (this.selectedType()) {
       queryParams['type'] = this.selectedType();
@@ -426,18 +723,30 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
     if (this.isFeaturedOnly()) {
       queryParams['featured'] = true;
     }
+    if (this.minPrice() !== null && this.minPrice() !== undefined) {
+      queryParams['min_price'] = this.minPrice();
+    }
+    if (this.maxPrice() !== null && this.maxPrice() !== undefined) {
+      queryParams['max_price'] = this.maxPrice();
+    }
     if (this.sortOption() !== 'default') {
       queryParams['sort'] = this.sortOption();
     }
     if (this.meta().page > 1) {
       queryParams['page'] = this.meta().page;
     }
-    if (this.meta().size !== 9) {
+    if (this.meta().size !== 12) {
       queryParams['size'] = this.meta().size;
     }
     if (this.viewMode() !== 'grid') {
       queryParams['view'] = this.viewMode();
     }
+
+    return queryParams;
+  }
+
+  private updateUrlAndFetch(): void {
+    const queryParams = this.buildCurrentQueryParams();
 
     this.router.navigate([], {
       relativeTo: this.route,

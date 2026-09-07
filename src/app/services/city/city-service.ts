@@ -96,18 +96,22 @@ export class CityService {
       };
 
       const name = search.name?.trim();
+      const slug = search.slug?.trim();
       const country_id = search.country_id?.trim();
       const status = search.status?.trim();
       const is_featured = search.is_featured;
 
       if (name) queryParams['name'] = name;
+      if (slug) queryParams['slug'] = slug;
       if (is_featured !== undefined) queryParams['is_featured'] = is_featured;
       if (country_id) queryParams['country_id'] = country_id;
       if (status) queryParams['status'] = status;
       if (params.sortBy?.trim()) queryParams['sortBy'] = params.sortBy.trim();
       if (params.sortOrder) queryParams['sortOrder'] = params.sortOrder;
 
-      return this.apiService.get<PaginatedResponse<City>>('/public/cities/', { params: queryParams }).pipe(
+      return this.apiService.get<PaginatedResponse<City>>('/cities', { params: queryParams }).pipe(
+        catchError(() => this.apiService.get<PaginatedResponse<City>>('/public/cities/', { params: queryParams })),
+        catchError(() => this.apiService.get<PaginatedResponse<City>>('/public/cities', { params: queryParams })),
         map((response) => response.data),
         catchError(this.apiService.passthroughError)
       );

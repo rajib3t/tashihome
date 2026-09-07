@@ -80,6 +80,31 @@ export const routes: Routes = [
                 title: 'Stays',
             },
             {
+                path: 'stays/:city_slug',
+                loadComponent: () => import('./pages/public/properties/properties').then((m) => m.Properties),
+                title: 'Stays',
+            },
+            {
+                path: 'stays/:city_slug/:location_slug',
+                loadComponent: () => import('./pages/public/properties/properties').then((m) => m.Properties),
+                title: 'Stays',
+            },
+            {
+                path: 'homestays',
+                loadComponent: () => import('./pages/public/properties/properties').then((m) => m.Properties),
+                title: 'Homestays',
+            },
+            {
+                path: 'homestays/:city_slug',
+                loadComponent: () => import('./pages/public/properties/properties').then((m) => m.Properties),
+                title: 'Homestays',
+            },
+            {
+                path: 'homestays/:city_slug/:location_slug',
+                loadComponent: () => import('./pages/public/properties/properties').then((m) => m.Properties),
+                title: 'Homestays',
+            },
+            {
                 path: 'experiences',
                 loadComponent: () => import('./pages/public/experiences/experiences').then((m) => m.Experiences),
                 title: 'Himalayan Experiences & Guest Stories | Tashi Homes',
@@ -97,11 +122,16 @@ export const routes: Routes = [
 
             {
                 path: 'stay',
-                redirectTo: '',
+                redirectTo: 'stays',
                 pathMatch: 'full',
             },
             {
                 path: 'stay/:slug',
+                loadComponent: () => import('./pages/public/properties/property/property').then((m) => m.Property),
+                title: 'Property Detail',
+            },
+            {
+                path: 'homestay/:slug',
                 loadComponent: () => import('./pages/public/properties/property/property').then((m) => m.Property),
                 title: 'Property Detail',
             },
@@ -117,6 +147,11 @@ export const routes: Routes = [
             },
             {
                 path: 'stay/:slug/checkout',
+                loadComponent: () => import('./pages/public/checkout/checkout').then((m) => m.Checkout),
+                title: 'Checkout & Reserve',
+            },
+            {
+                path: 'homestay/:slug/checkout',
                 loadComponent: () => import('./pages/public/checkout/checkout').then((m) => m.Checkout),
                 title: 'Checkout & Reserve',
             },

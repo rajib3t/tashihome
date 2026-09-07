@@ -14,6 +14,12 @@
             style="background: linear-gradient(160deg,#3E4E37,#55694A 55%,#8AA07D)"></div>
           <div class="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-black/15"></div>
           <span
+            *ngIf="item.is_featured"
+            class="absolute top-3 left-3 bg-ochre text-cloud text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 z-10">
+            ★ FEATURED
+          </span>
+          <span
+            *ngIf="!item.is_featured"
             class="absolute top-3 left-3 stamp stamp-pulse text-cloud text-[10px] font-semibold px-3 py-1 bg-black/30 backdrop-blur-sm">
             HOST VERIFIED
           </span>

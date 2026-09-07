@@ -457,9 +457,15 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.goToSearch();
   }
 
-  public onCityCardClick(cityId?: string): void {
-    if (!cityId) return;
-    this.router.navigate(['/search'], { queryParams: { city_id: cityId } });
+  public onCityCardClick(cityIdOrSlug?: string): void {
+    if (!cityIdOrSlug) return;
+    const city = this.cities().find((c) => c.id === cityIdOrSlug || c.slug === cityIdOrSlug);
+    const slug = city?.slug || cityIdOrSlug;
+    if (slug) {
+      this.router.navigate(['/stays', slug]);
+    } else {
+      this.router.navigate(['/stays'], { queryParams: { city_id: cityIdOrSlug } });
+    }
   }
 
   private loadStats(): void {

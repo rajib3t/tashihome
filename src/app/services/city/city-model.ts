@@ -12,6 +12,7 @@ export interface CityRequest {
 
 export interface City {
   name: string;
+  slug?: string;
   country?: Country;
   image_url: string;
   is_featured: boolean | null;
@@ -23,6 +24,7 @@ export interface City {
 
 export interface CitySearch {
   name?: string;
+  slug?: string;
   country_id?: string;
   status?: string;
   is_featured?: boolean | string;

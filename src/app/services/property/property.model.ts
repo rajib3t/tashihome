@@ -172,17 +172,34 @@ export interface PropertySearch {
   type?: PropertyType | string;
   city?: string;
   city_id?: string;
+  city_slug?: string;
   location?: string;
   location_id?: string;
+  location_slug?: string;
+  country?: string;
+  country_id?: string;
+  country_slug?: string;
+  min_price?: number | string;
+  max_price?: number | string;
   status?: PropertyStatus;
   is_featured?: boolean;
 }
-
 
 export interface PropertyQuery {
   page?: number;
   size?: number;
   search?: PropertySearch;
+  city_slug?: string;
+  location_slug?: string;
+  country_slug?: string;
+  city_id?: string;
+  location_id?: string;
+  country_id?: string;
+  min_price?: number | string;
+  max_price?: number | string;
+  is_featured?: boolean;
+  sort_by?: 'created_at' | 'name' | 'price' | string;
+  sort_order?: 'asc' | 'desc';
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
@@ -191,6 +208,9 @@ export interface PropertyPublicSearchParams {
   search?: string;
   q?: string;
   region?: string;
+  city_slug?: string;
+  location_slug?: string;
+  country_slug?: string;
   city_name?: string;
   city?: string;
   city_id?: string;
@@ -210,15 +230,17 @@ export interface PropertyPublicSearchParams {
   max_price?: number | string;
   type?: PropertyType | string;
   is_featured?: boolean;
+  amenities?: string[] | string;
+  facilities?: string[] | string;
+  room_types?: string[] | string;
+  property_categories?: string[] | string;
+  sort_by?: 'created_at' | 'name' | 'price' | string;
+  sort_order?: 'asc' | 'desc';
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   page?: number;
   size?: number;
 }
-
-
-
-
 
 export interface PropertyAsset {
   id: string;
@@ -245,6 +267,51 @@ export interface RatingSummary {
   average_rating: number;
   total_reviews: number;
   rating_distribution?: RatingDistribution | Record<string, number>;
+}
+
+export interface LocationNested {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface CityNested {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface PublicPropertyItem {
+  id: string;
+  name: string;
+  slug: string;
+  type?: string;
+  price_per_night: number;
+  sale_per_night?: number | null;
+  currency?: string;
+  address?: string;
+  is_featured: boolean;
+  feature_image?: PropertyAsset | null;
+  city?: CityNested | null;
+  location?: LocationNested | null;
+  rating_summary?: RatingSummary | null;
+  average_rating?: number;
+  total_reviews?: number;
+}
+
+export interface PublicPropertyListResponse {
+  success: boolean;
+  message: string;
+  data: PublicPropertyItem[];
+  meta: {
+    page: number;
+    page_size?: number;
+    size?: number;
+    total: number;
+    total_pages?: number;
+    has_next?: boolean;
+    has_prev?: boolean;
+  };
 }
 
 export interface PropertyData {
@@ -290,11 +357,13 @@ export interface Vendor {
 export interface Location {
   id: string;
   name: string;
+  slug?: string;
 }
 
 export interface City {
   id: string;
   name: string;
+  slug?: string;
 }
 
 export interface RoomType {

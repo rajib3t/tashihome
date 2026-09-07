@@ -83,5 +83,34 @@ export class LocationService {
     },
   }
   // ================= PUBLIC APIs =================
-  
+  public readonly public = {
+    getLocations: (params: LocationQuery = {}): Observable<PaginatedResponse<LocationResponse>> => {
+      const search = params.search ?? {};
+      const queryParams: Record<string, string | number | boolean> = {
+        page: params.page ?? 1,
+        size: params.size ?? 50,
+      };
+
+      const name = search.name?.trim();
+      const slug = search.slug?.trim();
+      const city_id = (params.city_id ?? search.city_id)?.trim();
+      const city_slug = (params.city_slug ?? search.city_slug)?.trim();
+      const status = search.status?.trim();
+
+      if (name) queryParams['name'] = name;
+      if (slug) queryParams['slug'] = slug;
+      if (city_id) queryParams['city_id'] = city_id;
+      if (city_slug) queryParams['city_slug'] = city_slug;
+      if (status) queryParams['status'] = status;
+      if (params.sortBy?.trim()) queryParams['sortBy'] = params.sortBy.trim();
+      if (params.sortOrder) queryParams['sortOrder'] = params.sortOrder;
+
+      return this.apiService.get<PaginatedResponse<LocationResponse>>('/locations', { params: queryParams }).pipe(
+        catchError(() => this.apiService.get<PaginatedResponse<LocationResponse>>('/public/locations/', { params: queryParams })),
+        catchError(() => this.apiService.get<PaginatedResponse<LocationResponse>>('/public/locations', { params: queryParams })),
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+  };
 }

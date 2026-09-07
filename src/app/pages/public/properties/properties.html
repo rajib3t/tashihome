@@ -1,6 +1,6 @@
 <!-- ============ STAYS HERO & SEARCH HEADER ============ -->
 <section
-  class="relative bg-pine text-cloud overflow-hidden pt-32 pb-24 md:pt-40 md:pb-32 motion-safe:[&_.mist-anim]:block"
+  class="relative bg-pine text-cloud overflow-hidden pt-32 pb-24 md:pt-36 md:pb-28 motion-safe:[&_.mist-anim]:block"
   style="background: url('/images/listings-bg.webp') center/cover no-repeat;"
 >
   <!-- Deep atmospheric gradient overlays -->
@@ -13,25 +13,31 @@
     aria-hidden="true"
   ></canvas>
 
-  <!-- Ambient glowing backdrop orbs (motion paused for prefers-reduced-motion via .animate-mist-a/b in global CSS) -->
+  <!-- Ambient glowing backdrop orbs -->
   <div class="pointer-events-none absolute -top-24 right-0 w-[42rem] h-[42rem] bg-moss/20 rounded-full blur-[130px] motion-safe:animate-mist-a" aria-hidden="true"></div>
   <div class="pointer-events-none absolute bottom-0 left-0 w-[34rem] h-[34rem] bg-ochre/15 rounded-full blur-[130px] motion-safe:animate-mist-b" aria-hidden="true"></div>
 
   <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10">
     <div class="max-w-3xl">
-      <!-- Breadcrumb / Badge Pill -->
-      <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-6 reveal">
-        <span class="w-2 h-2 rounded-full bg-ochre motion-safe:animate-pulse" aria-hidden="true"></span>
-        <p class="text-mist text-xs m-0">{{ appName }} Register · Eastern Himalaya</p>
-      </div>
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex items-center gap-2 text-xs text-cloud/75 mb-6 flex-wrap reveal" aria-label="Breadcrumb">
+        @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
+          @if (!last && crumb.url) {
+            <a [routerLink]="crumb.url" class="hover:text-ochre transition-colors underline underline-offset-2">{{ crumb.label }}</a>
+            <span class="text-cloud/40">/</span>
+          } @else {
+            <span class="text-cloud font-semibold">{{ crumb.label }}</span>
+          }
+        }
+      </nav>
 
       <!-- Main Headline -->
       <h1 class="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight reveal">
-        Discover genuine homestays in the hills.
+        {{ pageHeroTitle() }}
       </h1>
 
       <p class="mt-6 text-cloud/85 text-base sm:text-lg md:text-xl font-light leading-relaxed reveal">
-        Hand-picked, visited on foot, and run by Himalayan families. Find quiet cottages, tea-estate porches, and hearth-warmed rooms across North Bengal &amp; Sikkim.
+        {{ pageHeroSubtitle() }}
       </p>
     </div>
 
@@ -42,7 +48,7 @@
         <form class="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-start" (submit)="$event.preventDefault()">
 
           <!-- Keyword / Search Input -->
-          <div class="md:col-span-4 relative">
+          <div class="md:col-span-3 relative">
             <label for="search-input" class="block text-xs font-semibold text-ink/60 dark:text-cloud/60 mb-1.5">
               Search homestay
             </label>
@@ -57,7 +63,7 @@
                 type="text"
                 [value]="searchKeyword()"
                 (input)="onSearchInput($event)"
-                placeholder="Homestay name, village, or host..."
+                placeholder="Name or keyword..."
                 class="w-full pl-10 pr-9 py-2.5 bg-cloud/80 dark:bg-black/20 border border-ink/15 dark:border-cloud/15 rounded-xl text-sm focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-2 focus:ring-ochre focus:border-ochre transition-all text-ink dark:text-cloud placeholder:text-ink/40 dark:placeholder:text-cloud/40"
               />
               @if (searchKeyword()) {
@@ -76,7 +82,7 @@
           <!-- Destination / City Dropdown -->
           <div class="md:col-span-3">
             <label for="city-select" class="block text-xs font-semibold text-ink/60 dark:text-cloud/60 mb-1.5">
-              Destination / region
+              Destination / City
             </label>
             <div class="relative">
               <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-moss shrink-0 pointer-events-none" aria-hidden="true">
@@ -87,13 +93,13 @@
               </span>
               <select
                 id="city-select"
-                [value]="selectedCityId()"
+                [value]="citySlug() || selectedCityId()"
                 (change)="onCitySelect($any($event.target).value)"
                 class="w-full pl-10 pr-8 py-2.5 bg-cloud/80 dark:bg-black/20 border border-ink/15 dark:border-cloud/15 rounded-xl text-sm focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-2 focus:ring-ochre focus:border-ochre transition-all text-ink dark:text-cloud cursor-pointer appearance-none"
               >
-                <option value="">All North Bengal &amp; Hills</option>
+                <option value="">All Destinations</option>
                 @for (city of cities(); track city.id) {
-                  <option [value]="city.id">{{ city.name }}</option>
+                  <option [value]="city.slug || city.id">{{ city.name }}</option>
                 }
               </select>
               <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ink/40 dark:text-cloud/40 text-xs" aria-hidden="true">
@@ -103,7 +109,7 @@
           </div>
 
           <!-- Property Type Dropdown -->
-          <div class="md:col-span-3">
+          <div class="md:col-span-2">
             <label for="type-select" class="block text-xs font-semibold text-ink/60 dark:text-cloud/60 mb-1.5">
               Property type
             </label>
@@ -119,7 +125,7 @@
                 (change)="onTypeSelect($any($event.target).value)"
                 class="w-full pl-10 pr-8 py-2.5 bg-cloud/80 dark:bg-black/20 border border-ink/15 dark:border-cloud/15 rounded-xl text-sm focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-2 focus:ring-ochre focus:border-ochre transition-all text-ink dark:text-cloud cursor-pointer appearance-none"
               >
-                <option value="">All types of stays</option>
+                <option value="">All types</option>
                 @for (t of propertyTypes; track t) {
                   <option [value]="t">{{ propertyTypeLabels[t] || t }}</option>
                 }
@@ -128,6 +134,77 @@
                 ▼
               </span>
             </div>
+          </div>
+
+          <!-- Price Filter Trigger -->
+          <div class="md:col-span-2 relative">
+            <label class="block text-xs font-semibold text-ink/60 dark:text-cloud/60 mb-1.5">
+              Price per night
+            </label>
+            <button
+              type="button"
+              (click)="showPriceModal.set(!showPriceModal())"
+              class="w-full py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all bg-cloud/80 dark:bg-black/20 text-ink dark:text-cloud border-ink/15 dark:border-cloud/15 hover:bg-white dark:hover:bg-black/40 cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-ochre"
+            >
+              <span class="truncate">
+                @if (minPrice() !== null || maxPrice() !== null) {
+                  {{ currencySymbol() }}{{ minPrice() || 0 }}–{{ maxPrice() ? currencySymbol() + maxPrice() : 'Any' }}
+                } @else {
+                  Any price
+                }
+              </span>
+              <span class="text-xs text-ink/40 dark:text-cloud/40 ml-1">▼</span>
+            </button>
+
+            <!-- Price Dropdown Popover -->
+            @if (showPriceModal()) {
+              <div class="absolute left-0 sm:right-0 top-full mt-2 w-72 bg-white dark:bg-pine text-ink dark:text-cloud border border-ink/15 dark:border-cloud/15 rounded-2xl shadow-2xl p-4 z-50">
+                <p class="text-xs font-bold text-ink dark:text-cloud mb-3">Filter by Nightly Rate</p>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                  <div>
+                    <label class="block text-[11px] text-ink/60 dark:text-cloud/60 mb-1">Min ({{ currencySymbol() }})</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="500"
+                      [value]="tempMinPrice() ?? ''"
+                      (input)="tempMinPrice.set($any($event.target).value ? +$any($event.target).value : null)"
+                      placeholder="0"
+                      class="w-full px-3 py-1.5 text-xs bg-cloud dark:bg-black/30 border border-ink/15 dark:border-cloud/15 rounded-lg text-ink dark:text-cloud focus:ring-2 focus:ring-ochre focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] text-ink/60 dark:text-cloud/60 mb-1">Max ({{ currencySymbol() }})</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="500"
+                      [value]="tempMaxPrice() ?? ''"
+                      (input)="tempMaxPrice.set($any($event.target).value ? +$any($event.target).value : null)"
+                      placeholder="Any"
+                      class="w-full px-3 py-1.5 text-xs bg-cloud dark:bg-black/30 border border-ink/15 dark:border-cloud/15 rounded-lg text-ink dark:text-cloud focus:ring-2 focus:ring-ochre focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-2 pt-2 border-t border-ink/10 dark:border-cloud/10">
+                  <button
+                    type="button"
+                    (click)="clearPriceFilter()"
+                    class="text-xs text-ink/60 hover:text-ink dark:text-cloud/60 dark:hover:text-cloud underline cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    (click)="applyPriceFilter()"
+                    class="bg-pine dark:bg-ochre hover:bg-ink text-cloud dark:text-ink text-xs font-semibold px-4 py-1.5 rounded-lg transition-colors cursor-pointer"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            }
           </div>
 
           <!-- Featured Filter / Action -->
@@ -142,27 +219,64 @@
                 : 'bg-cloud/80 dark:bg-black/20 text-ink/80 dark:text-cloud/80 border-ink/15 dark:border-cloud/15 hover:bg-cloud hover:text-ink'"
             >
               <span class="text-sm" aria-hidden="true">★</span>
-              <span>{{ isFeaturedOnly() ? 'Featured only' : 'Show featured' }}</span>
+              <span>{{ isFeaturedOnly() ? 'Featured only' : 'Featured only' }}</span>
             </button>
           </div>
 
         </form>
 
-        <!-- Destination Quick Chips Row -->
-        @if (cities().length > 0) {
-          <div class="mt-4 pt-4 border-t border-ink/10 dark:border-cloud/10 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+        <!-- Destination & Location Quick Chips Row -->
+        <div class="mt-4 pt-4 border-t border-ink/10 dark:border-cloud/10 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+          @if (citySlug()) {
+            <!-- Sub-locations within selected city -->
             <span class="text-xs font-medium text-ink/50 dark:text-cloud/50 whitespace-nowrap shrink-0 flex items-center gap-1">
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              📍 {{ getSelectedCityName() }} Areas:
+            </span>
+            <button
+              type="button"
+              (click)="onLocationSelect('')"
+              [attr.aria-pressed]="!locationSlug()"
+              class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border focus:outline-none focus:ring-2 focus:ring-ochre cursor-pointer"
+              [ngClass]="!locationSlug()
+                ? 'bg-pine text-cloud border-pine dark:bg-ochre dark:text-ink dark:border-ochre font-semibold shadow-xs'
+                : 'bg-cloud dark:bg-black/30 text-ink/70 dark:text-cloud/70 border-ink/10 dark:border-cloud/10 hover:border-moss hover:text-pine'"
+            >
+              All {{ getSelectedCityName() }}
+            </button>
+            @for (loc of locations(); track loc.id) {
+              <button
+                type="button"
+                (click)="onLocationSelect(loc.slug || loc.id)"
+                [attr.aria-pressed]="locationSlug() === loc.slug || selectedLocationId() === loc.id"
+                class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border focus:outline-none focus:ring-2 focus:ring-ochre cursor-pointer"
+                [ngClass]="(locationSlug() === loc.slug || selectedLocationId() === loc.id)
+                  ? 'bg-pine text-cloud border-pine dark:bg-ochre dark:text-ink dark:border-ochre font-semibold shadow-xs'
+                  : 'bg-cloud dark:bg-black/30 text-ink/70 dark:text-cloud/70 border-ink/10 dark:border-cloud/10 hover:border-moss hover:text-pine'"
+              >
+                {{ loc.name }}
+              </button>
+            }
+            <button
+              type="button"
+              (click)="onCitySelect('')"
+              class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border border-ink/15 text-ink/60 dark:text-cloud/60 hover:text-ink dark:hover:text-cloud hover:border-ink/40 ml-2"
+            >
+              ← All Destinations
+            </button>
+          } @else {
+            <!-- Popular Cities Row -->
+            <span class="text-xs font-medium text-ink/50 dark:text-cloud/50 whitespace-nowrap shrink-0 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 text-ochre" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              Popular:
+              Popular Destinations:
             </span>
             <button
               type="button"
               (click)="onCitySelect('')"
-              [attr.aria-pressed]="selectedCityId() === ''"
-              class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border focus:outline-none focus:ring-2 focus:ring-ochre"
-              [ngClass]="selectedCityId() === ''
+              [attr.aria-pressed]="!citySlug() && !selectedCityId()"
+              class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border focus:outline-none focus:ring-2 focus:ring-ochre cursor-pointer"
+              [ngClass]="!citySlug() && !selectedCityId()
                 ? 'bg-pine text-cloud border-pine dark:bg-ochre dark:text-ink dark:border-ochre font-semibold shadow-xs'
                 : 'bg-cloud dark:bg-black/30 text-ink/70 dark:text-cloud/70 border-ink/10 dark:border-cloud/10 hover:border-moss hover:text-pine'"
             >
@@ -171,18 +285,18 @@
             @for (city of cities(); track city.id) {
               <button
                 type="button"
-                (click)="onCitySelect(city.id)"
-                [attr.aria-pressed]="selectedCityId() === city.id"
-                class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border focus:outline-none focus:ring-2 focus:ring-ochre"
-                [ngClass]="selectedCityId() === city.id
+                (click)="onCitySelect(city.slug || city.id)"
+                [attr.aria-pressed]="citySlug() === city.slug || selectedCityId() === city.id"
+                class="px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border focus:outline-none focus:ring-2 focus:ring-ochre cursor-pointer"
+                [ngClass]="(citySlug() === city.slug || selectedCityId() === city.id)
                   ? 'bg-pine text-cloud border-pine dark:bg-ochre dark:text-ink dark:border-ochre font-semibold shadow-xs'
                   : 'bg-cloud dark:bg-black/30 text-ink/70 dark:text-cloud/70 border-ink/10 dark:border-cloud/10 hover:border-moss hover:text-pine'"
               >
                 {{ city.name }}
               </button>
             }
-          </div>
-        }
+          }
+        </div>
 
       </div>
     </div>
@@ -226,35 +340,49 @@
             @if (searchKeyword().trim()) {
               <span class="inline-flex items-center gap-1 text-xs bg-white border border-ink/15 px-2.5 py-0.5 rounded-full text-ink shadow-xs">
                 Keyword: "{{ searchKeyword() }}"
-                <button type="button" (click)="clearSearch()" aria-label="Remove keyword filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded">✕</button>
+                <button type="button" (click)="clearSearch()" aria-label="Remove keyword filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded cursor-pointer">✕</button>
               </span>
             }
 
-            @if (selectedCityId()) {
+            @if (citySlug() || selectedCityId()) {
               <span class="inline-flex items-center gap-1 text-xs bg-white border border-ink/15 px-2.5 py-0.5 rounded-full text-ink shadow-xs">
-                {{ getSelectedCityName() }}
-                <button type="button" (click)="onCitySelect('')" aria-label="Remove destination filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded">✕</button>
+                📍 {{ getSelectedCityName() }}
+                <button type="button" (click)="onCitySelect('')" aria-label="Remove destination filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded cursor-pointer">✕</button>
+              </span>
+            }
+
+            @if (locationSlug() || selectedLocationId()) {
+              <span class="inline-flex items-center gap-1 text-xs bg-white border border-ink/15 px-2.5 py-0.5 rounded-full text-ink shadow-xs">
+                🏔️ {{ getSelectedLocationName() }}
+                <button type="button" (click)="onLocationSelect('')" aria-label="Remove location filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded cursor-pointer">✕</button>
+              </span>
+            }
+
+            @if (minPrice() !== null || maxPrice() !== null) {
+              <span class="inline-flex items-center gap-1 text-xs bg-white border border-ink/15 px-2.5 py-0.5 rounded-full text-ink shadow-xs">
+                🏷️ {{ currencySymbol() }}{{ minPrice() || 0 }} – {{ maxPrice() ? currencySymbol() + maxPrice() : 'Any' }}
+                <button type="button" (click)="clearPriceFilter()" aria-label="Remove price filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded cursor-pointer">✕</button>
               </span>
             }
 
             @if (selectedType()) {
               <span class="inline-flex items-center gap-1 text-xs bg-white border border-ink/15 px-2.5 py-0.5 rounded-full text-ink shadow-xs">
                 {{ getSelectedTypeLabel() }}
-                <button type="button" (click)="onTypeSelect('')" aria-label="Remove property type filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded">✕</button>
+                <button type="button" (click)="onTypeSelect('')" aria-label="Remove property type filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded cursor-pointer">✕</button>
               </span>
             }
 
             @if (isFeaturedOnly()) {
               <span class="inline-flex items-center gap-1 text-xs bg-white border border-ink/15 px-2.5 py-0.5 rounded-full text-ink shadow-xs">
-                Featured
-                <button type="button" (click)="toggleFeatured()" aria-label="Remove featured filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded">✕</button>
+                ★ Featured only
+                <button type="button" (click)="toggleFeatured()" aria-label="Remove featured filter" class="hover:text-red-500 font-bold ml-1 focus:outline-none focus:ring-2 focus:ring-ochre rounded cursor-pointer">✕</button>
               </span>
             }
 
             <button
               type="button"
               (click)="resetAllFilters()"
-              class="text-xs text-ochreD hover:text-ochre font-semibold ml-1 underline transition-colors focus:outline-none focus:ring-2 focus:ring-ochre rounded"
+              class="text-xs text-ochreD hover:text-ochre font-semibold ml-1 underline transition-colors focus:outline-none focus:ring-2 focus:ring-ochre rounded cursor-pointer"
             >
               Clear all
             </button>
@@ -281,6 +409,7 @@
             <option value="price_desc">Price: high to low</option>
             <option value="name_asc">Name: A to Z</option>
             <option value="name_desc">Name: Z to A</option>
+            <option value="created_at_desc">Newest additions</option>
           </select>
         </div>
 
@@ -358,7 +487,7 @@
         <button
           type="button"
           (click)="fetchProperties()"
-          class="mt-6 btn-anim inline-block bg-pine hover:bg-ink text-cloud text-sm font-semibold px-6 py-3 rounded-full transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-ochre"
+          class="mt-6 btn-anim inline-block bg-pine hover:bg-ink text-cloud text-sm font-semibold px-6 py-3 rounded-full transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-ochre cursor-pointer"
         >
           Try again
         </button>
@@ -373,14 +502,14 @@
         </div>
         <h3 class="font-display text-3xl text-ink">No stays found matching criteria</h3>
         <p class="text-base text-ink/70 mt-3 max-w-md mx-auto leading-relaxed">
-          We couldn't find any verified homestays matching your current filters. Try changing your search terms or exploring all regions.
+          We couldn't find any verified homestays matching your current filters. Try adjusting your search terms or exploring all regions.
         </p>
 
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
             (click)="resetAllFilters()"
-            class="btn-anim bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-6 py-3 rounded-full transition-colors shadow-md shadow-ochre/25 focus:outline-none focus:ring-2 focus:ring-ink"
+            class="btn-anim bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-6 py-3 rounded-full transition-colors shadow-md shadow-ochre/25 focus:outline-none focus:ring-2 focus:ring-ink cursor-pointer"
           >
             Reset all filters
           </button>
@@ -399,8 +528,8 @@
               @for (city of cities(); track city.id) {
                 <button
                   type="button"
-                  (click)="onCitySelect(city.id)"
-                  class="px-3 py-1 bg-cloud hover:bg-cloud2 rounded-full border border-ink/10 text-ink/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ochre"
+                  (click)="onCitySelect(city.slug || city.id)"
+                  class="px-3 py-1 bg-cloud hover:bg-cloud2 rounded-full border border-ink/10 text-ink/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ochre cursor-pointer"
                 >
                   {{ city.name }}
                 </button>
@@ -692,7 +821,6 @@
 </section>
 
 <!-- ============ SHARED CARD SUB-TEMPLATES ============ -->
-<!-- Used via *ngTemplateOutlet in both grid and list cards to avoid duplicating markup. -->
 <ng-template #cardImage let-item="item">
   @if (item.feature_image?.file_url) {
     <img
@@ -713,7 +841,11 @@
 </ng-template>
 
 <ng-template #cardBadges let-item="item">
-  @if (item.is_verified) {
+  @if (item.is_featured) {
+    <span class="absolute top-3 left-3 bg-ochre text-cloud text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1">
+      ★ FEATURED
+    </span>
+  } @else if (item.is_verified) {
     <span class="absolute top-3 left-3 stamp text-cloud text-[10px] font-semibold px-3 py-1 bg-black/40 backdrop-blur-sm">
       Host verified
     </span>

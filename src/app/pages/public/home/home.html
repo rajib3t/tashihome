@@ -490,7 +490,7 @@
         <!-- Experiences / Featured Public Cities -->
         @for (item of cities(); track $index) {
         <div
-          (click)="onCityCardClick(item.id)"
+          (click)="onCityCardClick(item.slug || item.id)"
           class="reveal exp-card glass-card-dark rounded-2xl overflow-hidden border border-white/20 shadow-xl flex flex-col group cursor-pointer">
           <div class="h-40 relative overflow-hidden">
             <img [src]="item.image_url ? (assetUrl + item.image_url) : '/images/exp-tea.webp'" [alt]="item.name || 'Himalayan region'"
