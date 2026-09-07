@@ -31,6 +31,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client
   },
   {
+    path: 'homestay/:slug',
+    renderMode: RenderMode.Client
+  },
+  {
     path: 'checkout',
     renderMode: RenderMode.Client
   },
@@ -40,6 +44,10 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: 'stay/:slug/checkout',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'homestay/:slug/checkout',
     renderMode: RenderMode.Client
   },
 
@@ -66,6 +74,34 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: 'stays',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'stays/:city_slug',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'stays/:city_slug/:location_slug',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'homestays',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'homestays/:city_slug',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'homestays/:city_slug/:location_slug',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'experiences',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'experience',
     renderMode: RenderMode.Client
   },
   {
