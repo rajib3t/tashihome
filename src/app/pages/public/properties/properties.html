@@ -477,10 +477,10 @@
               <div class="p-6 pt-0">
                 <div class="flex items-center justify-between pt-4 border-t border-ink/10">
                   <p class="font-display text-2xl text-ink">
-                    ₹{{ getEffectivePrice(item) | number }}
+                    {{ currencySymbol() }}{{ getEffectivePrice(item) | number }}
                     @if (hasDiscount(item)) {
                       <span class="text-xs font-normal text-ink/40 line-through ml-1">
-                        ₹{{ getRegularPrice(item) | number }}
+                        {{ currencySymbol() }}{{ getRegularPrice(item) | number }}
                       </span>
                     }
                     <span class="text-xs font-body font-normal text-ink/50">/ night</span>
@@ -560,10 +560,10 @@
                   <div>
                     <span class="text-xs text-ink/50 block">Direct host rate</span>
                     <p class="font-display text-2xl sm:text-3xl text-ink">
-                      ₹{{ getEffectivePrice(item) | number }}
+                      {{ currencySymbol() }}{{ getEffectivePrice(item) | number }}
                       @if (hasDiscount(item)) {
                         <span class="text-xs sm:text-sm font-normal text-ink/40 line-through ml-1">
-                          ₹{{ getRegularPrice(item) | number }}
+                          {{ currencySymbol() }}{{ getRegularPrice(item) | number }}
                         </span>
                       }
                       <span class="text-xs font-body font-normal text-ink/50">/ night</span>

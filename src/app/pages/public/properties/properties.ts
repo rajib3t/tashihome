@@ -30,8 +30,10 @@ import {
 } from '../../../services/property/property.model';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery } from '../../../services/city/city-model';
+import { SettingsService } from '../../../services/settings/settings-service';
 import { PaginationMeta } from '../../../services/api/api-response.model';
 import { environment } from '../../../../environments/environment';
+import { computed } from '@angular/core';
 
 @Component({
   selector: 'app-properties',
@@ -46,6 +48,7 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
   // Services
   public readonly propertyService = inject(PropertyService);
   public readonly cityService = inject(CityService);
+  public readonly settingsService = inject(SettingsService);
   public readonly router = inject(Router);
   public readonly route = inject(ActivatedRoute);
   private readonly el = inject(ElementRef);
@@ -54,6 +57,7 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
   private readonly zone = inject(NgZone);
 
   // State Signals
+  public readonly currencySymbol = computed(() => this.settingsService.currencySymbol() || '₹');
   public properties = signal<Partial<PropertyData>[]>([]);
   public cities = signal<City[]>([]);
   public loading = signal<boolean>(true);

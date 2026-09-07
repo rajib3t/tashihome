@@ -10,6 +10,7 @@ import { AppliedPricingTier, CheckAvailabilityResponseData } from '../../../../s
 import { ReviewService } from '../../../../services/review/review-service';
 import { ReviewData, ReviewSummary, SubmitReviewRequest } from '../../../../services/review/review.model';
 import { AuthService } from '../../../../services/auth/auth-service';
+import { SettingsService } from '../../../../services/settings/settings-service';
 import { environment } from '../../../../../environments/environment';
 import { DateInput } from '../../../../shared/components/ui/date-input/date-input';
 import { getRoomNightlyRate } from '../../../../utils/pricing.utils';
@@ -38,8 +39,10 @@ export class Property {
   public bookingService = inject(BookingService);
   public reviewService = inject(ReviewService);
   public authService = inject(AuthService);
+  public settingsService = inject(SettingsService);
 
   public propertyData = signal<Partial<PropertyData> | null>(null);
+  public currencySymbol = computed(() => this.settingsService.currencySymbol() || this.propertyData()?.currency || '₹');
   public galleryImages = signal<PropertyAsset[]>([]);
 
   // Reviews State
@@ -320,6 +323,15 @@ export class Property {
 
   public getRatePerNight(): number {
     const quote = this.availabilityResult()?.quote;
+    if (quote?.applied_tier?.sale_per_night && quote.applied_tier.sale_per_night > 0) {
+      return quote.applied_tier.sale_per_night;
+    }
+    if (quote?.applied_tier?.price_per_night && quote.applied_tier.price_per_night > 0) {
+      return quote.applied_tier.price_per_night;
+    }
+    if (this.pricingDetails().effectivePrice > 0) {
+      return this.pricingDetails().effectivePrice;
+    }
     if (quote?.price_per_night && (quote.room_type_id === this.selectedRoomTypeId() || !quote.room_type_id)) {
       return quote.price_per_night;
     }
@@ -331,14 +343,14 @@ export class Property {
   }
 
   public getRegularPrice(): number {
+    const quote = this.availabilityResult()?.quote;
+    if (quote?.applied_tier?.price_per_night && quote.applied_tier.price_per_night > 0) {
+      return quote.applied_tier.price_per_night;
+    }
     return this.pricingDetails().standardPrice;
   }
 
   public getCalculatedTotal(): number {
-    const quote = this.availabilityResult()?.quote;
-    if (quote?.total_amount && (quote.room_type_id === this.selectedRoomTypeId() || !quote.room_type_id)) {
-      return quote.total_amount;
-    }
     const nights = this.calculateNights();
     const rooms = this.numRooms();
     return this.getRatePerNight() * nights * rooms;

@@ -138,7 +138,7 @@
               <p class="font-semibold text-ink mt-0.5">{{ numGuests() }} Guest{{ numGuests() > 1 ? 's' : '' }}</p>
               <p class="text-[11px] text-ink/50">{{ numRooms() }} Room{{ numRooms() > 1 ? 's' : '' }} · {{ calculateNights() }} Night{{ calculateNights() > 1 ? 's' : '' }}</p>
               @if (getAppliedTier(); as tier) {
-                <p class="text-[11px] text-ochreD font-medium mt-0.5">({{ tier.occupancy }}-guest rate: {{ property()?.currency ?? '₹' }}{{ getRatePerNight() | number }}/night)</p>
+                <p class="text-[11px] text-ochreD font-medium mt-0.5">({{ tier.occupancy }}-guest rate: {{ currencySymbol() }}{{ getRatePerNight() | number }}/night)</p>
               }
             </div>
           </div>
@@ -147,7 +147,7 @@
             <div>
               <p class="text-xs text-ink/50">Total Amount</p>
               <p class="text-2xl font-display font-bold text-pine">
-                {{ property()?.currency ?? '₹' }}{{ (confirmedBooking()?.total_amount ?? getTotalPayable()) | number:'1.2-2' }}
+                {{ currencySymbol() }}{{ (confirmedBooking()?.total_amount ?? getTotalPayable()) | number:'1.2-2' }}
               </p>
             </div>
             <div class="flex items-center gap-3">
@@ -243,7 +243,7 @@
                     <svg class="w-3 h-3 text-ochre" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    Applied Rate: {{ property()?.currency ?? '₹' }}{{ getRatePerNight() | number }} / night ({{ tier.occupancy }}-Guest Occupancy Tier)
+                    Applied Rate: {{ currencySymbol() }}{{ getRatePerNight() | number }} / night ({{ tier.occupancy }}-Guest Occupancy Tier)
                   </span>
                 }
               </div>
@@ -442,7 +442,7 @@
               } @else if (isAvailable() === false) {
                 <span>🚫 Room Blocked / Unavailable</span>
               } @else {
-                <span>Confirm &amp; Reserve ({{ property()?.currency ?? '₹' }}{{ getTotalPayable() | number:'1.2-2' }})</span>
+                <span>Confirm &amp; Reserve ({{ currencySymbol() }}{{ getTotalPayable() | number:'1.2-2' }})</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="transition-transform group-hover:translate-x-1">
                   <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
@@ -503,10 +503,10 @@
                 <div>
                   <div class="flex items-baseline gap-1.5">
                     @if (hasDiscount()) {
-                      <span class="line-through text-xs text-ink/40">{{ property()?.currency ?? '₹' }}{{ getRegularPrice() | number:'1.2-2' }}</span>
+                      <span class="line-through text-xs text-ink/40">{{ currencySymbol() }}{{ getRegularPrice() | number:'1.2-2' }}</span>
                     }
                     <span class="font-semibold text-ink">
-                      {{ property()?.currency ?? '₹' }}{{ getRatePerNight() | number:'1.2-2' }}
+                      {{ currencySymbol() }}{{ getRatePerNight() | number:'1.2-2' }}
                     </span>
                     <span class="text-xs text-ink/60">× {{ calculateNights() }} night{{ calculateNights() > 1 ? 's' : '' }}</span>
                   </div>
@@ -515,7 +515,7 @@
                   }
                 </div>
                 <span class="font-medium text-ink">
-                  {{ property()?.currency ?? '₹' }}{{ getRoomSubtotal() | number:'1.2-2' }}
+                  {{ currencySymbol() }}{{ getRoomSubtotal() | number:'1.2-2' }}
                 </span>
               </div>
 
@@ -526,7 +526,7 @@
                     <span>Discount</span>
                     <span class="text-[10px] bg-emerald-50 px-1.5 py-0.5 rounded-sm border border-emerald-200">Special Rate</span>
                   </span>
-                  <span class="font-medium">− {{ property()?.currency ?? '₹' }}{{ getDiscountTotal() | number:'1.2-2' }}</span>
+                  <span class="font-medium">− {{ currencySymbol() }}{{ getDiscountTotal() | number:'1.2-2' }}</span>
                 </div>
               }
 
@@ -541,9 +541,9 @@
                       }
                     </div>
                     @if (isTaxInclusive()) {
-                      <span class="text-ink/60 text-xs">Included in rate ({{ property()?.currency ?? '₹' }}{{ getTaxAmount() | number:'1.2-2' }})</span>
+                      <span class="text-ink/60 text-xs">Included in rate ({{ currencySymbol() }}{{ getTaxAmount() | number:'1.2-2' }})</span>
                     } @else {
-                      <span class="font-bold text-ink">+ {{ property()?.currency ?? '₹' }}{{ getTaxAmount() | number:'1.2-2' }}</span>
+                      <span class="font-bold text-ink">+ {{ currencySymbol() }}{{ getTaxAmount() | number:'1.2-2' }}</span>
                     }
                   </div>
 
@@ -552,11 +552,11 @@
                     <div class="pl-3 space-y-0.5 text-[11px] text-ink/55 font-mono">
                       <div class="flex justify-between">
                         <span>├ CGST ({{ getTaxRate() / 2 }}%):</span>
-                        <span>{{ property()?.currency ?? '₹' }}{{ getCGSTAmount() | number:'1.2-2' }}</span>
+                        <span>{{ currencySymbol() }}{{ getCGSTAmount() | number:'1.2-2' }}</span>
                       </div>
                       <div class="flex justify-between">
                         <span>└ SGST ({{ getTaxRate() / 2 }}%):</span>
-                        <span>{{ property()?.currency ?? '₹' }}{{ getSGSTAmount() | number:'1.2-2' }}</span>
+                        <span>{{ currencySymbol() }}{{ getSGSTAmount() | number:'1.2-2' }}</span>
                       </div>
                     </div>
                   }
@@ -572,7 +572,7 @@
               @if (getDepositAmount() > 0) {
                 <div class="flex justify-between text-xs text-ink/60 pt-1 border-t border-dashed border-ink/10">
                   <span>Deposit Required Today</span>
-                  <span class="font-medium text-ink">{{ property()?.currency ?? '₹' }}{{ getDepositAmount() | number:'1.2-2' }}</span>
+                  <span class="font-medium text-ink">{{ currencySymbol() }}{{ getDepositAmount() | number:'1.2-2' }}</span>
                 </div>
               }
             </div>
@@ -587,12 +587,12 @@
                   </p>
                 } @else {
                   <p class="text-[11px] text-ink/60 font-medium flex items-center gap-1 mt-0.5">
-                    <span>✓</span> Room charges ({{ property()?.currency ?? '₹' }}{{ getRoomSubtotal() | number:'1.2-2' }}) + GST ({{ property()?.currency ?? '₹' }}{{ getTaxAmount() | number:'1.2-2' }})
+                    <span>✓</span> Room charges ({{ currencySymbol() }}{{ getRoomSubtotal() | number:'1.2-2' }}) + GST ({{ currencySymbol() }}{{ getTaxAmount() | number:'1.2-2' }})
                   </p>
                 }
               </div>
               <p class="font-display text-3xl text-pine font-bold">
-                {{ property()?.currency ?? '₹' }}{{ getTotalPayable() | number:'1.2-2' }}
+                {{ currencySymbol() }}{{ getTotalPayable() | number:'1.2-2' }}
               </p>
             </div>
 

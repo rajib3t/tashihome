@@ -585,9 +585,14 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
 
     const current: PropertyRoomTypeRequest[] = [...((control.value as PropertyRoomTypeRequest[] | null) ?? [])];
     if (index >= 0 && index < current.length) {
-      current[index] = { ...current[index], room_type_id: newRoomTypeId };
+      const newCapacity = Math.max(1, this.getRoomTypeCapacity(newRoomTypeId));
+      const row = current[index];
+      // Prune tiers that exceed the new room type's max capacity
+      const updatedTiers = (row.pricing_tiers ?? []).filter((t) => Number(t.occupancy) <= newCapacity);
+      current[index] = { ...row, room_type_id: newRoomTypeId, pricing_tiers: updatedTiers };
       control.setValue(current);
       this.propertyForm.markAsDirty();
+      this.cdr.markForCheck();
     }
   }
 
@@ -659,10 +664,9 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
   }
 
   getOccupancyOptions(roomTypeId: string, currentOccupancy: number = 1): number[] {
-    const capacity = this.getRoomTypeCapacity(roomTypeId);
-    const max = Math.max(10, capacity, Number(currentOccupancy) || 1);
+    const capacity = Math.max(1, this.getRoomTypeCapacity(roomTypeId));
     const options: number[] = [];
-    for (let c = 1; c <= max; c++) {
+    for (let c = 1; c <= capacity; c++) {
       options.push(c);
     }
     return options;
@@ -677,9 +681,9 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     const rows = this.getRoomTypeRows();
     const row = rows[roomTypeIndex];
     if (!row?.room_type_id) return false;
-    const capacity = this.getRoomTypeCapacity(row.room_type_id);
+    const capacity = Math.max(1, this.getRoomTypeCapacity(row.room_type_id));
     const tiers = row.pricing_tiers ?? [];
-    return tiers.length < Math.max(10, capacity);
+    return tiers.length < capacity;
   }
 
   addPricingTier(roomTypeIndex: number): void {
@@ -690,17 +694,20 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     if (roomTypeIndex < 0 || roomTypeIndex >= current.length) return;
 
     const row = current[roomTypeIndex];
-    const capacity = this.getRoomTypeCapacity(row.room_type_id);
+    const capacity = Math.max(1, this.getRoomTypeCapacity(row.room_type_id));
     const existingTiers = [...(row.pricing_tiers ?? [])];
     const usedOccupancies = new Set(existingTiers.map((t) => Number(t.occupancy)));
 
-    let nextOccupancy = 1;
-    const maxSearch = Math.max(10, capacity);
-    for (let i = 1; i <= maxSearch; i++) {
+    let nextOccupancy: number | null = null;
+    for (let i = 1; i <= capacity; i++) {
       if (!usedOccupancies.has(i)) {
         nextOccupancy = i;
         break;
       }
+    }
+
+    if (nextOccupancy === null) {
+      return;
     }
 
     const defaultPrice = row.price_per_night || Number(this.propertyForm.get('price_per_night')?.value) || 1500;
@@ -745,9 +752,12 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     if (roomTypeIndex < 0 || roomTypeIndex >= current.length) return;
 
     const row = current[roomTypeIndex];
+    const capacity = Math.max(1, this.getRoomTypeCapacity(row.room_type_id));
     const existingTiers = [...(row.pricing_tiers ?? [])];
     if (tierIndex >= 0 && tierIndex < existingTiers.length) {
-      existingTiers[tierIndex] = { ...existingTiers[tierIndex], occupancy: Math.max(1, Number(occupancy) || 1) };
+      const clampedOccupancy = Math.max(1, Math.min(capacity, Number(occupancy) || 1));
+      existingTiers[tierIndex] = { ...existingTiers[tierIndex], occupancy: clampedOccupancy };
+      existingTiers.sort((a, b) => a.occupancy - b.occupancy);
       current[roomTypeIndex] = { ...row, pricing_tiers: existingTiers };
       control.setValue(current);
       this.propertyForm.markAsDirty();
@@ -868,16 +878,19 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
         const units = Number(item.total_units || (item as any).units || (item as any).count || 1);
         const pricePerNight = Number(item.price_per_night) > 0 ? Number(item.price_per_night) : undefined;
         const salePerNight = Number(item.sale_per_night) > 0 ? Number(item.sale_per_night) : undefined;
+        const capacity = item.room_type?.capacity || (resolvedRoomTypeId ? this.getRoomTypeCapacity(resolvedRoomTypeId) : 4);
         const tiers: PropertyRoomTypePrice[] = Array.isArray(item.pricing_tiers)
-          ? item.pricing_tiers.map((t: any) => ({
-              id: t.id,
-              occupancy: Number(t.occupancy) || 1,
-              price_per_night: Number(t.price_per_night) || 0,
-              sale_per_night:
-                t.sale_per_night !== undefined && t.sale_per_night !== null && Number(t.sale_per_night) > 0
-                  ? Number(t.sale_per_night)
-                  : undefined,
-            }))
+          ? item.pricing_tiers
+              .map((t: any): PropertyRoomTypePrice => ({
+                id: t.id,
+                occupancy: Number(t.occupancy) || 1,
+                price_per_night: Number(t.price_per_night) || 0,
+                sale_per_night:
+                  t.sale_per_night !== undefined && t.sale_per_night !== null && Number(t.sale_per_night) > 0
+                    ? Number(t.sale_per_night)
+                    : undefined,
+              }))
+              .filter((t: PropertyRoomTypePrice) => t.occupancy <= capacity)
           : [];
 
         if (resolvedRoomTypeId) {
@@ -901,16 +914,19 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
           const units = Number(item.total_units || item.units || item.count || 1);
           const pricePerNight = Number(item.price_per_night) > 0 ? Number(item.price_per_night) : undefined;
           const salePerNight = Number(item.sale_per_night) > 0 ? Number(item.sale_per_night) : undefined;
+          const capacity = item.room_type?.capacity || (id ? this.getRoomTypeCapacity(String(id)) : 4);
           const tiers: PropertyRoomTypePrice[] = Array.isArray(item.pricing_tiers)
-            ? item.pricing_tiers.map((t: any) => ({
-                id: t.id,
-                occupancy: Number(t.occupancy) || 1,
-                price_per_night: Number(t.price_per_night) || 0,
-                sale_per_night:
-                  t.sale_per_night !== undefined && t.sale_per_night !== null && Number(t.sale_per_night) > 0
-                    ? Number(t.sale_per_night)
-                    : undefined,
-              }))
+            ? item.pricing_tiers
+                .map((t: any): PropertyRoomTypePrice => ({
+                  id: t.id,
+                  occupancy: Number(t.occupancy) || 1,
+                  price_per_night: Number(t.price_per_night) || 0,
+                  sale_per_night:
+                    t.sale_per_night !== undefined && t.sale_per_night !== null && Number(t.sale_per_night) > 0
+                      ? Number(t.sale_per_night)
+                      : undefined,
+                }))
+                .filter((t: PropertyRoomTypePrice) => t.occupancy <= capacity)
             : [];
 
           if (id) {
@@ -1062,8 +1078,9 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     const roomTypes: PropertyRoomTypeRequest[] = ((raw.room_types as PropertyRoomTypeRequest[] | null) ?? [])
       .filter((rt) => !!rt.room_type_id?.trim())
       .map((rt) => {
+        const capacity = Math.max(1, this.getRoomTypeCapacity(rt.room_type_id.trim()));
         const tiers = (rt.pricing_tiers || [])
-          .filter((t) => Number(t.occupancy) >= 1 && Number(t.price_per_night) >= 0)
+          .filter((t) => Number(t.occupancy) >= 1 && Number(t.occupancy) <= capacity && Number(t.price_per_night) >= 0)
           .map((t) => ({
             id: t.id,
             occupancy: Number(t.occupancy),

@@ -83,6 +83,7 @@ export class Checkout implements OnInit {
 
   // Property & Booking State
   public property = signal<Partial<PropertyData> | null>(null);
+  public currencySymbol = computed(() => this.settingsService.currencySymbol() || this.property()?.currency || '₹');
   public selectedRoomType = signal<RoomType | null>(null);
   public checkInDate = signal<string>('');
   public checkOutDate = signal<string>('');
@@ -437,6 +438,15 @@ export class Checkout implements OnInit {
 
   public getRatePerNight(): number {
     const quote = this.availabilityResult()?.quote;
+    if (quote?.applied_tier?.sale_per_night && quote.applied_tier.sale_per_night > 0) {
+      return quote.applied_tier.sale_per_night;
+    }
+    if (quote?.applied_tier?.price_per_night && quote.applied_tier.price_per_night > 0) {
+      return quote.applied_tier.price_per_night;
+    }
+    if (this.pricingDetails().effectivePrice > 0) {
+      return this.pricingDetails().effectivePrice;
+    }
     const selectedRt = this.selectedRoomType();
     if (quote?.price_per_night && (quote.room_type_id === selectedRt?.id || !quote.room_type_id)) {
       return quote.price_per_night;
@@ -449,6 +459,10 @@ export class Checkout implements OnInit {
   }
 
   public getRegularPrice(): number {
+    const quote = this.availabilityResult()?.quote;
+    if (quote?.applied_tier?.price_per_night && quote.applied_tier.price_per_night > 0) {
+      return quote.applied_tier.price_per_night;
+    }
     return this.pricingDetails().standardPrice;
   }
 

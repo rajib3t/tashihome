@@ -59,9 +59,9 @@
 
       <div class="property-meta-row mt-5 text-cloud/85 text-sm">
         <span class="flex items-center gap-1.5 font-medium text-cloud">
-          <span class="text-ochre">₹</span>{{ getRatePerNight() | number }}
+          <span class="text-ochre">{{ currencySymbol() }}</span>{{ getRatePerNight() | number }}
           @if (hasDiscount()) {
-          <span class="text-xs text-cloud/50 line-through">₹{{ getRegularPrice() | number }}</span>
+          <span class="text-xs text-cloud/50 line-through">{{ currencySymbol() }}{{ getRegularPrice() | number }}</span>
           }
           <span class="text-cloud/55 font-normal">/ night</span>
         </span>
@@ -579,7 +579,7 @@
                   <p class="text-ink/80 mt-2 font-medium">Subject to booking terms<br />
                     <span class="text-ink/60 font-normal">
                       @if (propertyData()?.deposit) {
-                      ₹{{ propertyData()?.deposit | number }} deposit applies
+                      {{ currencySymbol() }}{{ propertyData()?.deposit | number }} deposit applies
                       } @else {
                       Deposit policy may apply
                       }
@@ -925,10 +925,10 @@
 
           <div class="relative flex items-baseline justify-between">
             <p class="font-display text-3xl text-ink">
-              {{ propertyData()?.currency ?? '₹' }}{{ getRatePerNight() | number }}
+              {{ currencySymbol() }}{{ getRatePerNight() | number }}
               @if (hasDiscount()) {
                 <span class="text-sm font-normal text-ink/40 line-through ml-1">
-                  {{ propertyData()?.currency ?? '₹' }}{{ getRegularPrice() | number }}
+                  {{ currencySymbol() }}{{ getRegularPrice() | number }}
                 </span>
               }
               <span class="text-sm font-body text-ink/50">/ night</span>
@@ -1000,14 +1000,16 @@
                     type="button"
                     (click)="adjustGuests(-1)"
                     [disabled]="numGuests() <= 1"
-                    class="w-6 h-6 rounded-full bg-cloud2 text-ink hover:bg-moss/20 disabled:opacity-30 grid place-items-center text-xs font-bold transition-colors cursor-pointer">
-                    -
+                    class="w-7 h-7 rounded-lg border border-ink/15 flex items-center justify-center text-ink/70 hover:bg-cloud2 active:bg-cloud disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+                    aria-label="Decrease guests">
+                    −
                   </button>
                   <button
                     type="button"
                     (click)="adjustGuests(1)"
                     [disabled]="numGuests() >= getMaxGuestCapacity()"
-                    class="w-6 h-6 rounded-full bg-cloud2 text-ink hover:bg-moss/20 disabled:opacity-30 grid place-items-center text-xs font-bold transition-colors cursor-pointer">
+                    class="w-7 h-7 rounded-lg border border-ink/15 flex items-center justify-center text-ink/70 hover:bg-cloud2 active:bg-cloud disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+                    aria-label="Increase guests">
                     +
                   </button>
                 </div>
@@ -1023,14 +1025,16 @@
                     type="button"
                     (click)="adjustRooms(-1)"
                     [disabled]="numRooms() <= 1"
-                    class="w-6 h-6 rounded-full bg-cloud2 text-ink hover:bg-moss/20 disabled:opacity-30 grid place-items-center text-xs font-bold transition-colors cursor-pointer">
-                    -
+                    class="w-7 h-7 rounded-lg border border-ink/15 flex items-center justify-center text-ink/70 hover:bg-cloud2 active:bg-cloud disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+                    aria-label="Decrease rooms">
+                    −
                   </button>
                   <button
                     type="button"
                     (click)="adjustRooms(1)"
                     [disabled]="numRooms() >= getMaxRooms()"
-                    class="w-6 h-6 rounded-full bg-cloud2 text-ink hover:bg-moss/20 disabled:opacity-30 grid place-items-center text-xs font-bold transition-colors cursor-pointer">
+                    class="w-7 h-7 rounded-lg border border-ink/15 flex items-center justify-center text-ink/70 hover:bg-cloud2 active:bg-cloud disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+                    aria-label="Increase rooms">
                     +
                   </button>
                 </div>
@@ -1038,14 +1042,14 @@
             </div>
           </div>
 
-          <!-- Occupancy-Based Variable Pricing Tiers Interactive Grid -->
+          <!-- Occupancy Pricing Tiers -->
           @if (getPricingTiers().length > 0) {
-            <div class="mt-4 pt-4 border-t border-ink/10">
+            <div class="mt-4 pt-3.5 border-t border-ink/10">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-[11px] font-semibold text-ink/70">Rates by Guest Count</span>
+                <span class="text-[11px] font-semibold text-ink/75">Room Rates by Occupancy</span>
                 @if (getAppliedTier()) {
-                  <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    {{ getAppliedTier()?.occupancy }}-Guest Rate Applied
+                  <span class="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md font-semibold">
+                    ✓ {{ getAppliedTier()?.occupancy }} Guest Tier Active
                   </span>
                 }
               </div>
@@ -1070,7 +1074,7 @@
                   >
                     <div class="text-[10px] font-medium opacity-80">{{ tier.occupancy }} Guest{{ tier.occupancy > 1 ? 's' : '' }}</div>
                     <div class="font-bold text-xs mt-0.5">
-                      {{ propertyData()?.currency ?? '₹' }}{{ effective | number }}
+                      {{ currencySymbol() }}{{ effective | number }}
                     </div>
                   </button>
                 }
@@ -1165,7 +1169,7 @@
             <div class="flex justify-between items-start">
               <div>
                 <span>
-                  {{ propertyData()?.currency ?? '₹' }}{{ getRatePerNight() | number }} × {{ calculateNights() }} night{{ calculateNights() > 1 ? 's' : '' }}
+                  {{ currencySymbol() }}{{ getRatePerNight() | number }} × {{ calculateNights() }} night{{ calculateNights() > 1 ? 's' : '' }}
                   @if (numRooms() > 1) { ({{ numRooms() }} rooms) }
                 </span>
                 @if (getAppliedTier()) {
@@ -1175,7 +1179,7 @@
                 }
               </div>
               <span class="font-medium text-ink">
-                {{ propertyData()?.currency ?? '₹' }}{{ getCalculatedTotal() | number }}
+                {{ currencySymbol() }}{{ getCalculatedTotal() | number }}
               </span>
             </div>
             <div class="flex justify-between"><span>Taxes &amp; fees</span><span>Calculated at checkout</span></div>
@@ -1183,7 +1187,7 @@
               <span>Deposit to hold</span>
               <span class="font-medium text-ink">
                 @if (propertyData()?.deposit) {
-                  {{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.deposit | number }}
+                  {{ currencySymbol() }}{{ propertyData()?.deposit | number }}
                 } @else {
                   Standard policy
                 }
@@ -1192,14 +1196,14 @@
             <div class="flex justify-between font-semibold text-ink pt-2.5 border-t border-ink/10 text-base">
               <span>Estimated Total</span>
               <span class="text-pine font-bold">
-                {{ propertyData()?.currency ?? '₹' }}{{ getCalculatedTotal() | number }}
+                {{ currencySymbol() }}{{ getCalculatedTotal() | number }}
               </span>
             </div>
           </div>
 
           <p class="text-xs text-ink/50 mt-4 leading-relaxed">
             @if (propertyData()?.deposit) {
-            Pay a {{ propertyData()?.currency ?? '₹' }}{{ propertyData()?.deposit | number }} deposit or pay online with Razorpay to guarantee your stay.
+            Pay a {{ currencySymbol() }}{{ propertyData()?.deposit | number }} deposit or pay online with Razorpay to guarantee your stay.
             } @else {
             Instant confirmation with flexible homestay cancellation policy.
             }
