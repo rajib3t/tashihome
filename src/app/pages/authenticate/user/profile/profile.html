@@ -44,14 +44,13 @@
       </div>
 
       <div class="flex gap-2">
-        <button
-          type="button"
-          (click)="selectTab('account')"
+        <a
+          [routerLink]="['/user', 'account']"
           [class.bg-cloud]="activeTab() === 'account'"
           [class.text-pine]="activeTab() === 'account'"
           class="cursor-pointer rounded-full border border-cloud/30 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-cloud hover:text-pine">
           Edit profile
-        </button>
+        </a>
       </div>
     </div>
 
@@ -79,48 +78,42 @@
   <div class="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-xl shadow-pine/5">
     <!-- Tabs Header -->
     <div class="flex gap-7 overflow-x-auto border-b border-ink/10 px-6 sm:px-8">
-      <button
-        type="button"
-        (click)="selectTab('account')"
+      <a
+        [routerLink]="['/user', 'account']"
         [class.profile-tab-active]="activeTab() === 'account'"
         class="cursor-pointer profile-tab">
         Account details
-      </button>
-      <button
-        type="button"
-        (click)="selectTab('security')"
+      </a>
+      <a
+        [routerLink]="['/user', 'security']"
         [class.profile-tab-active]="activeTab() === 'security'"
         class="cursor-pointer profile-tab">
         Security & Password
-      </button>
-      <button
-        type="button"
-        (click)="selectTab('trips')"
+      </a>
+      <a
+        [routerLink]="['/user', 'trips']"
         [class.profile-tab-active]="activeTab() === 'trips'"
         class="cursor-pointer profile-tab">
         Your trips
-      </button>
-      <button
-        type="button"
-        (click)="selectTab('saved')"
+      </a>
+      <a
+        [routerLink]="['/user', 'saved']"
         [class.profile-tab-active]="activeTab() === 'saved'"
         class="cursor-pointer profile-tab">
         Saved stays
-      </button>
-      <button
-        type="button"
-        (click)="selectTab('reviews')"
+      </a>
+      <a
+        [routerLink]="['/user', 'reviews']"
         [class.profile-tab-active]="activeTab() === 'reviews'"
         class="cursor-pointer profile-tab">
         Reviews
-      </button>
-      <button
-        type="button"
-        (click)="selectTab('testimonials')"
+      </a>
+      <a
+        [routerLink]="['/user', 'testimonials']"
         [class.profile-tab-active]="activeTab() === 'testimonials'"
         class="cursor-pointer profile-tab">
         Stories &amp; Testimonials
-      </button>
+      </a>
     </div>
 
     <!-- Tab 1: Account details (Edit Profile Info) -->

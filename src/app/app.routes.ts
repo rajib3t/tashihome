@@ -496,6 +496,11 @@ export const routes: Routes = [
                 pathMatch: 'full',
             },
             {
+                path: 'profile/:tab',
+                redirectTo: 'user/:tab',
+                pathMatch: 'full',
+            },
+            {
                 path: 'user',
                 canActivate: [userGuard],
                 loadComponent: () => import('./shared/layouts/authenticate/user/user').then((m) => m.User),
@@ -509,6 +514,16 @@ export const routes: Routes = [
                         path: 'profile',
                         redirectTo: '',
                         pathMatch: 'full',
+                    },
+                    {
+                        path: 'profile/:tab',
+                        redirectTo: ':tab',
+                        pathMatch: 'full',
+                    },
+                    {
+                        path: ':tab',
+                        loadComponent: () => import('./pages/authenticate/user/profile/profile').then((m) => m.Profile),
+                        title: 'Your Profile',
                     }
                 ]
             }

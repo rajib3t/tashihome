@@ -2,7 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../services/auth/auth-service';
 import { UserService } from '../../../../services/user/user-service';
 import { UserBasicProfileResponse } from '../../../../services/user/user.model';
@@ -28,6 +28,7 @@ import {
 } from '../../../../services/testimonial/testimonial.model';
 
 export type ProfileTab = 'trips' | 'saved' | 'reviews' | 'testimonials' | 'account' | 'security';
+export const VALID_PROFILE_TABS: readonly ProfileTab[] = ['account', 'security', 'trips', 'saved', 'reviews', 'testimonials'] as const;
 
 @Component({
   selector: 'app-profile',
@@ -46,6 +47,8 @@ export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   public readonly bookingService = inject(BookingService);
   public readonly testimonialService = inject(TestimonialService);
   private readonly razorpayService = inject(RazorpayService);
@@ -142,9 +145,25 @@ export class Profile implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.loadProfile();
     }
+
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        const tabParam = (params.get('tab') || this.route.snapshot.queryParamMap.get('tab')) as ProfileTab | null;
+        if (tabParam && (VALID_PROFILE_TABS as readonly string[]).includes(tabParam)) {
+          this.setActiveTab(tabParam);
+        } else {
+          this.setActiveTab('account');
+        }
+      });
   }
 
   public selectTab(tab: ProfileTab): void {
+    if (this.activeTab() === tab) return;
+    this.router.navigate(['/user', tab]);
+  }
+
+  private setActiveTab(tab: ProfileTab): void {
     this.activeTab.set(tab);
     this.infoSuccessMessage.set(null);
     this.infoErrorMessage.set(null);
@@ -153,10 +172,12 @@ export class Profile implements OnInit {
     this.testimonialSuccessMessage.set(null);
     this.testimonialErrorMessage.set(null);
 
-    if (tab === 'trips') {
-      this.loadUserBookings();
-    } else if (tab === 'testimonials') {
-      this.loadUserTestimonials();
+    if (isPlatformBrowser(this.platformId)) {
+      if (tab === 'trips') {
+        this.loadUserBookings();
+      } else if (tab === 'testimonials') {
+        this.loadUserTestimonials();
+      }
     }
   }
 
