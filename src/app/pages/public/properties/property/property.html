@@ -548,8 +548,8 @@
                 </span>
                 <div>
                   <p class="eyebrow text-ink/40">Check-in / out</p>
-                  <p class="text-ink/80 mt-2 font-medium">Flexible on request<br /><span
-                      class="text-ink/60 font-normal">Check-out by 10:00 AM</span></p>
+                  <p class="text-ink/80 mt-2 font-medium">Check-in from {{ settingsService.checkInTime() }}<br /><span
+                      class="text-ink/60 font-normal">Check-out by {{ settingsService.checkOutTime() }}</span></p>
                 </div>
               </div>
               <div class="flex gap-3">
@@ -576,7 +576,12 @@
                 </span>
                 <div>
                   <p class="eyebrow text-ink/40">Cancellation</p>
-                  <p class="text-ink/80 mt-2 font-medium">Subject to booking terms<br />
+                  <p class="text-ink/80 mt-2 font-medium">
+                    @if (settingsService.cancellationGraceHours()) {
+                      {{ settingsService.cancellationGraceHours() }} hrs grace period<br />
+                    } @else {
+                      Subject to booking terms<br />
+                    }
                     <span class="text-ink/60 font-normal">
                       @if (propertyData()?.deposit) {
                       {{ currencySymbol() }}{{ propertyData()?.deposit | number }} deposit applies

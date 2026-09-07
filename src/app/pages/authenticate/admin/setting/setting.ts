@@ -66,6 +66,7 @@ export class Setting implements OnInit {
     contact_email: ['support@tashihomes.in', [Validators.email]],
     contact_phone: ['+91 9876543210'],
     contact_address: ['MG Marg, Gangtok, Sikkim - 737101, India'],
+    contact_whatsapp: ['+91 9876543210'],
 
     // Homestay & Booking Financials
     default_commission_percentage: [10.0, [Validators.min(0), Validators.max(100)]],
@@ -87,6 +88,7 @@ export class Setting implements OnInit {
     meta_title: ['Tashi Homes - Premium Homestays & Stays'],
     meta_description: ['Discover handpicked homestays and heritage retreats across Northeast India.'],
     meta_keywords: ['homestay, sikkim, luxury stays, northeast india'],
+    meta_image: [''],
     terms_and_conditions_url: ['/terms'],
     privacy_policy_url: ['/privacy-policy'],
     refund_policy_url: ['/refund-policy'],
@@ -160,6 +162,7 @@ export class Setting implements OnInit {
             contact_email: payload?.['contact_email'] ?? 'support@tashihomes.in',
             contact_phone: payload?.['contact_phone'] ?? '+91 9876543210',
             contact_address: payload?.['contact_address'] ?? 'MG Marg, Gangtok, Sikkim - 737101, India',
+            contact_whatsapp: payload?.['contact_whatsapp'] ?? payload?.['contact_phone'] ?? '+91 9876543210',
 
             default_commission_percentage: payload?.['default_commission_percentage'] ?? 10.0,
             service_fee_percentage: payload?.['service_fee_percentage'] ?? 0.0,
@@ -178,6 +181,7 @@ export class Setting implements OnInit {
             meta_title: payload?.['meta_title'] ?? 'Tashi Homes - Premium Homestays & Stays',
             meta_description: payload?.['meta_description'] ?? 'Discover handpicked homestays and heritage retreats across Northeast India.',
             meta_keywords: payload?.['meta_keywords'] ?? 'homestay, sikkim, luxury stays',
+            meta_image: payload?.['meta_image'] ?? '',
             terms_and_conditions_url: payload?.['terms_and_conditions_url'] ?? '/terms',
             privacy_policy_url: payload?.['privacy_policy_url'] ?? '/privacy-policy',
             refund_policy_url: payload?.['refund_policy_url'] ?? '/refund-policy',
@@ -262,6 +266,7 @@ export class Setting implements OnInit {
     formData.append('contact_email', raw.contact_email ?? '');
     formData.append('contact_phone', raw.contact_phone ?? '');
     formData.append('contact_address', raw.contact_address ?? '');
+    formData.append('contact_whatsapp', raw.contact_whatsapp ?? '');
 
     // Financials
     formData.append('default_commission_percentage', String(raw.default_commission_percentage ?? 10));
@@ -283,6 +288,7 @@ export class Setting implements OnInit {
     formData.append('meta_title', raw.meta_title ?? '');
     formData.append('meta_description', raw.meta_description ?? '');
     formData.append('meta_keywords', raw.meta_keywords ?? '');
+    formData.append('meta_image', raw.meta_image ?? '');
     formData.append('terms_and_conditions_url', raw.terms_and_conditions_url ?? '');
     formData.append('privacy_policy_url', raw.privacy_policy_url ?? '');
     formData.append('refund_policy_url', raw.refund_policy_url ?? '');

@@ -79,14 +79,14 @@
                 class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-accent/50 bg-primary-foreground/12 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-md"
               >
                 <img
-                  [src]="assetUrl + (logo ?? '/logo.png')"
+                  [src]="assetUrl + (logo() ?? '/logo.png')"
                   alt="Homestay logo"
                   class="h-14 w-14 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
                 />
               </div>
               <div class="leading-tight">
                 <p class="font-glitten text-2xl text-primary-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
-                  {{ name ?? 'Homestay' }}
+                  {{ name() ?? 'Homestay' }}
                 </p>
                 <p class="font-mono text-xs uppercase tracking-[0.34em] text-accent">Coming soon</p>
               </div>
@@ -114,8 +114,7 @@
             </h1>
  
             <p class="mt-6 max-w-2xl text-lg leading-8 text-primary-foreground/75 md:text-xl">
-              We are building a calmer, faster way to discover beautiful homestays with
-              memorable views, thoughtful hosts, and easy booking.
+              {{ message() || 'We are building a calmer, faster way to discover beautiful homestays with memorable views, thoughtful hosts, and easy booking.' }}
             </p>
  
             <div class="mt-8 flex flex-wrap gap-3 text-sm text-primary-foreground/85">

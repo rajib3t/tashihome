@@ -25,6 +25,7 @@ export interface SystemSettingsMap {
   contact_email?: string | null;
   contact_phone?: string | null;
   contact_address?: string | null;
+  contact_whatsapp?: string | null;
 
   // Homestay & Booking Financials
   default_commission_percentage?: string | number | null;
@@ -46,6 +47,7 @@ export interface SystemSettingsMap {
   meta_title?: string | null;
   meta_description?: string | null;
   meta_keywords?: string | null;
+  meta_image?: string | null;
   terms_and_conditions_url?: string | null;
   privacy_policy_url?: string | null;
   refund_policy_url?: string | null;

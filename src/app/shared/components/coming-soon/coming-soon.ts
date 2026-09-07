@@ -66,31 +66,25 @@ export class ComingSoon {
 
   public readonly assetUrl = environment.assetUrl;
 
-  // mirrors useAtomValue(appName) / useAtomValue(whiteLogo)
-  readonly name = this.settingService.settingsData()['app_name']?.trim() || 'TashiHome 1.0';
-  readonly logo = this.settingService.settingsData()['white_logo'] || null;
- 
-  // mirrors useComingSoonSetting()
-  readonly isLoading = signal(true);
-  readonly data = signal<{
-    video_url?: string | null;
-    background_image_url?: string | null;
-    launch_date?: string | null;
-  } | null>(null);
- 
+  readonly name = computed(() => this.settingService.appName());
+  readonly logo = computed(() => this.settingService.whiteLogo() || this.settingService.appLogo());
+  readonly message = computed(() => this.settingService.comingSoonMessage());
+
+  readonly isLoading = signal(false);
+
   private readonly now = signal(Date.now());
   private timerId: ReturnType<typeof setInterval> | null = null;
- 
+
   readonly media = computed(() => {
-    const d = this.data();
+    const settings = this.settingService.settingsData();
     return {
-      video: resolveMediaUrl(this.settingService.settingsData()['coming_soon_video']?.trim()),
-      image: resolveMediaUrl(this.settingService.settingsData()['coming_background_image']?.trim()),
-      launchDate: formatLaunchDate(this.settingService.settingsData()['launch_date']),
-      countdownTarget: getCountdownTarget(this.settingService.settingsData()['launch_date']),
+      video: resolveMediaUrl(settings['coming_soon_video']?.trim()),
+      image: resolveMediaUrl(settings['coming_background_image']?.trim()),
+      launchDate: formatLaunchDate(settings['launch_date']),
+      countdownTarget: getCountdownTarget(settings['launch_date']),
     };
   });
- 
+
   readonly countdown = computed(() => {
     this.now(); // depend on the ticking clock
     return formatCountdown(this.media().countdownTarget);
@@ -99,9 +93,6 @@ export class ComingSoon {
 
  
   ngOnInit(): void {
-    
-    this.data.set(this.settingService.settingsData());
-    this.isLoading.set(false);
     if (isPlatformBrowser(this.platformId)) {
       this.restartTimer();
     }

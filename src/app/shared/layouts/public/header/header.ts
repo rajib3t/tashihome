@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Logo } from '../../../components/common/logo/logo';
 import { Avatar } from '../../../components/users/avatar/avatar';
 import { AuthService } from '../../../../services/auth/auth-service';
+import { SettingsService } from '../../../../services/settings/settings-service';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
@@ -14,6 +15,7 @@ import { environment } from '../../../../../environments/environment';
 })
 export class HeaderPublic {
   private readonly authService = inject(AuthService);
+  public readonly settingService = inject(SettingsService);
   private readonly router = inject(Router);
   readonly assetUrl = environment.assetUrl;
 

@@ -11,7 +11,8 @@ export class AppTitleStrategy extends TitleStrategy {
     const title = this.buildTitle(snapshot);
     const settings = this.settingsService.settingsData();
     const applicationName = settings?.['app_name']?.trim() || environment.applicationName;
-    const finalTitle = title ? `${title} | ${applicationName}` : applicationName;
+    const defaultMetaTitle = settings?.['meta_title']?.trim() || applicationName;
+    const finalTitle = title ? `${title} | ${applicationName}` : defaultMetaTitle;
 
     if (typeof document !== 'undefined') {
       document.title = finalTitle;

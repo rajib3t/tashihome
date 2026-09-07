@@ -119,18 +119,63 @@ export class SettingsService {
   settingsMap = computed<SystemSettingsMap>(() => toSettingsMap(this.#settingsData()));
 
   appName = computed(() => this.#settingsData()['app_name'] || environment.applicationName || 'Tashi Homes');
+  appLogo = computed(() => this.#settingsData()['app_logo'] || null);
+  whiteLogo = computed(() => this.#settingsData()['white_logo'] || null);
+  appFavicon = computed(() => this.#settingsData()['app_favicon'] || null);
   dateFormat = computed(() => this.#settingsData()['app_date_format'] || 'DD/MM/YYYY');
   timeFormat = computed(() => this.#settingsData()['app_time_format'] || '12h');
   timezone = computed(() => this.#settingsData()['app_timezone'] || 'Asia/Kolkata');
   defaultCurrency = computed(() => this.#settingsData()['default_currency'] || 'INR');
   currencySymbol = computed(() => this.#settingsData()['currency_symbol'] || '₹');
+  
+  // Contact & Support
   contactEmail = computed(() => this.#settingsData()['contact_email'] || 'support@tashihomes.in');
   contactPhone = computed(() => this.#settingsData()['contact_phone'] || '+91 9876543210');
-  contactAddress = computed(() => this.#settingsData()['contact_address'] || '');
-  checkInTime = computed(() => this.#settingsData()['check_in_time'] || '14:00');
-  checkOutTime = computed(() => this.#settingsData()['check_out_time'] || '11:00');
+  contactAddress = computed(() => this.#settingsData()['contact_address'] || 'MG Marg, Gangtok, Sikkim - 737101, India');
+  contactWhatsapp = computed(() => this.#settingsData()['contact_whatsapp'] || this.#settingsData()['contact_phone'] || '+91 9876543210');
+
+  // Homestay & Booking Financials
   commissionPercentage = computed(() => Number(this.#settingsData()['default_commission_percentage'] ?? 10));
   serviceFeePercentage = computed(() => Number(this.#settingsData()['service_fee_percentage'] ?? 0));
+  checkInTime = computed(() => this.#settingsData()['check_in_time'] || '14:00');
+  checkOutTime = computed(() => this.#settingsData()['check_out_time'] || '11:00');
+  minBookingDays = computed(() => Number(this.#settingsData()['min_booking_days'] ?? 1));
+  maxBookingDays = computed(() => Number(this.#settingsData()['max_booking_days'] ?? 30));
+  cancellationGraceHours = computed(() => Number(this.#settingsData()['cancellation_grace_period_hours'] ?? 24));
+
+  // Social Links
+  facebookUrl = computed(() => this.#settingsData()['facebook_url'] || null);
+  instagramUrl = computed(() => this.#settingsData()['instagram_url'] || null);
+  twitterUrl = computed(() => this.#settingsData()['twitter_url'] || null);
+  linkedinUrl = computed(() => this.#settingsData()['linkedin_url'] || null);
+  youtubeUrl = computed(() => this.#settingsData()['youtube_url'] || null);
+
+  // SEO & Policies
+  metaTitle = computed(() => this.#settingsData()['meta_title'] || 'Tashi Homes - Premium Homestays & Stays');
+  metaDescription = computed(() => this.#settingsData()['meta_description'] || 'Discover handpicked homestays and heritage retreats across Northeast India.');
+  metaKeywords = computed(() => this.#settingsData()['meta_keywords'] || 'homestay, sikkim, luxury stays');
+  metaImage = computed(() => this.#settingsData()['meta_image'] || null);
+  termsUrl = computed(() => this.#settingsData()['terms_and_conditions_url'] || '/terms');
+  privacyUrl = computed(() => this.#settingsData()['privacy_policy_url'] || '/privacy-policy');
+  refundUrl = computed(() => this.#settingsData()['refund_policy_url'] || '/refund-policy');
+
+  // Coming Soon
+  isComingSoonEnabled = computed(() => {
+    const val = this.#settingsData()['is_enabled_coming_soon'];
+    return val?.trim().toLowerCase() === 'true';
+  });
+  launchDate = computed(() => this.#settingsData()['launch_date'] || null);
+  comingSoonMessage = computed(() => this.#settingsData()['coming_soon_message'] || 'We are preparing authentic Himalayan homestays for you. Stay tuned!');
+  comingSoonBgImage = computed(() => this.#settingsData()['coming_background_image'] || null);
+  comingSoonVideo = computed(() => this.#settingsData()['coming_soon_video'] || null);
+
+  public formatPrice(amount: number): string {
+    const symbol = this.currencySymbol();
+    return `${symbol} ${Number(amount).toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
 
   public formatDate(dateInput: string | Date | number | null | undefined, customFormat?: string): string {
     const pattern = customFormat || this.#settingsData()['app_date_format'] || 'DD/MM/YYYY';
@@ -151,6 +196,7 @@ export class SettingsService {
     const normalized = normalizeSettingsPayload(data);
     this.#settingsData.set(normalized);
     this.syncFavicon(normalized['app_favicon']);
+    this.syncMetaTags(normalized);
   }
 
   private syncFavicon(faviconUrl: string | null | undefined) {
@@ -172,6 +218,36 @@ export class SettingsService {
 
     link.type = 'image/x-icon';
     link.href = resolvedHref;
+  }
+
+  private syncMetaTags(settings: Record<string, string | null>) {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    const setMetaTag = (attribute: string, value: string, content: string | null | undefined) => {
+      if (!content) return;
+      let tag = document.querySelector<HTMLMetaElement>(`meta[${attribute}="${value}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute(attribute, value);
+        document.head.appendChild(tag);
+      }
+      tag.content = content;
+    };
+
+    const desc = settings['meta_description'] || 'Discover handpicked homestays and heritage retreats across Northeast India.';
+    const keywords = settings['meta_keywords'] || 'homestay, sikkim, luxury stays';
+    const title = settings['meta_title'] || settings['app_name'] || 'Tashi Homes';
+    const ogImage = settings['meta_image'] ? this.resolveAssetUrl(settings['meta_image']) : undefined;
+
+    setMetaTag('name', 'description', desc);
+    setMetaTag('name', 'keywords', keywords);
+    setMetaTag('property', 'og:title', title);
+    setMetaTag('property', 'og:description', desc);
+    if (ogImage) {
+      setMetaTag('property', 'og:image', ogImage);
+    }
   }
 
   public resolveAssetUrl(url: string): string {
