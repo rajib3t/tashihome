@@ -87,6 +87,9 @@ export class AiAssistantComponent implements AfterViewChecked {
   public userInput = signal<string>('');
   public copiedRef = signal<string | null>(null);
 
+  // Feature toggle state
+  public readonly isChatboxEnabled = (environment as any).enableChatbox !== false;
+
   // Payment execution state
   public readonly isPaymentDisabled = !!environment.disablePayment;
   public isPaying = signal<string | null>(null);

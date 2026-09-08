@@ -20,21 +20,24 @@ const parseBooleanEnv = (val, defaultValue) => {
 
 const devDisablePayment = parseBooleanEnv(process.env.DISABLE_PAYMENT, false);
 const prodDisablePayment = parseBooleanEnv(process.env.DISABLE_PAYMENT, true);
+const devEnableChatbox = parseBooleanEnv(process.env.ENABLE_CHATBOX, true);
+const prodEnableChatbox = parseBooleanEnv(process.env.ENABLE_CHATBOX, true);
 
-const renderEnvironment = (production, apiUrl, disablePayment) => `export const environment = {
+const renderEnvironment = (production, apiUrl, disablePayment, enableChatbox) => `export const environment = {
   production: ${production},
   apiUrl: ${quote(apiUrl)},
   applicationName: ${quote(applicationName)},
   googleMapsApiKey: ${quote(process.env.GOOGLE_MAPS_API_KEY || '')},
   assetUrl: ${quote(process.env.ASSET_URL || '')},
-  disablePayment: ${disablePayment}
+  disablePayment: ${disablePayment},
+  enableChatbox: ${enableChatbox}
 };
 `;
 
 const devApiUrl = '/api';
 const prodApiUrl = process.env.API_URL || 'https://api.tashihomes.in';
 
-writeFileSync(browserEnvPath, renderEnvironment(false, devApiUrl, devDisablePayment));
-writeFileSync(browserProdEnvPath, renderEnvironment(true, prodApiUrl, prodDisablePayment));
+writeFileSync(browserEnvPath, renderEnvironment(false, devApiUrl, devDisablePayment, devEnableChatbox));
+writeFileSync(browserProdEnvPath, renderEnvironment(true, prodApiUrl, prodDisablePayment, prodEnableChatbox));
 
 console.log(`Synced environment files from ${envPath}`);

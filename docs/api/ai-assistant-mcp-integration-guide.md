@@ -25,10 +25,16 @@ All assistant, vector engine, and MCP endpoints are served under `/api/v1/public
 
 ---
 
-## 2. Security & Identifier Standards
+## 2. Security & Feature Flags
 
 > [!IMPORTANT]
 > **Zero Database Integer ID Exposure**: All entity identifiers exposed by the AI Concierge, Vector Search, and MCP tools are secure **UUID strings** (`public_id`) named simply `"id"`. The frontend should treat all entity IDs (`homestay id`, `booking id`, `guest id`, `room type id`) as opaque UUID strings.
+
+### Environment & Feature Flags (`.env` & `environment.ts`)
+| Flag | Default | Description |
+| :--- | :--- | :--- |
+| `ENABLE_CHATBOX` (`environment.enableChatbox`) | `true` | When set to `false`, completely unmounts and hides the floating AI assistant chatbox launcher. |
+| `DISABLE_PAYMENT` (`environment.disablePayment`) | `false` | When set to `true`, disables online booking/payment gateway execution and renders informational notes. |
 
 ---
 
