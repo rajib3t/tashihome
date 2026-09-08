@@ -1,5 +1,4 @@
-/* You can add global styles to this file, and also import other style files */
-
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Manrope:wght@200..800&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "daisyui" {
@@ -9,25 +8,6 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ---- custom type ---- */
-@font-face {
-  font-family: 'Glitten';
-  src: url('./fonts/Glitten-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Valleki';
-  src: url('./fonts/valleki.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Files above are loaded from a local ./fonts/ folder — place Glitten-Regular.otf
-   and valleki.ttf next to this styles file or in public/fonts. Until then, the Fraunces fallback
-   keeps everything legible. */
 
 html {
   scroll-behavior: smooth;
@@ -35,7 +15,7 @@ html {
 
 body {
   @apply m-0 bg-background text-foreground;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+  font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
     Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -129,12 +109,16 @@ code {
 }
 
 @theme inline {
-  --font-valleki: 'Valleki', 'Fraunces', serif;
-  --font-glitten: 'Glitten', 'Fraunces', serif;
-  --font-display: 'Glitten', 'Fraunces', serif;
-  --font-accent: 'Valleki', 'Fraunces', serif;
-  --font-body: 'Inter', sans-serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-lora: 'Lora', serif;
+  --font-manrope: 'Manrope', 'Inter', sans-serif;
+  --font-cormorant: 'Lora', serif;
+  --font-dmsans: 'Manrope', 'Inter', sans-serif;
+  --font-valleki: 'Lora', serif;
+  --font-glitten: 'Lora', serif;
+  --font-display: 'Lora', serif;
+  --font-accent: 'Manrope', 'Inter', sans-serif;
+  --font-body: 'Manrope', 'Inter', sans-serif;
+  --font-sans: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Brand Palette Tokens */
   --color-cloud: #F3FAFB;
@@ -220,15 +204,39 @@ code {
 
 /* ---- Custom Typography & Component Utilities ---- */
 .font-display {
-  font-family: 'Glitten', 'Fraunces', serif;
+  font-family: 'Lora', serif;
+}
+
+.font-lora {
+  font-family: 'Lora', serif;
+}
+
+.font-manrope {
+  font-family: 'Manrope', 'Inter', sans-serif;
 }
 
 .font-accent {
-  font-family: 'Valleki', 'Fraunces', serif;
+  font-family: 'Manrope', 'Inter', sans-serif;
+}
+
+.font-cormorant {
+  font-family: 'Lora', serif;
+}
+
+.font-dmsans {
+  font-family: 'Manrope', 'Inter', sans-serif;
+}
+
+.font-valleki {
+  font-family: 'Lora', serif;
+}
+
+.font-glitten {
+  font-family: 'Lora', serif;
 }
 
 .eyebrow {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Manrope', 'Inter', sans-serif;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-size: 0.72rem;

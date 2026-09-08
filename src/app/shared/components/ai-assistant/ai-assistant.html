@@ -1,0 +1,887 @@
+<!-- AI Assistant Floating Launcher Button -->
+<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+  <!-- Launcher Button -->
+  <button
+    *ngIf="!isOpen()"
+    (click)="toggleChat()"
+    type="button"
+    class="group relative flex items-center gap-2.5 px-4 py-3 bg-[#126A7A] hover:bg-[#0e5562] text-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 border border-white/20"
+    aria-label="Open AI Concierge"
+  >
+    <!-- Pulse Ring Effect -->
+    <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FAA52D] opacity-75"></span>
+      <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#FAA52D] border-2 border-white"></span>
+    </span>
+
+    <!-- Sparkle / Robot Icon -->
+    <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+      <svg class="w-4 h-4 text-white animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    </div>
+
+    <span class="font-medium text-sm tracking-wide">Ask {{ appName() }} AI</span>
+  </button>
+
+  <!-- Chat Window Panel -->
+  <div
+    *ngIf="isOpen()"
+    class="relative w-[calc(100vw-2rem)] sm:w-[430px] max-h-[85vh] h-[640px] flex flex-col bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
+  >
+    <!-- Header -->
+    <div class="px-4 py-3.5 bg-gradient-to-r from-[#126A7A] via-[#1b7f92] to-[#479FB5] text-white flex items-center justify-between shrink-0 shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="relative w-9 h-9 rounded-full bg-white/20 border border-white/30 flex items-center justify-center font-bold text-base shadow-inner">
+          ✨
+          <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-[#126A7A] rounded-full"></span>
+        </div>
+        <div>
+          <h3 class="font-semibold text-sm leading-tight tracking-wide flex items-center gap-1.5">
+            {{ appName() }} Concierge
+            <span class="text-[10px] uppercase font-bold px-1.5 py-0.5 bg-amber-400/30 text-amber-200 rounded border border-amber-300/40">AI</span>
+          </h3>
+          <p class="text-[11px] text-teal-100/90 leading-none mt-0.5">{{ assistantSubtitle() }}</p>
+        </div>
+      </div>
+
+      <!-- Header Action Controls -->
+      <div class="flex items-center gap-1">
+        <!-- Clear Chat Button -->
+        <button
+          (click)="clearChat()"
+          title="Clear Conversation"
+          class="p-1.5 rounded-lg hover:bg-white/20 text-white/90 hover:text-white transition-colors"
+          type="button"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+
+        <!-- Close / Minimize Button -->
+        <button
+          (click)="closeChat()"
+          title="Minimize Chat"
+          class="p-1.5 rounded-lg hover:bg-white/20 text-white/90 hover:text-white transition-colors"
+          type="button"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Message Stream Area -->
+    <div
+      #scrollContainer
+      class="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50/60 dark:bg-zinc-950/60 text-sm scroll-smooth custom-scrollbar"
+    >
+      <!-- Message Loop -->
+      <div *ngFor="let msg of messages()" class="flex flex-col space-y-2">
+        <!-- USER MESSAGE -->
+        <div *ngIf="msg.sender === 'user'" class="flex justify-end">
+          <div class="max-w-[85%] bg-[#126A7A] text-white px-3.5 py-2.5 rounded-2xl rounded-tr-none shadow-sm text-sm">
+            <p class="whitespace-pre-wrap break-words leading-relaxed">{{ msg.text }}</p>
+            <span class="block text-[10px] text-teal-100/70 text-right mt-1">
+              {{ msg.timestamp | appDateTime }}
+            </span>
+          </div>
+        </div>
+
+        <!-- ASSISTANT MESSAGE -->
+        <div *ngIf="msg.sender === 'assistant'" class="flex gap-2.5 items-start">
+          <div class="w-7 h-7 rounded-full bg-[#126A7A]/10 dark:bg-teal-950 text-[#126A7A] dark:text-teal-400 flex items-center justify-center shrink-0 mt-0.5 border border-[#126A7A]/20">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+
+          <div class="max-w-[88%] space-y-3">
+            <!-- Text Bubble -->
+            <div class="bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 px-3.5 py-2.5 rounded-2xl rounded-tl-none border border-zinc-200/80 dark:border-zinc-700/80 shadow-xs">
+              <div class="leading-relaxed whitespace-pre-wrap break-words" [innerHTML]="formatMarkdown(msg.text)"></div>
+              <span class="block text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+                {{ msg.timestamp | appDateTime }}
+              </span>
+            </div>
+
+            <!-- SEARCH RESULTS CARDS (With Interactive Pagination) -->
+            <div *ngIf="msg.data?.search_results && msg.data!.search_results!.length > 0" class="space-y-2 pt-1">
+              <div class="flex items-center justify-between">
+                <p class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                  Recommended Homestays ({{ msg.data!.search_results!.length }})
+                </p>
+                <span
+                  *ngIf="getMsgTotalSearchPages(msg) > 1"
+                  class="text-[10px] font-medium text-[#126A7A] dark:text-teal-300 bg-teal-50 dark:bg-teal-950/70 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800"
+                >
+                  Page {{ getMsgSearchPage(msg.id) }} of {{ getMsgTotalSearchPages(msg) }}
+                </span>
+              </div>
+              
+              <div class="space-y-2.5">
+                <div
+                  *ngFor="let item of getPaginatedSearchResults(msg)"
+                  class="p-3 bg-white dark:bg-zinc-800/90 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-sm hover:border-[#126A7A] dark:hover:border-teal-500 transition-all duration-200"
+                >
+                  <div class="flex gap-3">
+                    <img
+                      [src]="item.cover_image || '/images/property-bg.webp'"
+                      (error)="$any($event.target).src = '/images/property-bg.webp'"
+                      [alt]="item.name"
+                      class="w-16 h-16 rounded-lg object-cover bg-zinc-100 dark:bg-zinc-700 shrink-0 border border-zinc-100 dark:border-zinc-700"
+                    />
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between gap-1">
+                        <h4 class="font-semibold text-xs text-zinc-900 dark:text-zinc-100 truncate">
+                          {{ item.name }}
+                        </h4>
+                        <div *ngIf="item.rating" class="flex items-center text-amber-500 text-[11px] font-medium shrink-0">
+                          ★ {{ item.rating }}
+                        </div>
+                      </div>
+
+                      <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                        📍 {{ item.location ? item.location + (item.city ? ', ' : '') : '' }}{{ item.city || '' }}
+                      </p>
+
+                      <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-zinc-100 dark:border-zinc-700/60">
+                        <div class="text-xs font-bold text-[#126A7A] dark:text-teal-400">
+                          {{ item.currency_symbol || item.currency || defaultCurrency() }} {{ item.base_price | number }}
+                          <span class="text-[10px] font-normal text-zinc-500">/ night</span>
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                          <a
+                            [routerLink]="['/stay', item.slug]"
+                            (click)="closeChat()"
+                            class="px-2 py-1 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 rounded transition-colors"
+                          >
+                            View
+                          </a>
+                          <!-- Check Dates with Dialog Button -->
+                          <button
+                            (click)="openAvailabilityModal(item)"
+                            type="button"
+                            class="px-2 py-1 text-[11px] font-medium text-white bg-[#126A7A] hover:bg-[#0e5562] rounded transition-colors flex items-center gap-1"
+                          >
+                            <span>📅</span> Check Dates
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pagination Controls Bar -->
+              <div *ngIf="getMsgTotalSearchPages(msg) > 1" class="flex items-center justify-between pt-1.5 border-t border-zinc-100 dark:border-zinc-700/50">
+                <button
+                  type="button"
+                  (click)="setMsgSearchPage(msg.id, getMsgSearchPage(msg.id) - 1)"
+                  [disabled]="getMsgSearchPage(msg.id) <= 1"
+                  class="px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 font-medium text-[11px] cursor-pointer"
+                >
+                  <span>‹</span> Prev
+                </button>
+
+                <!-- Page Number Pills -->
+                <div class="flex items-center gap-1">
+                  <button
+                    type="button"
+                    *ngFor="let p of getMsgPageNumbers(msg)"
+                    (click)="setMsgSearchPage(msg.id, p)"
+                    [ngClass]="getMsgSearchPage(msg.id) === p ? 'bg-[#126A7A] text-white font-bold shadow-xs' : 'bg-zinc-100 dark:bg-zinc-700/80 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-600'"
+                    class="w-6 h-6 rounded-md text-[10px] flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    {{ p }}
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="setMsgSearchPage(msg.id, getMsgSearchPage(msg.id) + 1)"
+                  [disabled]="getMsgSearchPage(msg.id) >= getMsgTotalSearchPages(msg)"
+                  class="px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 font-medium text-[11px] cursor-pointer"
+                >
+                  Next <span>›</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- AVAILABILITY QUOTE CARD (With Room-Type Variations) -->
+            <div *ngIf="msg.data?.availability && !msg.data?.booking" class="p-3.5 bg-teal-50/80 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800/60 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-teal-900 dark:text-teal-200">
+                  {{ msg.data!.availability!.property_name }}
+                </span>
+                <span
+                  class="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                  [ngClass]="msg.data!.availability!.is_available ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300'"
+                >
+                  {{ msg.data!.availability!.is_available ? 'Available' : 'Unavailable' }}
+                </span>
+              </div>
+
+              <!-- Available Room Types Variations & Occupancy Pricing Tiers -->
+              <div *ngIf="msg.data!.availability!.room_types && msg.data!.availability!.room_types!.length > 0" class="space-y-1.5 pt-1">
+                <span class="text-[10px] font-semibold text-teal-800 dark:text-teal-300 uppercase tracking-wider">Room Types & Occupancy Rates:</span>
+                <div class="grid grid-cols-1 gap-2">
+                  <div
+                    *ngFor="let room of msg.data!.availability!.room_types"
+                    (click)="switchRoomTypeQuote(msg.data!.availability!, room)"
+                    [ngClass]="room.is_selected || msg.data!.availability!.selected_room_type === room.name ? 'border-[#126A7A] bg-teal-100/60 dark:bg-teal-900/40 text-teal-950 dark:text-teal-100 ring-1 ring-[#126A7A]' : 'border-zinc-200 dark:border-zinc-700 bg-white/70 dark:bg-zinc-800/70 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 cursor-pointer'"
+                    class="p-2.5 rounded-xl border text-xs space-y-2 transition-all"
+                  >
+                    <!-- Room Header -->
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <span class="font-semibold">{{ room.name }}</span>
+                        <span *ngIf="room.capacity" class="text-[10px] text-zinc-500 ml-1">(Up to {{ room.capacity }} guests)</span>
+                      </div>
+                      <div class="font-bold text-[#126A7A] dark:text-teal-300">
+                        {{ msg.data!.availability!.currency_symbol || msg.data!.availability!.currency || defaultCurrency() }} {{ room.price_per_night | number }}<span class="text-[10px] font-normal text-zinc-500">/nt</span>
+                      </div>
+                    </div>
+
+                    <!-- Room Rates by Occupancy -->
+                    <div *ngIf="room.pricing_tiers && room.pricing_tiers.length > 0" class="pt-2 border-t border-teal-200/50 dark:border-teal-800/40" (click)="$event.stopPropagation()">
+                      <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">Room Rates by Occupancy</span>
+                        <span
+                          *ngIf="(room.is_selected || msg.data!.availability!.selected_room_type === room.name) && getAppliedOccupancy(msg.data!.availability!, room)"
+                          class="text-[9px] text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.5 rounded font-semibold"
+                        >
+                          ✓ {{ getAppliedOccupancy(msg.data!.availability!, room) }} Guest Tier Active
+                        </span>
+                      </div>
+                      <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                        <button
+                          type="button"
+                          *ngFor="let tier of room.pricing_tiers"
+                          (click)="selectOccupancyTierQuote(msg.data!.availability!, room, tier.occupancy); $event.stopPropagation()"
+                          class="py-1.5 px-2 rounded-lg text-left border transition-all cursor-pointer"
+                          [ngClass]="getAppliedOccupancy(msg.data!.availability!, room) === tier.occupancy ? 'border-[#126A7A] bg-[#126A7A]/10 text-[#126A7A] dark:text-teal-300 ring-1 ring-[#126A7A] font-semibold' : 'border-zinc-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-zinc-700 dark:text-zinc-300 hover:border-teal-400'"
+                        >
+                          <div class="text-[9px] opacity-80">{{ tier.occupancy }} {{ tier.occupancy === 1 ? 'Guest' : 'Guests' }}</div>
+                          <div class="font-bold text-xs mt-0.5">
+                            {{ msg.data!.availability!.currency_symbol || msg.data!.availability!.currency || defaultCurrency() }}{{ getEffectiveTierRate(tier) | number }}
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stay Dates & Occupancy Info -->
+              <div class="grid grid-cols-2 gap-2 text-[11px] bg-white/80 dark:bg-zinc-800/80 p-2.5 rounded-lg border border-teal-100 dark:border-teal-900/40">
+                <div>
+                  <span class="text-zinc-500">Dates:</span>
+                  <div class="font-medium text-zinc-800 dark:text-zinc-200">
+                    {{ msg.data!.availability!.check_in_date | appDate }} to {{ msg.data!.availability!.check_out_date | appDate }}
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="text-zinc-500">Guests & Duration:</span>
+                    <div class="font-medium text-zinc-800 dark:text-zinc-200">
+                      {{ msg.data!.availability!.num_guests || guestCount() }} Guest(s) • {{ getQuoteNights(msg.data!.availability) }} nt
+                    </div>
+                  </div>
+                  <!-- Change Dates Button -->
+                  <button
+                    (click)="openAvailabilityModalFromQuote(msg.data!.availability!)"
+                    type="button"
+                    title="Change check-in and check-out dates"
+                    class="px-2 py-1 bg-teal-100 hover:bg-teal-200 dark:bg-teal-900/60 dark:hover:bg-teal-800 text-[#126A7A] dark:text-teal-300 rounded text-[10px] font-semibold transition-colors flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <span>📅</span> Change
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-1 text-xs pt-1 border-t border-teal-200/60 dark:border-teal-800/40">
+                <div class="flex justify-between text-zinc-600 dark:text-zinc-300 text-[11px]">
+                  <span>Subtotal ({{ getQuoteNights(msg.data!.availability) }} nights)</span>
+                  <span>{{ msg.data!.availability!.currency_symbol || msg.data!.availability!.currency || defaultCurrency() }} {{ (msg.data!.availability!.subtotal || msg.data!.availability!.base_amount || ((msg.data!.availability!.price_per_night || 0) * getQuoteNights(msg.data!.availability))) | number }}</span>
+                </div>
+                <div *ngIf="msg.data!.availability!.tax_amount" class="flex justify-between text-zinc-600 dark:text-zinc-300 text-[11px]">
+                  <span>Tax & Fees</span>
+                  <span>{{ msg.data!.availability!.currency_symbol || msg.data!.availability!.currency || defaultCurrency() }} {{ msg.data!.availability!.tax_amount | number }}</span>
+                </div>
+                <div class="flex justify-between font-bold text-teal-950 dark:text-teal-200 text-xs pt-1 border-t border-teal-100 dark:border-teal-900/30">
+                  <span>Total Amount</span>
+                  <span>{{ msg.data!.availability!.currency_symbol || msg.data!.availability!.currency || defaultCurrency() }} {{ msg.data!.availability!.total_amount | number }}</span>
+                </div>
+              </div>
+
+              <!-- Actions: Respect isPaymentDisabled and is_available -->
+              <!-- When Payment is Disabled -->
+              <div *ngIf="isPaymentDisabled" class="space-y-2 pt-0.5">
+                <div class="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/80 p-2 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                  <span>ℹ️</span> Online direct booking is currently disabled.
+                </div>
+                <div class="flex gap-2">
+                  <a
+                    *ngIf="msg.data!.availability!.property_slug"
+                    [routerLink]="['/stay', msg.data!.availability!.property_slug]"
+                    (click)="closeChat()"
+                    class="flex-1 py-2 bg-zinc-800 hover:bg-zinc-900 text-white dark:bg-zinc-200 dark:hover:bg-white dark:text-zinc-900 font-semibold text-xs rounded-lg shadow-sm transition-colors text-center cursor-pointer"
+                  >
+                    View Homestay
+                  </a>
+                  <button
+                    (click)="openAvailabilityModalFromQuote(msg.data!.availability!)"
+                    type="button"
+                    class="flex-1 py-2 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-800 dark:text-zinc-200 font-semibold text-xs rounded-lg transition-colors text-center flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>📅</span> Check Dates
+                  </button>
+                </div>
+              </div>
+
+              <!-- When Payment is Enabled -->
+              <div *ngIf="!isPaymentDisabled">
+                <div *ngIf="msg.data!.availability!.is_available" class="pt-0.5">
+                  <button
+                    (click)="initiateBookingFromQuote(msg.data!.availability!)"
+                    type="button"
+                    class="w-full py-2 bg-[#FAA52D] hover:bg-[#e89624] text-zinc-900 font-semibold text-xs rounded-lg shadow-sm transition-colors text-center cursor-pointer"
+                  >
+                    Instant Book & Pay Online
+                  </button>
+                </div>
+
+                <div *ngIf="!msg.data!.availability!.is_available" class="space-y-2 pt-0.5">
+                  <div class="flex items-center gap-1.5 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 p-2 rounded-lg border border-amber-200 dark:border-amber-800/60">
+                    <span>⚠️</span> This stay is unavailable for the selected dates. Please select different dates.
+                  </div>
+                  <button
+                    (click)="openAvailabilityModalFromQuote(msg.data!.availability!)"
+                    type="button"
+                    class="w-full py-2 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-800 dark:text-zinc-200 font-semibold text-xs rounded-lg transition-colors text-center flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>📅</span> Check Different Dates
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- BOOKING CONFIRMATION CARD (With Native Payment Gateway Integration) -->
+            <div *ngIf="msg.data?.booking" class="p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/60 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-semibold text-xs">
+                  <span class="w-5 h-5 rounded-full bg-emerald-200 dark:bg-emerald-800 flex items-center justify-center text-xs">✓</span>
+                  Booking Confirmed!
+                </div>
+                <span
+                  class="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                  [ngClass]="msg.data!.booking!.payment_status === 'PAID' || paymentSuccessRef() === msg.data!.booking!.booking_reference ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300'"
+                >
+                  {{ msg.data!.booking!.payment_status === 'PAID' || paymentSuccessRef() === msg.data!.booking!.booking_reference ? 'Paid' : 'Payment Pending' }}
+                </span>
+              </div>
+
+              <div class="bg-white/80 dark:bg-zinc-800/80 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/40 space-y-1.5 text-xs">
+                <div class="flex items-center justify-between">
+                  <span class="text-zinc-500 text-[11px]">Booking Ref:</span>
+                  <div class="flex items-center gap-1">
+                    <span class="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      {{ msg.data!.booking!.booking_reference }}
+                    </span>
+                    <button
+                      (click)="copyBookingReference(msg.data!.booking!.booking_reference)"
+                      type="button"
+                      class="text-[10px] text-teal-700 dark:text-teal-400 hover:underline cursor-pointer"
+                    >
+                      {{ copiedRef() === msg.data!.booking!.booking_reference ? 'Copied!' : 'Copy' }}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="text-zinc-500">Property:</span>
+                  <span class="font-medium text-zinc-800 dark:text-zinc-200">
+                    {{ msg.data!.booking!.property_name }}
+                    <span *ngIf="msg.data!.booking!.room_type_name" class="text-teal-700 dark:text-teal-400">({{ msg.data!.booking!.room_type_name }})</span>
+                  </span>
+                </div>
+
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="text-zinc-500">Dates:</span>
+                  <span class="font-medium text-zinc-800 dark:text-zinc-200">
+                    {{ msg.data!.booking!.check_in_date | appDate }} → {{ msg.data!.booking!.check_out_date | appDate }}
+                  </span>
+                </div>
+
+                <div class="flex items-center justify-between text-[11px] pt-1 border-t border-emerald-100 dark:border-emerald-900/40">
+                  <span class="text-zinc-500">Total Amount:</span>
+                  <span class="font-bold text-emerald-700 dark:text-emerald-400">
+                    {{ msg.data!.booking!.currency_symbol || msg.data!.booking!.currency || defaultCurrency() }} {{ msg.data!.booking!.total_amount | number }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Payment Action Buttons (When Payment Enabled) -->
+              <div *ngIf="!isPaymentDisabled && msg.data!.booking!.payment_status !== 'PAID' && paymentSuccessRef() !== msg.data!.booking!.booking_reference" class="space-y-1.5 pt-0.5">
+                <button
+                  type="button"
+                  (click)="payForBooking(msg.data!.booking)"
+                  [disabled]="isPaying() === msg.data!.booking!.booking_reference"
+                  class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <svg *ngIf="isPaying() === msg.data!.booking!.booking_reference" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>💳 Pay with Razorpay ({{ msg.data!.booking!.currency_symbol || msg.data!.booking!.currency || defaultCurrency() }} {{ (msg.data!.booking!.payment_gateway?.amount || msg.data!.booking!.total_amount) | number }})</span>
+                </button>
+
+                <div *ngIf="msg.data!.booking!.payment_gateway?.payment_url" class="text-center">
+                  <button
+                    type="button"
+                    (click)="openPaymentLink(msg.data!.booking!.payment_gateway?.payment_url)"
+                    class="text-[11px] text-teal-700 dark:text-teal-400 hover:underline"
+                  >
+                    Open direct payment gateway link ↗
+                  </button>
+                </div>
+              </div>
+
+              <!-- When Payment is Disabled -->
+              <div *ngIf="isPaymentDisabled && msg.data!.booking!.payment_status !== 'PAID'" class="p-2 bg-zinc-100 dark:bg-zinc-800/80 rounded-lg text-zinc-600 dark:text-zinc-400 text-xs text-center font-medium">
+                Online payment is currently disabled. Please contact the host or front desk upon arrival.
+              </div>
+
+              <div *ngIf="msg.data!.booking!.payment_status === 'PAID' || paymentSuccessRef() === msg.data!.booking!.booking_reference" class="p-2 bg-emerald-100/70 dark:bg-emerald-900/40 rounded-lg text-emerald-800 dark:text-emerald-300 text-xs text-center font-medium flex items-center justify-center gap-1">
+                <span>✓</span> Payment confirmed online. Thank you!
+              </div>
+
+              <div *ngIf="paymentError()" class="p-2 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 rounded-lg text-rose-700 dark:text-rose-300 text-[11px]">
+                {{ paymentError() }}
+              </div>
+            </div>
+
+            <!-- PAYMENT INVOICE CARD (Triggered from initiate_booking_payment when booking card is not already shown) -->
+            <div *ngIf="msg.data?.payment && (!msg.data?.booking || msg.data?.payment?.booking_reference !== msg.data?.booking?.booking_reference)" class="p-4 bg-teal-50 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800/60 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 text-teal-900 dark:text-teal-200 font-semibold text-xs">
+                  <span>💳</span> Complete Payment
+                </div>
+                <span
+                  class="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                  [ngClass]="msg.data!.payment!.payment_status === 'PAID' || paymentSuccessRef() === msg.data!.payment!.booking_reference ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
+                >
+                  {{ msg.data!.payment!.payment_status === 'PAID' || paymentSuccessRef() === msg.data!.payment!.booking_reference ? 'Paid' : 'Payment Due' }}
+                </span>
+              </div>
+
+              <div class="bg-white/80 dark:bg-zinc-800/80 p-2.5 rounded-lg border border-teal-100 dark:border-teal-900/40 space-y-1.5 text-xs">
+                <div class="flex items-center justify-between">
+                  <span class="text-zinc-500 text-[11px]">Booking Ref:</span>
+                  <span class="font-mono font-bold text-zinc-900 dark:text-zinc-100">{{ msg.data!.payment!.booking_reference }}</span>
+                </div>
+                <div *ngIf="msg.data!.payment!.property_name" class="flex items-center justify-between text-[11px]">
+                  <span class="text-zinc-500">Property:</span>
+                  <span class="font-medium text-zinc-800 dark:text-zinc-200">{{ msg.data!.payment!.property_name }}</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] pt-1 border-t border-teal-100 dark:border-teal-900/40">
+                  <span class="text-zinc-500">Amount Due:</span>
+                  <span class="font-bold text-teal-900 dark:text-teal-300">
+                    {{ msg.data!.payment!.currency_symbol || msg.data!.payment!.currency || defaultCurrency() }} {{ (msg.data!.payment!.remaining_balance || msg.data!.payment!.total_amount) | number }}
+                  </span>
+                </div>
+              </div>
+
+              <div *ngIf="!isPaymentDisabled && msg.data!.payment!.payment_status !== 'PAID' && paymentSuccessRef() !== msg.data!.payment!.booking_reference" class="space-y-1.5">
+                <button
+                  type="button"
+                  (click)="payForBooking(msg.data!.payment)"
+                  [disabled]="isPaying() === msg.data!.payment!.booking_reference"
+                  class="w-full py-2.5 bg-[#126A7A] hover:bg-[#0e5562] disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <svg *ngIf="isPaying() === msg.data!.payment!.booking_reference" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Pay {{ msg.data!.payment!.currency_symbol || msg.data!.payment!.currency || defaultCurrency() }} {{ (msg.data!.payment!.remaining_balance || msg.data!.payment!.total_amount) | number }} Now</span>
+                </button>
+              </div>
+
+              <div *ngIf="isPaymentDisabled && msg.data!.payment!.payment_status !== 'PAID'" class="p-2 bg-zinc-100 dark:bg-zinc-800/80 rounded-lg text-zinc-600 dark:text-zinc-400 text-xs text-center font-medium">
+                Online payment is currently disabled.
+              </div>
+
+              <div *ngIf="msg.data!.payment!.payment_status === 'PAID' || paymentSuccessRef() === msg.data!.payment!.booking_reference" class="p-2 bg-emerald-100/70 dark:bg-emerald-900/40 rounded-lg text-emerald-800 dark:text-emerald-300 text-xs text-center font-medium">
+                ✓ Payment confirmed online. Thank you!
+              </div>
+            </div>
+
+            <!-- SUGGESTED ACTION CHIPS -->
+            <div *ngIf="msg.data?.suggested_actions && msg.data!.suggested_actions!.length > 0" class="flex flex-wrap gap-1.5 pt-1">
+              <button
+                *ngFor="let act of msg.data!.suggested_actions"
+                (click)="useSuggestion(act)"
+                type="button"
+                class="px-2.5 py-1 text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-zinc-700 dark:text-zinc-300 hover:text-[#126A7A] dark:hover:text-teal-400 rounded-full border border-zinc-200 dark:border-zinc-700 transition-colors"
+              >
+                {{ act }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TYPING INDICATOR -->
+      <div *ngIf="isLoading()" class="flex gap-2.5 items-start">
+        <div class="w-7 h-7 rounded-full bg-[#126A7A]/10 text-[#126A7A] flex items-center justify-center shrink-0 border border-[#126A7A]/20">
+          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-800 text-zinc-500 px-4 py-3 rounded-2xl rounded-tl-none border border-zinc-200/80 dark:border-zinc-700/80 shadow-xs flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#126A7A] animate-bounce" style="animation-delay: 0ms"></span>
+          <span class="w-2 h-2 rounded-full bg-[#126A7A] animate-bounce" style="animation-delay: 150ms"></span>
+          <span class="w-2 h-2 rounded-full bg-[#126A7A] animate-bounce" style="animation-delay: 300ms"></span>
+          <span class="text-xs ml-1 text-zinc-400">{{ appName() }} AI is searching...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK PROMPT CHIPS (Initial Screen) -->
+    <div
+      *ngIf="messages().length <= 1 && suggestions().length > 0 && !isLoading()"
+      class="px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-100 dark:border-zinc-800 overflow-x-auto flex gap-1.5 custom-scrollbar shrink-0"
+    >
+      <button
+        *ngFor="let s of suggestions()"
+        (click)="useSuggestion(s.prompt)"
+        type="button"
+        class="whitespace-nowrap px-2.5 py-1 text-[11px] font-medium bg-white dark:bg-zinc-800 hover:bg-teal-50 dark:hover:bg-teal-950 text-zinc-700 dark:text-zinc-300 hover:text-[#126A7A] rounded-lg border border-zinc-200 dark:border-zinc-700 transition-colors shadow-2xs"
+      >
+        💬 {{ s.title }}
+      </button>
+    </div>
+
+    <!-- Input Footer -->
+    <div class="p-3 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 shrink-0">
+      <div class="flex items-center gap-2">
+        <input
+          #chatInput
+          [ngModel]="userInput()"
+          (ngModelChange)="userInput.set($event)"
+          (keydown)="onKeyDown($event)"
+          [disabled]="isLoading()"
+          placeholder="Ask {{ appName() }} AI (e.g. Find homestays in Paro for 2 guests)..."
+          type="text"
+          class="flex-1 bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:ring-2 focus:ring-[#126A7A] focus:outline-none transition-all disabled:opacity-50"
+        />
+
+        <button
+          (click)="sendMessage()"
+          [disabled]="isLoading() || !userInput().trim()"
+          type="button"
+          class="w-9 h-9 rounded-xl bg-[#126A7A] hover:bg-[#0e5562] disabled:opacity-40 disabled:hover:bg-[#126A7A] text-white flex items-center justify-center shadow-sm transition-all duration-200 shrink-0"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between text-[10px] text-zinc-400 dark:text-zinc-500 mt-1.5 px-1">
+        <span>Powered by {{ appName() }} AI</span>
+        <span *ngIf="currentUser()">Logged in as {{ currentUser()?.full_name }}</span>
+      </div>
+    </div>
+
+    <!-- INLINE AVAILABILITY MODAL (Dates & Guests Picker) -->
+    <div
+      *ngIf="isAvailabilityModalOpen()"
+      class="absolute inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-3 animate-in fade-in"
+    >
+      <div class="w-full bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+          <div>
+            <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100">Check Dates & Guests</h4>
+            <p class="text-[11px] text-teal-700 dark:text-teal-400 font-medium truncate max-w-[260px]">
+              {{ selectedHomestayForCheck()?.name }}
+            </p>
+          </div>
+          <button (click)="closeAvailabilityModal()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 text-sm font-bold">✕</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <!-- Date Pickers Grid -->
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">Check-in Date ({{ dateFormat() }})</label>
+              <input
+                type="date"
+                [ngModel]="checkInDate()"
+                (ngModelChange)="onCheckInChange($event)"
+                [min]="today"
+                class="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#126A7A] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">Check-out Date ({{ dateFormat() }})</label>
+              <input
+                type="date"
+                [ngModel]="checkOutDate()"
+                (ngModelChange)="checkOutDate.set($event)"
+                [min]="checkInDate()"
+                class="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#126A7A] focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <!-- Guests and Rooms Count with Strict Max Limits -->
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400">Guests</label>
+                <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">Max: {{ modalMaxGuests() }}</span>
+              </div>
+              <div class="flex items-center bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  (click)="decrementGuestCount()"
+                  [disabled]="guestCount() <= 1"
+                  class="px-2.5 py-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+                >-</button>
+                <span class="flex-1 text-center font-semibold text-zinc-800 dark:text-zinc-200">{{ guestCount() }}</span>
+                <button
+                  type="button"
+                  (click)="incrementGuestCount()"
+                  [disabled]="guestCount() >= modalMaxGuests()"
+                  class="px-2.5 py-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+                >+</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400">Rooms</label>
+                <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">Max: {{ modalMaxRooms() }}</span>
+              </div>
+              <div class="flex items-center bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  (click)="decrementRoomCount()"
+                  [disabled]="roomCount() <= 1"
+                  class="px-2.5 py-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+                >-</button>
+                <span class="flex-1 text-center font-semibold text-zinc-800 dark:text-zinc-200">{{ roomCount() }}</span>
+                <button
+                  type="button"
+                  (click)="incrementRoomCount()"
+                  [disabled]="roomCount() >= modalMaxRooms()"
+                  class="px-2.5 py-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+                >+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2 pt-2">
+          <button
+            (click)="closeAvailabilityModal()"
+            type="button"
+            class="flex-1 py-2 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            (click)="confirmAvailabilityCheck()"
+            type="button"
+            class="flex-1 py-2 rounded-xl text-xs font-semibold text-white bg-[#126A7A] hover:bg-[#0e5562] shadow-sm transition-colors"
+          >
+            Check Rates
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRE-CHECKOUT AUTHENTICATION & VERIFICATION MODAL -->
+    <div
+      *ngIf="showAuthModal()"
+      class="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-3 animate-in fade-in"
+    >
+      <div class="w-full bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-3.5 max-h-[92%] overflow-y-auto custom-scrollbar">
+        <!-- Modal Top Bar -->
+        <div class="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+          <div>
+            <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100">Sign In to Complete Booking</h4>
+            <p class="text-[11px] text-teal-700 dark:text-teal-400 font-medium truncate max-w-[260px]">
+              {{ pendingCheckoutQuote()?.property_name }}
+              <span *ngIf="pendingCheckoutQuote()?.selected_room_type" class="text-teal-600">({{ pendingCheckoutQuote()?.selected_room_type }})</span>
+            </p>
+          </div>
+          <button (click)="closeAuthModal()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 text-sm font-bold">✕</button>
+        </div>
+
+        <!-- Tabs: Log In vs Register -->
+        <div class="flex p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
+          <button
+            type="button"
+            (click)="switchAuthTab('login')"
+            [ngClass]="authTab() === 'login' ? 'bg-white dark:bg-zinc-900 text-[#126A7A] dark:text-teal-400 shadow-xs font-semibold' : 'text-zinc-600 dark:text-zinc-400'"
+            class="flex-1 py-1.5 text-xs rounded-lg transition-all text-center"
+          >
+            Log In
+          </button>
+          <button
+            type="button"
+            (click)="switchAuthTab('register')"
+            [ngClass]="authTab() === 'register' ? 'bg-white dark:bg-zinc-900 text-[#126A7A] dark:text-teal-400 shadow-xs font-semibold' : 'text-zinc-600 dark:text-zinc-400'"
+            class="flex-1 py-1.5 text-xs rounded-lg transition-all text-center"
+          >
+            Create Account & Verify
+          </button>
+        </div>
+
+        <!-- TAB 1: LOGIN -->
+        <div *ngIf="authTab() === 'login'" class="space-y-3 text-xs">
+          <!-- Error alert -->
+          <div *ngIf="loginError()" class="p-2.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-xl text-rose-700 dark:text-rose-300 text-[11px]">
+            {{ loginError() }}
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">Email Address</label>
+            <input
+              type="email"
+              [ngModel]="loginEmail()"
+              (ngModelChange)="loginEmail.set($event)"
+              placeholder="you@example.com"
+              class="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#126A7A] focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">Password</label>
+            <input
+              type="password"
+              [ngModel]="loginPassword()"
+              (ngModelChange)="loginPassword.set($event)"
+              placeholder="••••••••"
+              (keydown.enter)="onLoginSubmit()"
+              class="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#126A7A] focus:outline-none"
+            />
+          </div>
+
+          <button
+            (click)="onLoginSubmit()"
+            [disabled]="isLoginSubmitting() || !loginEmail().trim() || !loginPassword()"
+            type="button"
+            class="w-full py-2.5 rounded-xl text-xs font-semibold text-white bg-[#126A7A] hover:bg-[#0e5562] disabled:opacity-50 shadow-sm transition-colors flex items-center justify-center gap-1.5"
+          >
+            <svg *ngIf="isLoginSubmitting()" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Log In & Confirm Booking</span>
+          </button>
+
+          <p class="text-center text-[11px] text-zinc-500 pt-1">
+            New here?
+            <button type="button" (click)="switchAuthTab('register')" class="text-[#126A7A] dark:text-teal-400 font-semibold hover:underline">
+              Create an account
+            </button>
+          </p>
+        </div>
+
+        <!-- TAB 2: REGISTER & VERIFY -->
+        <div *ngIf="authTab() === 'register'" class="space-y-2.5 text-xs">
+          <!-- Error alert -->
+          <div *ngIf="regError()" class="p-2.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-xl text-rose-700 dark:text-rose-300 text-[11px]">
+            {{ regError() }}
+          </div>
+
+          <!-- Verification Success Notice -->
+          <div *ngIf="regSuccess()" class="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-800 dark:text-emerald-300 text-[11px] space-y-2">
+            <div class="font-semibold flex items-center gap-1.5">
+              <span>✉️</span> Verification Email Sent!
+            </div>
+            <p class="leading-relaxed">{{ regSuccess() }}</p>
+            <button
+              (click)="switchAuthTab('login')"
+              type="button"
+              class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-xs text-center transition-colors"
+            >
+              Go to Log In
+            </button>
+          </div>
+
+          <ng-container *ngIf="!regSuccess()">
+            <div>
+              <label class="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">Full Name *</label>
+              <input
+                type="text"
+                [ngModel]="regFullName()"
+                (ngModelChange)="regFullName.set($event)"
+                placeholder="e.g. Sonam Wangchuk"
+                class="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#126A7A] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">Email Address (For Verification) *</label>
+              <input
+                type="email"
+                [ngModel]="regEmail()"
+                (ngModelChange)="regEmail.set($event)"
+                placeholder="sonam@example.com"
+                class="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#126A7A] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">Phone Number *</label>
+              <input
+                type="tel"
+                [ngModel]="regPhone()"
+                (ngModelChange)="regPhone.set($event)"
+                placeholder="+975 17 123 456"
+                class="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#126A7A] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">Password (Min. 8 chars) *</label>
+              <input
+                type="password"
+                [ngModel]="regPassword()"
+                (ngModelChange)="regPassword.set($event)"
+                placeholder="••••••••"
+                class="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#126A7A] focus:outline-none"
+              />
+            </div>
+
+            <button
+              (click)="onRegisterSubmit()"
+              [disabled]="isRegSubmitting() || !regFullName().trim() || !regEmail().trim() || !regPhone().trim() || regPassword().length < 8"
+              type="button"
+              class="w-full py-2.5 rounded-xl text-xs font-semibold text-zinc-900 bg-[#FAA52D] hover:bg-[#e89624] disabled:opacity-50 shadow-sm transition-colors flex items-center justify-center gap-1.5"
+            >
+              <svg *ngIf="isRegSubmitting()" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Register & Send Verification Link</span>
+            </button>
+          </ng-container>
+
+          <p class="text-center text-[11px] text-zinc-500 pt-1">
+            Already registered?
+            <button type="button" (click)="switchAuthTab('login')" class="text-[#126A7A] dark:text-teal-400 font-semibold hover:underline">
+              Log in here
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
