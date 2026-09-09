@@ -93,33 +93,33 @@ export class BecomeHost implements OnInit, AfterViewInit, OnDestroy {
     {
       number: '01',
       title: 'Zero Listing Fees',
-      subtitle: 'Completely free to list & showcase',
+      subtitle: 'COMPLETELY FREE TO LIST & SHOWCASE',
       description:
-        'We never charge upfront onboarding or membership fees. You only earn when you host happy guests.',
+        'No onboarding costs, no membership fees, ever. You only pay 15% when a guest actually books and stays — nothing before, nothing hidden.',
       icon: 'sparkles',
     },
     {
       number: '02',
-      title: 'Free On-Site Photography',
-      subtitle: 'Professional, authentic visual curation',
+      title: 'Verified Listings',
+      subtitle: 'EVERY HOME CHECKED, NOT JUST LISTED',
       description:
-        'Our regional team visits your homestay in person to capture crisp, unedited photos of your rooms, hearth, and Himalayan views.',
+        'Before you go live, our team reviews your homestay details and photos to make sure your listing is honest, accurate, and guest-ready.',
       icon: 'camera',
     },
     {
       number: '03',
-      title: 'Direct Payouts & Transparent Terms',
-      subtitle: 'No hidden deductions or withheld funds',
+      title: 'Full Payment, Direct to You',
+      subtitle: 'NO HIDDEN DEDUCTIONS, NO CHASING PAYMENTS',
       description:
-        'Get paid directly with transparent booking settlements and guaranteed cancellations protection.',
+        'Guests pay in full through Tashi\'s secure payment gateway at booking. You receive your payout directly, with clear terms and guaranteed cancellation protection — no cash handling, no confusion.',
       icon: 'wallet',
     },
     {
       number: '04',
       title: 'Thoughtful, Respectful Guests',
-      subtitle: 'Connecting with cultural travelers',
+      subtitle: 'CONNECTING WITH CULTURAL TRAVELERS',
       description:
-        'We attract conscious travelers seeking local organic food, stories, and the authentic rhythm of mountain life.',
+        'We attract conscious travelers looking for local, organic food, real conversations, and the everyday rhythm of mountain life — not a checklist of amenities.',
       icon: 'heart',
     },
   ];
