@@ -4,11 +4,15 @@ import {
   HttpRequest,
   HttpHandlerFn
 } from '@angular/common/http';
-import { throwError } from 'rxjs';
+import { throwError, BehaviorSubject } from 'rxjs';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../services/auth/auth-service';
+
+// Shared refresh state to prevent multiple simultaneous refresh calls
+let isRefreshing = false;
+const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 const jwtHelper = new JwtHelperService();
 
@@ -121,11 +125,22 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
       if (isTokenExpired) {
 
         return authService.refreshToken().pipe(
+          catchError(() => {
+            // Only catch refresh-token failures here — clear session and bail
+            authService.removeToken();
+            return throwError(() => ({
+              status: 401,
+              error: { success: false, message: 'Session expired. Please log in again.', data: null, error: 'Authentication required' }
+            }));
+          }),
           switchMap((response) => {
             const newAccessToken = extractAccessToken(response);
             if (!newAccessToken) {
               authService.removeToken();
-              return throwError(() => ({ status: 401, error: { success: false, message: 'Session expired. Please log in again.', data: null, error: 'Authentication required' } }));
+              return throwError(() => ({
+                status: 401,
+                error: { success: false, message: 'Session expired. Please log in again.', data: null, error: 'Authentication required' }
+              }));
             }
 
             authService.setToken(newAccessToken, authService.hasPersistentToken());
@@ -136,11 +151,9 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
             }
             headers = headers.set('Authorization', `Bearer ${newAccessToken}`);
             const refreshedReq = req.clone({ headers });
+            // Let any error (400, 409, 422, etc.) from the retried request
+            // propagate to the main catchError pipeline below — don't swallow them here
             return next(refreshedReq);
-          }),
-          catchError(() => {
-            authService.removeToken();
-            return throwError(() => ({ status: 401, error: { success: false, message: 'Session expired. Please log in again.', data: null, error: 'Authentication required' } }));
           })
         );
       }
@@ -162,21 +175,66 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
     catchError(error => {
       console.log("AuthInterceptor: Request failed with status:", error.status);
 
-      // Only clear auth state for true authentication failures.
+      // On 401, attempt refresh before giving up — prevents "session expired"
+      // errors on subsequent calls after a 400/409 response when token is still valid.
       if (error.status === 401 && isProtected) {
-        console.log("AuthInterceptor: 401 on protected request; clearing session");
-        authService.removeToken();
-        const standardizedError = {
-          status: 401,
-          error: {
-            success: false,
-            message: 'Session expired. Please log in again.',
-            data: null,
-            error: 'Authentication required'
-          }
-        };
-        return throwError(() => standardizedError);
+        console.log('AuthInterceptor: 401 on protected request; attempting token refresh');
+
+        if (isRefreshing) {
+          // Another refresh is already in flight — queue this request until it completes
+          return refreshTokenSubject.pipe(
+            filter(token => token !== null && token !== ''),
+            take(1),
+            switchMap(newToken => {
+              const retryHeaders = clonedReq.headers.set('Authorization', `Bearer ${newToken}`);
+              return next(clonedReq.clone({ headers: retryHeaders }));
+            }),
+            catchError(() => {
+              authService.removeToken();
+              return throwError(() => ({
+                status: 401,
+                error: { success: false, message: 'Session expired. Please log in again.', data: null, error: 'Authentication required' }
+              }));
+            })
+          );
+        }
+
+        isRefreshing = true;
+        refreshTokenSubject.next(null); // block queued requests
+
+        return authService.refreshToken().pipe(
+          switchMap(response => {
+            const newToken = extractAccessToken(response);
+            isRefreshing = false;
+
+            if (!newToken) {
+              // No token returned — unblock queued requests then clear session
+              refreshTokenSubject.next(''); // unblock with empty so they fail gracefully
+              authService.removeToken();
+              return throwError(() => ({
+                status: 401,
+                error: { success: false, message: 'Session expired. Please log in again.', data: null, error: 'Authentication required' }
+              }));
+            }
+
+            authService.setToken(newToken, authService.hasPersistentToken());
+            refreshTokenSubject.next(newToken); // unblock queued requests
+
+            const retryHeaders = clonedReq.headers.set('Authorization', `Bearer ${newToken}`);
+            return next(clonedReq.clone({ headers: retryHeaders }));
+          }),
+          catchError(() => {
+            isRefreshing = false;
+            refreshTokenSubject.next(''); // unblock queued requests so they don't hang
+            authService.removeToken();
+            return throwError(() => ({
+              status: 401,
+              error: { success: false, message: 'Session expired. Please log in again.', data: null, error: 'Authentication required' }
+            }));
+          })
+        );
       }
+
 
 
       if ((error.error?.message === 'Validation failed' && error.status === 422) || (error.error?.message === 'Validation failed' && error.status === 409)) {
