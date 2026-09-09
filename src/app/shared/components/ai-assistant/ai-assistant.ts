@@ -150,15 +150,18 @@ export class AiAssistantComponent implements AfterViewChecked {
   public currentUser = computed(() => this.authService.authUser());
   public messages = computed(() => this.assistantService.messages());
   public isLoading = computed(() => this.assistantService.isLoading());
+  public isCurrentlyStreaming = computed(() => this.assistantService.messages().some((m) => m.isStreaming));
   public suggestions = computed(() => this.assistantService.suggestions());
   public isOpen = computed(() => this.assistantService.isChatOpen());
 
   private shouldScrollToBottom = false;
 
   ngAfterViewChecked(): void {
-    if (this.shouldScrollToBottom) {
+    if (this.shouldScrollToBottom || this.isCurrentlyStreaming()) {
       this.scrollToBottom();
-      this.shouldScrollToBottom = false;
+      if (!this.isCurrentlyStreaming()) {
+        this.shouldScrollToBottom = false;
+      }
     }
   }
 
@@ -190,13 +193,8 @@ export class AiAssistantComponent implements AfterViewChecked {
     this.userInput.set('');
     this.shouldScrollToBottom = true;
 
-    this.assistantService.sendMessage(text).subscribe({
-      next: () => {
-        this.shouldScrollToBottom = true;
-      },
-      error: () => {
-        this.shouldScrollToBottom = true;
-      },
+    this.assistantService.sendMessageStream(text).finally(() => {
+      this.shouldScrollToBottom = true;
     });
   }
 
@@ -415,33 +413,88 @@ export class AiAssistantComponent implements AfterViewChecked {
   public searchResultPages = signal<Record<string, number>>({});
   public readonly searchPageSize = 3;
 
-  public getMsgSearchPage(msgId: string): number {
-    return this.searchResultPages()[msgId] || 1;
+  public getMsgSearchPage(msg: any): number {
+    const msgId = typeof msg === 'string' ? msg : msg?.id;
+    if (this.searchResultPages()[msgId]) {
+      return this.searchResultPages()[msgId];
+    }
+    const currentMsg = typeof msg === 'object' ? msg : this.messages().find((m) => m.id === msgId);
+    if (currentMsg?.data?.pagination?.current_page) {
+      return currentMsg.data.pagination.current_page;
+    }
+    return 1;
   }
 
-  public setMsgSearchPage(msgId: string, page: number): void {
-    this.searchResultPages.update(prev => ({
+  public setMsgSearchPage(msg: any, page: number): void {
+    const msgId = typeof msg === 'string' ? msg : msg?.id;
+    const currentMsg = typeof msg === 'object' ? msg : this.messages().find((m) => m.id === msgId);
+    const totalPages = this.getMsgTotalSearchPages(currentMsg);
+    const targetPage = Math.max(1, Math.min(page, totalPages));
+    const currentPage = this.getMsgSearchPage(currentMsg);
+
+    if (targetPage === currentPage && this.searchResultPages()[msgId] === targetPage) {
+      return;
+    }
+
+    const all = currentMsg?.data?.search_results || [];
+    const perPage = currentMsg?.data?.pagination?.per_page || this.searchPageSize;
+
+    // If client has all items in memory (> perPage), switch page locally
+    if (all.length > perPage) {
+      this.searchResultPages.update((prev) => ({
+        ...prev,
+        [msgId]: targetPage,
+      }));
+      return;
+    }
+
+    // Otherwise, request the specific page from the AI Assistant
+    if (this.isLoading()) return;
+
+    this.searchResultPages.update((prev) => ({
       ...prev,
-      [msgId]: Math.max(1, page),
+      [msgId]: targetPage,
     }));
+
+    const searchCall = currentMsg?.data?.tool_calls?.find(
+      (tc: any) => tc?.tool === 'search_homestays' || tc?.result?.properties
+    );
+    const searchArgs = searchCall?.arguments;
+    let prompt = `Show page ${targetPage} of the homestay search results`;
+    if (searchArgs?.query) {
+      prompt = `Show page ${targetPage} of homestays in ${searchArgs.query}`;
+      if (searchArgs.check_in_date && searchArgs.check_out_date) {
+        prompt += ` from ${searchArgs.check_in_date} to ${searchArgs.check_out_date}`;
+      }
+      if (searchArgs.guests) {
+        prompt += ` for ${searchArgs.guests} guests`;
+      }
+    }
+
+    this.userInput.set(prompt);
+    this.sendMessage();
   }
 
   public getMsgTotalSearchPages(msg: any): number {
-    const total = msg.data?.pagination?.total || msg.data?.search_results?.length || 0;
-    const perPage = msg.data?.pagination?.per_page || this.searchPageSize;
+    if (msg?.data?.pagination?.last_page && msg.data.pagination.last_page > 0) {
+      return msg.data.pagination.last_page;
+    }
+    const total = msg?.data?.pagination?.total || msg?.data?.search_results?.length || 0;
+    const perPage = msg?.data?.pagination?.per_page || this.searchPageSize;
     return Math.max(1, Math.ceil(total / perPage));
   }
 
   public getPaginatedSearchResults(msg: any): HomestayCardData[] {
-    const all = msg.data?.search_results || [];
+    const all = msg?.data?.search_results || [];
     if (all.length === 0) return [];
-    const perPage = msg.data?.pagination?.per_page || this.searchPageSize;
-    if (all.length <= perPage && (msg.data?.pagination?.last_page || 1) > 1 && (msg.data?.pagination?.total || 0) > all.length) {
-      return all;
+    const perPage = msg?.data?.pagination?.per_page || this.searchPageSize;
+    if (all.length > perPage) {
+      const page = this.getMsgSearchPage(msg);
+      const start = (page - 1) * perPage;
+      const slice = all.slice(start, start + perPage);
+      return slice.length > 0 ? slice : all.slice(0, perPage);
     }
-    const page = this.getMsgSearchPage(msg.id);
-    const start = (page - 1) * perPage;
-    return all.slice(start, start + perPage);
+    return all;
   }
 
   public getMsgPageNumbers(msg: any): number[] {

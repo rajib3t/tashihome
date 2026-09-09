@@ -223,6 +223,23 @@ export interface AssistantCheckoutRequest {
   guest_password?: string;
 }
 
+export interface AssistantStreamEvent {
+  type: 'start' | 'token' | 'metadata' | 'done' | 'error';
+  session_id?: string;
+  text?: string;
+  intent?: string;
+  action_taken?: string;
+  tool_calls?: AssistantToolCall[];
+  search_results?: HomestayCardData[];
+  pagination?: AssistantPagination;
+  availability?: AvailabilityQuoteData;
+  booking?: BookingConfirmationData;
+  payment?: any;
+  user?: any;
+  suggested_actions?: string[];
+  message?: string;
+}
+
 export interface ChatMessageItem {
   id: string;
   sender: 'user' | 'assistant';
@@ -230,4 +247,5 @@ export interface ChatMessageItem {
   timestamp: Date;
   data?: AssistantChatData;
   isLoading?: boolean;
+  isStreaming?: boolean;
 }

@@ -101,7 +101,8 @@
           <div class="max-w-[88%] space-y-3">
             <!-- Text Bubble -->
             <div class="bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 px-3.5 py-2.5 rounded-2xl rounded-tl-none border border-zinc-200/80 dark:border-zinc-700/80 shadow-xs">
-              <div class="leading-relaxed whitespace-pre-wrap break-words" [innerHTML]="formatMarkdown(msg.text)"></div>
+              <div class="leading-relaxed whitespace-pre-wrap break-words inline" [innerHTML]="formatMarkdown(msg.text)"></div>
+              <span *ngIf="msg.isStreaming" class="inline-block font-mono text-[#126A7A] dark:text-teal-400 animate-pulse ml-0.5 select-none font-bold">▋</span>
               <span class="block text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
                 {{ msg.timestamp | appDateTime }}
               </span>
@@ -111,13 +112,13 @@
             <div *ngIf="msg.data?.search_results && msg.data!.search_results!.length > 0" class="space-y-2 pt-1">
               <div class="flex items-center justify-between">
                 <p class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
-                  Recommended Homestays ({{ msg.data!.search_results!.length }})
+                  Recommended Homestays ({{ msg.data!.pagination?.total || msg.data!.search_results!.length }})
                 </p>
                 <span
                   *ngIf="getMsgTotalSearchPages(msg) > 1"
                   class="text-[10px] font-medium text-[#126A7A] dark:text-teal-300 bg-teal-50 dark:bg-teal-950/70 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800"
                 >
-                  Page {{ getMsgSearchPage(msg.id) }} of {{ getMsgTotalSearchPages(msg) }}
+                  Page {{ getMsgSearchPage(msg) }} of {{ getMsgTotalSearchPages(msg) }}
                 </span>
               </div>
               
@@ -180,8 +181,8 @@
               <div *ngIf="getMsgTotalSearchPages(msg) > 1" class="flex items-center justify-between pt-1.5 border-t border-zinc-100 dark:border-zinc-700/50">
                 <button
                   type="button"
-                  (click)="setMsgSearchPage(msg.id, getMsgSearchPage(msg.id) - 1)"
-                  [disabled]="getMsgSearchPage(msg.id) <= 1"
+                  (click)="setMsgSearchPage(msg, getMsgSearchPage(msg) - 1)"
+                  [disabled]="getMsgSearchPage(msg) <= 1 || isLoading()"
                   class="px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 font-medium text-[11px] cursor-pointer"
                 >
                   <span>‹</span> Prev
@@ -192,9 +193,10 @@
                   <button
                     type="button"
                     *ngFor="let p of getMsgPageNumbers(msg)"
-                    (click)="setMsgSearchPage(msg.id, p)"
-                    [ngClass]="getMsgSearchPage(msg.id) === p ? 'bg-[#126A7A] text-white font-bold shadow-xs' : 'bg-zinc-100 dark:bg-zinc-700/80 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-600'"
-                    class="w-6 h-6 rounded-md text-[10px] flex items-center justify-center transition-colors cursor-pointer"
+                    (click)="setMsgSearchPage(msg, p)"
+                    [disabled]="isLoading()"
+                    [ngClass]="getMsgSearchPage(msg) === p ? 'bg-[#126A7A] text-white font-bold shadow-xs' : 'bg-zinc-100 dark:bg-zinc-700/80 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-600'"
+                    class="w-6 h-6 rounded-md text-[10px] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40"
                   >
                     {{ p }}
                   </button>
@@ -202,8 +204,8 @@
 
                 <button
                   type="button"
-                  (click)="setMsgSearchPage(msg.id, getMsgSearchPage(msg.id) + 1)"
-                  [disabled]="getMsgSearchPage(msg.id) >= getMsgTotalSearchPages(msg)"
+                  (click)="setMsgSearchPage(msg, getMsgSearchPage(msg) + 1)"
+                  [disabled]="getMsgSearchPage(msg) >= getMsgTotalSearchPages(msg) || isLoading()"
                   class="px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 font-medium text-[11px] cursor-pointer"
                 >
                   Next <span>›</span>
@@ -534,7 +536,7 @@
       </div>
 
       <!-- TYPING INDICATOR -->
-      <div *ngIf="isLoading()" class="flex gap-2.5 items-start">
+      <div *ngIf="isLoading() && !isCurrentlyStreaming()" class="flex gap-2.5 items-start">
         <div class="w-7 h-7 rounded-full bg-[#126A7A]/10 text-[#126A7A] flex items-center justify-center shrink-0 border border-[#126A7A]/20">
           <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

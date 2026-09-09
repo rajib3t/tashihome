@@ -11,6 +11,7 @@ All assistant, vector engine, and MCP endpoints are served under `/api/v1/public
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/v1/public/assistant/chat` | Main conversational assistant endpoint with multi-tool calling | Optional (Guest or Logged In) |
+| `POST` | `/api/v1/public/assistant/chat/stream` | Conversational assistant streaming endpoint via Server-Sent Events (SSE) | Optional (Guest or Logged In) |
 | `POST` | `/api/v1/public/assistant/search` | Direct homestay search via assistant engine | No |
 | `POST` | `/api/v1/public/assistant/semantic-search` | Natural language / vibe-based vector semantic search | No |
 | `POST` | `/api/v1/public/assistant/sync-embeddings` | Index/sync homestay embeddings into vector search engine | Admin / Internal |
@@ -129,7 +130,65 @@ Processes conversational inquiries, detects intent, and executes relevant MCP to
 
 ---
 
-### B. Vector Semantic Search (`POST /api/v1/public/assistant/semantic-search`)
+### B. Conversational Chat Streaming via SSE (`POST /api/v1/public/assistant/chat/stream`)
+
+Streams assistant responses token-by-token in real-time over **Server-Sent Events (SSE)**, accompanied by typed structured metadata events for tool executions (cards, search results, availability, quote, booking).
+
+#### Request Body
+Identical to `POST /api/v1/public/assistant/chat`.
+```json
+{
+  "message": "Check availability and price quote for Pine Wood Sanctuary from 2026-11-10 to 2026-11-14 for 2 guests",
+  "session_id": "c62b5d4a-39b1-4f93-b6d8-11f26792348a",
+  "conversation_history": [
+    {
+      "role": "user",
+      "content": "Hi, show me cottages in Paro."
+    }
+  ]
+}
+```
+
+#### SSE Stream Events Protocol
+The server delivers a chunked event stream with `Content-Type: text/event-stream`:
+
+1. **`start` Event**: Emitted upon connection initialization, containing the assigned `session_id`.
+   ```
+   data: {"type":"start","session_id":"c62b5d4a-39b1-4f93-b6d8-11f26792348a"}
+
+   ```
+
+2. **`token` Event**: Emitted progressively for each generated token / word chunk.
+   ```
+   data: {"type":"token","text":"I have "}
+
+   data: {"type":"token","text":"checked the "}
+
+   data: {"type":"token","text":"availability for you..."}
+
+   ```
+
+3. **`metadata` Event**: Emitted when MCP tool results are resolved, containing full structured card data, quotes, booking references, pagination, and suggested actions.
+   ```
+   data: {"type":"metadata","intent":"check_availability","availability":{"property_name":"Pine Wood Sanctuary","is_available":true,"check_in_date":"2026-11-10","check_out_date":"2026-11-14","num_guests":2,"total_amount":14000.0,"currency":"INR","currency_symbol":"₹"},"suggested_actions":["Proceed to Book Pine Wood Sanctuary","Check different dates"]}
+
+   ```
+
+4. **`done` Event**: Emitted when the assistant finishes the response.
+   ```
+   data: {"type":"done"}
+
+   ```
+
+5. **`error` Event**: Emitted if an error occurs during generation.
+   ```
+   data: {"type":"error","message":"Could not complete search at this time."}
+
+   ```
+
+---
+
+### C. Vector Semantic Search (`POST /api/v1/public/assistant/semantic-search`)
 
 Enables natural language, atmosphere, and vibe-based search queries (e.g. *"peaceful wooden cottage with fireplace and scenic mountain view"*).
 
