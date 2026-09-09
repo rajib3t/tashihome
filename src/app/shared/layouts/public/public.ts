@@ -7,6 +7,7 @@ import { ComingSoon } from '../../components/coming-soon/coming-soon';
 import { catchError, of } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { PublicFooter } from './footer/footer';
+import { AiAssistantComponent } from '../../components/ai-assistant/ai-assistant';
 
 export function isSettingEnabled(value: unknown): boolean {
   if (typeof value === 'boolean') {
@@ -28,6 +29,7 @@ export function isSettingEnabled(value: unknown): boolean {
     CommonModule,
     ComingSoon,
     PublicFooter,
+    AiAssistantComponent,
   ],
   templateUrl: './public.html',
   styleUrl: './public.css',
