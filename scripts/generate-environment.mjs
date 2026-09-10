@@ -23,9 +23,11 @@ const prodDisablePayment = parseBooleanEnv(process.env.DISABLE_PAYMENT, true);
 const devEnableChatbox = parseBooleanEnv(process.env.ENABLE_CHATBOX, true);
 const prodEnableChatbox = parseBooleanEnv(process.env.ENABLE_CHATBOX, true);
 
-const renderEnvironment = (production, apiUrl, disablePayment, enableChatbox) => `export const environment = {
+const renderEnvironment = (production, apiUrl, socketUrl, socketPath, disablePayment, enableChatbox) => `export const environment = {
   production: ${production},
   apiUrl: ${quote(apiUrl)},
+  socketUrl: ${quote(socketUrl)},
+  socketPath: ${quote(socketPath)},
   applicationName: ${quote(applicationName)},
   googleMapsApiKey: ${quote(process.env.GOOGLE_MAPS_API_KEY || '')},
   assetUrl: ${quote(process.env.ASSET_URL || '')},
@@ -36,8 +38,11 @@ const renderEnvironment = (production, apiUrl, disablePayment, enableChatbox) =>
 
 const devApiUrl = '/api';
 const prodApiUrl = process.env.API_URL || 'https://api.tashihomes.in';
+const devSocketUrl = process.env.DEV_SOCKET_URL || '';
+const prodSocketUrl = process.env.SOCKET_URL || (process.env.API_URL ? process.env.API_URL.replace(/\/api\/?$/, '') : 'https://api.tashihomes.in');
+const socketPath = process.env.SOCKET_PATH || '/socket.io';
 
-writeFileSync(browserEnvPath, renderEnvironment(false, devApiUrl, devDisablePayment, devEnableChatbox));
-writeFileSync(browserProdEnvPath, renderEnvironment(true, prodApiUrl, prodDisablePayment, prodEnableChatbox));
+writeFileSync(browserEnvPath, renderEnvironment(false, devApiUrl, devSocketUrl, socketPath, devDisablePayment, devEnableChatbox));
+writeFileSync(browserProdEnvPath, renderEnvironment(true, prodApiUrl, prodSocketUrl, socketPath, prodDisablePayment, prodEnableChatbox));
 
 console.log(`Synced environment files from ${envPath}`);

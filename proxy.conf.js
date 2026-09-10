@@ -13,4 +13,10 @@ module.exports = {
     secure: false,
     changeOrigin: true,
   },
+  '/socket.io': {
+    target,
+    ws: true,
+    secure: false,
+    changeOrigin: true,
+  },
 };

@@ -33,6 +33,10 @@
             "security": {
               "allowedHosts": []
             },
+            "allowedCommonJsDependencies": [
+              "debug",
+              "xmlhttprequest-ssl"
+            ],
             "ssr": {
               "entry": "src/server.ts"
             }
