@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal, PLATFORM_ID, OnDestroy } from '@angular/core';
+import { Injectable, computed, inject, signal, PLATFORM_ID, OnDestroy, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { NotificationApiService } from './notification-api.service';
@@ -36,9 +36,18 @@ export class NotificationService implements OnDestroy {
       this.handleIncomingNotification(newItem);
     });
 
-    // Auto-load when user profile / auth is confirmed
-    if (isPlatformBrowser(this.platformId) && this.authService.isAuthenticated()) {
-      this.loadInitial();
+    // Auto-load and sync notifications on auth state change
+    if (isPlatformBrowser(this.platformId)) {
+      effect(() => {
+        const user = this.authService.authUser();
+        if (user) {
+          this.loadInitial();
+        } else {
+          this.notificationsSignal.set([]);
+          this.unreadCountSignal.set(0);
+          this.latestRealtimeItemSignal.set(null);
+        }
+      });
     }
   }
 

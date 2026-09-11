@@ -1,4 +1,4 @@
-import { Injectable, inject, PLATFORM_ID, OnDestroy } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID, OnDestroy, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Subject, Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
@@ -28,6 +28,19 @@ export class NotificationSocketService implements OnDestroy {
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       this.initAuthSync();
+
+      // Automatically sync socket lifecycle with auth user state
+      effect(() => {
+        const user = this.authService.authUser();
+        if (user) {
+          const token = this.authService.getToken();
+          if (token) {
+            this.connect(token);
+          }
+        } else {
+          this.disconnect();
+        }
+      });
     }
   }
 
