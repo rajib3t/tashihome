@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
 import { BookingData, BookingQuery, BookingStatus } from '../../../../services/booking/booking.model';
 import { BookingService } from '../../../../services/booking/booking-service';
@@ -37,11 +38,15 @@ const ALL_STATUS_OPTIONS: { value: BookingStatus; label: string }[] = [
   templateUrl: './booking-management.html',
   styleUrl: './booking-management.css',
 })
-export class VendorBookingManagement {
+export class VendorBookingManagement implements OnInit {
   private readonly assetUrl = environment.assetUrl
   private readonly bookingService = inject(BookingService);
   private readonly settingsService = inject(SettingsService);
   private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  private hasLoadedInitial = false;
 
   // ── list state ──────────────────────────────────────────────────────────────
   readonly bookings = signal<BookingData[]>([]);
@@ -74,7 +79,70 @@ export class VendorBookingManagement {
   readonly allFilterStatuses = ALL_STATUS_OPTIONS;
 
   ngOnInit(): void {
-    this.loadBookings();
+    this.route.queryParams.subscribe((params) => {
+      const bookingRef = params['booking_reference']?.trim() || params['search']?.trim();
+      const bookingId = params['booking_id']?.trim();
+
+      if (bookingRef) {
+        this.searchForm.patchValue({ booking_reference: bookingRef });
+        this.currentPage.set(1);
+        this.hasLoadedInitial = true;
+        this.loadBookingsAndOpenDetail(bookingRef, bookingId);
+      } else if (bookingId) {
+        this.hasLoadedInitial = true;
+        this.loadBookingsAndOpenDetail(undefined, bookingId);
+      } else if (!this.hasLoadedInitial) {
+        this.hasLoadedInitial = true;
+        this.loadBookings();
+      }
+    });
+  }
+
+  private loadBookingsAndOpenDetail(bookingRef?: string, bookingId?: string): void {
+    const filters = this.searchForm.getRawValue();
+    const query: BookingQuery = {
+      page: 1,
+      size: this.pageSize(),
+      sort_by: 'created_at',
+      sort_order: 'desc',
+      booking_reference: bookingRef || filters.booking_reference?.trim() || undefined,
+    };
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.bookingService.vendor.getBookings(query)
+      .pipe(
+        finalize(() => this.isLoading.set(false)),
+        catchError((error) => {
+          this.errorMessage.set(error?.error?.message || error?.message || 'Unable to load bookings.');
+          this.bookings.set([]);
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) return;
+        const list = response.data || [];
+        this.bookings.set(list);
+        this.meta = { ...response.meta };
+
+        const target = list.find((b) =>
+          (bookingRef && b.booking_reference === bookingRef) ||
+          (bookingId && (String(b.id) === String(bookingId) || b.public_id === bookingId))
+        ) || (list.length === 1 ? list[0] : null);
+
+        if (target) {
+          this.openDetail(target);
+        } else if (bookingId) {
+          this.bookingService.vendor.getBookingById(bookingId).subscribe({
+            next: (res) => {
+              if (res?.data) {
+                this.openDetail(res.data);
+              }
+            },
+          });
+        }
+      });
   }
 
   // ── list actions ─────────────────────────────────────────────────────────────
@@ -229,6 +297,17 @@ export class VendorBookingManagement {
   closeDetail(): void {
     this.isDetailModalOpen.set(false);
     this.selectedBooking.set(null);
+    this.clearQueryParams();
+  }
+
+  private clearQueryParams(): void {
+    if (this.route.snapshot.queryParamMap.keys.length > 0) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true,
+      });
+    }
   }
 
   // ── status change modal ───────────────────────────────────────────────────────

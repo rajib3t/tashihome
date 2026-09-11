@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
 import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { HostService } from '../../../../services/host/host-service';
@@ -38,6 +38,8 @@ export class HostManagement implements OnInit, OnDestroy {
   private readonly hostService = inject(HostService);
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   public readonly propertyTypeLabels = PROPERTY_TYPES_LABELS;
 
@@ -120,6 +122,48 @@ export class HostManagement implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadHostRequests();
+
+    this.route.queryParams.subscribe((params) => {
+      const requestId = params['id']?.trim() || params['request_id']?.trim() || params['public_id']?.trim();
+      if (requestId) {
+        this.openRequestById(requestId);
+      }
+    });
+  }
+
+  public openRequestById(id: string): void {
+    const list = this.requests();
+    const found = list.find((r) => String(r.id) === String(id) || r.public_id === id);
+    if (found) {
+      this.openDetailModal(found);
+    } else {
+      // Direct fetch by ID/public_id and open detail modal
+      this.isLoadingDetail.set(true);
+      this.detailError.set('');
+      this.messageError.set('');
+      this.messageForm.reset({ message: '', is_internal: false });
+      this.isDetailModalOpen.set(true);
+
+      this.hostService.admin
+        .getHostRequestById(id)
+        .pipe(
+          finalize(() => {
+            this.isLoadingDetail.set(false);
+            this.cdr.markForCheck();
+          }),
+          catchError((err) => {
+            const msg = this.hostService.extractApiErrorMessage(err) || 'Failed to fetch latest application details.';
+            this.detailError.set(msg);
+            return of(null);
+          })
+        )
+        .subscribe((res: any) => {
+          if (res?.data) {
+            this.selectedRequest.set(res.data);
+            this.updateRequestInList(res.data);
+          }
+        });
+    }
   }
 
   ngOnDestroy(): void {
@@ -224,6 +268,17 @@ export class HostManagement implements OnInit, OnDestroy {
   public closeDetailModal(): void {
     this.isDetailModalOpen.set(false);
     this.selectedRequest.set(null);
+    this.clearQueryParams();
+  }
+
+  private clearQueryParams(): void {
+    if (this.route.snapshot.queryParamMap.keys.length > 0) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true,
+      });
+    }
   }
 
   private fetchRequestDetails(id: string): void {

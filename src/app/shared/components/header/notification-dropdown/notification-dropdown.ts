@@ -50,20 +50,25 @@ export class NotificationDropdown {
 
     if (notif.type.startsWith('booking.')) {
       const bookingRef = data?.booking_reference;
+      const bookingId = data?.booking_id;
+      const queryParams: Record<string, any> = {};
+      if (bookingRef) queryParams['booking_reference'] = bookingRef;
+      if (bookingId) queryParams['booking_id'] = bookingId;
+
       if (role === 'vendor') {
-        this.router.navigate(['/vendor/booking-management'], {
-          queryParams: bookingRef ? { search: bookingRef } : undefined,
-        });
+        this.router.navigate(['/vendor/booking-management'], { queryParams });
       } else if (role === 'admin' || role === 'staff') {
-        this.router.navigate(['/admin/booking-management'], {
-          queryParams: bookingRef ? { search: bookingRef } : undefined,
-        });
+        this.router.navigate(['/admin/booking-management'], { queryParams });
       } else {
-        this.router.navigate(['/profile']);
+        this.router.navigate(['/user/trips'], { queryParams });
       }
     } else if (notif.type.startsWith('host_request.')) {
+      const requestId = data?.public_id || data?.host_request_id;
+      const queryParams: Record<string, any> = {};
+      if (requestId) queryParams['id'] = requestId;
+
       if (role === 'admin' || role === 'staff') {
-        this.router.navigate(['/admin/host-management']);
+        this.router.navigate(['/admin/host-management'], { queryParams });
       }
     }
   }

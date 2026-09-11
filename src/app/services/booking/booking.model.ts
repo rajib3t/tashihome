@@ -195,6 +195,7 @@ export type BookingStatus =
 
 export interface BookingData {
   id: string;
+  public_id?: string;
   booking_reference?: string;
   booking_number?: string;
   reference_number?: string;
