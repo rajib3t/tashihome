@@ -10,6 +10,11 @@
 /node_modules
 npm-debug.log
 yarn-error.log
+￼Status is online
+￼MessagingYou are on the messaging overlay. Press enter to minimize it.
+￼
+￼Compose message
+￼
 
 # IDEs and editors
 .idea/
@@ -43,3 +48,6 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 .env
+# Environment configuration generated from .env
+/src/environments/environment.ts
+/src/environments/environment.prod.ts
