@@ -124,11 +124,11 @@ wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media',
     lon: [null as number | null],
   });
   foodOptions = signal([
-  { id: 'breakfast', name: 'Breakfast' },
-  { id: 'lunch', name: 'Lunch' },
-  { id: 'tiffin', name: 'Tiffin' },
-  { id: 'dinner', name: 'Dinner' },
-]);
+    { id: 'lunch', name: 'Lunch' },
+    { id: 'evening_snacks', name: 'Evening Snacks' },
+    { id: 'dinner', name: 'Dinner' },
+    { id: 'breakfast', name: 'Breakfast' },
+  ]);
   ngAfterViewChecked(): void {
     this.tryInitGoogleAutocomplete();
   }

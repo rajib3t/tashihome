@@ -768,9 +768,32 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
 
   public getFoodOptionTags(item: Partial<PropertyData>): string[] {
     const foodOptions = item?.property_food_options ?? [];
-    const included = foodOptions
+    const orderMap: Record<string, number> = {
+      lunch: 1,
+      evening_snacks: 2,
+      evening_snack: 2,
+      tiffin: 2,
+      evening_snacs: 2,
+      evening_scacs: 2,
+      dinner: 3,
+      breakfast: 4,
+    };
+    const formatName = (name: string): string => {
+      const raw = (name || '').toLowerCase().trim().replace(/\s+/g, '_');
+      if (raw === 'lunch') return 'Lunch';
+      if (raw === 'evening_snacks' || raw === 'evening_snack' || raw === 'tiffin' || raw === 'evening_snacs' || raw === 'evening_scacs') return 'Evening Snacks';
+      if (raw === 'dinner') return 'Dinner';
+      if (raw === 'breakfast') return 'Breakfast';
+      return name;
+    };
+    const included = [...foodOptions]
       .filter((opt) => opt && opt.is_included && opt.name)
-      .map((opt) => opt.name);
+      .sort((a, b) => {
+        const keyA = (a.name || a.id || '').toLowerCase().trim().replace(/\s+/g, '_');
+        const keyB = (b.name || b.id || '').toLowerCase().trim().replace(/\s+/g, '_');
+        return (orderMap[keyA] ?? 99) - (orderMap[keyB] ?? 99);
+      })
+      .map((opt) => formatName(opt.name));
     return included.length > 0 ? included.slice(0, 3) : ['Himalayan tea & breakfast'];
   }
 

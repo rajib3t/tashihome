@@ -36,9 +36,32 @@ export class SingleProperty {
     if (!item.property_food_options || item.property_food_options.length === 0) {
       return [];
     }
-    return item.property_food_options
-      .filter(option => option.is_included)
-      .map(option => option.name);
+    const orderMap: Record<string, number> = {
+      lunch: 1,
+      evening_snacks: 2,
+      evening_snack: 2,
+      tiffin: 2,
+      evening_snacs: 2,
+      evening_scacs: 2,
+      dinner: 3,
+      breakfast: 4,
+    };
+    const formatName = (name: string): string => {
+      const raw = (name || '').toLowerCase().trim().replace(/\s+/g, '_');
+      if (raw === 'lunch') return 'Lunch';
+      if (raw === 'evening_snacks' || raw === 'evening_snack' || raw === 'tiffin' || raw === 'evening_snacs' || raw === 'evening_scacs') return 'Evening Snacks';
+      if (raw === 'dinner') return 'Dinner';
+      if (raw === 'breakfast') return 'Breakfast';
+      return name;
+    };
+    return [...item.property_food_options]
+      .filter((option) => option.is_included)
+      .sort((a, b) => {
+        const keyA = (a.name || a.id || '').toLowerCase().trim().replace(/\s+/g, '_');
+        const keyB = (b.name || b.id || '').toLowerCase().trim().replace(/\s+/g, '_');
+        return (orderMap[keyA] ?? 99) - (orderMap[keyB] ?? 99);
+      })
+      .map((option) => formatName(option.name));
   }
 
   getEffectivePrice(item: Partial<PropertyData>): number {

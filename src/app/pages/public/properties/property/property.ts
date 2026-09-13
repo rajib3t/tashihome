@@ -4,7 +4,7 @@ import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PropertyService } from '../../../../services/property/property-service';
-import { PropertyAsset, PropertyData, PropertyRoomType, PropertyRoomTypePrice } from '../../../../services/property/property.model';
+import { PropertyAsset, PropertyData, PropertyFoodOption, PropertyRoomType, PropertyRoomTypePrice } from '../../../../services/property/property.model';
 import { BookingService } from '../../../../services/booking/booking-service';
 import { AppliedPricingTier, CheckAvailabilityResponseData } from '../../../../services/booking/booking.model';
 import { ReviewService } from '../../../../services/review/review-service';
@@ -858,5 +858,35 @@ export class Property {
         }
       });
   }
+
+  public getSortedFoodOptions(): PropertyFoodOption[] {
+    const options = this.propertyData()?.property_food_options ?? [];
+    if (!options.length) return [];
+    const orderMap: Record<string, number> = {
+      lunch: 1,
+      evening_snacks: 2,
+      evening_snack: 2,
+      tiffin: 2,
+      evening_snacs: 2,
+      evening_scacs: 2,
+      dinner: 3,
+      breakfast: 4,
+    };
+    return [...options].sort((a, b) => {
+      const keyA = (a.name || a.id || '').toLowerCase().trim().replace(/\s+/g, '_');
+      const keyB = (b.name || b.id || '').toLowerCase().trim().replace(/\s+/g, '_');
+      return (orderMap[keyA] ?? 99) - (orderMap[keyB] ?? 99);
+    });
+  }
+
+  public getFoodOptionLabel(name: string): string {
+    const raw = (name || '').toLowerCase().trim().replace(/\s+/g, '_');
+    if (raw === 'lunch') return 'Lunch';
+    if (raw === 'evening_snacks' || raw === 'evening_snack' || raw === 'tiffin' || raw === 'evening_snacs' || raw === 'evening_scacs') return 'Evening Snacks';
+    if (raw === 'dinner') return 'Dinner';
+    if (raw === 'breakfast') return 'Breakfast';
+    return name;
+  }
 }
+
 

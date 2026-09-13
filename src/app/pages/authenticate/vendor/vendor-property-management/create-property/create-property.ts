@@ -102,10 +102,10 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
   });
 
   foodOptions = signal([
-    { id: 'breakfast', name: 'Breakfast' },
     { id: 'lunch', name: 'Lunch' },
-    { id: 'tiffin', name: 'Tiffin' },
+    { id: 'evening_snacks', name: 'Evening Snacks' },
     { id: 'dinner', name: 'Dinner' },
+    { id: 'breakfast', name: 'Breakfast' },
   ]);
 
   ngAfterViewChecked(): void {

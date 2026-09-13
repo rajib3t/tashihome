@@ -508,10 +508,10 @@
           <h2 class="font-display text-3xl text-ink mt-2">Food options</h2>
           <p class="text-sm text-ink/65 mt-2 max-w-lg">Food options offered by the host for this stay.</p>
           <div class="grid sm:grid-cols-2 gap-4 mt-6">
-            @for (food of propertyData()?.property_food_options ?? []; track food.id) {
+            @for (food of getSortedFoodOptions(); track food.id) {
             <div class="p-5 rounded-2xl glass-property-tile shadow-sm hover:shadow-md transition-shadow duration-200">
               <div class="flex items-start justify-between gap-3">
-                <h3 class="font-display text-lg text-ink">{{ food.name }}</h3>
+                <h3 class="font-display text-lg text-ink">{{ getFoodOptionLabel(food.name) }}</h3>
                 @if (food.is_included) {
                 <span
                   class="eyebrow text-mossD shrink-0 mt-1 px-2.5 py-0.5 rounded-full bg-moss/10 border border-moss/20">Included</span>

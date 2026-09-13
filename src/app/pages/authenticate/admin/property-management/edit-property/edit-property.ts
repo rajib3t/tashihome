@@ -96,10 +96,10 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
   readonly facilities = signal<Facility[]>([]);
   readonly roomTypes = signal<RoomType[]>([]);
   readonly foodOptions = signal([
-    { id: 'breakfast', name: 'Breakfast' },
     { id: 'lunch', name: 'Lunch' },
-    { id: 'tiffin', name: 'Tiffin' },
+    { id: 'evening_snacks', name: 'Evening Snacks' },
     { id: 'dinner', name: 'Dinner' },
+    { id: 'breakfast', name: 'Breakfast' },
   ]);
   readonly galleryPreviews = signal<string[]>([]);
   readonly existingGalleryAssets = signal<PropertyAsset[]>([]);
@@ -586,7 +586,13 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
 
   isSelectionChecked(controlName: 'amenity_ids' | 'facility_ids' | 'food_option_ids', id: string): boolean {
     const control = this.propertyForm.get(controlName);
-    return Array.isArray(control?.value) && control.value.includes(id);
+    if (!Array.isArray(control?.value)) {
+      return false;
+    }
+    if (controlName === 'food_option_ids' && id === 'evening_snacks') {
+      return control.value.includes('evening_snacks') || control.value.includes('tiffin');
+    }
+    return control.value.includes(id);
   }
 
   getRoomTypeRows(): PropertyRoomTypeRequest[] {
@@ -1009,7 +1015,13 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
 
     const foodOptionIds = property.property_food_options
       ?.filter((item) => item.is_included)
-      .map((item) => (item.name ? item.name.toLowerCase() : item.id)) ?? [];
+      .map((item) => {
+        const raw = (item.name || item.id || '').toLowerCase().trim().replace(/\s+/g, '_');
+        if (raw === 'tiffin' || raw === 'evening_snacks' || raw === 'evening_snack' || raw === 'evening_snacs' || raw === 'evening_scacs') {
+          return 'evening_snacks';
+        }
+        return raw;
+      }) ?? [];
 
     this.propertyForm.patchValue(
       {
