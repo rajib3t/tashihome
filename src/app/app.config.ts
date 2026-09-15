@@ -1,5 +1,5 @@
 import { ApplicationConfig, inject, PLATFORM_ID, provideAppInitializer, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter, TitleStrategy } from '@angular/router';
+import { provideRouter, TitleStrategy, withInMemoryScrolling } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withNoHttpTransferCache } from '@angular/platform-browser';
@@ -19,7 +19,13 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor]),
       withInterceptorsFromDi()
     ),
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({
+        scrollPositionRestoration: 'enabled',
+        anchorScrolling: 'enabled',
+      })
+    ),
     {
       provide: TitleStrategy,
       useClass: AppTitleStrategy,
