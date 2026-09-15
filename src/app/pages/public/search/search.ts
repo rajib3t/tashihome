@@ -30,6 +30,9 @@ import {
 } from '../../../services/property/property.model';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery } from '../../../services/city/city-model';
+import { LocationService } from '../../../services/location/location-service';
+import { LocationResponse, LocationQuery } from '../../../services/location/location-model';
+import { LocationAutocomplete } from '../../../shared/components/location-autocomplete/location-autocomplete';
 import { SettingsService } from '../../../services/settings/settings-service';
 import { PaginationMeta } from '../../../services/api/api-response.model';
 import { environment } from '../../../../environments/environment';
@@ -45,7 +48,7 @@ export interface CalendarDay {
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, DecimalPipe],
+  imports: [CommonModule, FormsModule, RouterModule, DecimalPipe, LocationAutocomplete],
   templateUrl: './search.html',
   styleUrl: './search.css',
 })
@@ -55,6 +58,7 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
   // Services
   public readonly propertyService = inject(PropertyService);
   public readonly cityService = inject(CityService);
+  public readonly locationService = inject(LocationService);
   public readonly settingsService = inject(SettingsService);
   public readonly router = inject(Router);
   public readonly route = inject(ActivatedRoute);
@@ -69,6 +73,7 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
   // State Signals
   public properties = signal<Partial<PropertyData>[]>([]);
   public cities = signal<City[]>([]);
+  public locations = signal<LocationResponse[]>([]);
   public loading = signal<boolean>(true);
   public error = signal<string | null>(null);
   public viewMode = signal<'grid' | 'list'>('grid');
@@ -76,6 +81,9 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
   // Search & Filter State
   public searchKeyword = signal<string>('');
   public selectedCityId = signal<string>('');
+  public selectedLocationId = signal<string>('');
+  public selectedLocationSlug = signal<string>('');
+  public selectedLocationName = signal<string>('');
   public checkInDate = signal<string>('');
   public checkOutDate = signal<string>('');
   public adults = signal<number>(2);
@@ -135,6 +143,7 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
 
     // Load list of cities for filter dropdown and quick chips
     this.loadCities();
+    this.loadLocations();
 
     // Listen to query parameters from URL for deep-linking
     this.route.queryParams
@@ -143,7 +152,9 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
         const search = params['search'] || params['q'] || '';
         const cityId = params['city_id'] || params['city'] || '';
         const citySlug = params['city_slug'] || '';
+        const locationId = params['location_id'] || params['location'] || '';
         const locationSlug = params['location_slug'] || '';
+        const locationName = params['location_name'] || '';
         const checkIn = params['check_in_date'] || '';
         const checkOut = params['check_out_date'] || '';
         const adultsVal = params['adults'] ? parseInt(params['adults'], 10) : (params['guests'] ? parseInt(params['guests'], 10) : 2);
@@ -160,6 +171,9 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
 
         this.searchKeyword.set(search);
         this.selectedCityId.set(cityId || citySlug);
+        this.selectedLocationId.set(locationId);
+        this.selectedLocationSlug.set(locationSlug);
+        this.selectedLocationName.set(locationName);
         this.checkInDate.set(checkIn);
         this.checkOutDate.set(checkOut);
         this.adults.set(isNaN(adultsVal) ? 2 : adultsVal);
@@ -238,6 +252,8 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
       q: this.searchKeyword().trim() || undefined,
       city_id: selectedCity ? selectedCity.id : (this.selectedCityId() || undefined),
       city_slug: selectedCity?.slug || undefined,
+      location_id: this.selectedLocationId() || undefined,
+      location_slug: this.selectedLocationSlug() || undefined,
       check_in_date: hasValidDates ? this.checkInDate() : undefined,
       check_out_date: hasValidDates ? this.checkOutDate() : undefined,
       guests: totalGuests > 0 ? totalGuests : undefined,
@@ -311,7 +327,50 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
+  private loadLocations(): void {
+    const query: LocationQuery = {
+      page: 1,
+      size: 50,
+      sortBy: 'name',
+      sortOrder: 'asc',
+      sort_by: 'name',
+      sort_order: 'asc',
+    };
+
+    this.locationService.public
+      .getLocations(query)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError((err) => {
+          console.warn('Could not load public locations in search:', err);
+          return of({ data: [], total: 0, page: 1, size: 50, status: '', message: '' });
+        })
+      )
+      .subscribe((res) => {
+        this.locations.set(res?.data || []);
+        this.cdr.markForCheck();
+      });
+  }
+
   // ================= USER INTERACTIONS =================
+
+  public onLocationSelected(loc: LocationResponse | null): void {
+    if (loc) {
+      this.selectedLocationId.set(loc.id);
+      this.selectedLocationSlug.set(loc.slug || '');
+      this.selectedLocationName.set(loc.name);
+      if (loc.city?.id) {
+        this.selectedCityId.set(loc.city.id);
+      }
+    } else {
+      this.selectedLocationId.set('');
+      this.selectedLocationSlug.set('');
+      this.selectedLocationName.set('');
+      this.selectedCityId.set('');
+    }
+    this.meta.update((m) => ({ ...m, page: 1 }));
+    this.updateUrlAndFetch();
+  }
 
   public onSearchInput(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -680,6 +739,8 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
   public hasActiveFilters(): boolean {
     return Boolean(
       this.searchKeyword().trim() ||
+        this.selectedLocationId() ||
+        this.selectedLocationSlug() ||
         this.selectedCityId() ||
         this.checkInDate() ||
         this.checkOutDate() ||
@@ -690,6 +751,14 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
         this.maxPrice() !== null ||
         this.sortOption() !== 'default'
     );
+  }
+
+  public getSelectedLocationName(): string {
+    if (this.selectedLocationName()) return this.selectedLocationName();
+    const id = this.selectedLocationId();
+    const slug = this.selectedLocationSlug();
+    const found = this.locations().find((l) => (id && l.id === id) || (slug && l.slug === slug));
+    return found ? found.name : '';
   }
 
   public getSelectedCityName(): string {
@@ -796,6 +865,15 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.searchKeyword().trim()) {
       queryParams['search'] = this.searchKeyword().trim();
+    }
+    if (this.selectedLocationId()) {
+      queryParams['location_id'] = this.selectedLocationId();
+    }
+    if (this.selectedLocationSlug()) {
+      queryParams['location_slug'] = this.selectedLocationSlug();
+    }
+    if (this.selectedLocationName()) {
+      queryParams['location_name'] = this.selectedLocationName();
     }
     if (this.selectedCityId()) {
       queryParams['city_id'] = this.selectedCityId();

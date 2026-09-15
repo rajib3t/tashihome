@@ -37,6 +37,8 @@ import { SettingsService } from '../../../services/settings/settings-service';
 import { PaginationMeta } from '../../../services/api/api-response.model';
 import { environment } from '../../../../environments/environment';
 
+import { LocationAutocomplete } from '../../../shared/components/location-autocomplete/location-autocomplete';
+
 export interface BreadcrumbItem {
   label: string;
   url?: string;
@@ -45,7 +47,7 @@ export interface BreadcrumbItem {
 @Component({
   selector: 'app-properties',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, DecimalPipe],
+  imports: [CommonModule, FormsModule, RouterModule, DecimalPipe, LocationAutocomplete],
   templateUrl: './properties.html',
   styleUrl: './properties.css',
 })
@@ -412,11 +414,6 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadLocationsForCity(citySlug?: string, cityId?: string): void {
-    if (!citySlug && !cityId) {
-      this.locations.set([]);
-      return;
-    }
-
     const query: LocationQuery = {
       page: 1,
       size: 50,
@@ -424,6 +421,8 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
       city_id: cityId || undefined,
       sortBy: 'name',
       sortOrder: 'asc',
+      sort_by: 'name',
+      sort_order: 'asc',
     };
 
     this.locationService.public
@@ -515,6 +514,37 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
         queryParams: {
           ...this.buildCurrentQueryParams(),
           location_slug: targetLocSlug,
+        },
+      });
+    }
+  }
+
+  public onLocationAutocompleteSelected(loc: LocationResponse | null): void {
+    if (!loc) {
+      this.onLocationSelect('');
+      return;
+    }
+    const cSlug = loc.city?.slug || (loc.city?.name ? loc.city.name.toLowerCase().replace(/\s+/g, '-') : '');
+    const lSlug = loc.slug || (loc.name ? loc.name.toLowerCase().replace(/\s+/g, '-') : '');
+
+    this.locationSlug.set(lSlug);
+    this.selectedLocationId.set(loc.id);
+    if (loc.city?.id) {
+      this.selectedCityId.set(loc.city.id);
+    }
+    this.meta.update((m) => ({ ...m, page: 1 }));
+
+    if (cSlug) {
+      this.citySlug.set(cSlug);
+      this.router.navigate(['/stays', cSlug, lSlug], {
+        queryParams: this.buildCurrentQueryParams(),
+      });
+    } else {
+      this.router.navigate(['/stays'], {
+        queryParams: {
+          ...this.buildCurrentQueryParams(),
+          location_slug: lSlug,
+          location_id: loc.id,
         },
       });
     }

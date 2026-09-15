@@ -102,12 +102,30 @@ export class LocationService {
       if (city_id) queryParams['city_id'] = city_id;
       if (city_slug) queryParams['city_slug'] = city_slug;
       if (status) queryParams['status'] = status;
-      if (params.sortBy?.trim()) queryParams['sortBy'] = params.sortBy.trim();
-      if (params.sortOrder) queryParams['sortOrder'] = params.sortOrder;
 
-      return this.apiService.get<PaginatedResponse<LocationResponse>>('/locations', { params: queryParams }).pipe(
-        catchError(() => this.apiService.get<PaginatedResponse<LocationResponse>>('/public/locations/', { params: queryParams })),
+      const sortBy = params.sort_by ?? params.sortBy;
+      const sortOrder = params.sort_order ?? params.sortOrder;
+
+      if (sortBy?.trim()) {
+        queryParams['sortBy'] = sortBy.trim();
+        queryParams['sort_by'] = sortBy.trim();
+      }
+      if (sortOrder) {
+        queryParams['sortOrder'] = sortOrder;
+        queryParams['sort_order'] = sortOrder;
+      }
+
+      return this.apiService.get<PaginatedResponse<LocationResponse>>('/public/locations/', { params: queryParams }).pipe(
         catchError(() => this.apiService.get<PaginatedResponse<LocationResponse>>('/public/locations', { params: queryParams })),
+        catchError(() => this.apiService.get<PaginatedResponse<LocationResponse>>('/locations', { params: queryParams })),
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    getLocationBySlug: (slug: string): Observable<ApiResponse<LocationResponse>> => {
+      return this.apiService.get<ApiResponse<LocationResponse>>(`/public/locations/${slug}`).pipe(
+        catchError(() => this.apiService.get<ApiResponse<LocationResponse>>(`/locations/${slug}`)),
         map((response) => response.data),
         catchError(this.apiService.passthroughError)
       );

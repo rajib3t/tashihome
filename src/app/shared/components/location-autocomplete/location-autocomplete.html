@@ -1,0 +1,156 @@
+<div class="relative w-full text-left" [class.autocomplete-hero]="variant === 'hero'">
+  <!-- Label (optional) -->
+  @if (showLabel && variant !== 'hero') {
+    <label class="block text-[11px] font-semibold uppercase tracking-wider text-ink/60 dark:text-cloud/60 mb-1.5">
+      {{ label }}
+    </label>
+  } @else if (showLabel && variant === 'hero') {
+    <p class="eyebrow text-moss mb-0.5">{{ label }}</p>
+  }
+
+  <!-- Input Wrapper -->
+  <div
+    class="relative flex items-center"
+    [ngClass]="{
+      'w-full': true,
+      'bg-transparent': variant === 'hero',
+      'bg-cloud/80 dark:bg-black/20 border border-ink/15 dark:border-cloud/15 rounded-xl text-sm': variant === 'default',
+      'bg-cloud dark:bg-black/30 border border-ink/15 dark:border-cloud/15 rounded-full text-xs px-3 py-1.5': variant === 'pill'
+    }"
+  >
+    <!-- Left Icon -->
+    @if (variant !== 'hero') {
+      <span class="pl-3.5 pr-1 text-moss shrink-0 pointer-events-none" aria-hidden="true">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </span>
+    }
+
+    <!-- Search Input -->
+    <input
+      type="text"
+      [value]="query()"
+      (input)="onInput($event)"
+      (focus)="onFocus()"
+      (keydown)="onKeyDown($event)"
+      [placeholder]="placeholder"
+      autocomplete="off"
+      spellcheck="false"
+      class="w-full focus:outline-none transition-all placeholder:text-ink/40 dark:placeholder:text-cloud/40 truncate"
+      [ngClass]="{
+        'bg-transparent font-display text-base md:text-lg text-ink py-1 pr-7 cursor-text': variant === 'hero',
+        'py-2.5 pr-8 pl-2 bg-transparent text-ink dark:text-cloud': variant === 'default',
+        'py-1 pr-6 pl-1 bg-transparent text-ink dark:text-cloud': variant === 'pill'
+      }"
+    />
+
+    <!-- Right Controls: Spinner or Clear Button -->
+    <div class="absolute right-2.5 flex items-center gap-1">
+      @if (isLoading()) {
+        <span class="inline-block w-3.5 h-3.5 border-2 border-moss/30 border-t-moss rounded-full animate-spin"></span>
+      } @else if (query()) {
+        <button
+          type="button"
+          (click)="clear($event)"
+          title="Clear location"
+          class="p-1 text-ink/40 hover:text-ink dark:text-cloud/40 dark:hover:text-cloud focus:outline-none rounded transition-colors text-xs cursor-pointer"
+        >
+          ✕
+        </button>
+      } @else if (variant === 'hero') {
+        <span class="text-xs text-ink/40 pointer-events-none">▼</span>
+      }
+    </div>
+  </div>
+
+  <!-- Autocomplete Dropdown Menu -->
+  @if (isOpen()) {
+    <div
+      class="absolute left-0 top-full mt-2 w-full min-w-[280px] sm:min-w-[320px] max-h-72 overflow-y-auto bg-white dark:bg-pine border border-ink/15 dark:border-cloud/20 rounded-2xl shadow-2xl z-[80] animate-in fade-in zoom-in-95 duration-150 py-2 scrollbar-thin text-ink dark:text-cloud"
+    >
+      <!-- Option 1: All Locations / Reset -->
+      <button
+        type="button"
+        (click)="selectLocation(null)"
+        class="w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-cloud/80 dark:hover:bg-white/10 transition-colors cursor-pointer group"
+        [class.bg-cloud]="!selectedLocation()"
+        [class.dark:bg-white/10]="!selectedLocation()"
+      >
+        <span class="w-8 h-8 rounded-full bg-moss/10 dark:bg-cloud/10 text-moss flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+          </svg>
+        </span>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-ink dark:text-cloud group-hover:text-ochre transition-colors truncate">
+            All Locations & Regions
+          </p>
+          <p class="text-[11px] text-ink/50 dark:text-cloud/50 truncate">
+            Explore homestays everywhere
+          </p>
+        </div>
+      </button>
+
+      <div class="my-1 border-t border-ink/5 dark:border-cloud/10"></div>
+
+      <!-- Section Header -->
+      <div class="px-4 py-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-ink/40 dark:text-cloud/40">
+        <span>Available Locations</span>
+        @if (locations().length > 0) {
+          <span>{{ locations().length }}</span>
+        }
+      </div>
+
+      <!-- Locations List -->
+      @for (loc of locations(); track loc.id; let idx = $index) {
+        <button
+          type="button"
+          (click)="selectLocation(loc)"
+          class="w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-cloud/80 dark:hover:bg-white/10 transition-colors cursor-pointer group"
+          [class.bg-moss/10]="highlightedIndex() === idx || selectedLocation()?.id === loc.id"
+          [class.dark:bg-white/15]="highlightedIndex() === idx || selectedLocation()?.id === loc.id"
+        >
+          <!-- Location Thumbnail or Icon -->
+          @if (loc.image_url) {
+            <div class="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-ink/10">
+              <img [src]="assetUrl + loc.image_url" [alt]="loc.name" class="w-full h-full object-cover" />
+            </div>
+          } @else {
+            <span class="w-8 h-8 rounded-full bg-ochre/15 text-ochreD dark:text-ochre flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </span>
+          }
+
+          <!-- Location Info -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-ink dark:text-cloud group-hover:text-ochre transition-colors truncate">
+              {{ loc.name }}
+            </p>
+            <p class="text-[11px] text-ink/50 dark:text-cloud/50 truncate">
+              {{ formatCitySubtitle(loc) || 'Hill Station' }}
+            </p>
+          </div>
+
+          <!-- Active checkmark -->
+          @if (selectedLocation()?.id === loc.id) {
+            <span class="text-moss text-xs shrink-0 font-bold">✓</span>
+          }
+        </button>
+      }
+
+      <!-- Empty state -->
+      @if (!isLoading() && locations().length === 0) {
+        <div class="px-4 py-5 text-center text-xs text-ink/50 dark:text-cloud/50">
+          <p>No locations found matching "{{ query() }}"</p>
+          <p class="text-[11px] mt-1 text-ink/40 dark:text-cloud/40">Try searching for Darjeeling, Mal Road, or Kurseong</p>
+        </div>
+      }
+    </div>
+  }
+</div>
+

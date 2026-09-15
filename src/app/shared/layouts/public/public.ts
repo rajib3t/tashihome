@@ -47,7 +47,9 @@ export class Public implements OnInit, OnDestroy {
       url.startsWith('/stay/') ||
       url === '/our-story' ||
       url === '/story' ||
-      url === '/brand-story'
+      url === '/brand-story' ||
+      url.startsWith('/locations') ||
+      url.startsWith('/location')
     ) {
       return false;
     }

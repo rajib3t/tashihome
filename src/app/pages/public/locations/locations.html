@@ -1,0 +1,343 @@
+<!-- ============ LOCATIONS HERO & ARCHIVE HEADER ============ -->
+<section
+  class="relative bg-pine text-cloud overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28"
+  style="background: url('/images/listings-bg.webp') center/cover no-repeat;"
+>
+  <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-pine/80 to-pine/95"></div>
+
+  <!-- Ambient glowing backdrop orbs -->
+  <div class="pointer-events-none absolute -top-24 right-0 w-[38rem] h-[38rem] bg-moss/20 rounded-full blur-[130px]" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-ochre/15 rounded-full blur-[130px]" aria-hidden="true"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10">
+    <!-- Breadcrumb Navigation -->
+    <nav class="flex items-center gap-2 text-xs text-cloud/75 mb-6 flex-wrap" aria-label="Breadcrumb">
+      <a routerLink="/" class="hover:text-ochre transition-colors underline underline-offset-2">Home</a>
+      <span class="text-cloud/40">/</span>
+      @if (isDetailMode()) {
+        <a routerLink="/locations" class="hover:text-ochre transition-colors underline underline-offset-2">Locations</a>
+        <span class="text-cloud/40">/</span>
+        <span class="text-cloud font-semibold">{{ currentLocation()?.name || formatSlugToName(currentSlug()) }}</span>
+      } @else {
+        <span class="text-cloud font-semibold">Locations &amp; Hill Hamlets</span>
+      }
+    </nav>
+
+    <!-- Headline and Subtitle -->
+    @if (isDetailMode()) {
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-4 text-xs font-semibold text-ochre">
+          <span>📍 {{ currentLocation()?.city?.name || 'Hill Destination' }}</span>
+          @if (currentLocation()?.city?.country?.name) {
+            <span class="text-cloud/50">• {{ currentLocation()?.city?.country?.name }}</span>
+          }
+        </div>
+        <h1 class="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight">
+          Homestays in {{ currentLocation()?.name || formatSlugToName(currentSlug()) }}
+        </h1>
+        <p class="mt-5 text-cloud/85 text-base sm:text-lg md:text-xl font-light leading-relaxed">
+          {{ currentLocation()?.description || 'Authentic mountain homes, quiet hamlets, and family hospitality in ' + (currentLocation()?.name || 'this location') + '.' }}
+        </p>
+      </div>
+    } @else {
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-4 text-xs font-semibold text-ochre">
+          <span>🏔️ Explore Hill Stations &amp; Villages</span>
+        </div>
+        <h1 class="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight">
+          Himalayan Locations <em class="hero-accent font-accent not-italic text-ochre">&amp; Hamlets</em>
+        </h1>
+        <p class="mt-5 text-cloud/85 text-base sm:text-lg md:text-xl font-light leading-relaxed">
+          From bustling hill ridges like Darjeeling’s Mal Road to tranquil tea hamlets and remote forests. Discover every verified homestay destination on Tashi Homes.
+        </p>
+      </div>
+    }
+
+    <!-- Search / Filter Card within Hero -->
+    <div class="mt-10 max-w-2xl bg-white/95 dark:bg-pine/90 text-ink dark:text-cloud backdrop-blur-xl rounded-2xl p-3 sm:p-4 shadow-2xl border border-white/30 dark:border-cloud/10">
+      <app-location-autocomplete
+        variant="default"
+        label="Find a specific location"
+        placeholder="Type location name (e.g. Mal Road, Takdah)..."
+        [selectedLocationSlug]="currentSlug()"
+        [initialLocationName]="currentLocation()?.name || (isDetailMode() ? formatSlugToName(currentSlug()) : null)"
+        (locationSelected)="onLocationAutocompleteSelected($event)"
+      ></app-location-autocomplete>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MAIN CONTENT AREA ============ -->
+<section class="py-16 md:py-24 bg-cloud min-h-[600px] text-ink">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+
+    <!-- ================= SCENARIO A: ALL LOCATIONS OVERVIEW ================= -->
+    @if (!isDetailMode()) {
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-8 border-b border-ink/10">
+        <div>
+          <h2 class="font-display text-2xl sm:text-3xl text-ink">All Verified Locations</h2>
+          <p class="text-sm text-ink/60 mt-1">Browse destinations and choose where your next mountain story begins</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <input
+            type="text"
+            [value]="searchKeyword()"
+            (input)="onSearchInput($event)"
+            placeholder="Filter list..."
+            class="px-4 py-2 bg-white border border-ink/15 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ochre text-ink"
+          />
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      @if (loadingLocations()) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="bg-white rounded-3xl overflow-hidden border border-ink/10 shadow-xs animate-pulse">
+              <div class="h-48 bg-ink/10"></div>
+              <div class="p-6 space-y-3">
+                <div class="h-5 bg-ink/15 rounded w-1/2"></div>
+                <div class="h-4 bg-ink/10 rounded w-3/4"></div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Locations Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
+          @for (loc of filteredLocations(); track loc.id) {
+            <div class="bg-white rounded-3xl overflow-hidden border border-ink/10 shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col">
+              <!-- Location Card Image -->
+              <div class="h-52 relative overflow-hidden bg-pine/20">
+                <img
+                  [src]="loc.image_url ? (assetUrl + loc.image_url) : '/images/exp-tea.webp'"
+                  [alt]="loc.name"
+                  loading="lazy"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                
+                @if (loc.city?.name) {
+                  <span class="absolute top-4 left-4 bg-white/90 text-pine backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold shadow-xs">
+                    📍 {{ loc.city?.name }}
+                  </span>
+                }
+              </div>
+
+              <!-- Location Details -->
+              <div class="p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 class="font-display text-2xl text-ink group-hover:text-ochre transition-colors">
+                    {{ loc.name }}
+                  </h3>
+                  <p class="text-xs text-moss font-semibold uppercase tracking-wider mt-1">
+                    {{ loc.city?.name || 'Hill Region' }}@if (loc.city?.country?.name) { , {{ loc.city?.country?.name }} }
+                  </p>
+                  <p class="text-sm text-ink/65 mt-3 line-clamp-2 leading-relaxed">
+                    {{ loc.description || 'Authentic mountain retreats, scenic village homestays, and genuine host families.' }}
+                  </p>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-ink/5 flex items-center justify-between">
+                  <a
+                    [routerLink]="['/locations', loc.slug || loc.id]"
+                    class="btn-anim inline-flex items-center gap-2 text-sm font-semibold text-ochre group-hover:text-ochreD transition-colors"
+                  >
+                    <span>View Homestays</span>
+                    <span>→</span>
+                  </a>
+                  <a
+                    [routerLink]="['/stays']"
+                    [queryParams]="{ location_id: loc.id, location_slug: loc.slug }"
+                    class="text-xs text-ink/40 hover:text-ink transition-colors underline"
+                  >
+                    Filter on stays
+                  </a>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Empty state -->
+        @if (filteredLocations().length === 0) {
+          <div class="text-center py-20 bg-white rounded-3xl border border-ink/10 mt-10">
+            <p class="font-display text-2xl text-ink">No locations found</p>
+            <p class="text-sm text-ink/60 mt-2">Try clearing your search query or exploring popular regions</p>
+            <button
+              type="button"
+              (click)="clearSearch()"
+              class="mt-5 px-6 py-2.5 bg-ochre text-cloud font-semibold rounded-full text-sm hover:bg-ochreD transition-colors cursor-pointer"
+            >
+              Show all locations
+            </button>
+          </div>
+        }
+      }
+    }
+
+    <!-- ================= SCENARIO B: LOCATION HOMESTAYS ARCHIVE ================= -->
+    @if (isDetailMode()) {
+      <!-- Results Header & Controls -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-ink/10">
+        <div>
+          <h2 class="font-display text-2xl sm:text-3xl text-ink">
+            @if (loadingProperties()) {
+              <span>Searching verified stays in {{ currentLocation()?.name || formatSlugToName(currentSlug()) }}...</span>
+            } @else if (meta().total > 0) {
+              <span>{{ meta().total }} Verified Homestays in {{ currentLocation()?.name || formatSlugToName(currentSlug()) }}</span>
+            } @else {
+              <span>Homestays in {{ currentLocation()?.name || formatSlugToName(currentSlug()) }}</span>
+            }
+          </h2>
+          <p class="text-sm text-ink/60 mt-1">Direct bookings with local host families</p>
+        </div>
+
+        <div class="flex items-center gap-3 self-end md:self-auto">
+          <!-- Sort Dropdown -->
+          <div class="relative">
+            <select
+              [value]="sortOption()"
+              (change)="onSortChange($any($event.target).value)"
+              class="pl-3.5 pr-8 py-2 bg-white border border-ink/15 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-ochre appearance-none cursor-pointer"
+            >
+              <option value="default">Newest First</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="name_asc">Name: A to Z</option>
+            </select>
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ink/40 text-xs">▼</span>
+          </div>
+
+          <!-- View Mode Toggle -->
+          <div class="flex items-center bg-white border border-ink/15 rounded-xl p-1 gap-1">
+            <button
+              type="button"
+              (click)="setViewMode('grid')"
+              class="p-1.5 rounded-lg transition-colors cursor-pointer"
+              [class.bg-pine]="viewMode() === 'grid'"
+              [class.text-cloud]="viewMode() === 'grid'"
+              [class.text-ink/60]="viewMode() !== 'grid'"
+              title="Grid view"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              (click)="setViewMode('list')"
+              class="p-1.5 rounded-lg transition-colors cursor-pointer"
+              [class.bg-pine]="viewMode() === 'list'"
+              [class.text-cloud]="viewMode() === 'list'"
+              [class.text-ink/60]="viewMode() !== 'list'"
+              title="List view"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Link to all locations -->
+          <a
+            routerLink="/locations"
+            class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-ink/15 hover:border-moss transition-colors text-ink/80"
+          >
+            ← All Locations
+          </a>
+        </div>
+      </div>
+
+      <!-- Properties Grid / List -->
+      @if (loadingProperties()) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="bg-white rounded-3xl overflow-hidden border border-ink/10 shadow-xs animate-pulse">
+              <div class="h-56 bg-ink/10"></div>
+              <div class="p-6 space-y-3">
+                <div class="h-5 bg-ink/15 rounded w-2/3"></div>
+                <div class="h-4 bg-ink/10 rounded w-1/3"></div>
+                <div class="h-6 bg-ink/10 rounded w-1/2 mt-4"></div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else if (properties().length > 0) {
+        <div
+          class="mt-10"
+          [ngClass]="viewMode() === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8' : 'space-y-6'"
+        >
+          @for (item of properties(); track item.id) {
+            <app-single-property [item]="item"></app-single-property>
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages() > 1) {
+          <div class="mt-14 flex items-center justify-center gap-2">
+            <button
+              type="button"
+              (click)="onPageChange(meta().page - 1)"
+              [disabled]="meta().page === 1"
+              class="px-4 py-2 bg-white border border-ink/15 rounded-full text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-cloud transition-colors cursor-pointer"
+            >
+              Previous
+            </button>
+
+            @for (p of getPages(); track p) {
+              <button
+                type="button"
+                (click)="onPageChange(p)"
+                class="w-8 h-8 rounded-full text-xs font-semibold transition-colors cursor-pointer"
+                [class.bg-pine]="p === meta().page"
+                [class.text-cloud]="p === meta().page"
+                [class.bg-white]="p !== meta().page"
+                [class.border]="p !== meta().page"
+                [class.border-ink/15]="p !== meta().page"
+              >
+                {{ p }}
+              </button>
+            }
+
+            <button
+              type="button"
+              (click)="onPageChange(meta().page + 1)"
+              [disabled]="meta().page === totalPages()"
+              class="px-4 py-2 bg-white border border-ink/15 rounded-full text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-cloud transition-colors cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
+        }
+      } @else {
+        <!-- Empty State -->
+        <div class="text-center py-20 bg-white rounded-3xl border border-ink/10 mt-10">
+          <span class="w-16 h-16 rounded-full bg-moss/10 text-moss flex items-center justify-center mx-auto text-2xl mb-4">
+            🏔️
+          </span>
+          <h3 class="font-display text-2xl text-ink">No homestays currently listed in {{ currentLocation()?.name || formatSlugToName(currentSlug()) }}</h3>
+          <p class="text-sm text-ink/65 max-w-md mx-auto mt-2 leading-relaxed">
+            We are actively vetting new partner homestays in this area. In the meantime, explore stays in nearby hill locations.
+          </p>
+          <div class="mt-6 flex items-center justify-center gap-3 flex-wrap">
+            <a
+              routerLink="/locations"
+              class="px-6 py-2.5 bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold rounded-full transition-colors shadow-xs"
+            >
+              Browse all locations
+            </a>
+            <a
+              routerLink="/stays"
+              class="px-6 py-2.5 bg-cloud hover:bg-cloud2 text-ink text-sm font-semibold rounded-full transition-colors border border-ink/15"
+            >
+              View all stays
+            </a>
+          </div>
+        </div>
+      }
+    }
+
+  </div>
+</section>
+

@@ -21,6 +21,9 @@ import { filter, catchError, of, forkJoin, retry, timeout } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery, CitySearch } from '../../../services/city/city-model';
+import { LocationService } from '../../../services/location/location-service';
+import { LocationResponse, LocationQuery } from '../../../services/location/location-model';
+import { LocationAutocomplete } from '../../../shared/components/location-autocomplete/location-autocomplete';
 import { DashboardService } from '../../../services/dashboard/dashboard-service';
 import { SettingsService } from '../../../services/settings/settings-service';
 import { environment } from '../../../../environments/environment';
@@ -64,7 +67,8 @@ interface MistBlob {
     CommonModule, 
     FormsModule,
     RouterModule,
-    SingleProperty
+    SingleProperty,
+    LocationAutocomplete
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',
@@ -109,6 +113,11 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   private reduceMotion = false;
 
   selectedCityId: string = '';
+  selectedLocationId: string = '';
+  selectedLocationSlug: string = '';
+  selectedLocationName: string = '';
+  locations = signal<LocationResponse[]>([]);
+  loadingLocations = signal<boolean>(false);
   checkInDate: string = '';
   checkOutDate: string = '';
   adultsCount: number = 2;
@@ -133,6 +142,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   public readonly propertyService: PropertyService = inject(PropertyService);
   public readonly cityService: CityService = inject(CityService);
+  public readonly locationService: LocationService = inject(LocationService);
   public readonly testimonialService: TestimonialService = inject(TestimonialService);
   public readonly authService: AuthService = inject(AuthService);
   public readonly settingsService: SettingsService = inject(SettingsService);
@@ -170,6 +180,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   private loadAllData(): void {
     this.loadProperties();
     this.loadCities();
+    this.loadLocations();
     this.loadStats();
     this.loadTestimonials();
   }
@@ -203,6 +214,22 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       })
       .map((opt) => formatName(opt.name));
     return included.length > 0 ? included.slice(0, 3) : ['Family stay'];
+  }
+
+  public onLocationSelected(loc: LocationResponse | null): void {
+    if (loc) {
+      this.selectedLocationId = loc.id;
+      this.selectedLocationSlug = loc.slug || '';
+      this.selectedLocationName = loc.name;
+      if (loc.city?.id) {
+        this.selectedCityId = loc.city.id;
+      }
+    } else {
+      this.selectedLocationId = '';
+      this.selectedLocationSlug = '';
+      this.selectedLocationName = '';
+      this.selectedCityId = '';
+    }
   }
 
   public onCitySelect(event: Event): void {
@@ -463,6 +490,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   public goToSearch(): void {
     const totalGuests = this.adultsCount + this.childrenCount;
     const queryParams: Record<string, any> = {};
+    if (this.selectedLocationId) queryParams['location_id'] = this.selectedLocationId;
+    if (this.selectedLocationSlug) queryParams['location_slug'] = this.selectedLocationSlug;
+    if (this.selectedLocationName) queryParams['location_name'] = this.selectedLocationName;
     if (this.selectedCityId) queryParams['city_id'] = this.selectedCityId;
     if (this.checkInDate && this.checkOutDate && this.checkOutDate > this.checkInDate) {
       queryParams['check_in_date'] = this.checkInDate;
@@ -557,6 +587,36 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
         this.cities.set(data);
         this.cdr.markForCheck();
         this.refreshRevealObserver();
+      });
+  }
+
+  private loadLocations(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.loadingLocations.set(true);
+
+    const locationQuery: LocationQuery = {
+      page: 1,
+      size: 10,
+      sort_by: 'created_at',
+      sort_order: 'desc',
+    };
+
+    this.locationService.public
+      .getLocations(locationQuery)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout({ first: 8000 }),
+        retry(2),
+        catchError((error) => {
+          console.warn('Could not load public locations:', error);
+          return of({ data: [], total: 0, page: 1, size: 10, status: '', message: '' });
+        })
+      )
+      .subscribe((response) => {
+        this.loadingLocations.set(false);
+        const data = response?.data || [];
+        this.locations.set(data);
+        this.cdr.markForCheck();
       });
   }
 

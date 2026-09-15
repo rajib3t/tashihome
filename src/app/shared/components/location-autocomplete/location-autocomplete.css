@@ -1,0 +1,9 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.autocomplete-hero input:focus {
+  outline: none;
+}
+

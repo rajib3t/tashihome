@@ -87,18 +87,16 @@
     <div
       class="reveal glass-card-light text-ink rounded-3xl md:rounded-full shadow-2xl shadow-black/35 px-6 py-5 md:px-8 md:py-4 grid md:grid-cols-[1.2fr_1.4fr_1.2fr_auto] gap-5 md:gap-4 items-center border border-white/60 relative z-[66]">
       
-      <!-- 1. Destination / Region -->
+      <!-- 1. Destination / Location Autocomplete -->
       <div class="md:border-r md:border-ink/10 md:pr-4">
-        <p class="eyebrow text-moss">Destination</p>
-        <select id="region-select"
-          [(ngModel)]="selectedCityId"
-          (change)="onCitySelect($event)"
-          class="mt-1 w-full bg-transparent font-display text-base md:text-lg focus:outline-none cursor-pointer truncate">
-          <option value="">All hill regions</option>
-          @for(city of cities(); track city.id) {
-          <option [value]="city.id">{{ city.name }}</option>
-          }
-        </select>
+        <app-location-autocomplete
+          variant="hero"
+          label="Destination"
+          placeholder="All hill locations & stays"
+          [selectedLocationId]="selectedLocationId"
+          [selectedLocationSlug]="selectedLocationSlug"
+          (locationSelected)="onLocationSelected($event)"
+        ></app-location-autocomplete>
       </div>
 
       <!-- 2. When / Dates -->
@@ -532,7 +530,14 @@
         }
       </div>
 
-      <div class="mt-14 text-center reveal">
+      <div class="mt-14 text-center reveal flex items-center justify-center gap-4 flex-wrap">
+        <a
+          routerLink="/locations"
+          class="btn-anim inline-flex items-center gap-2 bg-moss hover:bg-pine text-cloud text-sm font-semibold px-8 py-4 rounded-full transition-colors shadow-lg shadow-moss/30"
+        >
+          <span>Explore all locations &amp; towns</span>
+          <span>→</span>
+        </a>
         <a
           routerLink="/experiences"
           class="btn-anim inline-flex items-center gap-2 bg-ochre hover:bg-ochreD text-cloud text-sm font-semibold px-8 py-4 rounded-full transition-colors shadow-lg shadow-ochre/30"

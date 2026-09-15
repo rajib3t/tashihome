@@ -115,6 +115,31 @@ export const routes: Routes = [
                 pathMatch: 'full',
             },
             {
+                path: 'locations',
+                loadComponent: () => import('./pages/public/locations/locations').then((m) => m.Locations),
+                title: 'Himalayan Locations & Hill Villages | Tashi Homes',
+            },
+            {
+                path: 'locations/:slug',
+                loadComponent: () => import('./pages/public/locations/locations').then((m) => m.Locations),
+                title: 'Verified Homestays by Location | Tashi Homes',
+            },
+            {
+                path: 'location/:slug',
+                redirectTo: 'locations/:slug',
+                pathMatch: 'full',
+            },
+            {
+                path: 'location',
+                redirectTo: 'locations',
+                pathMatch: 'full',
+            },
+            {
+                path: 'stays/location/:location_slug',
+                redirectTo: 'locations/:location_slug',
+                pathMatch: 'full',
+            },
+            {
                 path: 'search',
                 loadComponent: () => import('./pages/public/search/search').then((m) => m.Search),
                 title: 'Search Homestays',
