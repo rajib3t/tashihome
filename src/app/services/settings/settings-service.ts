@@ -239,16 +239,29 @@ export class SettingsService {
 
     const desc = settings['meta_description'] || 'Discover handpicked homestays and heritage retreats across Northeast India.';
     const keywords = settings['meta_keywords'] || 'homestay, sikkim, luxury stays';
-    const title = settings['meta_title'] || settings['app_name'] || 'Tashi Homes';
+    const title = settings['meta_title'] || settings['app_name'] || 'Tashihomes | Verified Homestays in Darjeeling, Kalimpong & North Bengal';
     const ogImageSrc = settings['og_image'] || settings['meta_image'];
-    const ogImage = ogImageSrc ? this.resolveAssetUrl(ogImageSrc) : undefined;
+    let ogImage = ogImageSrc ? this.resolveAssetUrl(ogImageSrc) : undefined;
+    if (ogImage && typeof window !== 'undefined' && !ogImage.startsWith('http://') && !ogImage.startsWith('https://')) {
+      ogImage = new URL(ogImage, window.location.origin).href;
+    }
 
     setMetaTag('name', 'description', desc);
     setMetaTag('name', 'keywords', keywords);
+    setMetaTag('property', 'og:site_name', settings['app_name'] || 'Tashihomes');
+    setMetaTag('property', 'og:type', 'website');
     setMetaTag('property', 'og:title', title);
     setMetaTag('property', 'og:description', desc);
+    if (typeof window !== 'undefined') {
+      setMetaTag('property', 'og:url', window.location.href);
+      setMetaTag('name', 'twitter:url', window.location.href);
+    }
+    setMetaTag('name', 'twitter:card', 'summary_large_image');
+    setMetaTag('name', 'twitter:title', title);
+    setMetaTag('name', 'twitter:description', desc);
     if (ogImage) {
       setMetaTag('property', 'og:image', ogImage);
+      setMetaTag('property', 'og:image:secure_url', ogImage);
       setMetaTag('name', 'twitter:image', ogImage);
     }
   }
