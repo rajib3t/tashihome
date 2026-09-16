@@ -47,6 +47,7 @@ export class Setting implements OnInit {
   public logoPreview = signal<string>('');
   public whiteLogoPreview = signal<string>('');
   public faviconPreview = signal<string>('');
+  public ogImagePreview = signal<string>('');
   public comingBackgroundImagePreview = signal<string>('');
   public comingSoonVideoPreview = signal<string>('');
 
@@ -78,9 +79,9 @@ export class Setting implements OnInit {
     cancellation_grace_period_hours: [24, [Validators.min(0)]],
 
     // Social Links
-    facebook_url: ['https://facebook.com/tashihomes'],
-    instagram_url: ['https://instagram.com/tashihomes'],
-    twitter_url: ['https://x.com/tashihomes'],
+    facebook_url: [''],
+    instagram_url: [''],
+    twitter_url: [''],
     linkedin_url: [''],
     youtube_url: [''],
 
@@ -88,7 +89,8 @@ export class Setting implements OnInit {
     meta_title: ['Tashi Homes - Premium Homestays & Stays'],
     meta_description: ['Discover handpicked homestays and heritage retreats across Northeast India.'],
     meta_keywords: ['homestay, sikkim, luxury stays, northeast india'],
-    meta_image: [''],
+    meta_image: [null as File | string | null],
+    og_image: [null as File | string | null],
     terms_and_conditions_url: ['/terms'],
     privacy_policy_url: ['/privacy-policy'],
     refund_policy_url: ['/refund-policy'],
@@ -113,8 +115,21 @@ export class Setting implements OnInit {
         this.activeTab.set('financials');
       } else if (tabParam === 'seo' || tabParam === 'social') {
         this.activeTab.set('seo');
+      } else if (tabParam === 'taxes' || tabParam === 'tax') {
+        this.router.navigate(['/admin/tax-management']);
+        return;
+      } else if (tabParam === 'general') {
+        this.activeTab.set('general');
       } else {
         this.activeTab.set('general');
+        if (!params['tab'] && isPlatformBrowser(this.platformId)) {
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { tab: 'general' },
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+          });
+        }
       }
     });
 
@@ -129,6 +144,16 @@ export class Setting implements OnInit {
     this.activeTab.set(tab);
     this.errorMessage.set('');
     this.successMessage.set('');
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  public onOgImageChange(file: File): void {
+    this.settingForm.controls['og_image'].setValue(file);
+    this.settingForm.controls['meta_image'].setValue(file);
   }
 
   public fetchSettings(): void {
@@ -172,16 +197,17 @@ export class Setting implements OnInit {
             max_booking_days: payload?.['max_booking_days'] ?? 30,
             cancellation_grace_period_hours: payload?.['cancellation_grace_period_hours'] ?? 24,
 
-            facebook_url: payload?.['facebook_url'] ?? 'https://facebook.com/tashihomes',
-            instagram_url: payload?.['instagram_url'] ?? 'https://instagram.com/tashihomes',
-            twitter_url: payload?.['twitter_url'] ?? 'https://x.com/tashihomes',
+            facebook_url: payload?.['facebook_url'] ?? '',
+            instagram_url: payload?.['instagram_url'] ?? '',
+            twitter_url: payload?.['twitter_url'] ?? '',
             linkedin_url: payload?.['linkedin_url'] ?? '',
             youtube_url: payload?.['youtube_url'] ?? '',
 
             meta_title: payload?.['meta_title'] ?? 'Tashi Homes - Premium Homestays & Stays',
             meta_description: payload?.['meta_description'] ?? 'Discover handpicked homestays and heritage retreats across Northeast India.',
             meta_keywords: payload?.['meta_keywords'] ?? 'homestay, sikkim, luxury stays',
-            meta_image: payload?.['meta_image'] ?? '',
+            meta_image: payload?.['meta_image'] ?? payload?.['og_image'] ?? '',
+            og_image: payload?.['og_image'] ?? payload?.['meta_image'] ?? '',
             terms_and_conditions_url: payload?.['terms_and_conditions_url'] ?? '/terms',
             privacy_policy_url: payload?.['privacy_policy_url'] ?? '/privacy-policy',
             refund_policy_url: payload?.['refund_policy_url'] ?? '/refund-policy',
@@ -202,6 +228,10 @@ export class Setting implements OnInit {
           }
           if (settings.app_favicon) {
             this.faviconPreview.set(this.settingsService.resolveAssetUrl(settings.app_favicon));
+          }
+          const ogImg = settings.og_image || settings.meta_image;
+          if (ogImg) {
+            this.ogImagePreview.set(this.settingsService.resolveAssetUrl(ogImg));
           }
           if (settings.coming_background_image) {
             this.comingBackgroundImagePreview.set(this.settingsService.resolveAssetUrl(settings.coming_background_image));
@@ -288,7 +318,8 @@ export class Setting implements OnInit {
     formData.append('meta_title', raw.meta_title ?? '');
     formData.append('meta_description', raw.meta_description ?? '');
     formData.append('meta_keywords', raw.meta_keywords ?? '');
-    formData.append('meta_image', raw.meta_image ?? '');
+    appendFileOnly('og_image', raw.og_image);
+    appendFileOnly('meta_image', raw.meta_image || raw.og_image);
     formData.append('terms_and_conditions_url', raw.terms_and_conditions_url ?? '');
     formData.append('privacy_policy_url', raw.privacy_policy_url ?? '');
     formData.append('refund_policy_url', raw.refund_policy_url ?? '');
@@ -312,8 +343,9 @@ export class Setting implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          if (response) {
-            this.settingsService.setSettingsData(response);
+          const arrayPayload = Array.isArray(response) ? response : (response as any)?.data;
+          if (arrayPayload) {
+            this.settingsService.setSettingsData(arrayPayload);
           } else {
             this.settingsService.setSettingsData(raw);
           }

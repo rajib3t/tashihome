@@ -14,6 +14,19 @@ import { SettingsService } from '../../../../services/settings/settings-service'
       multi: true,
     },
   ],
+  styles: [`
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+  `],
   template: `
     @if (variant === 'property') {
       <!-- Property reservation card style -->
@@ -54,8 +67,9 @@ import { SettingsService } from '../../../../services/settings/settings-service'
           [value]="value()"
           (input)="onNativeInputChange($event)"
           (change)="onNativeInputChange($event)"
-          class="absolute inset-0 opacity-0 w-full h-full cursor-pointer pointer-events-none"
-          tabindex="-1"
+          (click)="onInputClick($event)"
+          class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10 text-base"
+          [attr.aria-label]="label"
         />
       </div>
     } @else {
@@ -83,7 +97,7 @@ import { SettingsService } from '../../../../services/settings/settings-service'
               <button
                 type="button"
                 (click)="clear($event)"
-                class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition relative z-20 cursor-pointer"
                 title="Clear date"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -105,7 +119,7 @@ import { SettingsService } from '../../../../services/settings/settings-service'
           </div>
         </div>
 
-        <!-- Hidden native date input triggered by showPicker() -->
+        <!-- Hidden native date input triggered by direct tap or showPicker() -->
         <input
           #nativeInput
           type="date"
@@ -115,8 +129,9 @@ import { SettingsService } from '../../../../services/settings/settings-service'
           [value]="value()"
           (input)="onNativeInputChange($event)"
           (change)="onNativeInputChange($event)"
-          class="absolute inset-0 opacity-0 w-full h-full cursor-pointer pointer-events-none"
-          tabindex="-1"
+          (click)="onInputClick($event)"
+          class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10 text-base"
+          [attr.aria-label]="label || placeholder || 'Select date'"
         />
       </div>
     }
@@ -152,6 +167,9 @@ export class DateInput implements ControlValueAccessor {
   writeValue(val: any): void {
     const str = val ? String(val).split('T')[0] : '';
     this.value.set(str);
+    if (this.nativeInputRef?.nativeElement) {
+      this.nativeInputRef.nativeElement.value = str;
+    }
   }
 
   registerOnChange(fn: any): void {
@@ -180,7 +198,23 @@ export class DateInput implements ControlValueAccessor {
         }
       }
       input.focus();
-      input.click();
+    }
+  }
+
+  onInputClick(event: MouseEvent): void {
+    event.stopPropagation();
+    if (this.disabled) {
+      event.preventDefault();
+      return;
+    }
+    this.onTouched();
+    const input = this.nativeInputRef?.nativeElement;
+    if (input && typeof input.showPicker === 'function') {
+      try {
+        input.showPicker();
+      } catch {
+        // Handled natively by browser or unsupported on iOS Safari
+      }
     }
   }
 

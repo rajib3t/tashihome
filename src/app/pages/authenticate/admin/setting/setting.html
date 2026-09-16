@@ -471,12 +471,24 @@
               </div>
 
               <div>
-                <label class="mb-1 block text-xs text-gray-500">OG / Social Preview Image URL</label>
-                <input
-                  type="text"
-                  formControlName="meta_image"
-                  placeholder="https://example.com/social-preview.jpg"
-                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                  OG / Social Preview Image (Max 3MB, 1200×630px recommended)
+                </label>
+                <div class="upload-wrapper max-w-xl">
+                  <app-upload-image
+                    [id]="'og_image'"
+                    [name]="'og_image'"
+                    [preview]="ogImagePreview()"
+                    [maxSizeMb]="3"
+                    buttonText="Upload OG Image"
+                    emptyText="No OG Image Selected"
+                    (previewChange)="ogImagePreview.set($event)"
+                    (valueChange)="onOgImageChange($event)">
+                  </app-upload-image>
+                </div>
+                <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                  Featured banner image displayed when sharing platform links on WhatsApp, Facebook, X/Twitter, and LinkedIn.
+                </p>
               </div>
             </div>
           </div>

@@ -48,6 +48,7 @@ export interface SystemSettingsMap {
   meta_description?: string | null;
   meta_keywords?: string | null;
   meta_image?: string | null;
+  og_image?: string | null;
   terms_and_conditions_url?: string | null;
   privacy_policy_url?: string | null;
   refund_policy_url?: string | null;

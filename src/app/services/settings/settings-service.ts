@@ -155,6 +155,7 @@ export class SettingsService {
   metaDescription = computed(() => this.#settingsData()['meta_description'] || 'Discover handpicked homestays and heritage retreats across Northeast India.');
   metaKeywords = computed(() => this.#settingsData()['meta_keywords'] || 'homestay, sikkim, luxury stays');
   metaImage = computed(() => this.#settingsData()['meta_image'] || null);
+  ogImage = computed(() => this.#settingsData()['og_image'] || this.#settingsData()['meta_image'] || null);
   termsUrl = computed(() => this.#settingsData()['terms_and_conditions_url'] || '/terms');
   privacyUrl = computed(() => this.#settingsData()['privacy_policy_url'] || '/privacy-policy');
   refundUrl = computed(() => this.#settingsData()['refund_policy_url'] || '/refund-policy');
@@ -239,7 +240,8 @@ export class SettingsService {
     const desc = settings['meta_description'] || 'Discover handpicked homestays and heritage retreats across Northeast India.';
     const keywords = settings['meta_keywords'] || 'homestay, sikkim, luxury stays';
     const title = settings['meta_title'] || settings['app_name'] || 'Tashi Homes';
-    const ogImage = settings['meta_image'] ? this.resolveAssetUrl(settings['meta_image']) : undefined;
+    const ogImageSrc = settings['og_image'] || settings['meta_image'];
+    const ogImage = ogImageSrc ? this.resolveAssetUrl(ogImageSrc) : undefined;
 
     setMetaTag('name', 'description', desc);
     setMetaTag('name', 'keywords', keywords);
@@ -247,6 +249,7 @@ export class SettingsService {
     setMetaTag('property', 'og:description', desc);
     if (ogImage) {
       setMetaTag('property', 'og:image', ogImage);
+      setMetaTag('name', 'twitter:image', ogImage);
     }
   }
 
