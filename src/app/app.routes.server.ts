@@ -116,6 +116,30 @@ export const serverRoutes: ServerRoute[] = [
     path: 'become-host',
     renderMode: RenderMode.Client
   },
+  {
+    path: 'locations',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'locations/:slug',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'location',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'location/:slug',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'stays/location/:location_slug',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'stay',
+    renderMode: RenderMode.Client
+  },
 
   // produces a no-auth shell, causing the header to show neither the
   // logged-in view nor the login button when opened in a new tab.
