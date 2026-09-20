@@ -36,6 +36,11 @@ export const routes: Routes = [
         title: 'Activate Account',
     },
     {
+        path: 'agreements/:token',
+        loadComponent: () => import('./pages/public/agreement-esign/esign-page.component').then((m) => m.ESignPageComponent),
+        title: 'Host Partnership Agreement & E-Sign | Tashi Homes',
+    },
+    {
         path: '',
         loadComponent: () => import('./shared/layouts/public/public').then((m) => m.Public),
         children: [
@@ -358,6 +363,21 @@ export const routes: Routes = [
                         title: 'Edit Vendor'
                     },
                     {
+                        path: 'agreements',
+                        loadComponent: () => import('./pages/authenticate/admin/agreement-management/agreement-management').then((m) => m.AgreementManagement),
+                        title: 'Host Agreements & E-Sign Records'
+                    },
+                    {
+                        path: 'vendors/agreements',
+                        redirectTo: 'agreements',
+                        pathMatch: 'full'
+                    },
+                    {
+                        path: 'vendor-agreements',
+                        redirectTo: 'agreements',
+                        pathMatch: 'full'
+                    },
+                    {
                         path: 'host-management',
                         loadComponent: () => import('./pages/authenticate/admin/host-management/host-management').then((m) => m.HostManagement),
                         title: 'Host Applications'
@@ -511,6 +531,16 @@ export const routes: Routes = [
                     {
                         path: 'testimonials',
                         redirectTo: 'testimonial-management',
+                        pathMatch: 'full'
+                    },
+                    {
+                        path: 'agreements',
+                        loadComponent: () => import('./pages/authenticate/vendor/agreement/vendor-agreement.component').then((m) => m.VendorAgreementComponent),
+                        title: 'Host Partnership Agreement | Tashi Homes'
+                    },
+                    {
+                        path: 'agreement',
+                        redirectTo: 'agreements',
                         pathMatch: 'full'
                     }
                 ]

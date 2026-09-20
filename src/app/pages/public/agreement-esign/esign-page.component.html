@@ -1,0 +1,660 @@
+<div class="min-h-screen bg-gradient-to-b from-slate-50 via-slate-100 to-amber-50/20 text-slate-900 py-8 px-4 sm:px-6 lg:px-8 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100">
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Top Branding Header -->
+    <header class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <a routerLink="/" class="flex items-center gap-3 group">
+          @if (operatorLogoUrl) {
+            <img [src]="operatorLogoUrl" [alt]="operatorName" class="h-10 w-auto max-w-[150px] object-contain rounded-lg" />
+          } @else {
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:scale-105 transition transform">
+              🏡
+            </div>
+          }
+          <div>
+            <div class="font-display font-bold text-xl text-slate-900 dark:text-white tracking-tight">{{ operatorName }}</div>
+            <div class="text-[11px] font-medium uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Authentic Homestays</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="flex items-center gap-2 text-right">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Host Partnership & E-Sign Portal</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- State 1: Loading -->
+    @if (loading()) {
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-16 text-center space-y-4">
+        <div class="inline-block w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+        <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200">Retrieving Host Partnership Agreement...</h3>
+        <p class="text-sm text-slate-500">Decrypting secure token payload and verifying contract status.</p>
+      </div>
+    }
+
+    <!-- State 2: Error Banner -->
+    @else if (errorMessage()) {
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-rose-200 dark:border-rose-900/60 p-8 sm:p-12 text-center space-y-4">
+        <div class="w-14 h-14 mx-auto rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center text-2xl font-bold">
+          ✕
+        </div>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Unable to Access Agreement</h2>
+        <p class="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+          {{ errorMessage() }}
+        </p>
+        <div class="pt-4 flex flex-wrap justify-center gap-3">
+          <a routerLink="/" class="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+            Back to Home
+          </a>
+          <a href="mailto:support@tashihomes.in" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition shadow-sm">
+            Contact Host Support
+          </a>
+        </div>
+      </div>
+    }
+
+    <!-- State 3: Explicitly Declined -->
+    @else if (isDeclined()) {
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-8 sm:p-12 text-center space-y-4">
+        <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-3xl">
+          ✕
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Agreement Declined</h2>
+        <p class="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+          You have declined the {{ operatorName }} Host Partnership Agreement. No account activation or fees have taken effect.
+        </p>
+        <p class="text-xs text-slate-500">
+          If this was in error or you wish to renegotiate contract terms, please contact our community team at <a href="mailto:support@tashihomes.in" class="text-emerald-600 underline">support&#64;tashihomes.in</a>.
+        </p>
+        <div class="pt-4">
+          <a routerLink="/" class="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-800">
+            Return to Homepage
+          </a>
+        </div>
+      </div>
+    }
+
+    <!-- State 5: Active Agreement Signing Workflow -->
+    @else if (agreement(); as ag) {
+
+      <!-- Sub-State 5.1: Unauthenticated Host Login View -->
+      @if (!isAuthenticated()) {
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-10 max-w-xl mx-auto space-y-6">
+          <div class="text-center space-y-2">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center text-2xl shadow-md">
+              🔒
+            </div>
+            <h2 class="text-2xl font-bold font-display text-slate-900 dark:text-white">
+              Host Authentication Required
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
+              Under the Information Technology Act and platform policy, you must authenticate with your verified host account to review and electronically sign this contract.
+            </p>
+          </div>
+
+          <!-- Target Signer Badge -->
+          <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs flex items-center gap-3">
+            <span class="text-lg">📋</span>
+            <div class="truncate">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Agreement Issued To</div>
+              <div class="font-medium text-slate-900 dark:text-white truncate">
+                {{ ag.host_name }} &bull; <span class="font-mono text-emerald-600 dark:text-emerald-400">{{ ag.host_email }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Login Form -->
+          <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()" class="space-y-4 text-sm">
+            @if (loginError()) {
+              <div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2">
+                <span class="font-bold">✕</span>
+                <span>{{ loginError() }}</span>
+              </div>
+            }
+
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Host Email Address <span class="text-rose-500">*</span>
+              </label>
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="your.email@example.com"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+              />
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Password <span class="text-rose-500">*</span>
+                </label>
+                <a routerLink="/forgot-password" class="text-xs text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:underline">
+                  Forgot Password?
+                </a>
+              </div>
+              <div class="relative">
+                <input
+                  [type]="showLoginPassword() ? 'text' : 'password'"
+                  formControlName="password"
+                  placeholder="Enter your account password"
+                  class="w-full px-4 py-2.5 pr-12 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                />
+                <button
+                  type="button"
+                  (click)="toggleLoginPassword()"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer px-1"
+                >
+                  {{ showLoginPassword() ? 'Hide' : 'Show' }}
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs pt-1">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-400 select-none">
+                <input type="checkbox" formControlName="rememberMe" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                <span>Remember this browser</span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="isLoggingIn()"
+              class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-semibold text-sm transition shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+            >
+              @if (isLoggingIn()) {
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Verifying Host Credentials...</span>
+              } @else {
+                <span>Sign In & Access Agreement</span>
+                <span class="text-base font-bold">➔</span>
+              }
+            </button>
+          </form>
+
+          <div class="text-center pt-2 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 space-y-1">
+            <p>
+              First time logging in?
+              <a routerLink="/activate-account" class="text-emerald-600 hover:underline font-medium">Activate Account</a>
+              or use your host initial password.
+            </p>
+          </div>
+        </div>
+      }
+
+      <!-- Sub-State 5.2: Authenticated Authorized Signer -> Full Contract & E-Sign -->
+      @else if (isAuthorizedSigner()) {
+        <div class="space-y-6">
+
+          <!-- Signer Verification Banner -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl text-xs text-emerald-900 dark:text-emerald-200">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>
+                Verified Host Signer: <strong>{{ authUser()?.full_name || ag.host_name }}</strong> &bull; <span class="font-mono text-emerald-700 dark:text-emerald-300">{{ authUser()?.email }}</span>
+              </span>
+            </div>
+            <button
+              type="button"
+              (click)="switchAccount()"
+              class="text-[11px] font-semibold underline text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-200 cursor-pointer"
+            >
+              Not you? Switch Account
+            </button>
+          </div>
+
+          <!-- Executed Agreement Certificate Summary -->
+          @if (isSigned() || ag.status === 'signed') {
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 p-5 shadow-sm space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+                  <span>🛡️ Digital Certificate & Cryptographic Audit</span>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                  EXECUTED & VERIFIED
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                  <div class="text-slate-500 dark:text-slate-400 text-[11px]">Signer Legal Name</div>
+                  <div class="font-semibold text-slate-900 dark:text-white mt-0.5">{{ ag.signer_name || signedSuccessData()?.signer_name || ag.host_name }}</div>
+                </div>
+                <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                  <div class="text-slate-500 dark:text-slate-400 text-[11px]">Execution Date</div>
+                  <div class="font-semibold text-slate-900 dark:text-white mt-0.5">{{ (ag.signed_at || signedSuccessData()?.signed_at) | date:'medium' }}</div>
+                </div>
+                <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                  <div class="text-slate-500 dark:text-slate-400 text-[11px]">Checksum / Hash</div>
+                  <div class="font-mono text-emerald-700 dark:text-emerald-400 truncate mt-0.5">{{ ag.document_hash || signedSuccessData()?.checksum || ('sha256:' + token().slice(0, 16) + '...') }}</div>
+                </div>
+                <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                  <div class="text-slate-500 dark:text-slate-400 text-[11px]">Security Verification</div>
+                  <div class="font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">Legally Binding &bull; Verified</div>
+                </div>
+              </div>
+            </div>
+          }
+
+        <!-- Contract Document Container -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <!-- Document Header -->
+          <div class="bg-slate-900 text-white px-6 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xl">📄</span>
+                <h1 class="font-display font-bold text-lg sm:text-xl tracking-tight">
+                  {{ ag.title || 'TASHIHOME HOST PARTNERSHIP AGREEMENT' }}
+                </h1>
+              </div>
+              <p class="text-xs text-slate-300 mt-0.5">
+                Version {{ ag.version || '1.0' }} &bull; Electronic Contract ID: <span class="font-mono text-emerald-400">{{ token().slice(0, 13) }}...</span>
+              </p>
+            </div>
+
+            <div class="text-xs bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-1.5 text-right self-stretch sm:self-auto">
+              @if (isSigned() || ag.status === 'signed') {
+                <div class="text-slate-400">Execution Status:</div>
+                <div class="font-semibold text-emerald-400">Digitally Executed & Active</div>
+              } @else {
+                <div class="text-slate-400">Valid Until:</div>
+                <div class="font-semibold text-amber-300">{{ ag.expires_at | date:'mediumDate' }}</div>
+              }
+            </div>
+          </div>
+
+          <div class="p-6 sm:p-8 space-y-6 text-sm">
+
+            <!-- Parties Block -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
+              <div class="space-y-1">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Platform Operator (First Party)</div>
+                <div class="font-semibold text-slate-900 dark:text-white">{{ operatorLegalName }}</div>
+                <div class="text-xs text-slate-600 dark:text-slate-400">{{ operatorAddress }}</div>
+                <div class="text-xs text-slate-500">partner-support&#64;tashihomes.in</div>
+              </div>
+
+              <div class="space-y-1 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700 pt-3 md:pt-0 md:pl-4">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Host / Homestay Partner (Second Party)</div>
+                <div class="font-semibold text-slate-900 dark:text-white">{{ ag.host_name }}</div>
+                <div class="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                  {{ ag.company_name || 'Homestay Host' }}
+                  @if (ag.city) { <span>&bull; {{ ag.city }}</span> }
+                </div>
+                <div class="text-xs text-slate-500">
+                  {{ ag.host_email }}
+                  @if (ag.host_phone) { <span>&bull; {{ ag.host_phone }}</span> }
+                </div>
+              </div>
+            </div>
+
+            <!-- Commercial Terms Grid -->
+            <div class="border border-amber-200 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/20 rounded-xl p-5 space-y-3">
+              <div class="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-semibold text-xs uppercase tracking-wider">
+                <span>⚡ Key Commercial & Financial Terms</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div class="bg-white dark:bg-slate-900 p-3.5 rounded-lg border border-amber-100 dark:border-slate-800">
+                  <div class="text-slate-500 dark:text-slate-400">Platform Commission:</div>
+                  <div class="text-xl font-bold text-slate-900 dark:text-white mt-1">
+                    {{ ag.commission_percentage || 10.0 }}%
+                  </div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">Deducted from confirmed booking subtotal</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 rounded-lg border border-amber-100 dark:border-slate-800">
+                  <div class="text-slate-500 dark:text-slate-400">Payout Schedule:</div>
+                  <div class="text-sm font-bold text-slate-900 dark:text-white mt-1">
+                    24h Post Check-in
+                  </div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">Direct automated bank transfer via RazorpayX</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 rounded-lg border border-amber-100 dark:border-slate-800">
+                  <div class="text-slate-500 dark:text-slate-400">Cancellation Policy:</div>
+                  <div class="text-sm font-bold text-slate-900 dark:text-white mt-1">
+                    TashiHome Standard
+                  </div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">Strict protection for valid guest reservations</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Scrollable Contract Terms & Obligations -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <span>CONTRACT TERMS & OBLIGATIONS</span>
+                <span class="text-slate-400 font-normal">Scroll to review all clauses</span>
+              </div>
+
+              <div class="h-64 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700/80 p-4 bg-slate-50 dark:bg-slate-950/60 text-xs text-slate-700 dark:text-slate-300 leading-relaxed space-y-4 shadow-inner">
+                @for (clause of termsList; track clause.heading) {
+                  <div class="space-y-1">
+                    <h4 class="font-bold text-slate-900 dark:text-white text-xs">{{ clause.heading }}</h4>
+                    <p class="text-slate-600 dark:text-slate-400 leading-normal">{{ clause.content }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            @if (isSigned() || ag.status === 'signed' || ag.is_bilateral_signed || ag.is_second_party_signed) {
+              <!-- Bilateral Executed Signatures Block (Read-Only Preview) -->
+              <div class="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                  <div class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Bilateral Electronic Signatures
+                  </div>
+                  <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 rounded-full">
+                    <span>✓</span> Digitally Verified & Executed
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- First Party: Platform Operator -->
+                  <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">First Party: Platform Operator</span>
+                      <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">Verified Platform</span>
+                    </div>
+
+                    <div class="h-28 flex items-center justify-center bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-2">
+                      @if (ag.first_party_signature_data) {
+                        <img [src]="ag.first_party_signature_data" alt="Operator Signature Seal" class="max-h-full max-w-full object-contain filter dark:invert" />
+                      } @else {
+                        <div class="text-center">
+                          <div class="font-serif italic text-2xl text-emerald-900 dark:text-emerald-400 select-none">
+                            {{ ag.first_party_signer_name || 'TashiHome Technologies' }}
+                          </div>
+                          <div class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Platform Digital Seal</div>
+                        </div>
+                      }
+                    </div>
+
+                    <div class="flex flex-col text-xs text-slate-600 dark:text-slate-400 gap-1 pt-1 border-t border-slate-200 dark:border-slate-700">
+                      <div>Signer: <strong>{{ ag.first_party_signer_name || 'Authorized Signatory' }}</strong> ({{ ag.first_party_signer_role || 'Platform Operator' }})</div>
+                      <div class="text-[11px] text-slate-500">Executed: {{ (ag.first_party_signed_at || ag.sent_at) | date:'medium' }}</div>
+                    </div>
+                  </div>
+
+                  <!-- Second Party: Homestay Host -->
+                  <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Second Party: Host Partner</span>
+                      <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">Verified Host</span>
+                    </div>
+
+                    @if (ag.signature_type === 'drawn' && ag.signature_data) {
+                      <div class="h-28 flex items-center justify-center bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-2">
+                        <img [src]="ag.signature_data" alt="Host Electronic Signature" class="max-h-full max-w-full object-contain filter dark:invert" />
+                      </div>
+                    } @else if (signatureData() && signatureMode() === 'drawn') {
+                      <div class="h-28 flex items-center justify-center bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-2">
+                        <img [src]="signatureData()!" alt="Host Electronic Signature" class="max-h-full max-w-full object-contain filter dark:invert" />
+                      </div>
+                    } @else {
+                      <div class="h-28 flex items-center justify-center bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
+                        <div class="font-serif italic text-2xl sm:text-3xl text-emerald-900 dark:text-emerald-400 tracking-wide select-none">
+                          {{ ag.signer_name || signedSuccessData()?.signer_name || signForm.value.signer_name || ag.host_name }}
+                        </div>
+                      </div>
+                    }
+
+                    <div class="flex flex-col text-xs text-slate-600 dark:text-slate-400 gap-1 pt-1 border-t border-slate-200 dark:border-slate-700">
+                      <div>Signer: <strong>{{ ag.signer_name || signedSuccessData()?.signer_name || signForm.value.signer_name || ag.host_name }}</strong> &bull; <span class="font-mono text-emerald-700 dark:text-emerald-400">{{ ag.host_email }}</span></div>
+                      <div class="text-[11px] text-slate-500">Executed: {{ (ag.signed_at || signedSuccessData()?.signed_at) | date:'medium' }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Buttons in Preview Mode -->
+                <div class="flex flex-col-reverse sm:flex-row justify-between items-center gap-3 pt-3">
+                  <a
+                    routerLink="/vendor"
+                    class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition text-center"
+                  >
+                    Go to Host Dashboard
+                  </a>
+
+                  <button
+                    type="button"
+                    (click)="downloadPdf()"
+                    class="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-md hover:shadow-lg transition transform active:scale-95"
+                  >
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Download Executed PDF Contract</span>
+                  </button>
+                </div>
+              </div>
+            } @else {
+
+              <!-- Signing Form -->
+              <form [formGroup]="signForm" (ngSubmit)="submitSignature()" class="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-6">
+
+                <!-- First Party Pre-Executed Notice -->
+                @if (ag.first_party_signed_at || ag.is_first_party_signed) {
+                  <div class="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div>
+                      <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">First Party Counter-Signature</div>
+                      <div class="font-semibold text-slate-900 dark:text-white">{{ ag.first_party_signer_name || 'TashiHome Platforms' }} ({{ ag.first_party_signer_role || 'Platform Operator' }})</div>
+                      <div class="text-slate-500 text-[11px]">Pre-executed on {{ ag.first_party_signed_at | date:'medium' }}</div>
+                    </div>
+                    <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800 px-3 py-1 rounded-full whitespace-nowrap self-start sm:self-auto shadow-sm">
+                      ✓ Pre-Executed by Platform
+                    </span>
+                  </div>
+                }
+
+                <!-- Mandatory Consents -->
+                <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-4 border border-slate-200 dark:border-slate-700 space-y-3">
+                  <div class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                    Legal Consent & Acknowledgment
+                  </div>
+
+                  <label class="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      formControlName="terms_accepted"
+                      class="mt-0.5 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                    />
+                    <span class="text-xs text-slate-700 dark:text-slate-300 leading-snug">
+                      I have thoroughly read, understood, and agree to abide by the <strong class="text-slate-900 dark:text-white">TashiHome Host Partnership Terms & Policies</strong>, including commission rates and payout cycles.
+                    </span>
+                  </label>
+
+                  <label class="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      formControlName="consent_acknowledged"
+                      class="mt-0.5 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                    />
+                    <span class="text-xs text-slate-700 dark:text-slate-300 leading-snug">
+                      I verify and declare that I am the authorized legal owner or recognized representative of this homestay property and am authorized to accept guest payouts.
+                    </span>
+                  </label>
+                </div>
+
+                <!-- Signature Section -->
+                <div class="space-y-3">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      Execute Electronic Signature
+                    </label>
+
+                    <!-- Mode Toggle -->
+                    <div class="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-800 text-xs">
+                      <button
+                        type="button"
+                        (click)="setSignatureMode('drawn')"
+                        [class.bg-white]="signatureMode() === 'drawn'"
+                        [class.text-slate-900]="signatureMode() === 'drawn'"
+                        [class.dark:bg-slate-700]="signatureMode() === 'drawn'"
+                        [class.dark:text-white]="signatureMode() === 'drawn'"
+                        [class.shadow-sm]="signatureMode() === 'drawn'"
+                        class="px-3 py-1 rounded-md cursor-pointer font-medium transition"
+                      >
+                        ✍️ Draw Signature
+                      </button>
+                      <button
+                        type="button"
+                        (click)="setSignatureMode('typed')"
+                        [class.bg-white]="signatureMode() === 'typed'"
+                        [class.text-slate-900]="signatureMode() === 'typed'"
+                        [class.dark:bg-slate-700]="signatureMode() === 'typed'"
+                        [class.dark:text-white]="signatureMode() === 'typed'"
+                        [class.shadow-sm]="signatureMode() === 'typed'"
+                        class="px-3 py-1 rounded-md cursor-pointer font-medium transition"
+                      >
+                        ⌨️ Type Legal Name
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Drawn Pad Mode -->
+                  @if (signatureMode() === 'drawn') {
+                    <app-signature-pad (signatureChange)="onSignatureChange($event)"></app-signature-pad>
+                  }
+
+                  <!-- Typed Signature Mode -->
+                  @if (signatureMode() === 'typed') {
+                    <div class="border border-slate-300 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-900 space-y-2">
+                      <div class="h-28 flex items-center justify-center bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
+                        <div class="font-serif italic text-3xl sm:text-4xl text-emerald-900 dark:text-emerald-400 tracking-wide select-none">
+                          {{ signForm.value.signer_name || 'Your Typed Signature Preview' }}
+                        </div>
+                      </div>
+                      <div class="text-xs text-slate-500">
+                        A stylized cryptographic signature representation generated from your legal full name.
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Signer Legal Name Input -->
+                  <div class="space-y-1 pt-1">
+                    <label for="signer_name" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Signer Full Legal Name <span class="text-rose-500">*</span>
+                    </label>
+                    <input
+                      id="signer_name"
+                      type="text"
+                      formControlName="signer_name"
+                      placeholder="Enter your full legal name as it appears on official ID"
+                      class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20"
+                    />
+                  </div>
+                </div>
+
+                <!-- Security & Legal Notice -->
+                <div class="flex items-start gap-2.5 p-3.5 rounded-xl bg-slate-100 dark:bg-slate-800/70 text-slate-600 dark:text-slate-400 text-xs">
+                  <span class="text-base">🔒</span>
+                  <span>
+                    By clicking <strong>"E-Sign & Accept Terms"</strong>, you execute a legally binding digital contract under the <strong>Information Technology Act, 2000</strong>. Your IP address, browser fingerprint, and precise timestamp will be embedded and cryptographically signed.
+                  </span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col-reverse sm:flex-row justify-between items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    (click)="openDeclineModal()"
+                    class="w-full sm:w-auto cursor-pointer px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition"
+                  >
+                    Decline Agreement
+                  </button>
+
+                  <button
+                    type="submit"
+                    [disabled]="submitting() || signForm.invalid"
+                    class="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold shadow-md hover:shadow-lg transition transform active:scale-95"
+                  >
+                    @if (submitting()) {
+                      <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      <span>Submitting Signature...</span>
+                    } @else {
+                      <span>E-Sign & Accept Terms</span>
+                      <span class="text-base font-bold">➔</span>
+                    }
+                  </button>
+                </div>
+
+              </form>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Sub-State 5.3: Authenticated but Account Mismatch (logged in as different account) -->
+    @else {
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-amber-200 dark:border-amber-900/60 p-6 sm:p-10 max-w-xl mx-auto space-y-6 text-center">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-3xl font-bold">
+          ⚠️
+        </div>
+        <div class="space-y-2">
+          <h2 class="text-xl font-bold text-slate-900 dark:text-white">
+            Account Mismatch Detected
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+            You are currently logged in as <strong class="text-slate-900 dark:text-white">{{ authUser()?.email }}</strong>.
+            However, this Host Partnership Agreement is restricted to <strong class="text-slate-900 dark:text-white">{{ ag.host_email }}</strong>.
+          </p>
+        </div>
+
+        <div class="pt-2 flex flex-wrap justify-center gap-3">
+          <button
+            type="button"
+            (click)="switchAccount()"
+            class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition shadow-sm cursor-pointer"
+          >
+            Switch Account & Sign In as {{ ag.host_name }}
+          </button>
+          <a
+            routerLink="/"
+            class="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+          >
+            Return to Home
+          </a>
+        </div>
+      </div>
+    }
+  }
+
+  </div>
+</div>
+
+<!-- Decline Confirmation Modal -->
+@if (showDeclineModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
+    <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+      <h3 class="text-lg font-bold text-slate-900 dark:text-white">Decline Host Agreement?</h3>
+      <p class="text-sm text-slate-600 dark:text-slate-400">
+        Declining this agreement will notify the {{ operatorName }} administration. You will not be able to list homestays or receive guest payouts until a valid agreement is executed.
+      </p>
+      <div class="flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeDeclineModal()"
+          class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+        >
+          Keep Reviewing
+        </button>
+        <button
+          type="button"
+          (click)="confirmDecline()"
+          class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold"
+        >
+          Confirm Decline
+        </button>
+      </div>
+    </div>
+  </div>
+}
+

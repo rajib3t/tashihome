@@ -13,6 +13,8 @@ import { CompanyCard } from '../../../../../shared/components/users/admin/compan
 import { InfoCard } from '../../../../../shared/components/users/admin/info-card/info-card';
 import { Modal } from '../../../../../shared/components/ui/modal/modal';
 import { environment } from '../../../../../../environments/environment';
+import { AgreementService } from '../../../../../services/agreement/agreement-service';
+
 
 interface VendorFormValue {
   full_name: string;
@@ -55,6 +57,7 @@ export class EditVendor {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly formBuilder = inject(FormBuilder);
   private readonly userService = inject(UserService);
+  private readonly agreementService = inject(AgreementService);
   private readonly router = inject(Router);
   @ViewChild(MetaCard) private readonly metaCard?: MetaCard;
   @ViewChild(CompanyCard) private readonly companyCard?: CompanyCard;
@@ -74,6 +77,18 @@ export class EditVendor {
   readonly isSendingPasswordReset = signal(false);
   readonly passwordResetError = signal<string | null>(null);
   readonly passwordResetSuccess = signal<string | null>(null);
+
+  // Send Agreement state
+  readonly isSendAgreementModalOpen = signal(false);
+  readonly isSendingAgreement = signal(false);
+  readonly sendAgreementError = signal<string | null>(null);
+  readonly sendAgreementSuccess = signal<string | null>(null);
+
+  readonly sendAgreementForm = this.formBuilder.group({
+    commission_percentage: [10.0, [Validators.required, Validators.min(0), Validators.max(100)]],
+    valid_days: [7, [Validators.required, Validators.min(1), Validators.max(90)]],
+    custom_notes: [''],
+  });
 
   readonly passwordResetForm = this.formBuilder.group({
     confirm: ['', [Validators.required, Validators.pattern(/^CONFIRM$/)]],
@@ -309,4 +324,63 @@ export class EditVendor {
         }
       });
   }
+
+  openSendAgreementModal() {
+    this.sendAgreementForm.reset({
+      commission_percentage: 10.0,
+      valid_days: 7,
+      custom_notes: '',
+    });
+    this.sendAgreementError.set(null);
+    this.isSendingAgreement.set(false);
+    this.isSendAgreementModalOpen.set(true);
+  }
+
+  closeSendAgreementModal() {
+    this.isSendAgreementModalOpen.set(false);
+  }
+
+  submitSendAgreement() {
+    const id = this.vendorId();
+    if (!id) {
+      this.sendAgreementError.set('Vendor ID not found.');
+      return;
+    }
+
+    if (this.sendAgreementForm.invalid) {
+      this.sendAgreementForm.markAllAsTouched();
+      return;
+    }
+
+    const val = this.sendAgreementForm.getRawValue();
+    this.isSendingAgreement.set(true);
+    this.sendAgreementError.set(null);
+
+    this.agreementService
+      .sendAgreementToVendor(id, {
+        commission_percentage: Number(val.commission_percentage) || 10.0,
+        valid_days: Number(val.valid_days) || 7,
+        custom_notes: val.custom_notes || undefined,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isSendingAgreement.set(false);
+          const email = this.vendor()?.email || 'vendor';
+          this.sendAgreementSuccess.set(
+            res?.message || `Host Partnership Agreement successfully sent to ${email}!`
+          );
+          this.closeSendAgreementModal();
+        },
+        error: (err) => {
+          this.isSendingAgreement.set(false);
+          const msg =
+            this.agreementService.extractApiErrorMessage(err) ||
+            err?.error?.message ||
+            'Failed to dispatch agreement. Please try again.';
+          this.sendAgreementError.set(msg);
+        },
+      });
+  }
 }
+

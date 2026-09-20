@@ -52,6 +52,10 @@ export class AuthService {
     private broadcastChannel: BroadcastChannel | null = null;
 
     constructor() {
+        const cachedUser = this.getUser();
+        if (cachedUser) {
+            this.#authUser.set(cachedUser);
+        }
         this.initCrossTabSync();
     }
 
@@ -290,7 +294,7 @@ export class AuthService {
     }
 
     public isAuthenticated(): boolean {
-        return !!this.getToken();
+        return !!this.#authUser() || !!this.getToken();
     }
 
     public refreshToken(): Observable<ApiResponse<RefreshTokenResponseData>> {

@@ -13,6 +13,7 @@ import {
   VendorDashboardData,
 } from '../../../../services/dashboard/dashboard.model';
 import { SettingsService } from '../../../../services/settings/settings-service';
+import { AgreementService } from '../../../../services/agreement/agreement-service';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
 import { environment } from '../../../../../environments/environment';
 
@@ -31,12 +32,14 @@ export class Dashboard implements OnInit {
   public readonly assetUrl = environment.assetUrl;
   private readonly dashboardService = inject(DashboardService);
   private readonly settingsService = inject(SettingsService);
+  private readonly agreementService = inject(AgreementService);
 
   // ── States ──────────────────────────────────────────────────────────────────
   readonly isLoading = signal(true);
   readonly errorMessage = signal('');
   readonly selectedMonths = signal<number>(12);
   readonly dashboardData = signal<VendorDashboardData | null>(null);
+  readonly vendorAgreement = signal<any | null>(null);
   readonly activeBookingTab = signal<'upcoming' | 'recent'>('upcoming');
   readonly activeTrendTab = signal<'revenue' | 'bookings'>('revenue');
   readonly copiedKey = signal<string>('');
@@ -132,6 +135,20 @@ export class Dashboard implements OnInit {
 
   ngOnInit(): void {
     this.loadDashboard();
+    this.loadAgreement();
+  }
+
+  loadAgreement(): void {
+    this.agreementService
+      .getMyAgreement()
+      .pipe(catchError(() => of(null)))
+      .subscribe((data) => {
+        this.vendorAgreement.set(data);
+      });
+  }
+
+  getVendorAgreementDownloadUrl(): string {
+    return this.agreementService.getVendorDownloadUrl();
   }
 
   loadDashboard(months = this.selectedMonths()): void {

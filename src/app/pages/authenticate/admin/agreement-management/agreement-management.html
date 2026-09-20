@@ -1,0 +1,576 @@
+<app-page-breadcrumb
+  pageTitle="Host Agreements & E-Sign Records"
+  homelink="/admin"
+  [breadcrumbs]="[
+    { label: 'Vendor Management', url: '/admin/vendor-management' },
+    { label: 'Host Agreements' }
+  ]">
+</app-page-breadcrumb>
+
+<div class="space-y-6">
+  <app-card
+    title="Host Agreements & E-Sign Records"
+    desc="Manage legal partnership contracts, monitor e-signature progress, and dispatch agreements to existing vendors.">
+
+    <!-- Top Action Bar -->
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="loadAgreements()"
+          class="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-sm transition hover:bg-slate-50 dark:hover:bg-slate-800"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+            <path d="M21 3v5h-5"/>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+            <path d="M3 21v-5h5"/>
+          </svg>
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      <button
+        type="button"
+        (click)="openSendModal()"
+        class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+      >
+        <span class="text-base font-bold">+</span>
+        <span>Send Agreement to Vendor</span>
+      </button>
+    </div>
+
+    <!-- Filter Form -->
+    <form [formGroup]="searchForm" (ngSubmit)="onSearch()" class="grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <span class="mb-1.5 block text-xs">Search</span>
+        <input
+          type="text"
+          formControlName="search"
+          placeholder="Host, homestay, email, or ID"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        />
+      </label>
+
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <span class="mb-1.5 block text-xs">Status Filter</span>
+        <select
+          formControlName="status"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        >
+          <option value="">All Statuses</option>
+          <option value="sent">Sent (Pending View)</option>
+          <option value="viewed">Viewed (Under Review)</option>
+          <option value="signed">Signed (Active / Executed)</option>
+          <option value="expired">Expired</option>
+          <option value="declined">Declined</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </label>
+
+      <div class="flex items-end gap-2 sm:col-span-1 lg:col-span-2">
+        <button
+          type="submit"
+          class="cursor-pointer inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+        >
+          Search
+        </button>
+        <button
+          type="button"
+          (click)="onReset()"
+          class="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-slate-800"
+        >
+          Reset
+        </button>
+      </div>
+    </form>
+
+    <!-- Success Message -->
+    @if (successMessage()) {
+      <div class="mt-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300">
+        <span>{{ successMessage() }}</span>
+        <button type="button" (click)="successMessage.set(null)" class="cursor-pointer font-bold ml-2">✕</button>
+      </div>
+    }
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Agreements Table -->
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+          <thead class="bg-slate-50 dark:bg-slate-900/80">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Host / Homestay</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Title & Version</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Fee (%)</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Sent Date</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Signed Date</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 text-right">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+            @if (isLoading()) {
+              <tr>
+                <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                  <div class="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <div class="mt-2 text-xs">Loading agreements...</div>
+                </td>
+              </tr>
+            } @else if (agreements().length === 0) {
+              <tr>
+                <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                  <div class="text-2xl mb-1">📄</div>
+                  <div class="font-medium text-slate-700 dark:text-slate-300">No host agreements found.</div>
+                  <div class="text-xs text-slate-400 mt-1">Use the button above to dispatch an agreement to an existing host.</div>
+                </td>
+              </tr>
+            } @else {
+              @for (item of agreements(); track item.id) {
+                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
+                  <!-- Host & Homestay -->
+                  <td class="px-4 py-3 text-slate-800 dark:text-slate-200">
+                    <div class="font-semibold text-slate-900 dark:text-white">
+                      {{ item.vendor?.full_name || item.signer_name || 'Vendor' }}
+                    </div>
+                    <div class="text-xs text-slate-500">
+                      {{ item.vendor?.company?.name || item.vendor?.email || 'N/A' }}
+                    </div>
+                  </td>
+
+                  <!-- Title & Version -->
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-300">
+                    <div class="font-medium">{{ item.title || 'Host Agreement' }}</div>
+                    <div class="text-xs text-slate-400 font-mono">v{{ item.version || '1.0' }}</div>
+                  </td>
+
+                  <!-- Status Badge -->
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize" [ngClass]="getStatusBadgeClass(item.status)">
+                      {{ item.status }}
+                    </span>
+                  </td>
+
+                  <!-- Commission Percentage -->
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-300 font-semibold">
+                    {{ item.commission_percentage || 10.0 }}%
+                  </td>
+
+                  <!-- Sent Date -->
+                  <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                    {{ item.sent_at ? (item.sent_at | date:'dd MMM yyyy, HH:mm') : (item.created_at | date:'dd MMM yyyy') }}
+                  </td>
+
+                  <!-- Signed Date -->
+                  <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                    {{ item.signed_at ? (item.signed_at | date:'dd MMM yyyy, HH:mm') : '—' }}
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="px-4 py-3 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1.5">
+                      <!-- PDF Download (if signed or URL available) -->
+                      @if (item.status === 'signed' || item.pdf_file_url) {
+                        <button
+                          type="button"
+                          (click)="downloadPdf(item)"
+                          title="Download Signed PDF"
+                          class="cursor-pointer rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition"
+                        >
+                          📄 PDF
+                        </button>
+                      }
+
+                      <!-- View Details -->
+                      <button
+                        type="button"
+                        (click)="openDetailModal(item)"
+                        class="cursor-pointer rounded-lg border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition"
+                      >
+                        View
+                      </button>
+
+                      <!-- Countersign (if host signed but platform signature pending) -->
+                      @if (item.status === 'partially_signed' || (!item.is_first_party_signed && item.signed_at)) {
+                        <button
+                          type="button"
+                          [disabled]="isCountersigning()"
+                          (click)="countersign(item)"
+                          title="Countersign as Platform Operator"
+                          class="cursor-pointer rounded-lg bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 px-2.5 py-1 text-xs font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-100 transition disabled:opacity-50"
+                        >
+                          ✍ Countersign
+                        </button>
+                      }
+
+                      <!-- Resend (if pending/viewed/expired) -->
+                      @if (item.status === 'sent' || item.status === 'viewed' || item.status === 'expired') {
+                        <button
+                          type="button"
+                          (click)="openResendModal(item)"
+                          class="cursor-pointer rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/30 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-100 transition"
+                        >
+                          Resend
+                        </button>
+                      }
+
+                      <!-- Cancel / Revoke (if not yet signed) -->
+                      @if (item.status !== 'signed' && item.status !== 'cancelled') {
+                        <button
+                          type="button"
+                          (click)="openCancelModal(item)"
+                          title="Cancel Agreement Invitation"
+                          class="cursor-pointer rounded-lg border border-red-200 dark:border-red-900/50 px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                        >
+                          ✕
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-6">
+      <app-pagination
+        [meta]="meta"
+        (pageChange)="onPageChange($event)"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </div>
+
+  </app-card>
+</div>
+
+<!-- Send Agreement to Existing Vendor Modal -->
+<app-modal [isOpen]="isSendModalOpen()" (close)="closeSendModal()" className="max-w-xl m-4">
+  <div class="relative w-full max-w-xl rounded-3xl bg-white p-6 dark:bg-slate-900 space-y-5">
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+        Send Host Partnership Agreement
+      </h2>
+      <button type="button" (click)="closeSendModal()" class="cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold">✕</button>
+    </div>
+
+    <p class="text-xs text-slate-600 dark:text-slate-400">
+      Generate a customized Host Partnership & Commission Agreement for an existing registered vendor. An invitation with a secure one-time e-signing token link will be dispatched via email.
+    </p>
+
+    @if (sendError()) {
+      <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-300">
+        {{ sendError() }}
+      </div>
+    }
+
+    <form [formGroup]="sendAgreementForm" (ngSubmit)="submitSendAgreement()" class="space-y-4" novalidate>
+      <!-- Vendor Selector -->
+      <div>
+        <label for="modal-vendor-select" class="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+          Select Existing Vendor / Host <span class="text-rose-500">*</span>
+        </label>
+        <select
+          id="modal-vendor-select"
+          formControlName="vendor_id"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+        >
+          <option value="">-- Choose Host from directory --</option>
+          @for (v of vendorsList(); track v.id) {
+            <option [value]="v.id">
+              {{ v.full_name }} ({{ v.email }})
+            </option>
+          }
+        </select>
+        @if (sendAgreementForm.get('vendor_id')?.invalid && sendAgreementForm.get('vendor_id')?.touched) {
+          <p class="mt-1 text-xs text-rose-600">Please select a vendor.</p>
+        }
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Commission % -->
+        <div>
+          <label for="modal-commission-rate" class="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+            Platform Commission Rate (%) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            id="modal-commission-rate"
+            type="number"
+            step="0.5"
+            formControlName="commission_percentage"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          />
+          <p class="mt-0.5 text-[11px] text-slate-500">Standard rate is 10.0%.</p>
+        </div>
+
+        <!-- Valid Duration -->
+        <div>
+          <label for="modal-validity-duration" class="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+            Agreement Validity (Days) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            id="modal-validity-duration"
+            type="number"
+            formControlName="valid_days"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          />
+          <p class="mt-0.5 text-[11px] text-slate-500">Signing link expires after this period.</p>
+        </div>
+      </div>
+
+      <!-- Custom Notes -->
+      <div>
+        <label for="modal-custom-contract-notes" class="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+          Custom Notes / Contract Annexure (Optional)
+        </label>
+        <textarea
+          id="modal-custom-contract-notes"
+          rows="3"
+          formControlName="custom_notes"
+          placeholder="e.g. Standard 10% platform commission on confirmed check-outs. Seasonal tier adjustments apply."
+          class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+        ></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeSendModal()"
+          class="cursor-pointer rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="isSending() || sendAgreementForm.invalid"
+          class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:opacity-90"
+        >
+          @if (isSending()) {
+            <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span>Sending...</span>
+          } @else {
+            <span>Send Agreement Email</span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</app-modal>
+
+<!-- Resend Confirmation Modal -->
+<app-modal [isOpen]="isResendModalOpen()" (close)="closeResendModal()" className="max-w-md m-4">
+  <div class="relative w-full max-w-md rounded-3xl bg-white p-6 dark:bg-slate-900 space-y-4">
+    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Resend Agreement Invitation?</h3>
+    <p class="text-sm text-slate-600 dark:text-slate-400">
+      This will generate a fresh e-signing token link and email it to
+      <strong class="text-slate-900 dark:text-white">{{ selectedAgreement()?.vendor?.email || 'the vendor' }}</strong>.
+    </p>
+
+    @if (resendError()) {
+      <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+        {{ resendError() }}
+      </div>
+    }
+
+    <div class="flex justify-end gap-3 pt-2">
+      <button
+        type="button"
+        (click)="closeResendModal()"
+        class="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        [disabled]="isResending()"
+        (click)="confirmResend()"
+        class="rounded-xl bg-amber-600 hover:bg-amber-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+      >
+        {{ isResending() ? 'Resending...' : 'Confirm Resend' }}
+      </button>
+    </div>
+  </div>
+</app-modal>
+
+<!-- Cancel Confirmation Modal -->
+<app-modal [isOpen]="isCancelModalOpen()" (close)="closeCancelModal()" className="max-w-md m-4">
+  <div class="relative w-full max-w-md rounded-3xl bg-white p-6 dark:bg-slate-900 space-y-4">
+    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Revoke Agreement?</h3>
+    <p class="text-sm text-slate-600 dark:text-slate-400">
+      Are you sure you want to revoke and cancel this agreement invitation for
+      <strong class="text-slate-900 dark:text-white">{{ selectedAgreement()?.vendor?.full_name || 'this vendor' }}</strong>? The recipient will no longer be able to execute the contract.
+    </p>
+
+    @if (cancelError()) {
+      <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+        {{ cancelError() }}
+      </div>
+    }
+
+    <div class="flex justify-end gap-3 pt-2">
+      <button
+        type="button"
+        (click)="closeCancelModal()"
+        class="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+      >
+        Keep Active
+      </button>
+      <button
+        type="button"
+        [disabled]="isCancelling()"
+        (click)="confirmCancel()"
+        class="rounded-xl bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+      >
+        {{ isCancelling() ? 'Revoking...' : 'Revoke Agreement' }}
+      </button>
+    </div>
+  </div>
+</app-modal>
+
+<!-- Agreement Details Modal -->
+<app-modal [isOpen]="isDetailModalOpen()" (close)="closeDetailModal()" className="max-w-xl m-4">
+  <div class="relative w-full max-w-xl rounded-3xl bg-white p-6 dark:bg-slate-900 space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+      <h3 class="text-lg font-bold text-slate-900 dark:text-white">Agreement Details</h3>
+      <button type="button" (click)="closeDetailModal()" class="cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold">✕</button>
+    </div>
+
+    @if (selectedAgreement(); as ag) {
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div>
+            <span class="text-slate-400 block">Host Name:</span>
+            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ ag.vendor?.full_name || ag.signer_name || 'N/A' }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block">Email:</span>
+            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ ag.vendor?.email || ag.signer_email || 'N/A' }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block">Property / Homestay:</span>
+            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ ag.vendor?.company?.name || 'N/A' }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block">Commission Rate:</span>
+            <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ ag.commission_percentage || 10.0 }}%</span>
+          </div>
+        </div>
+
+        <div class="space-y-1.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Status:</span>
+            <span class="font-bold uppercase" [ngClass]="getStatusBadgeClass(ag.status)">{{ ag.status }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Contract Version:</span>
+            <span class="font-mono">v{{ ag.version || '1.0' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Created / Sent:</span>
+            <span>{{ ag.sent_at || ag.created_at | date:'medium' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Expires At:</span>
+            <span>{{ ag.expires_at | date:'medium' }}</span>
+          </div>
+          @if (ag.signed_at) {
+            <div class="flex justify-between text-emerald-700 dark:text-emerald-300 font-medium">
+              <span>Executed Timestamp:</span>
+              <span>{{ ag.signed_at | date:'medium' }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Bilateral Execution Details -->
+        <div class="space-y-2 pt-1">
+          <div class="font-bold text-slate-700 dark:text-slate-300 text-[11px] uppercase tracking-wider">
+            Execution & Bilateral Signatures
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Party 1: Platform Operator -->
+            <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase text-slate-500">Party 1 (Platform)</span>
+                @if (ag.first_party_signed_at || ag.is_first_party_signed) {
+                  <span class="text-[10px] text-emerald-600 font-bold">✓ Signed</span>
+                } @else {
+                  <span class="text-[10px] text-amber-600 font-bold">⏳ Pending</span>
+                }
+              </div>
+              <div class="font-semibold text-slate-900 dark:text-white">{{ ag.first_party_signer_name || 'TashiHome Platforms' }}</div>
+              <div class="text-[11px] text-slate-500">{{ ag.first_party_signer_role || 'Authorized Representative' }}</div>
+              @if (ag.first_party_signed_at) {
+                <div class="text-[10px] text-slate-400 font-mono">{{ ag.first_party_signed_at | date:'short' }}</div>
+              }
+            </div>
+
+            <!-- Party 2: Host Partner -->
+            <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase text-slate-500">Party 2 (Host)</span>
+                @if (ag.signed_at || ag.is_second_party_signed) {
+                  <span class="text-[10px] text-emerald-600 font-bold">✓ Signed</span>
+                } @else {
+                  <span class="text-[10px] text-amber-600 font-bold">⏳ Pending</span>
+                }
+              </div>
+              <div class="font-semibold text-slate-900 dark:text-white">{{ ag.signer_name || ag.vendor?.full_name || 'Host Signer' }}</div>
+              <div class="text-[11px] text-slate-500">{{ ag.signer_email || ag.vendor?.email }}</div>
+              @if (ag.signed_at) {
+                <div class="text-[10px] text-slate-400 font-mono">{{ ag.signed_at | date:'short' }}</div>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (ag.notes) {
+          <div class="p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl">
+            <div class="font-bold text-amber-800 dark:text-amber-300 mb-1">Contract Notes:</div>
+            <p class="text-slate-700 dark:text-slate-300">{{ ag.notes }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+        @if (!ag.is_first_party_signed && (ag.status === 'partially_signed' || ag.signed_at)) {
+          <button
+            type="button"
+            [disabled]="isCountersigning()"
+            (click)="countersign(ag)"
+            class="rounded-xl bg-purple-600 hover:bg-purple-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+          >
+            {{ isCountersigning() ? 'Signing...' : '✍ Countersign as Operator' }}
+          </button>
+        }
+        @if (ag.status === 'signed' || ag.pdf_file_url) {
+          <button
+            type="button"
+            (click)="downloadPdf(ag)"
+            class="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white"
+          >
+            Download Executed PDF
+          </button>
+        }
+        <button
+          type="button"
+          (click)="closeDetailModal()"
+          class="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+        >
+          Close
+        </button>
+      </div>
+    }
+  </div>
+</app-modal>
+

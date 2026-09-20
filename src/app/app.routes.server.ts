@@ -27,6 +27,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client
   },
   {
+    path: 'agreements/:token',
+    renderMode: RenderMode.Client
+  },
+  {
     path: 'stay/:slug',
     renderMode: RenderMode.Client
   },

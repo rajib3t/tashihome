@@ -12,6 +12,8 @@ import { Pagination } from '../../../../shared/components/ui/pagination/paginati
 import { Router, RouterModule } from '@angular/router';
 import { Avatar } from '../../../../shared/components/users/avatar/avatar';
 import { environment } from '../../../../../environments/environment';
+import { AgreementService } from '../../../../services/agreement/agreement-service';
+import { AdminOnboardHostPayload } from '../../../../core/models/agreement.model';
 @Component({
   selector: 'app-vendor-management',
   imports: [
@@ -33,8 +35,23 @@ export class VendorManagement {
   private readonly formBuilder = inject(FormBuilder);
 
   private readonly userService = inject(UserService);
-    meta!: PaginationMeta;
-  // Create  modal state
+  private readonly agreementService = inject(AgreementService);
+  meta!: PaginationMeta;
+
+  // Send Agreement modal state
+  readonly isSendAgreementModalOpen = signal<boolean>(false);
+  readonly isSendingAgreement = signal<boolean>(false);
+  readonly sendAgreementError = signal<string | null>(null);
+  readonly sendAgreementSuccess = signal<string | null>(null);
+  readonly vendorToSendAgreement = signal<User | VendorDetail | null>(null);
+
+  readonly sendAgreementForm = this.formBuilder.group({
+    commission_percentage: [10.0, [Validators.required, Validators.min(0), Validators.max(100)]],
+    valid_days: [7, [Validators.required, Validators.min(1), Validators.max(90)]],
+    custom_notes: [''],
+  });
+
+  // Create modal state
   isCreateModalOpen = signal<boolean>(false);
   isCreating = signal(false);
   createErrorMessage = signal<string | null>(null);
@@ -98,11 +115,17 @@ export class VendorManagement {
     this.currentPage.set(1);
     this.loadVendors();
   }
-  // Create vendor form
+  // Create vendor / onboard host form
   public createVendorForm = this.formBuilder.group({
-    name: ['', [  Validators.required, Validators.minLength(3), Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9\s]+$/) ]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9\s]+$/)]],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+    company_name: [''],
+    city: [''],
+    address_line1: [''],
+    send_agreement: [true],
+    commission_percentage: [10.0, [Validators.min(0), Validators.max(100)]],
+    agreement_notes: [''],
   });
 
   loadVendors(){
@@ -166,25 +189,91 @@ export class VendorManagement {
       this.isCreating.set(true);
       this.createErrorMessage.set(null);
 
-      const payload: RequestVendor = {
-        full_name: this.createVendorForm.value.name as string,
-        email: this.createVendorForm.value.email as string,
-        phone: this.createVendorForm.value.phone as string
-      };
-      // Simulate an API call to create the vendor
-      this.userService.createVendor(payload).subscribe({
-        next: (res) => {
-          this.isCreating.set(false);
-          this.closeCreateModal();
-          this.createVendorForm.reset();
-          this.loadVendors();
-          this.router.navigate(['/admin/vendor-management/' + res.data.id + '/edit']);
-        },
-        error: () => {
-          this.isCreating.set(false);
-          this.createErrorMessage.set('Failed to create vendor. Please try again.');
-        }
-      });
+      const fv = this.createVendorForm.value;
+      const shouldSendAgreement = !!fv.send_agreement;
+
+      if (shouldSendAgreement) {
+        const payload: AdminOnboardHostPayload = {
+          full_name: fv.name as string,
+          email: fv.email as string,
+          phone: fv.phone as string,
+          company_name: (fv.company_name as string) || undefined,
+          city: (fv.city as string) || undefined,
+          address_line1: (fv.address_line1 as string) || undefined,
+          send_agreement: true,
+          commission_percentage: Number(fv.commission_percentage) || 10.0,
+          agreement_notes: (fv.agreement_notes as string) || undefined,
+        };
+
+        this.agreementService.onboardHost(payload).subscribe({
+          next: (res) => {
+            this.isCreating.set(false);
+            this.closeCreateModal();
+            this.createVendorForm.reset({
+              name: '',
+              email: '',
+              phone: '',
+              company_name: '',
+              city: '',
+              address_line1: '',
+              send_agreement: true,
+              commission_percentage: 10.0,
+              agreement_notes: '',
+            });
+            this.sendAgreementSuccess.set(
+              res?.message || 'Host successfully onboarded and partnership agreement dispatched!'
+            );
+            this.loadVendors();
+            const newId = res?.data?.id || res?.data?.vendor?.id;
+            if (newId) {
+              this.router.navigate(['/admin/vendor-management/' + newId + '/edit']);
+            }
+          },
+          error: (err) => {
+            // Fallback to createVendor if onboard route is not available
+            const standardPayload: RequestVendor = {
+              full_name: fv.name as string,
+              email: fv.email as string,
+              phone: fv.phone as string,
+            };
+            this.userService.createVendor(standardPayload).subscribe({
+              next: (res) => {
+                this.isCreating.set(false);
+                this.closeCreateModal();
+                this.createVendorForm.reset();
+                this.loadVendors();
+                this.router.navigate(['/admin/vendor-management/' + res.data.id + '/edit']);
+              },
+              error: () => {
+                this.isCreating.set(false);
+                const msg =
+                  this.agreementService.extractApiErrorMessage(err) ||
+                  'Failed to onboard vendor. Please try again.';
+                this.createErrorMessage.set(msg);
+              },
+            });
+          },
+        });
+      } else {
+        const standardPayload: RequestVendor = {
+          full_name: fv.name as string,
+          email: fv.email as string,
+          phone: fv.phone as string,
+        };
+        this.userService.createVendor(standardPayload).subscribe({
+          next: (res) => {
+            this.isCreating.set(false);
+            this.closeCreateModal();
+            this.createVendorForm.reset();
+            this.loadVendors();
+            this.router.navigate(['/admin/vendor-management/' + res.data.id + '/edit']);
+          },
+          error: () => {
+            this.isCreating.set(false);
+            this.createErrorMessage.set('Failed to create vendor. Please try again.');
+          },
+        });
+      }
     } else {
       this.createErrorMessage.set('Please fill out the form correctly.');
     }
@@ -314,4 +403,59 @@ export class VendorManagement {
         this.closePasswordResetModal();
       });
   }
+
+  openSendAgreementModal(vendor: User | VendorDetail) {
+    this.vendorToSendAgreement.set(vendor);
+    this.sendAgreementForm.reset({
+      commission_percentage: 10.0,
+      valid_days: 7,
+      custom_notes: '',
+    });
+    this.sendAgreementError.set(null);
+    this.isSendingAgreement.set(false);
+    this.isSendAgreementModalOpen.set(true);
+  }
+
+  closeSendAgreementModal() {
+    this.isSendAgreementModalOpen.set(false);
+    this.vendorToSendAgreement.set(null);
+  }
+
+  submitSendAgreement() {
+    const vendor = this.vendorToSendAgreement();
+    if (!vendor) return;
+
+    if (this.sendAgreementForm.invalid) {
+      this.sendAgreementForm.markAllAsTouched();
+      return;
+    }
+
+    const val = this.sendAgreementForm.getRawValue();
+    this.isSendingAgreement.set(true);
+    this.sendAgreementError.set(null);
+
+    this.agreementService
+      .sendAgreementToVendor(vendor.id, {
+        commission_percentage: Number(val.commission_percentage) || 10.0,
+        valid_days: Number(val.valid_days) || 7,
+        custom_notes: val.custom_notes || undefined,
+      })
+      .pipe(finalize(() => this.isSendingAgreement.set(false)))
+      .subscribe({
+        next: (res) => {
+          this.sendAgreementSuccess.set(
+            res?.message || `Agreement successfully dispatched to ${vendor.full_name} (${vendor.email}).`
+          );
+          this.closeSendAgreementModal();
+        },
+        error: (err) => {
+          const msg =
+            this.agreementService.extractApiErrorMessage(err) ||
+            err?.error?.message ||
+            'Failed to dispatch agreement. Please try again.';
+          this.sendAgreementError.set(msg);
+        },
+      });
+  }
 }
+
