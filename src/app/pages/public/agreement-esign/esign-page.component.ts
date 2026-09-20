@@ -2,16 +2,17 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Meta, Title } from '@angular/platform-browser';
+import { DomSanitizer, Meta, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { AgreementService } from '../../../services/agreement/agreement-service';
 import { AuthService } from '../../../services/auth/auth-service';
 import { PublicAgreementDetail, SignatureType } from '../../../core/models/agreement.model';
 import { SignaturePadComponent } from '../../../shared/components/signature-pad/signature-pad.component';
+import { Modal } from '../../../shared/components/ui/modal/modal';
 
 @Component({
   selector: 'app-esign-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, SignaturePadComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, SignaturePadComponent, Modal],
   templateUrl: './esign-page.component.html',
   styleUrl: './esign-page.component.css',
 })
@@ -22,6 +23,7 @@ export class ESignPageComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly meta = inject(Meta);
   private readonly titleService = inject(Title);
+  private readonly sanitizer = inject(DomSanitizer);
 
   public readonly token = signal<string>('');
   public readonly agreement = signal<PublicAgreementDetail | null>(null);
@@ -41,6 +43,15 @@ export class ESignPageComponent implements OnInit, OnDestroy {
   public readonly signatureData = signal<string | null>(null);
   public readonly signatureMode = signal<SignatureType>('drawn');
   public readonly showDeclineModal = signal<boolean>(false);
+
+  // PDF Preview & Silent Download State
+  public readonly isPreviewModalOpen = signal<boolean>(false);
+  public readonly isPreviewLoading = signal<boolean>(false);
+  public readonly previewError = signal<string | null>(null);
+  public readonly previewPdfUrl = signal<SafeResourceUrl | null>(null);
+  public readonly isDownloadingPdf = signal<boolean>(false);
+  private currentPreviewBlob: Blob | null = null;
+  private currentPreviewBlobUrl: string | null = null;
 
   // Authentication & Host Verification
   public readonly isLoggingIn = signal<boolean>(false);
@@ -128,6 +139,7 @@ export class ESignPageComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Restore default indexing state when leaving private agreement portal
     this.meta.removeTag('name="robots"');
+    this.cleanupPreviewBlob();
   }
 
   public loadAgreement(token: string): void {
@@ -312,9 +324,81 @@ export class ESignPageComponent implements OnInit, OnDestroy {
     this.isDeclined.set(true);
   }
 
+  private getPdfUrl(): string {
+    return (
+      this.signedSuccessData()?.pdf_url ||
+      this.agreement()?.pdf_download_url ||
+      this.agreementService.getSignedPdfUrl(this.token())
+    );
+  }
+
+  public previewPdf(): void {
+    this.previewError.set(null);
+    this.cleanupPreviewBlob();
+    this.isPreviewModalOpen.set(true);
+    this.isPreviewLoading.set(true);
+
+    const url = this.getPdfUrl();
+    this.agreementService.fetchPdfBlob(url, this.token()).subscribe({
+      next: (blob) => {
+        this.currentPreviewBlob = blob;
+        this.currentPreviewBlobUrl = URL.createObjectURL(blob);
+        this.previewPdfUrl.set(
+          this.sanitizer.bypassSecurityTrustResourceUrl(this.currentPreviewBlobUrl)
+        );
+        this.isPreviewLoading.set(false);
+      },
+      error: (err) => {
+        this.isPreviewLoading.set(false);
+        this.previewError.set(
+          this.agreementService.extractApiErrorMessage(err) ||
+            'Failed to load agreement PDF. Please try downloading directly instead.'
+        );
+      },
+    });
+  }
+
+  public closePreviewModal(): void {
+    this.isPreviewModalOpen.set(false);
+    this.cleanupPreviewBlob();
+  }
+
+  private cleanupPreviewBlob(): void {
+    if (this.currentPreviewBlobUrl) {
+      URL.revokeObjectURL(this.currentPreviewBlobUrl);
+      this.currentPreviewBlobUrl = null;
+    }
+    this.currentPreviewBlob = null;
+    this.previewPdfUrl.set(null);
+  }
+
+  public downloadCurrentPreview(): void {
+    if (this.currentPreviewBlob) {
+      const filename = `TashiHome-Host-Agreement-${this.token().slice(0, 8)}.pdf`;
+      this.agreementService.downloadBlob(this.currentPreviewBlob, filename);
+    } else {
+      this.downloadPdf();
+    }
+  }
+
   public downloadPdf(): void {
-    const url = this.signedSuccessData()?.pdf_url || this.agreementService.getSignedPdfUrl(this.token());
-    window.open(url, '_blank');
+    const url = this.getPdfUrl();
+    this.isDownloadingPdf.set(true);
+    const filename = `TashiHome-Host-Agreement-${this.token().slice(0, 8)}.pdf`;
+
+    this.agreementService.fetchPdfBlob(url, this.token()).subscribe({
+      next: (blob) => {
+        this.isDownloadingPdf.set(false);
+        this.agreementService.downloadBlob(blob, filename);
+      },
+      error: (err) => {
+        this.isDownloadingPdf.set(false);
+        const msg =
+          this.agreementService.extractApiErrorMessage(err) ||
+          'Failed to download agreement PDF. Please try again or contact support.';
+        alert(msg);
+      },
+    });
   }
 
   public get termsList() {

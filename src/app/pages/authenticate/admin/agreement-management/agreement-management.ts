@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
 import { Card } from '../../../../shared/components/ui/card/card';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
@@ -35,6 +36,7 @@ export class AgreementManagement implements OnInit {
   private readonly agreementService = inject(AgreementService);
   private readonly userService = inject(UserService);
   private readonly fb = inject(FormBuilder);
+  private readonly sanitizer = inject(DomSanitizer);
 
   public readonly agreements = signal<VendorAgreementItem[]>([]);
   public readonly isLoading = signal<boolean>(false);
@@ -73,6 +75,16 @@ export class AgreementManagement implements OnInit {
   public readonly cancelError = signal<string | null>(null);
 
   public readonly isDetailModalOpen = signal<boolean>(false);
+
+  // PDF Preview & Silent Download State
+  public readonly isPreviewModalOpen = signal<boolean>(false);
+  public readonly isPreviewLoading = signal<boolean>(false);
+  public readonly previewError = signal<string | null>(null);
+  public readonly previewPdfUrl = signal<SafeResourceUrl | null>(null);
+  public readonly previewAgreementTitle = signal<string>('');
+  public readonly downloadingId = signal<string | null>(null);
+  private currentPreviewBlob: Blob | null = null;
+  private currentPreviewBlobUrl: string | null = null;
 
   // Vendors list for Send Agreement modal
   public readonly vendorsList = signal<User[]>([]);
@@ -307,12 +319,81 @@ export class AgreementManagement implements OnInit {
     this.selectedAgreement.set(null);
   }
 
-  public downloadPdf(item: VendorAgreementItem): void {
-    if (item.pdf_file_url) {
-      window.open(item.pdf_file_url, '_blank');
-    } else {
-      window.open(this.agreementService.getSignedPdfUrl(item.id), '_blank');
+  public getPdfUrl(item: VendorAgreementItem): string {
+    return item.pdf_file_url || this.agreementService.getSignedPdfUrl(item.id);
+  }
+
+  public previewPdf(item: VendorAgreementItem): void {
+    this.selectedAgreement.set(item);
+    this.previewAgreementTitle.set(item.title || `Agreement #${item.id.slice(0, 8)}`);
+    this.previewError.set(null);
+    this.cleanupPreviewBlob();
+    this.isPreviewModalOpen.set(true);
+    this.isPreviewLoading.set(true);
+
+    const url = this.getPdfUrl(item);
+    this.agreementService.fetchPdfBlob(url, item.id).subscribe({
+      next: (blob) => {
+        this.currentPreviewBlob = blob;
+        this.currentPreviewBlobUrl = URL.createObjectURL(blob);
+        this.previewPdfUrl.set(
+          this.sanitizer.bypassSecurityTrustResourceUrl(this.currentPreviewBlobUrl)
+        );
+        this.isPreviewLoading.set(false);
+      },
+      error: (err) => {
+        this.isPreviewLoading.set(false);
+        this.previewError.set(
+          this.agreementService.extractApiErrorMessage(err) ||
+            'Failed to load agreement PDF. Please try downloading directly instead.'
+        );
+      },
+    });
+  }
+
+  public closePreviewModal(): void {
+    this.isPreviewModalOpen.set(false);
+    this.cleanupPreviewBlob();
+  }
+
+  private cleanupPreviewBlob(): void {
+    if (this.currentPreviewBlobUrl) {
+      URL.revokeObjectURL(this.currentPreviewBlobUrl);
+      this.currentPreviewBlobUrl = null;
     }
+    this.currentPreviewBlob = null;
+    this.previewPdfUrl.set(null);
+  }
+
+  public downloadCurrentPreview(): void {
+    const item = this.selectedAgreement();
+    if (this.currentPreviewBlob && item) {
+      const filename = `TashiHome-Agreement-${item.id.slice(0, 8)}.pdf`;
+      this.agreementService.downloadBlob(this.currentPreviewBlob, filename);
+    } else if (item) {
+      this.downloadPdf(item);
+    }
+  }
+
+  public downloadPdf(item: VendorAgreementItem): void {
+    const url = this.getPdfUrl(item);
+    this.downloadingId.set(item.id);
+    const filename = `TashiHome-Agreement-${item.id.slice(0, 8)}.pdf`;
+
+    this.agreementService
+      .fetchPdfBlob(url, item.id)
+      .pipe(finalize(() => this.downloadingId.set(null)))
+      .subscribe({
+        next: (blob) => {
+          this.agreementService.downloadBlob(blob, filename);
+        },
+        error: (err) => {
+          const msg =
+            this.agreementService.extractApiErrorMessage(err) ||
+            'Unable to download agreement PDF. Please try again.';
+          this.errorMessage.set(msg);
+        },
+      });
   }
 
   public getStatusBadgeClass(status: AgreementStatus): string {

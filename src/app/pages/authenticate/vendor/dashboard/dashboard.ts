@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { catchError, finalize, of } from 'rxjs';
 import { DashboardService } from '../../../../services/dashboard/dashboard-service';
 import {
@@ -15,6 +16,7 @@ import {
 import { SettingsService } from '../../../../services/settings/settings-service';
 import { AgreementService } from '../../../../services/agreement/agreement-service';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
+import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
@@ -24,15 +26,17 @@ import { environment } from '../../../../../environments/environment';
     CommonModule,
     RouterModule,
     PageBreadcrumb,
+    Modal,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   public readonly assetUrl = environment.assetUrl;
   private readonly dashboardService = inject(DashboardService);
   private readonly settingsService = inject(SettingsService);
   private readonly agreementService = inject(AgreementService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   // ── States ──────────────────────────────────────────────────────────────────
   readonly isLoading = signal(true);
@@ -43,6 +47,16 @@ export class Dashboard implements OnInit {
   readonly activeBookingTab = signal<'upcoming' | 'recent'>('upcoming');
   readonly activeTrendTab = signal<'revenue' | 'bookings'>('revenue');
   readonly copiedKey = signal<string>('');
+
+  // PDF Preview & Silent Download State
+  readonly isPreviewModalOpen = signal<boolean>(false);
+  readonly isPreviewLoading = signal<boolean>(false);
+  readonly previewError = signal<string | null>(null);
+  readonly previewPdfUrl = signal<SafeResourceUrl | null>(null);
+  readonly previewAgreementTitle = signal<string>('Host Partnership Agreement');
+  readonly isDownloadingPdf = signal<boolean>(false);
+  private currentPreviewBlob: Blob | null = null;
+  private currentPreviewBlobUrl: string | null = null;
 
   readonly monthOptions = [
     { label: 'Last 3 Months', value: 3 },
@@ -138,6 +152,10 @@ export class Dashboard implements OnInit {
     this.loadAgreement();
   }
 
+  ngOnDestroy(): void {
+    this.cleanupPreviewBlob();
+  }
+
   loadAgreement(): void {
     this.agreementService
       .getMyAgreement()
@@ -145,6 +163,115 @@ export class Dashboard implements OnInit {
       .subscribe((data) => {
         this.vendorAgreement.set(data);
       });
+  }
+
+  isAgreementSigned(status?: string | null): boolean {
+    const s = status?.toLowerCase();
+    return s === 'signed' || s === 'active' || s === 'fully_signed';
+  }
+
+  isAgreementPartiallySigned(status?: string | null): boolean {
+    const s = status?.toLowerCase();
+    return s === 'partially_signed' || s === 'pending_first_party' || s === 'pending_second_party';
+  }
+
+  isAgreementPending(status?: string | null): boolean {
+    const s = status?.toLowerCase();
+    return !s || s === 'pending' || s === 'draft' || s === 'sent' || this.isAgreementPartiallySigned(status);
+  }
+
+  getPdfUrl(agreement?: any): string {
+    const ag = agreement || this.vendorAgreement();
+    return (
+      ag?.pdf_file_url ||
+      ag?.pdf_download_url ||
+      ag?.pdf_url ||
+      ag?.file_url ||
+      (ag?.id ? `/public/agreements/${ag.id}/pdf` : '') ||
+      (ag?.token ? `/public/agreements/${ag.token}/pdf` : '') ||
+      this.agreementService.getVendorDownloadUrl()
+    );
+  }
+
+  previewPdf(agreement?: any): void {
+    const ag = agreement || this.vendorAgreement();
+    if (!ag) return;
+
+    this.previewAgreementTitle.set(
+      ag.title || ag.agreement_number || 'Host Partnership Agreement'
+    );
+    this.previewError.set(null);
+    this.cleanupPreviewBlob();
+    this.isPreviewModalOpen.set(true);
+    this.isPreviewLoading.set(true);
+
+    const url = this.getPdfUrl(ag);
+    const fallbackId = ag?.id || ag?.token;
+    this.agreementService.fetchPdfBlob(url, fallbackId).subscribe({
+      next: (blob) => {
+        this.currentPreviewBlob = blob;
+        this.currentPreviewBlobUrl = URL.createObjectURL(blob);
+        this.previewPdfUrl.set(
+          this.sanitizer.bypassSecurityTrustResourceUrl(this.currentPreviewBlobUrl)
+        );
+        this.isPreviewLoading.set(false);
+      },
+      error: (err) => {
+        this.isPreviewLoading.set(false);
+        this.previewError.set(
+          this.agreementService.extractApiErrorMessage(err) ||
+            'Failed to load agreement PDF. Please try downloading directly instead.'
+        );
+      },
+    });
+  }
+
+  closePreviewModal(): void {
+    this.isPreviewModalOpen.set(false);
+    this.cleanupPreviewBlob();
+  }
+
+  private cleanupPreviewBlob(): void {
+    if (this.currentPreviewBlobUrl) {
+      URL.revokeObjectURL(this.currentPreviewBlobUrl);
+      this.currentPreviewBlobUrl = null;
+    }
+    this.currentPreviewBlob = null;
+    this.previewPdfUrl.set(null);
+  }
+
+  downloadCurrentPreview(): void {
+    const ag = this.vendorAgreement();
+    const idStr = ag?.id || ag?.token || 'agreement';
+    const filename = `TashiHome-Host-Agreement-${idStr.slice(0, 8)}.pdf`;
+    if (this.currentPreviewBlob) {
+      this.agreementService.downloadBlob(this.currentPreviewBlob, filename);
+    } else {
+      this.downloadPdf(ag);
+    }
+  }
+
+  downloadPdf(agreement?: any): void {
+    const ag = agreement || this.vendorAgreement();
+    const url = this.getPdfUrl(ag);
+    const fallbackId = ag?.id || ag?.token;
+    const idStr = ag?.id || ag?.token || 'agreement';
+    const filename = `TashiHome-Host-Agreement-${idStr.slice(0, 8)}.pdf`;
+    this.isDownloadingPdf.set(true);
+
+    this.agreementService.fetchPdfBlob(url, fallbackId).subscribe({
+      next: (blob) => {
+        this.isDownloadingPdf.set(false);
+        this.agreementService.downloadBlob(blob, filename);
+      },
+      error: (err) => {
+        this.isDownloadingPdf.set(false);
+        const msg =
+          this.agreementService.extractApiErrorMessage(err) ||
+          'Failed to download agreement PDF. Please try again or contact support.';
+        alert(msg);
+      },
+    });
   }
 
   getVendorAgreementDownloadUrl(): string {
