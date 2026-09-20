@@ -1,6 +1,8 @@
 import {
   Component,
   OnInit,
+  AfterViewInit,
+  OnDestroy,
   inject,
   signal,
   PLATFORM_ID,
@@ -16,10 +18,11 @@ export type LegalTab = 'all' | 'terms' | 'host-agreement' | 'privacy' | 'refund'
   templateUrl: './legal.html',
   styleUrl: './legal.css',
 })
-export class Legal implements OnInit {
+export class Legal implements OnInit, AfterViewInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+  private revealObserver?: IntersectionObserver;
 
   public activeTab = signal<LegalTab>('all');
   public searchQuery = signal<string>('');
@@ -119,6 +122,35 @@ export class Legal implements OnInit {
 
   private isValidTab(tab: string): tab is LegalTab {
     return ['all', 'terms', 'host-agreement', 'privacy', 'refund', 'grievance'].includes(tab);
+  }
+
+  ngAfterViewInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.initRevealObserver();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.revealObserver?.disconnect();
+  }
+
+  private initRevealObserver(): void {
+    const reveals = document.querySelectorAll('.reveal');
+    if (!reveals.length) return;
+
+    this.revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            this.revealObserver?.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    reveals.forEach((el) => this.revealObserver?.observe(el));
   }
 }
 

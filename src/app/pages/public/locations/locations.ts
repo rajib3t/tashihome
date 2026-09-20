@@ -6,6 +6,7 @@ import {
   PLATFORM_ID,
   ChangeDetectorRef,
   DestroyRef,
+  NgZone,
   inject,
   signal,
   computed,
@@ -44,6 +45,12 @@ export class Locations implements OnInit, AfterViewInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly zone = inject(NgZone);
+
+  // Canvas & Observer handles
+  private canvasCleanupFn?: () => void;
+  private revealObserver?: IntersectionObserver;
+  private reduceMotion = false;
 
   // Currency
   public readonly currencySymbol = computed(() => this.settingsService.currencySymbol() || '₹');
@@ -106,10 +113,165 @@ export class Locations implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'auto' });
+      this.reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      this.initRevealObserver();
+
+      this.zone.runOutsideAngular(() => {
+        this.canvasCleanupFn = this.initHeroCanvas('#locationsHeroCanvas');
+      });
     }
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.canvasCleanupFn?.();
+    this.revealObserver?.disconnect();
+  }
+
+  private initRevealObserver(): void {
+    const reveals = document.querySelectorAll('.reveal');
+    if (!reveals.length) return;
+
+    this.revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            this.revealObserver?.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    reveals.forEach((el) => this.revealObserver?.observe(el));
+  }
+
+  private initHeroCanvas(canvasSelector: string): (() => void) | undefined {
+    if (this.reduceMotion) return;
+
+    const canvas = document.querySelector<HTMLCanvasElement>(canvasSelector);
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let w = (canvas.width = canvas.clientWidth);
+    let h = (canvas.height = canvas.clientHeight);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    let sparkles: Array<{
+      x: number;
+      y: number;
+      size: number;
+      speedX: number;
+      speedY: number;
+      opacity: number;
+      pulseSpeed: number;
+      phase: number;
+      color: string;
+    }> = [];
+
+    let mistBlobs: Array<{
+      x: number;
+      y: number;
+      r: number;
+      speed: number;
+      bob: number;
+      bobSpeed: number;
+      phase: number;
+      opacity: number;
+    }> = [];
+
+    let raf: number;
+    const start = performance.now();
+
+    const build = () => {
+      sparkles = [];
+      const sparkCount = Math.min(Math.floor(w / 30), 40);
+      for (let i = 0; i < sparkCount; i++) {
+        sparkles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          size: 0.8 + Math.random() * 1.8,
+          speedX: (Math.random() - 0.5) * 0.25,
+          speedY: 0.15 + Math.random() * 0.35,
+          opacity: 0.2 + Math.random() * 0.6,
+          pulseSpeed: 0.8 + Math.random() * 1.5,
+          phase: Math.random() * Math.PI * 2,
+          color: Math.random() > 0.45 ? '250, 165, 45' : '143, 199, 212',
+        });
+      }
+
+      mistBlobs = [];
+      for (let i = 0; i < 5; i++) {
+        mistBlobs.push({
+          x: Math.random() * w,
+          y: h * (0.2 + Math.random() * 0.6),
+          r: 160 + Math.random() * 200,
+          speed: 5 + Math.random() * 10,
+          bob: 8 + Math.random() * 14,
+          bobSpeed: 0.15 + Math.random() * 0.2,
+          phase: Math.random() * Math.PI * 2,
+          opacity: 0.04 + Math.random() * 0.04,
+        });
+      }
+    };
+
+    const resize = () => {
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      build();
+    };
+
+    const draw = (now: number) => {
+      const t = (now - start) / 1000;
+      ctx.clearRect(0, 0, w, h);
+
+      // Draw subtle drifting mist clouds
+      for (const b of mistBlobs) {
+        const bx = ((b.x + t * b.speed) % (w + b.r * 2)) - b.r;
+        const by = b.y + Math.sin(t * b.bobSpeed + b.phase) * b.bob;
+        const grad = ctx.createRadialGradient(bx, by, 0, bx, by, b.r);
+        grad.addColorStop(0, `rgba(243, 250, 251, ${b.opacity})`);
+        grad.addColorStop(0.6, `rgba(243, 250, 251, ${b.opacity * 0.3})`);
+        grad.addColorStop(1, 'rgba(243, 250, 251, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(bx, by, b.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw golden alpine sparks
+      for (const s of sparkles) {
+        s.y -= s.speedY;
+        s.x += s.speedX + Math.sin(t + s.phase) * 0.15;
+
+        if (s.y < -10) s.y = h + 10;
+        if (s.x < -10) s.x = w + 10;
+        if (s.x > w + 10) s.x = -10;
+
+        const currentOpacity = s.opacity * (0.6 + 0.4 * Math.sin(t * s.pulseSpeed + s.phase));
+        ctx.fillStyle = `rgba(${s.color}, ${currentOpacity})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      raf = requestAnimationFrame(draw);
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
+    raf = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+    };
+  }
 
   public loadAllLocations(): void {
     this.loadingLocations.set(true);

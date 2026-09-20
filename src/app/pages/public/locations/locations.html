@@ -1,17 +1,24 @@
 <!-- ============ LOCATIONS HERO & ARCHIVE HEADER ============ -->
 <section
-  class="relative bg-pine text-cloud overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28"
+  class="hero-section relative bg-pine text-cloud overflow-hidden"
   style="background: url('/images/listings-bg.webp') center/cover no-repeat;"
 >
   <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-pine/80 to-pine/95"></div>
 
+  <!-- Interactive canvas for drifting mountain mist & golden stardust -->
+  <canvas
+    id="locationsHeroCanvas"
+    class="absolute inset-0 w-full h-full pointer-events-none motion-reduce:hidden"
+    aria-hidden="true"
+  ></canvas>
+
   <!-- Ambient glowing backdrop orbs -->
-  <div class="pointer-events-none absolute -top-24 right-0 w-[38rem] h-[38rem] bg-moss/20 rounded-full blur-[130px]" aria-hidden="true"></div>
-  <div class="pointer-events-none absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-ochre/15 rounded-full blur-[130px]" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute -top-24 right-0 w-[42rem] h-[42rem] bg-moss/20 rounded-full blur-[130px] motion-safe:animate-mist-a" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute bottom-0 left-0 w-[34rem] h-[34rem] bg-ochre/15 rounded-full blur-[130px] motion-safe:animate-mist-b" aria-hidden="true"></div>
 
   <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10">
     <!-- Breadcrumb Navigation -->
-    <nav class="flex items-center gap-2 text-xs text-cloud/75 mb-6 flex-wrap" aria-label="Breadcrumb">
+    <nav class="flex items-center gap-2 text-xs text-cloud/75 mb-6 flex-wrap reveal" aria-label="Breadcrumb">
       <a routerLink="/" class="hover:text-ochre transition-colors underline underline-offset-2">Home</a>
       <span class="text-cloud/40">/</span>
       @if (isDetailMode()) {
@@ -26,35 +33,39 @@
     <!-- Headline and Subtitle -->
     @if (isDetailMode()) {
       <div class="max-w-3xl">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-4 text-xs font-semibold text-ochre">
-          <span>📍 {{ currentLocation()?.city?.name || 'Hill Destination' }}</span>
-          @if (currentLocation()?.city?.country?.name) {
-            <span class="text-cloud/50">• {{ currentLocation()?.city?.country?.name }}</span>
-          }
+        <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-4 reveal">
+          <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
+          <p class="eyebrow text-mist m-0">
+            {{ currentLocation()?.city?.name || 'Hill Destination' }}
+            @if (currentLocation()?.city?.country?.name) {
+              • {{ currentLocation()?.city?.country?.name }}
+            }
+          </p>
         </div>
-        <h1 class="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight">
-          Homestays in {{ currentLocation()?.name || formatSlugToName(currentSlug()) }}
+        <h1 class="hero-title reveal">
+          Homestays in <em class="hero-accent font-accent not-italic text-ochre">{{ currentLocation()?.name || formatSlugToName(currentSlug()) }}</em>
         </h1>
-        <p class="mt-5 text-cloud/85 text-base sm:text-lg md:text-xl font-light leading-relaxed">
+        <p class="hero-subtitle max-w-2xl text-cloud/85 font-light reveal">
           {{ currentLocation()?.description || 'Authentic mountain homes, quiet hamlets, and family hospitality in ' + (currentLocation()?.name || 'this location') + '.' }}
         </p>
       </div>
     } @else {
       <div class="max-w-3xl">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-4 text-xs font-semibold text-ochre">
-          <span>🏔️ Explore Hill Stations &amp; Villages</span>
+        <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-4 reveal">
+          <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
+          <p class="eyebrow text-mist m-0">Himalayan Hamlets &amp; Villages</p>
         </div>
-        <h1 class="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight">
+        <h1 class="hero-title reveal">
           Himalayan Locations <em class="hero-accent font-accent not-italic text-ochre">&amp; Hamlets</em>
         </h1>
-        <p class="mt-5 text-cloud/85 text-base sm:text-lg md:text-xl font-light leading-relaxed">
+        <p class="hero-subtitle max-w-2xl text-cloud/85 font-light reveal">
           From bustling hill ridges like Darjeeling’s Mal Road to tranquil tea hamlets and remote forests. Discover every verified homestay destination on Tashi Homes.
         </p>
       </div>
     }
 
     <!-- Search / Filter Card within Hero -->
-    <div class="mt-10 max-w-2xl bg-white/95 dark:bg-pine/90 text-ink dark:text-cloud backdrop-blur-xl rounded-2xl p-3 sm:p-4 shadow-2xl border border-white/30 dark:border-cloud/10">
+    <div class="mt-10 max-w-2xl bg-white/95 dark:bg-pine/90 text-ink dark:text-cloud backdrop-blur-xl rounded-2xl p-3 sm:p-4 shadow-2xl border border-white/30 dark:border-cloud/10 reveal">
       <app-location-autocomplete
         variant="default"
         label="Find a specific location"

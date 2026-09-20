@@ -1,6 +1,6 @@
 <!-- ============ STAYS HERO & SEARCH HEADER ============ -->
 <section
-  class="relative bg-pine text-cloud overflow-hidden pt-32 pb-24 md:pt-36 md:pb-28 motion-safe:[&_.mist-anim]:block"
+  class="hero-section relative bg-pine text-cloud overflow-hidden motion-safe:[&_.mist-anim]:block"
   style="background: url('/images/listings-bg.webp') center/cover no-repeat;"
 >
   <!-- Deep atmospheric gradient overlays -->
@@ -19,6 +19,12 @@
 
   <div class="relative max-w-7xl mx-auto px-6 lg:px-10 z-10">
     <div class="max-w-3xl">
+      <!-- Eyebrow Badge Pill -->
+      <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cloud/10 border border-cloud/20 backdrop-blur-md mb-4 reveal">
+        <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
+        <p class="eyebrow text-mist m-0">Verified Himalayan Stays</p>
+      </div>
+
       <!-- Breadcrumb Navigation -->
       <nav class="flex items-center gap-2 text-xs text-cloud/75 mb-6 flex-wrap reveal" aria-label="Breadcrumb">
         @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
@@ -32,11 +38,17 @@
       </nav>
 
       <!-- Main Headline -->
-      <h1 class="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight reveal">
-        {{ pageHeroTitle() }}
+      <h1 class="hero-title reveal">
+        @if (currentLocation() || locationSlug()) {
+          Homestays in <em class="hero-accent font-accent not-italic text-ochre">{{ currentLocation()?.name || formatSlugToName(locationSlug()) }}</em>@if (currentCity() || citySlug()) {<span class="font-normal text-cloud/80">, {{ currentCity()?.name || formatSlugToName(citySlug()) }}</span>}
+        } @else if (currentCity() || citySlug()) {
+          Homestays in <em class="hero-accent font-accent not-italic text-ochre">{{ currentCity()?.name || formatSlugToName(citySlug()) }}</em>
+        } @else {
+          Discover genuine <em class="hero-accent font-accent not-italic text-ochre">homestays</em> in the misty hills.
+        }
       </h1>
 
-      <p class="mt-6 text-cloud/85 text-base sm:text-lg md:text-xl font-light leading-relaxed reveal">
+      <p class="hero-subtitle max-w-2xl text-cloud/85 font-light reveal">
         {{ pageHeroSubtitle() }}
       </p>
     </div>
