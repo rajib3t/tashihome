@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { AgreementService } from '../../../../services/agreement/agreement-service';
 import { AuthService } from '../../../../services/auth/auth-service';
-import { PublicAgreementDetail } from '../../../../core/models/agreement.model';
+import { PublicAgreementDetail, SIGNATURE_FONT_OPTIONS } from '../../../../core/models/agreement.model';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 
 @Component({
@@ -188,6 +188,12 @@ export class VendorAgreementComponent implements OnInit, OnDestroy {
         alert(msg);
       },
     });
+  }
+
+  public getSignatureFontFamily(fontId?: string | null): string {
+    if (!fontId) return "'Dancing Script', cursive";
+    const found = SIGNATURE_FONT_OPTIONS.find((f) => f.id === fontId);
+    return found ? found.font_family : "'Dancing Script', cursive";
   }
 }
 

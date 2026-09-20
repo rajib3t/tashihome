@@ -15,6 +15,22 @@ export type AgreementType =
 
 export type SignatureType = 'typed' | 'drawn';
 
+export interface SignatureFontOption {
+  id: string;
+  name: string;
+  font_family: string;
+  category: string;
+}
+
+export const SIGNATURE_FONT_OPTIONS: SignatureFontOption[] = [
+  { id: 'dancing_script', name: 'Dancing Script', font_family: "'Dancing Script', cursive", category: 'Cursive & Fluid' },
+  { id: 'great_vibes', name: 'Great Vibes', font_family: "'Great Vibes', cursive", category: 'Classic Calligraphy' },
+  { id: 'caveat', name: 'Caveat', font_family: "'Caveat', cursive", category: 'Modern Handwritten' },
+  { id: 'sacramento', name: 'Sacramento', font_family: "'Sacramento', cursive", category: 'Monoline Script' },
+  { id: 'parisienne', name: 'Parisienne', font_family: "'Parisienne', cursive", category: 'Casual Chic' },
+  { id: 'alex_brush', name: 'Alex Brush', font_family: "'Alex Brush', cursive", category: 'Traditional Elegance' },
+];
+
 export interface VendorAgreementItem {
   id: string; // public_id UUID
   title: string;
@@ -29,11 +45,14 @@ export interface VendorAgreementItem {
   signer_name: string | null;
   signer_email: string | null;
   signer_phone: string | null;
+  signature_type?: SignatureType | null;
+  signature_font?: string | null;
   pdf_file_url: string | null;
   first_party_signer_name?: string | null;
   first_party_signer_role?: string | null;
   first_party_signature_type?: string | null;
   first_party_signature_data?: string | null;
+  first_party_signature_font?: string | null;
   first_party_signed_at?: string | null;
   is_first_party_signed?: boolean | null;
   is_second_party_signed?: boolean | null;
@@ -76,12 +95,14 @@ export interface PublicAgreementDetail {
   signer_email?: string;
   signature_type?: SignatureType;
   signature_data?: string;
+  signature_font?: string | null;
   document_hash?: string;
   signer_ip?: string;
   first_party_signer_name?: string | null;
   first_party_signer_role?: string | null;
   first_party_signature_type?: string | null;
   first_party_signature_data?: string | null;
+  first_party_signature_font?: string | null;
   first_party_signed_at?: string | null;
   is_first_party_signed?: boolean | null;
   is_second_party_signed?: boolean | null;
@@ -92,12 +113,14 @@ export interface PublicAgreementDetail {
   operator_legal_name?: string;
   operator_logo_url?: string;
   operator_address?: string;
+  available_signature_fonts?: SignatureFontOption[];
 }
 
 export interface SignAgreementPayload {
   signer_name: string;
   signature_type: SignatureType;
   signature_data: string; // Base64 PNG data URL or typed font string
+  signature_font?: string; // selected font id
   terms_accepted: boolean;
   consent_acknowledged: boolean;
 }

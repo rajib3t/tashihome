@@ -398,7 +398,10 @@
                       </div>
                     } @else {
                       <div class="h-28 flex items-center justify-center bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
-                        <div class="font-serif italic text-2xl sm:text-3xl text-emerald-900 dark:text-emerald-400 tracking-wide select-none">
+                        <div
+                          class="italic text-2xl sm:text-3xl text-emerald-900 dark:text-emerald-400 tracking-wide select-none truncate max-w-full px-2"
+                          [style.font-family]="getFontFamily(ag.signature_font || selectedFont())"
+                        >
                           {{ ag.signer_name || signedSuccessData()?.signer_name || signForm.value.signer_name || ag.host_name }}
                         </div>
                       </div>
@@ -542,14 +545,67 @@
 
                   <!-- Typed Signature Mode -->
                   @if (signatureMode() === 'typed') {
-                    <div class="border border-slate-300 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-900 space-y-2">
-                      <div class="h-28 flex items-center justify-center bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
-                        <div class="font-serif italic text-3xl sm:text-4xl text-emerald-900 dark:text-emerald-400 tracking-wide select-none">
-                          {{ signForm.value.signer_name || 'Your Typed Signature Preview' }}
+                    <div class="border border-slate-300 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-900 space-y-3">
+                      <!-- Selected Font Live Preview -->
+                      <div class="h-28 flex items-center justify-center bg-gradient-to-b from-slate-50 to-emerald-50/40 dark:from-slate-800/60 dark:to-emerald-950/20 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-800/60 p-4 transition-all">
+                        <div
+                          class="text-3xl sm:text-4xl text-emerald-950 dark:text-emerald-300 tracking-wide select-none text-center truncate max-w-full px-2"
+                          [style.font-family]="getSelectedFontFamily()"
+                        >
+                          {{ signForm.value.signer_name || 'Your Typed Signature' }}
                         </div>
                       </div>
-                      <div class="text-xs text-slate-500">
-                        A stylized cryptographic signature representation generated from your legal full name.
+
+                      <!-- Font Options Header -->
+                      <div class="flex items-center justify-between pt-1">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                          Select Signature Style
+                        </span>
+                        <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                          6 Calligraphy Styles Available
+                        </span>
+                      </div>
+
+                      <!-- Font Selection Grid -->
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                        @for (font of availableFonts(); track font.id) {
+                          <button
+                            type="button"
+                            (click)="selectFont(font.id)"
+                            class="flex flex-col items-start p-2.5 rounded-xl border text-left transition-all relative cursor-pointer"
+                            [class.border-emerald-500]="selectedFont() === font.id"
+                            [class.bg-emerald-50/60]="selectedFont() === font.id"
+                            [class.dark:bg-emerald-950/40]="selectedFont() === font.id"
+                            [class.dark:border-emerald-500]="selectedFont() === font.id"
+                            [class.ring-2]="selectedFont() === font.id"
+                            [class.ring-emerald-500/20]="selectedFont() === font.id"
+                            [class.shadow-sm]="selectedFont() === font.id"
+                            [class.border-slate-200]="selectedFont() !== font.id"
+                            [class.dark:border-slate-700]="selectedFont() !== font.id"
+                            [class.bg-white]="selectedFont() !== font.id"
+                            [class.dark:bg-slate-800/60]="selectedFont() !== font.id"
+                            [class.hover:border-slate-300]="selectedFont() !== font.id"
+                            [class.dark:hover:border-slate-600]="selectedFont() !== font.id"
+                          >
+                            <div class="w-full flex items-center justify-between gap-1 text-[11px]">
+                              <span class="font-medium text-slate-800 dark:text-slate-200 truncate">{{ font.name }}</span>
+                              @if (selectedFont() === font.id) {
+                                <span class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
+                              }
+                            </div>
+                            <span class="text-[10px] text-slate-600 dark:text-slate-400 pb-1">{{ font.category }}</span>
+                            <div
+                              class="text-xl sm:text-2xl text-slate-900 dark:text-slate-100 truncate w-full pt-1"
+                              [style.font-family]="font.font_family"
+                            >
+                              {{ signForm.value.signer_name || 'Signature' }}
+                            </div>
+                          </button>
+                        }
+                      </div>
+
+                      <div class="text-[11px] text-slate-500 dark:text-slate-400">
+                        Choose your preferred font above. Your signature will be generated in this exact font and embedded into the official executed PDF agreement.
                       </div>
                     </div>
                   }

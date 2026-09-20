@@ -274,8 +274,11 @@
                   <img [src]="ag.signature_data" alt="Host Signature" class="max-h-full max-w-full object-contain filter dark:invert" />
                 </div>
               } @else {
-                <div class="h-28 flex items-center justify-center bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
-                  <div class="font-serif italic text-2xl sm:text-3xl text-emerald-900 dark:text-emerald-400 tracking-wide select-none">
+                <div class="h-28 flex items-center justify-center bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-2">
+                  <div
+                    class="italic text-2xl sm:text-3xl text-emerald-900 dark:text-emerald-400 tracking-wide select-none truncate max-w-full"
+                    [style.font-family]="getSignatureFontFamily(ag.signature_font)"
+                  >
                     {{ ag.signer_name || ag.host_name }}
                   </div>
                 </div>

@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { DomSanitizer, Meta, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { AgreementService } from '../../../services/agreement/agreement-service';
 import { AuthService } from '../../../services/auth/auth-service';
-import { PublicAgreementDetail, SignatureType } from '../../../core/models/agreement.model';
+import { PublicAgreementDetail, SignatureType, SignatureFontOption, SIGNATURE_FONT_OPTIONS } from '../../../core/models/agreement.model';
 import { SignaturePadComponent } from '../../../shared/components/signature-pad/signature-pad.component';
 import { Modal } from '../../../shared/components/ui/modal/modal';
 
@@ -42,6 +42,8 @@ export class ESignPageComponent implements OnInit, OnDestroy {
 
   public readonly signatureData = signal<string | null>(null);
   public readonly signatureMode = signal<SignatureType>('drawn');
+  public readonly availableFonts = signal<SignatureFontOption[]>(SIGNATURE_FONT_OPTIONS);
+  public readonly selectedFont = signal<string>('dancing_script');
   public readonly showDeclineModal = signal<boolean>(false);
 
   // PDF Preview & Silent Download State
@@ -164,6 +166,13 @@ export class ESignPageComponent implements OnInit, OnDestroy {
           this.loginForm.patchValue({ email: ag.host_email });
         }
 
+        if (ag.available_signature_fonts && ag.available_signature_fonts.length > 0) {
+          this.availableFonts.set(ag.available_signature_fonts);
+        }
+        if (ag.signature_font) {
+          this.selectedFont.set(ag.signature_font);
+        }
+
         if (ag.status === 'signed' || ag.is_bilateral_signed || ag.is_second_party_signed) {
           this.isSigned.set(true);
           this.signedSuccessData.set({
@@ -245,6 +254,21 @@ export class ESignPageComponent implements OnInit, OnDestroy {
     this.signatureMode.set(mode);
   }
 
+  public selectFont(fontId: string): void {
+    this.selectedFont.set(fontId);
+  }
+
+  public getSelectedFontFamily(): string {
+    const found = this.availableFonts().find((f) => f.id === this.selectedFont());
+    return found ? found.font_family : "'Dancing Script', cursive";
+  }
+
+  public getFontFamily(fontId?: string | null): string {
+    if (!fontId) return this.getSelectedFontFamily();
+    const found = this.availableFonts().find((f) => f.id === fontId);
+    return found ? found.font_family : "'Dancing Script', cursive";
+  }
+
   public onSignatureChange(data: string | null): void {
     this.signatureData.set(data);
   }
@@ -284,6 +308,7 @@ export class ESignPageComponent implements OnInit, OnDestroy {
       signer_name: this.signForm.value.signer_name.trim(),
       signature_type: this.signatureMode(),
       signature_data: sigData,
+      signature_font: this.signatureMode() === 'typed' ? this.selectedFont() : undefined,
       terms_accepted: !!this.signForm.value.terms_accepted,
       consent_acknowledged: !!this.signForm.value.consent_acknowledged,
     };
