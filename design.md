@@ -215,6 +215,8 @@ Every public hero section must follow the standard layered architecture:
      outline-offset: 3px;
    }
    ```
+5. **Interactive Cursors**:
+   All interactive elements (`button`, `[role="button"]`, `a`, `input[type="button"]`, `input[type="submit"]`, `input[type="reset"]`) default to `cursor: pointer`. Disabled states automatically switch to `cursor: not-allowed`.
 
 ---
 
