@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -32,6 +33,7 @@ export class StaffManagement implements OnInit {
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);
   private readonly staffService = inject(StaffService);
+  private readonly destroyRef = inject(DestroyRef);
 
   meta!: PaginationMeta;
 
@@ -142,6 +144,7 @@ export class StaffManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -234,6 +237,7 @@ export class StaffManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (!res) {
           return;
@@ -297,6 +301,7 @@ export class StaffManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -350,6 +355,7 @@ export class StaffManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;

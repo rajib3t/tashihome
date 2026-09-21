@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, finalize, of } from 'rxjs';
 import { Amenity, AmenityQuery, AmenitySearch } from '../../../../services/amenity/amenity-model';
@@ -22,6 +23,7 @@ export class VendorAmenityManagement {
   public readonly assetUrl = environment.assetUrl;
   private readonly formBuilder = inject(FormBuilder);
   private readonly amenityService = inject(AmenityService);
+  private readonly destroyRef = inject(DestroyRef);
 
   meta!: PaginationMeta;
   readonly amenities = signal<Amenity[]>([]);
@@ -115,6 +117,7 @@ export class VendorAmenityManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -235,6 +238,7 @@ export class VendorAmenityManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -265,6 +269,7 @@ export class VendorAmenityManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -293,6 +298,7 @@ export class VendorAmenityManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;

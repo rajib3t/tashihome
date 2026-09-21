@@ -6,8 +6,8 @@ import {
   inject,
   signal,
   computed,
-  PLATFORM_ID,
-} from '@angular/core';
+  PLATFORM_ID, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -80,6 +80,7 @@ export class AiAssistantComponent implements AfterViewChecked {
   public readonly settingsService = inject(SettingsService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   @ViewChild('scrollContainer') private scrollContainer?: ElementRef<HTMLDivElement>;
   @ViewChild('chatInput') private chatInput?: ElementRef<HTMLInputElement>;
@@ -551,6 +552,7 @@ export class AiAssistantComponent implements AfterViewChecked {
 
     this.authService
       .login({ email, password, rememberMe: true })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.isLoginSubmitting.set(false);
@@ -599,6 +601,7 @@ export class AiAssistantComponent implements AfterViewChecked {
         is_subscriber: true,
         is_terms_accept: true,
       })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
           this.isRegSubmitting.set(false);

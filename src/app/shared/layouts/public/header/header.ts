@@ -1,4 +1,5 @@
-import { Component, HostListener, inject, Input, computed } from '@angular/core';
+import { Component, HostListener, inject, Input, computed, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Logo } from '../../../components/common/logo/logo';
@@ -17,6 +18,7 @@ export class HeaderPublic {
   private readonly authService = inject(AuthService);
   public readonly settingService = inject(SettingsService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   readonly assetUrl = environment.assetUrl;
 
   @Input() menuItems: { label: string; route: string }[] = [

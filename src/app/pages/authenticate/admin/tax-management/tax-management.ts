@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, catchError, of } from 'rxjs';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
@@ -20,6 +21,7 @@ const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 export class TaxManagement implements OnInit {
   private readonly fb = inject(FormBuilder);
   public readonly taxService = inject(TaxService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Table Data & State
   public readonly taxes = signal<TaxItem[]>([]);
@@ -129,6 +131,7 @@ export class TaxManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (!res) return;
         const list = Array.isArray(res.data)
@@ -265,6 +268,7 @@ export class TaxManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (res) {
           this.closeCreateModal();
@@ -345,6 +349,7 @@ export class TaxManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (res) {
           this.closeEditModal();
@@ -384,6 +389,7 @@ export class TaxManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (res) {
           this.closeStatusModal();
@@ -422,6 +428,7 @@ export class TaxManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (res) {
           this.closeDeleteModal();

@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
 import { Card } from '../../../../shared/components/ui/card/card';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -27,6 +28,7 @@ export class LocationManagement {
   private readonly formBuilder = inject(FormBuilder);
   private readonly locationService = inject(LocationService);
   private readonly cityService = inject(CityService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Create Location modal state
   isCreateModalOpen = signal<boolean>(false);
@@ -123,6 +125,7 @@ const filters = this.searchForm.getRawValue();
             return of(null);
           })
         )
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((response) => {
           if (!response) {
             return;
@@ -202,6 +205,7 @@ openEditModal(location: LocationResponse) {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -247,6 +251,7 @@ openEditModal(location: LocationResponse) {
     };
 
     this.locationService.admin.createLocation(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
           this.isCreating.set(false);
@@ -307,6 +312,7 @@ openEditModal(location: LocationResponse) {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;

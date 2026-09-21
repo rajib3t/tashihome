@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
 import { DashboardService } from '../../../../services/dashboard/dashboard-service';
@@ -35,6 +36,8 @@ export class AdminDashboard implements OnInit {
   public readonly assetUrl = environment.assetUrl;
   private readonly dashboardService = inject(DashboardService);
   private readonly settingsService = inject(SettingsService);
+  private readonly destroyRef = inject(DestroyRef);
+  private messageTimeout?: ReturnType<typeof setTimeout>;
 
   // ── States ──────────────────────────────────────────────────────────────────
   readonly isLoading = signal(true);
@@ -168,6 +171,7 @@ export class AdminDashboard implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (!res) return;
         let payload: any = res;
@@ -358,5 +362,9 @@ export class AdminDashboard implements OnInit {
     const base = this.assetUrl ? (this.assetUrl.endsWith('/') ? this.assetUrl : `${this.assetUrl}/`) : '';
     const cleanPath = url.startsWith('/') ? url.substring(1) : url;
     return `${base}${cleanPath}`;
+  }
+
+  ngOnDestroy(): void {
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
   }
 }

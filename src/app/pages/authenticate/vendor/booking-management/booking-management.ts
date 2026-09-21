@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
@@ -45,6 +46,7 @@ export class VendorBookingManagement implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   private hasLoadedInitial = false;
 
@@ -120,6 +122,7 @@ export class VendorBookingManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) return;
         const list = response.data || [];
@@ -200,6 +203,7 @@ export class VendorBookingManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) return;
         this.bookings.set(response.data || []);
@@ -359,6 +363,7 @@ export class VendorBookingManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) return;
         this.closeStatusModal();

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pagination/pagination';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -32,6 +33,7 @@ export class FacilityManagement {
   private readonly formBuilder = inject(FormBuilder);
   private readonly facilityService = inject(FacilityService);
   private readonly userService = inject(UserService);
+  private readonly destroyRef = inject(DestroyRef);
 
   meta!: PaginationMeta;
   // Facilities List State
@@ -145,6 +147,7 @@ export class FacilityManagement {
                     return of(null);
                   })
                 )
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe((response) => {
                   if (!response) {
                     return;
@@ -289,6 +292,7 @@ export class FacilityManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;

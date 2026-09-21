@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
@@ -38,6 +39,8 @@ export class VendorTestimonialManagement implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly testimonialService = inject(TestimonialService);
   private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
+  private messageTimeout?: ReturnType<typeof setTimeout>;
 
   readonly testimonials = signal<TestimonialData[]>([]);
   readonly isLoading = signal(false);
@@ -300,6 +303,10 @@ export class VendorTestimonialManagement implements OnInit {
     setTimeout(() => {
       this.successMessage.set('');
     }, 4000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
   }
 }
 

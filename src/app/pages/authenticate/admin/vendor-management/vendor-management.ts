@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
 import { CommonModule } from '@angular/common';
 import { Card } from '../../../../shared/components/ui/card/card';
@@ -36,6 +37,7 @@ export class VendorManagement {
 
   private readonly userService = inject(UserService);
   private readonly agreementService = inject(AgreementService);
+  private readonly destroyRef = inject(DestroyRef);
   meta!: PaginationMeta;
 
   // Send Agreement modal state
@@ -157,6 +159,7 @@ export class VendorManagement {
                       return of(null);
                     })
                   )
+                  .pipe(takeUntilDestroyed(this.destroyRef))
                   .subscribe((response) => {
                     if (!response) {
                       return;
@@ -340,6 +343,7 @@ export class VendorManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -394,6 +398,7 @@ export class VendorManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;

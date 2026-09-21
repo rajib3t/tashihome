@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../../services/auth/auth-service';
 import { SidebarService } from '../../../../services/sidebar/sidebar-service';
 import { NavItem, Sidebar } from '../../sidebar/sidebar';
@@ -27,6 +28,7 @@ export class Vendor {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly sidebarService = inject(SidebarService);
+  private readonly destroyRef = inject(DestroyRef);
   constructor() {
     this.isExpanded$ = this.sidebarService.isExpanded$;
     this.isHovered$ = this.sidebarService.isHovered$;

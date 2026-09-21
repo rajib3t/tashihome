@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ReviewData, ReviewQuery, ReviewStatus } from '../../../../services/review/review.model';
@@ -20,6 +21,8 @@ export class AdminReviewManagement implements OnInit {
   public readonly assetUrl = environment.assetUrl;
   private readonly fb = inject(FormBuilder);
   private readonly reviewService = inject(ReviewService);
+  private readonly destroyRef = inject(DestroyRef);
+  private messageTimeout?: ReturnType<typeof setTimeout>;
 
   readonly reviews = signal<ReviewData[]>([]);
   readonly isLoading = signal(false);
@@ -244,6 +247,10 @@ export class AdminReviewManagement implements OnInit {
     setTimeout(() => {
       this.successMessage.set('');
     }, 4000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
   }
 }
 

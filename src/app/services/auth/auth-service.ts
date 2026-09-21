@@ -51,6 +51,40 @@ export class AuthService {
 
     private broadcastChannel: BroadcastChannel | null = null;
 
+    /** Named reference so the storage listener can be removed on destroy. */
+    private readonly onStorageEvent = (event: StorageEvent): void => {
+        if (event.key === ACCESS_TOKEN) {
+            this.ngZone.run(() => {
+                if (event.newValue) {
+                    const cachedUser = this.getUser();
+                    this.handleCrossTabAuthEvent({
+                        type: 'LOGIN',
+                        user: cachedUser,
+                        token: event.newValue
+                    });
+                } else {
+                    this.handleCrossTabAuthEvent({ type: 'LOGOUT' });
+                }
+            });
+        } else if (event.key === AUTH_USER_KEY) {
+            this.ngZone.run(() => {
+                if (event.newValue) {
+                    try {
+                        const updatedUser = JSON.parse(event.newValue) as User;
+                        this.handleCrossTabAuthEvent({
+                            type: 'USER_UPDATED',
+                            user: updatedUser
+                        });
+                    } catch {
+                        // ignore parse error
+                    }
+                } else {
+                    this.handleCrossTabAuthEvent({ type: 'LOGOUT' });
+                }
+            });
+        }
+    };
+
     constructor() {
         const cachedUser = this.getUser();
         if (cachedUser) {
@@ -84,38 +118,17 @@ export class AuthService {
         }
 
         // Fallback and companion: storage events for cross-tab updates
-        window.addEventListener('storage', (event: StorageEvent) => {
-            if (event.key === ACCESS_TOKEN) {
-                this.ngZone.run(() => {
-                    if (event.newValue) {
-                        const cachedUser = this.getUser();
-                        this.handleCrossTabAuthEvent({
-                            type: 'LOGIN',
-                            user: cachedUser,
-                            token: event.newValue
-                        });
-                    } else {
-                        this.handleCrossTabAuthEvent({ type: 'LOGOUT' });
-                    }
-                });
-            } else if (event.key === AUTH_USER_KEY) {
-                this.ngZone.run(() => {
-                    if (event.newValue) {
-                        try {
-                            const updatedUser = JSON.parse(event.newValue) as User;
-                            this.handleCrossTabAuthEvent({
-                                type: 'USER_UPDATED',
-                                user: updatedUser
-                            });
-                        } catch {
-                            // ignore parse error
-                        }
-                    } else {
-                        this.handleCrossTabAuthEvent({ type: 'LOGOUT' });
-                    }
-                });
-            }
-        });
+        window.addEventListener('storage', this.onStorageEvent);
+    }
+
+    ngOnDestroy(): void {
+        if (typeof window !== 'undefined') {
+            window.removeEventListener('storage', this.onStorageEvent);
+        }
+        if (this.broadcastChannel) {
+            this.broadcastChannel.close();
+            this.broadcastChannel = null;
+        }
     }
 
     /**

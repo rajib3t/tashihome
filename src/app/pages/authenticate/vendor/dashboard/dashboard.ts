@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { catchError, finalize, of } from 'rxjs';
@@ -37,6 +38,8 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly settingsService = inject(SettingsService);
   private readonly agreementService = inject(AgreementService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly destroyRef = inject(DestroyRef);
+  private messageTimeout?: ReturnType<typeof setTimeout>;
 
   // ── States ──────────────────────────────────────────────────────────────────
   readonly isLoading = signal(true);
@@ -153,6 +156,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
     this.cleanupPreviewBlob();
   }
 
@@ -295,6 +299,7 @@ export class Dashboard implements OnInit, OnDestroy {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (!res) return;
         let payload: any = res;
@@ -326,7 +331,8 @@ export class Dashboard implements OnInit, OnDestroy {
     if (!text) return;
     navigator.clipboard?.writeText(text).then(() => {
       this.copiedKey.set(key);
-      setTimeout(() => {
+      if (this.messageTimeout) clearTimeout(this.messageTimeout);
+      this.messageTimeout = setTimeout(() => {
         if (this.copiedKey() === key) {
           this.copiedKey.set('');
         }

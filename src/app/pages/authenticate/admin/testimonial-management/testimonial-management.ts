@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
@@ -25,6 +26,8 @@ export class AdminTestimonialManagement implements OnInit {
   public readonly assetUrl = environment.assetUrl;
   private readonly fb = inject(FormBuilder);
   private readonly testimonialService = inject(TestimonialService);
+  private readonly destroyRef = inject(DestroyRef);
+  private messageTimeout?: ReturnType<typeof setTimeout>;
 
   readonly testimonials = signal<TestimonialData[]>([]);
   readonly isLoading = signal(false);
@@ -267,6 +270,10 @@ export class AdminTestimonialManagement implements OnInit {
     setTimeout(() => {
       this.successMessage.set('');
     }, 4000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
   }
 }
 

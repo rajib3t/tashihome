@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { PROPERTY_TYPES_LABELS, PropertyData, PropertySearch } from '../../../../services/property/property.model';
 import { PropertyService } from '../../../../services/property/property-service';
@@ -28,6 +29,7 @@ export class PropertyManagement {
   private readonly router = inject(Router);
   private readonly propertyService = inject(PropertyService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
   meta!: PaginationMeta;
 
   readonly properties = signal<PropertyData[]>([]);

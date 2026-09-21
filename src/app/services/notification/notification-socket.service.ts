@@ -25,6 +25,17 @@ export class NotificationSocketService implements OnDestroy {
   private readonly connectionStateSubject = new BehaviorSubject<SocketConnectionState>('disconnected');
   public readonly connectionState$: Observable<SocketConnectionState> = this.connectionStateSubject.asObservable();
 
+  /** Named reference so the storage listener can be removed on destroy. */
+  private readonly onStorageEvent = (event: StorageEvent): void => {
+    if (event.key === 'access_token') {
+      if (event.newValue) {
+        this.connect(event.newValue);
+      } else {
+        this.disconnect();
+      }
+    }
+  };
+
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       this.initAuthSync();
@@ -55,15 +66,7 @@ export class NotificationSocketService implements OnDestroy {
 
     // React to token changes across the session (e.g. login, refresh, logout)
     if (typeof window !== 'undefined') {
-      window.addEventListener('storage', (event: StorageEvent) => {
-        if (event.key === 'access_token') {
-          if (event.newValue) {
-            this.connect(event.newValue);
-          } else {
-            this.disconnect();
-          }
-        }
-      });
+      window.addEventListener('storage', this.onStorageEvent);
     }
   }
 
@@ -160,6 +163,9 @@ export class NotificationSocketService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('storage', this.onStorageEvent);
+    }
     this.disconnect();
   }
 }

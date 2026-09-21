@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, finalize, of } from 'rxjs';
 import {
@@ -42,6 +43,8 @@ export class VendorRoomBlockManagement implements OnInit {
   private readonly propertyService = inject(PropertyService);
   private readonly settingsService = inject(SettingsService);
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+  private messageTimeout?: ReturnType<typeof setTimeout>;
 
   // ── List & Filter State ──────────────────────────────────────────────────
   readonly roomBlocks = signal<RoomBlock[]>([]);
@@ -161,6 +164,7 @@ export class VendorRoomBlockManagement implements OnInit {
         finalize(() => this.isLoadingProperties.set(false)),
         catchError(() => of(null))
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (res && res.data) {
           this.properties.set(res.data);
@@ -195,6 +199,7 @@ export class VendorRoomBlockManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) return;
         this.roomBlocks.set(response.data || []);
@@ -364,6 +369,7 @@ export class VendorRoomBlockManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (!res) return;
         this.closeCreateModal();
@@ -446,6 +452,7 @@ export class VendorRoomBlockManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (!res) return;
         this.closeEditModal();
@@ -485,6 +492,7 @@ export class VendorRoomBlockManagement implements OnInit {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
         if (!res) return;
         this.closeDeleteModal();
@@ -554,6 +562,10 @@ export class VendorRoomBlockManagement implements OnInit {
     setTimeout(() => {
       this.successMessage.set('');
     }, 5000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
   }
 }
 

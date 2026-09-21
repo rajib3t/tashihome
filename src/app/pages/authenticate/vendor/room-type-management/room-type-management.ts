@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, finalize, of } from 'rxjs';
 import { RoomType, RoomTypeQuery, RoomTypeSearch } from '../../../../services/room-type/room-type-model';
@@ -19,6 +20,7 @@ import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pag
 export class VendorRoomTypeManagement {
   private readonly formBuilder = inject(FormBuilder);
   private readonly roomTypeService = inject(RoomTypeService);
+  private readonly destroyRef = inject(DestroyRef);
 
   meta!: PaginationMeta;
   readonly roomTypes = signal<RoomType[]>([]);
@@ -110,6 +112,7 @@ export class VendorRoomTypeManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -221,6 +224,7 @@ export class VendorRoomTypeManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -251,6 +255,7 @@ export class VendorRoomTypeManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -279,6 +284,7 @@ export class VendorRoomTypeManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;

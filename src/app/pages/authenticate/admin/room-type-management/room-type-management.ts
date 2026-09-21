@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, finalize, of, take } from 'rxjs';
 import { RoomType, RoomTypeQuery, RoomTypeSearch } from '../../../../services/room-type/room-type-model';
@@ -21,6 +22,7 @@ export class RoomTypeManagement {
   private readonly formBuilder = inject(FormBuilder);
   private readonly roomTypeService = inject(RoomTypeService);
   private readonly userService = inject(UserService);
+  private readonly destroyRef = inject(DestroyRef);
 
   meta!: PaginationMeta;
   readonly roomTypes = signal<RoomType[]>([]);
@@ -124,6 +126,7 @@ export class RoomTypeManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -227,6 +230,7 @@ export class RoomTypeManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;
@@ -257,6 +261,7 @@ export class RoomTypeManagement {
           return of(null);
         })
       )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
         if (!response) {
           return;

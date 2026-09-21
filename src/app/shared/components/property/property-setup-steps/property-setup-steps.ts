@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, OnInit, SimpleChanges, computed, inject, signal } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges, computed, inject, signal, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 import { PropertySetupSteps, SetupStepStatus } from '../../../../services/property/property-setup-steps.model';
@@ -30,6 +31,7 @@ export const SETUP_STEP_DEFINITIONS: StepDefinition[] = [
 export class PropertySetupStepsComponent implements OnInit, OnChanges {
   private readonly stepsService = inject(PropertySetupStepsService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   @Input() propertyId?: string;
   @Input() compact: boolean = false;
