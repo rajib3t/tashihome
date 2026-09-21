@@ -36,6 +36,9 @@ export class PropertySetupStepsComponent implements OnInit, OnChanges {
   @Input() setupSteps?: PropertySetupSteps | null;
   @Input() percentComplete?: number;
   @Input() currentStep?: string;
+  @Input() completedSteps?: string[];
+  @Input() isComplete?: boolean;
+  @Input() propertyStatus?: string;
 
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -44,20 +47,35 @@ export class PropertySetupStepsComponent implements OnInit, OnChanges {
   readonly stepDefinitions = SETUP_STEP_DEFINITIONS;
 
   readonly currentPercent = computed(() => {
-    if (this.percentComplete !== undefined && this.percentComplete !== null) {
+    const data = this.stepsData();
+    if (data?.percent_complete !== undefined && data.percent_complete !== null) {
+      return Math.round(data.percent_complete);
+    }
+    if (this.percentComplete !== undefined && this.percentComplete !== null && this.percentComplete > 0) {
       return Math.round(this.percentComplete);
     }
-    const data = this.stepsData();
-    if (data?.percent_complete !== undefined) {
-      return Math.round(data.percent_complete);
+    if (this.completedSteps && this.completedSteps.length > 0) {
+      return Math.round((this.completedSteps.length / this.stepDefinitions.length) * 100);
+    }
+    if (this.percentComplete !== undefined && this.percentComplete !== null) {
+      return Math.round(this.percentComplete);
     }
     return 0;
   });
 
   readonly isAllComplete = computed(() => {
     const data = this.stepsData();
-    if (data?.is_complete !== undefined) {
+    if (data?.is_complete !== undefined && data.is_complete !== null) {
       return data.is_complete;
+    }
+    if (this.isComplete !== undefined && this.isComplete !== null) {
+      return this.isComplete;
+    }
+    if (this.completedSteps && this.completedSteps.length >= this.stepDefinitions.length) {
+      return true;
+    }
+    if (this.propertyStatus === 'active') {
+      return true;
     }
     return this.currentPercent() >= 100;
   });
@@ -67,7 +85,10 @@ export class PropertySetupStepsComponent implements OnInit, OnChanges {
     if (data?.completed_steps) {
       return data.completed_steps.length;
     }
-    return Math.round((this.currentPercent() / 100) * 7);
+    if (this.completedSteps && this.completedSteps.length > 0) {
+      return this.completedSteps.length;
+    }
+    return Math.min(this.stepDefinitions.length, Math.round((this.currentPercent() / 100) * this.stepDefinitions.length));
   });
 
   ngOnInit(): void {
@@ -95,9 +116,10 @@ export class PropertySetupStepsComponent implements OnInit, OnChanges {
     this.stepsService.getVendorSetupSteps(this.propertyId)
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: (response) => {
-          if (response?.data) {
-            this.stepsData.set(response.data);
+        next: (response: any) => {
+          const payload = response?.data || response;
+          if (payload && (payload.steps || payload.completed_steps || payload.percent_complete !== undefined)) {
+            this.stepsData.set(payload);
           }
         },
         error: (err) => {
@@ -108,12 +130,19 @@ export class PropertySetupStepsComponent implements OnInit, OnChanges {
 
   isStepCompleted(key: keyof SetupStepStatus): boolean {
     const data = this.stepsData();
-    if (!data) return false;
-    if (data.steps && data.steps[key] !== undefined) {
-      return data.steps[key];
+    if (data) {
+      if (data.steps && data.steps[key] !== undefined) {
+        return Boolean(data.steps[key]);
+      }
+      if (data.completed_steps) {
+        return data.completed_steps.includes(key);
+      }
     }
-    if (data.completed_steps) {
-      return data.completed_steps.includes(key);
+    if (this.completedSteps) {
+      return this.completedSteps.includes(key);
+    }
+    if (key === 'policies' && (this.propertyStatus === 'active' || this.isAllComplete())) {
+      return true;
     }
     return false;
   }

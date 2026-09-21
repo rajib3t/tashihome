@@ -163,9 +163,26 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     });
 
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      const stepParam = Number(params.get('step'));
-      if (!Number.isNaN(stepParam)) {
-        this.currentStep = Math.max(0, Math.min(stepParam, this.wizardSteps.length - 1));
+      const rawStep = params.get('step');
+      if (rawStep !== null && rawStep !== undefined && rawStep !== '') {
+        const stepNum = Number(rawStep);
+        if (!Number.isNaN(stepNum)) {
+          this.currentStep = Math.max(0, Math.min(stepNum, this.wizardSteps.length - 1));
+        } else {
+          const stepMap: Record<string, number> = {
+            basic_info: 0,
+            details: 0,
+            room_types: 1,
+            amenities: 1,
+            facilities: 1,
+            pricing: 2,
+            media: 3,
+            policies: 3,
+          };
+          if (stepMap[rawStep] !== undefined) {
+            this.currentStep = stepMap[rawStep];
+          }
+        }
       }
     });
   }
@@ -181,6 +198,77 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
       this.googleMapsScript.onload = null;
       this.googleMapsScript.onerror = null;
       this.googleMapsScript = undefined;
+    }
+  }
+
+  goToStep(stepIndex: number): void {
+    if (stepIndex === this.currentStep || stepIndex < 0 || stepIndex >= this.wizardSteps.length) {
+      return;
+    }
+
+    if (this.isSaving()) {
+      return;
+    }
+
+    const previousStep = this.currentStep;
+    const canSave = this.isCurrentStepValid() && !!this.propertyId;
+
+    this.currentStep = stepIndex;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { step: stepIndex },
+      queryParamsHandling: 'merge',
+    });
+
+    if (canSave && this.propertyId) {
+      this.pendingStepBeforeSave = previousStep;
+      this.isSaving.set(true);
+      this.propertyService.vendor.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
+        next: (response) => {
+          if (response?.data) {
+            this.patchPropertyForm(response.data);
+          }
+          this.isSaving.set(false);
+          this.pendingStepBeforeSave = null;
+        },
+        error: () => {
+          this.isSaving.set(false);
+          this.pendingStepBeforeSave = null;
+        },
+      });
+    }
+  }
+
+  isWizardStepCompleted(stepIndex: number): boolean {
+    switch (stepIndex) {
+      case 0:
+        return !!(
+          this.propertyForm.get('name')?.value &&
+          this.propertyForm.get('type')?.value &&
+          this.propertyForm.get('city_id')?.value &&
+          this.propertyForm.get('location_id')?.value &&
+          this.propertyForm.get('address')?.value &&
+          this.propertyForm.get('description')?.value &&
+          this.propertyForm.get('name')?.valid &&
+          this.propertyForm.get('address')?.valid &&
+          this.propertyForm.get('description')?.valid
+        );
+      case 1: {
+        const hasRooms = ((this.propertyForm.get('room_types')?.value as any[]) ?? []).length > 0;
+        const hasAmenities = ((this.propertyForm.get('amenity_ids')?.value as any[]) ?? []).length > 0;
+        const hasFacilities = ((this.propertyForm.get('facility_ids')?.value as any[]) ?? []).length > 0;
+        return hasRooms || hasAmenities || hasFacilities;
+      }
+      case 2:
+        return Number(this.propertyForm.get('price_per_night')?.value ?? 0) > 0;
+      case 3:
+        return (
+          this.galleryPreviews().length > 0 ||
+          Boolean(this.featureImagePreview()) ||
+          Boolean(this.coverImagePreview())
+        );
+      default:
+        return false;
     }
   }
 
@@ -201,6 +289,11 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     const nextStep = Math.min(this.currentStep + 1, this.wizardSteps.length - 1);
     this.pendingStepBeforeSave = this.currentStep;
     this.currentStep = nextStep;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { step: this.currentStep },
+      queryParamsHandling: 'merge',
+    });
     this.isSaving.set(true);
     this.propertyService.vendor.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
       next: (response) => {
@@ -215,6 +308,11 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
         if (this.pendingStepBeforeSave !== null) {
           this.currentStep = this.pendingStepBeforeSave;
           this.pendingStepBeforeSave = null;
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { step: this.currentStep },
+            queryParamsHandling: 'merge',
+          });
         }
       },
     });
@@ -222,6 +320,11 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
 
   previousStep(): void {
     this.currentStep = Math.max(this.currentStep - 1, 0);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { step: this.currentStep },
+      queryParamsHandling: 'merge',
+    });
   }
 
   submitPropertyForm(): void {

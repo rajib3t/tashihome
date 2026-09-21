@@ -39,7 +39,7 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
   private readonly destroyRef = inject(DestroyRef);
   private readonly ngZone = inject(NgZone);
 
-  wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media', 'Settings'];
+  wizardSteps = ['Property Details', 'Amenities & Facilities', 'Pricing', 'Media'];
   currentStep = 0;
 
   readonly citySearchTerm = signal('');
@@ -159,6 +159,42 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
     }
 
     void this.saveFirstStep(true);
+  }
+
+  goToStep(stepIndex: number): void {
+    if (stepIndex === this.currentStep) {
+      return;
+    }
+    if (this.isSaving()) {
+      return;
+    }
+    if (stepIndex > 0) {
+      if (!this.isCurrentStepValid()) {
+        this.propertyForm.markAllAsTouched();
+        return;
+      }
+      this.createPropertyDraftWithTargetStep(stepIndex);
+    }
+  }
+
+  private createPropertyDraftWithTargetStep(targetStep: number): void {
+    this.isSaving.set(true);
+    const payload = this.buildCreatePayload();
+    this.propertyService.vendor.createProperty(payload).subscribe({
+      next: (property) => {
+        this.createdPropertyId = property.data?.id ?? null;
+        this.isSaving.set(false);
+        if (!this.createdPropertyId) {
+          return;
+        }
+        this.router.navigate([`/vendor/property-management/${this.createdPropertyId}/edit`], {
+          queryParams: { step: targetStep },
+        });
+      },
+      error: () => {
+        this.isSaving.set(false);
+      },
+    });
   }
 
   private saveFirstStep(continueToEdit: boolean): void {

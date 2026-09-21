@@ -14,17 +14,36 @@
   </div>
 
   <app-card title="Property Details" desc="Follow the steps to edit the listing.">
-    <div class="mb-6 flex flex-wrap gap-2">
+    <div class="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-4 dark:border-slate-800">
       @for (step of wizardSteps; track step; let i = $index) {
-        <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="goToStep(i)"
+          class="inline-flex cursor-pointer items-center gap-2.5 rounded-xl border px-4 py-2 text-sm font-medium transition"
+          [class]="i === currentStep
+            ? 'border-primary bg-primary text-white shadow-sm'
+            : isWizardStepCompleted(i)
+              ? 'border-emerald-200 bg-emerald-50/70 text-emerald-800 hover:bg-emerald-100/70 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-300 dark:hover:bg-emerald-950/40'
+              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'"
+        >
           <span
-            class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
-            [class]="i === currentStep ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'"
+            class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold"
+            [class]="i === currentStep
+              ? 'bg-white/20 text-white'
+              : isWizardStepCompleted(i)
+                ? 'bg-emerald-200 text-emerald-800 dark:bg-emerald-800/60 dark:text-emerald-200'
+                : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'"
           >
-            {{ i + 1 }}
+            @if (isWizardStepCompleted(i) && i !== currentStep) {
+              <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+            } @else {
+              {{ i + 1 }}
+            }
           </span>
-          <span class="text-sm text-slate-600 dark:text-slate-300">{{ step }}</span>
-        </div>
+          <span>{{ step }}</span>
+        </button>
       }
     </div>
 
