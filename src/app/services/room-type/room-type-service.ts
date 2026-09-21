@@ -25,6 +25,8 @@ export class RoomTypeService {
     if (status) queryParams['status'] = status;
     if (params.sortBy?.trim()) queryParams['sortBy'] = params.sortBy.trim();
     if (params.sortOrder) queryParams['sortOrder'] = params.sortOrder;
+    if (params.scope?.trim()) queryParams['scope'] = params.scope.trim();
+    if (params.vendor_id?.trim()) queryParams['vendor_id'] = params.vendor_id.trim();
 
     return queryParams;
   }
@@ -72,12 +74,38 @@ export class RoomTypeService {
   public readonly vendor = {
     getRoomTypes: (params: RoomTypeQuery = {}): Observable<PaginatedResponse<RoomType>> => {
       const queryParams = this.buildQueryParams(params);
-      return this.apiService.get<PaginatedResponse<RoomType>>('/vendor/room-types/', { params: queryParams }).pipe(
+      return this.apiService.protectedGet<PaginatedResponse<RoomType>>('/vendor/room-types/', { params: queryParams }).pipe(
         map((response) => response.data),
         catchError(this.apiService.passthroughError)
       );
     },
 
-    
+    create: (data: RoomTypeRequest): Observable<ApiResponse<RoomType>> => {
+      return this.apiService.protectedPost<ApiResponse<RoomType>>('/vendor/room-types/', data).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    update: (id: string, data: RoomTypeRequest): Observable<ApiResponse<RoomType>> => {
+      return this.apiService.protectedPut<ApiResponse<RoomType>>(`/vendor/room-types/${id}`, data).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    delete: (id: string): Observable<ApiResponse<void>> => {
+      return this.apiService.protectedDelete<ApiResponse<void>>(`/vendor/room-types/${id}`).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    statusUpdate: (id: string, status: string): Observable<ApiResponse<RoomType>> => {
+      return this.apiService.protectedPatch<ApiResponse<RoomType>>(`/vendor/room-types/${id}/${status}`, { status }).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
   };
 }

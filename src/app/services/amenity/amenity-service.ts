@@ -26,6 +26,8 @@ export class AmenityService {
     if (status) queryParams['status'] = status;
     if (params.sortBy?.trim()) queryParams['sortBy'] = params.sortBy.trim();
     if (params.sortOrder) queryParams['sortOrder'] = params.sortOrder;
+    if (params.scope?.trim()) queryParams['scope'] = params.scope.trim();
+    if (params.vendor_id?.trim()) queryParams['vendor_id'] = params.vendor_id.trim();
 
     return queryParams;
   }
@@ -73,12 +75,38 @@ export class AmenityService {
   public readonly vendor = {
     getAmenities: (params: AmenityQuery = {}): Observable<PaginatedResponse<Amenity>> => {
       const queryParams = this.buildQueryParams(params);
-      return this.apiService.get<PaginatedResponse<Amenity>>('/vendor/amenities/', { params: queryParams }).pipe(
+      return this.apiService.protectedGet<PaginatedResponse<Amenity>>('/vendor/amenities/', { params: queryParams }).pipe(
         map((response) => response.data),
         catchError(this.apiService.passthroughError)
       );
     },
 
-    
+    create: (data: FormData): Observable<ApiResponse<Amenity>> => {
+      return this.apiService.protectedPost<ApiResponse<Amenity>>('/vendor/amenities/', data).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    update: (id: string, data: FormData): Observable<ApiResponse<Amenity>> => {
+      return this.apiService.protectedPut<ApiResponse<Amenity>>(`/vendor/amenities/${id}`, data).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    delete: (id: string): Observable<ApiResponse<void>> => {
+      return this.apiService.protectedDelete<ApiResponse<void>>(`/vendor/amenities/${id}`).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    statusUpdate: (id: string, status: string): Observable<ApiResponse<Amenity>> => {
+      return this.apiService.protectedPatch<ApiResponse<Amenity>>(`/vendor/amenities/${id}/${status}`, { status }).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
   };
 }

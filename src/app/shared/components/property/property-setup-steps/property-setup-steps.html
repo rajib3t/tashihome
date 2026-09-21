@@ -1,0 +1,157 @@
+@if (compact) {
+  <!-- Compact Display (For Tables, Cards, Lists) -->
+  <div class="flex flex-col gap-1.5 min-w-[140px]">
+    <div class="flex items-center justify-between text-xs">
+      <span class="font-medium text-slate-700 dark:text-slate-300">
+        {{ currentPercent() }}%
+      </span>
+      <span class="text-[11px] text-slate-500 dark:text-slate-400">
+        {{ completedCount() }}/7 steps
+      </span>
+    </div>
+    <div class="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+      <div
+        class="h-full rounded-full transition-all duration-500 ease-out"
+        [class.bg-emerald-500]="isAllComplete()"
+        [class.bg-amber-500]="!isAllComplete() && currentPercent() >= 50"
+        [class.bg-blue-500]="!isAllComplete() && currentPercent() < 50"
+        [style.width.%]="currentPercent()"
+      ></div>
+    </div>
+    @if (isAllComplete()) {
+      <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+        <svg class="h-3 w-3 inline" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        Ready to Publish
+      </span>
+    } @else {
+      <span class="text-[10px] text-slate-500 dark:text-slate-400">
+        Setup In Progress
+      </span>
+    }
+  </div>
+} @else {
+  <!-- Full Display (Detailed Setup Progress Card) -->
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div>
+        <h3 class="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>Property Setup Progress</span>
+          @if (isAllComplete()) {
+            <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+              100% Completed
+            </span>
+          } @else {
+            <span class="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+              {{ currentPercent() }}% Complete
+            </span>
+          }
+        </h3>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          Complete all 7 steps to activate and receive bookings for this property.
+        </p>
+      </div>
+
+      @if (propertyId) {
+        <button
+          type="button"
+          (click)="goToEdit()"
+          class="cursor-pointer inline-flex items-center gap-1.5 self-start sm:self-auto rounded-xl bg-primary px-3.5 py-2 text-xs font-medium text-white shadow-sm transition hover:opacity-90"
+        >
+          <span>Continue Setup</span>
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      }
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="mt-4">
+      <div class="flex justify-between text-xs font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+        <span>Setup Completion</span>
+        <span>{{ completedCount() }} of 7 steps finished</span>
+      </div>
+      <div class="h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+        <div
+          class="h-full rounded-full transition-all duration-700 ease-out"
+          [class.bg-emerald-500]="isAllComplete()"
+          [class.bg-amber-500]="!isAllComplete() && currentPercent() >= 50"
+          [class.bg-blue-500]="!isAllComplete() && currentPercent() < 50"
+          [style.width.%]="currentPercent()"
+        ></div>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+        Loading step completion status...
+      </div>
+    } @else {
+      <!-- Steps Checklist Grid -->
+      <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        @for (step of stepDefinitions; track step.key; let i = $index) {
+          @let completed = isStepCompleted(step.key);
+          <div
+            class="flex items-start gap-3 rounded-xl border p-3 transition-colors"
+            [class.border-emerald-200]="completed"
+            [class.bg-emerald-50/30]="completed"
+            [class.dark:border-emerald-900/40]="completed"
+            [class.dark:bg-emerald-950/10]="completed"
+            [class.border-slate-200]="!completed"
+            [class.bg-slate-50/50]="!completed"
+            [class.dark:border-slate-800]="!completed"
+            [class.dark:bg-slate-800/30]="!completed"
+          >
+            <!-- Status Icon -->
+            <div class="mt-0.5 flex-shrink-0">
+              @if (completed) {
+                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                  <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              } @else {
+                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                  <span class="text-xs font-semibold">{{ i + 1 }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1">
+                <h4 class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                  {{ step.label }}
+                </h4>
+                @if (completed) {
+                  <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Done</span>
+                } @else {
+                  <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400">Pending</span>
+                }
+              </div>
+              <p class="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                {{ step.description }}
+              </p>
+
+              @if (propertyId && !completed) {
+                <button
+                  type="button"
+                  (click)="goToEdit(step.key)"
+                  class="cursor-pointer mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+                >
+                  <span>Complete this step</span>
+                  <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}
+

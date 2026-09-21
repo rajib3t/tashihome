@@ -520,7 +520,7 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
   }
 
   private loadAmenities(): void {
-    this.amenityService.admin.getAmenities({ page: 1, size: 100 }).pipe(take(1)).subscribe({
+    this.amenityService.vendor.getAmenities({ page: 1, size: 100 }).pipe(take(1)).subscribe({
       next: (response) => this.amenities.set(response.data),
       error: () => this.amenities.set([]),
     });

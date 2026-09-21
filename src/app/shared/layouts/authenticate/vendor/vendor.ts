@@ -54,6 +54,15 @@ export class Vendor {
         path:'/vendor/property-management'
       },
       {
+        icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h7"/></svg>`,
+        name: 'Attributes',
+        subItems: [
+          { name: 'My Amenities', path: '/vendor/amenity-management' },
+          { name: 'My Facilities', path: '/vendor/facility-management' },
+          { name: 'My Room Types', path: '/vendor/room-type-management' },
+        ],
+      },
+      {
         icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`,
         name: 'Room Blocks',
         path: '/vendor/room-blocks'

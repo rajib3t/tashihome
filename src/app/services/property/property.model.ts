@@ -345,6 +345,10 @@ export interface PropertyData {
   average_rating?: number;
   total_reviews?: number;
   rating_summary?: RatingSummary;
+  completed_steps?: string[];
+  current_step?: string;
+  percent_complete?: number;
+  is_complete?: boolean;
 }
 
 export interface Vendor {

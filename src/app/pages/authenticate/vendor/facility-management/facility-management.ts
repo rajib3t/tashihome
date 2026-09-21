@@ -1,42 +1,30 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pagination/pagination';
-import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Card } from '../../../../shared/components/ui/card/card';
+import { catchError, finalize, of } from 'rxjs';
+import { Facility, FacilityQuery, FacilitySearch } from '../../../../services/facility/facility-model';
+import { FacilityService } from '../../../../services/facility/facility-service';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
 import { UploadImage } from '../../../../shared/components/common/upload-image/upload-image';
-import { FacilityService } from '../../../../services/facility/facility-service';
-import { Facility, FacilityQuery, FacilitySearch } from '../../../../services/facility/facility-model';
-import { UserService } from '../../../../services/user/user-service';
-import { User } from '../../../../services/user/user.model';
-import { catchError, finalize, of, take } from 'rxjs';
+import { Card } from '../../../../shared/components/ui/card/card';
+import { Modal } from '../../../../shared/components/ui/modal/modal';
+import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pagination/pagination';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
-  selector: 'app-facility-management',
-  imports: [
-    CommonModule,
-    PageBreadcrumb,
-    Card,
-    ReactiveFormsModule,
-    Modal,
-    UploadImage,
-    Pagination
-  ],
+  selector: 'app-vendor-facility-management',
+  standalone: true,
+  imports: [CommonModule, PageBreadcrumb, Card, ReactiveFormsModule, Modal, UploadImage, Pagination],
   templateUrl: './facility-management.html',
   styleUrl: './facility-management.css',
 })
-export class FacilityManagement {
+export class VendorFacilityManagement {
   public readonly assetUrl = environment.assetUrl;
   private readonly formBuilder = inject(FormBuilder);
   private readonly facilityService = inject(FacilityService);
-  private readonly userService = inject(UserService);
 
   meta!: PaginationMeta;
-  // Facilities List State
   readonly facilities = signal<Facility[]>([]);
-  readonly vendors = signal<User[]>([]);
   readonly isLoading = signal(false);
   readonly errorMessage = signal('');
   readonly currentPage = signal(1);
@@ -44,37 +32,35 @@ export class FacilityManagement {
   readonly totalItems = signal(0);
   readonly pageSizeOptions = [10, 20, 30];
 
-  // Edit modal state
   isEditModalOpen = signal<boolean>(false);
   isEditing = signal(false);
   editErrorMessage = signal<string | null>(null);
   selectedFacility = signal<Facility | null>(null);
 
-  // Status modal state
   isStatusModalOpen = signal<boolean>(false);
   isUpdatingStatus = signal(false);
   statusErrorMessage = signal<string | null>(null);
   facilityToToggleStatus = signal<Facility | null>(null);
 
-  // Create  modal state
+  isDeleteModalOpen = signal<boolean>(false);
+  isDeleting = signal(false);
+  deleteErrorMessage = signal<string | null>(null);
+  facilityToDelete = signal<Facility | null>(null);
+
   isCreateModalOpen = signal<boolean>(false);
   isCreating = signal(false);
   createErrorMessage = signal<string | null>(null);
 
-  // Icon preview state
   iconPreview = signal<string>('');
 
-  // Create facility form
-  createForm = this.formBuilder.group({
+  readonly createForm = this.formBuilder.group({
     name: ['', [Validators.required]],
     icon: [null as File | string | null],
-    vendor_id: [''],
   });
 
   readonly editForm = this.formBuilder.group({
     name: ['', [Validators.required]],
     icon: [null as File | string | null],
-    vendor_id: [''],
   });
 
   readonly searchForm = this.formBuilder.group({
@@ -83,21 +69,7 @@ export class FacilityManagement {
   });
 
   ngOnInit(): void {
-    this.loadVendors();
     this.loadFacilities();
-  }
-
-  loadVendors(): void {
-    this.userService.getVendors({ page: 1, size: 100 }).pipe(take(1)).subscribe({
-      next: (response) => this.vendors.set(response.data || []),
-      error: () => this.vendors.set([]),
-    });
-  }
-
-  getVendorName(vendorId?: string | null): string {
-    if (!vendorId) return '';
-    const vendor = this.vendors().find((v) => v.id === vendorId);
-    return vendor ? (vendor.full_name || vendor.email) : 'Vendor';
   }
 
   onSearch(): void {
@@ -117,87 +89,94 @@ export class FacilityManagement {
     this.loadFacilities();
   }
 
-    
-  //  List Facilities 
-    loadFacilities() {
-       const filters = this.searchForm.getRawValue();
-          const search: FacilitySearch = {
-            name: filters.name?.trim() || undefined,
-            status: filters.status?.trim() || undefined,
-          };
-      
-          const query: FacilityQuery = {
-            page: this.currentPage(),
-            size: this.pageSize(),
-            search,
-          };
-      
-          this.isLoading.set(true);
-          this.errorMessage.set('');
-  
-          this.facilityService.admin.getFacilities(query)
-                .pipe(
-                  finalize(() => this.isLoading.set(false)),
-                  catchError((error) => {
-                    this.errorMessage.set(error?.error?.message || error?.message || 'Unable to load facilities.');
-                    this.facilities.set([]);
-                    this.totalItems.set(0);
-                    return of(null);
-                  })
-                )
-                .subscribe((response) => {
-                  if (!response) {
-                    return;
-                  }
-          
-                  this.facilities.set(response.data || []);
-                  this.totalItems.set(response.meta?.total || 0);
-                  this.meta = { ...response.meta };
-                });
-    }
+  loadFacilities(): void {
+    const filters = this.searchForm.getRawValue();
+    const search: FacilitySearch = {
+      name: filters.name?.trim() || undefined,
+      status: filters.status?.trim() || undefined,
+    };
 
-  openCreateModal() {
-    this.createForm.reset({ name: '', icon: null, vendor_id: '' });
+    const query: FacilityQuery = {
+      page: this.currentPage(),
+      size: this.pageSize(),
+      search,
+    };
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.facilityService.vendor.getFacilities(query)
+      .pipe(
+        finalize(() => this.isLoading.set(false)),
+        catchError((error) => {
+          this.errorMessage.set(error?.error?.message || error?.message || 'Unable to load facilities.');
+          this.facilities.set([]);
+          this.totalItems.set(0);
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+
+        this.facilities.set(response.data || []);
+        this.totalItems.set(response.meta?.total || 0);
+        this.meta = { ...response.meta };
+      });
+  }
+
+  openCreateModal(): void {
+    this.createForm.reset({ name: '', icon: null });
     this.createErrorMessage.set(null);
     this.isCreateModalOpen.set(true);
     this.iconPreview.set('');
   }
 
-  closeCreateModal() {
+  closeCreateModal(): void {
     this.isCreateModalOpen.set(false);
   }
 
-  openEditModal(facility: Facility) {
+  openEditModal(facility: Facility): void {
     this.selectedFacility.set(facility);
     this.editForm.reset({
       name: facility.name,
       icon: facility.icon_url || null,
-      vendor_id: facility.vendor_id || '',
     });
     this.editErrorMessage.set(null);
+    this.iconPreview.set(facility.icon_url ? this.assetUrl + facility.icon_url : '');
     this.isEditModalOpen.set(true);
-    this.iconPreview.set(this.assetUrl + (facility.icon_url || ''));
   }
 
-  closeEditModal() {
+  closeEditModal(): void {
     this.isEditModalOpen.set(false);
     this.selectedFacility.set(null);
     this.iconPreview.set('');
   }
 
-  openStatusModal(facility: Facility) {
+  openStatusModal(facility: Facility): void {
     this.facilityToToggleStatus.set(facility);
     this.statusErrorMessage.set(null);
     this.isStatusModalOpen.set(true);
   }
 
-  closeStatusModal() {
+  closeStatusModal(): void {
     this.isStatusModalOpen.set(false);
     this.facilityToToggleStatus.set(null);
   }
 
+  openDeleteModal(facility: Facility): void {
+    this.facilityToDelete.set(facility);
+    this.deleteErrorMessage.set(null);
+    this.isDeleteModalOpen.set(true);
+  }
 
-  onSubmitCreate() {
+  closeDeleteModal(): void {
+    this.isDeleteModalOpen.set(false);
+    this.facilityToDelete.set(null);
+  }
+
+  onSubmitCreate(): void {
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
       return;
@@ -205,18 +184,16 @@ export class FacilityManagement {
 
     this.isCreating.set(true);
     this.createErrorMessage.set(null);
+
     const formData = this.createForm.value;
     const payload = new FormData();
     payload.append('name', formData.name || '');
-    if (formData.vendor_id) {
-      payload.append('vendor_id', formData.vendor_id);
-    }
     if (formData.icon) {
       payload.append('icon', formData.icon as File);
     }
 
-    this.facilityService.admin.create(payload).subscribe({
-       next: (response) => {
+    this.facilityService.vendor.create(payload).subscribe({
+      next: () => {
         this.isCreating.set(false);
         this.closeCreateModal();
         this.loadFacilities();
@@ -226,10 +203,10 @@ export class FacilityManagement {
         const error = this.facilityService.extractApiErrorMessage(err);
         this.createErrorMessage.set(error || 'Failed to create facility');
       },
-    })
+    });
   }
 
-  submitEditForm() {
+  submitEditForm(): void {
     if (this.editForm.invalid) {
       this.editForm.markAllAsTouched();
       return;
@@ -246,29 +223,28 @@ export class FacilityManagement {
     const formData = this.editForm.value;
     const payload = new FormData();
     payload.append('name', formData.name || '');
-    if (formData.vendor_id) {
-      payload.append('vendor_id', formData.vendor_id);
-    }
     if (formData.icon instanceof File) {
       payload.append('icon', formData.icon);
     }
 
-    this.facilityService.admin.update(facility.id, payload).pipe(
-      finalize(() => this.isEditing.set(false)),
-      catchError((error) => {
-        this.editErrorMessage.set(error?.error?.message || error?.message || 'Unable to update facility.');
-        return of(null);
-      })
-    ).subscribe((response) => {
-      if (!response) {
-        return;
-      }
-      this.closeEditModal();
-      this.loadFacilities();
-    });
+    this.facilityService.vendor.update(facility.id, payload)
+      .pipe(
+        finalize(() => this.isEditing.set(false)),
+        catchError((error) => {
+          this.editErrorMessage.set(this.facilityService.extractApiErrorMessage(error) || 'Unable to update facility.');
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        this.closeEditModal();
+        this.loadFacilities();
+      });
   }
 
-  confirmStatusToggle() {
+  confirmStatusToggle(): void {
     const facility = this.facilityToToggleStatus();
     if (!facility) {
       return;
@@ -279,12 +255,12 @@ export class FacilityManagement {
     this.isUpdatingStatus.set(true);
     this.statusErrorMessage.set(null);
 
-    this.facilityService.admin.statusUpdate(facility.id, nextStatus)
+    this.facilityService.vendor.statusUpdate(facility.id, nextStatus)
       .pipe(
         finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {
           this.statusErrorMessage.set(
-            error?.error?.message || error?.message || `Unable to ${nextStatus === 'active' ? 'enable' : 'disable'} facility.`
+            this.facilityService.extractApiErrorMessage(error) || `Unable to ${nextStatus === 'active' ? 'enable' : 'disable'} facility.`
           );
           return of(null);
         })
@@ -298,14 +274,32 @@ export class FacilityManagement {
       });
   }
 
-  get nameControl() {
-    return this.createForm.get('name')!;
-  }
+  confirmDelete(): void {
+    const facility = this.facilityToDelete();
+    if (!facility) {
+      return;
+    }
 
- 
+    this.isDeleting.set(true);
+    this.deleteErrorMessage.set(null);
 
-  get iconControl() {
-    return this.createForm.get('icon')!;
+    this.facilityService.vendor.delete(facility.id)
+      .pipe(
+        finalize(() => this.isDeleting.set(false)),
+        catchError((error) => {
+          this.deleteErrorMessage.set(
+            this.facilityService.extractApiErrorMessage(error) || 'Unable to delete facility.'
+          );
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        this.closeDeleteModal();
+        this.loadFacilities();
+      });
   }
 
   get createNameControl() {
@@ -314,10 +308,6 @@ export class FacilityManagement {
 
   get editNameControl() {
     return this.editForm.get('name')!;
-  }
-
-  get editIconControl() {
-    return this.editForm.get('icon')!;
   }
 
   getStatusLabel(status: string): string {
@@ -336,14 +326,15 @@ export class FacilityManagement {
     return this.isInactive(facility) ? 'active' : 'inactive';
   }
 
-  onPageChange(page: number) {
+  onPageChange(page: number): void {
     this.currentPage.set(page);
     this.loadFacilities();
   }
 
   getSerialNumber(index: number): number {
     const currentPage = this.currentPage() || 1;
-    const itemsPerPage = this.meta?.size || 2;
+    const itemsPerPage = this.meta?.size || 10;
     return (currentPage - 1) * itemsPerPage + index + 1;
   }
 }
+

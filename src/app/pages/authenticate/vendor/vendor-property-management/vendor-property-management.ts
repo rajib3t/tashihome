@@ -9,6 +9,7 @@ import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { catchError, finalize, of } from 'rxjs';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
+import { PropertySetupStepsComponent } from '../../../../shared/components/property/property-setup-steps/property-setup-steps';
 
 @Component({
   selector: 'app-vendor-property-management',
@@ -20,6 +21,7 @@ import { Pagination } from '../../../../shared/components/ui/pagination/paginati
     Card,
     ReactiveFormsModule,
     Pagination,
+    PropertySetupStepsComponent,
   ],
   templateUrl: './vendor-property-management.html',
   styleUrl: './vendor-property-management.css',

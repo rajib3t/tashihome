@@ -1,30 +1,27 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, finalize, of, take } from 'rxjs';
+import { catchError, finalize, of } from 'rxjs';
 import { RoomType, RoomTypeQuery, RoomTypeSearch } from '../../../../services/room-type/room-type-model';
 import { RoomTypeService } from '../../../../services/room-type/room-type-service';
-import { UserService } from '../../../../services/user/user-service';
-import { User } from '../../../../services/user/user.model';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
 import { Card } from '../../../../shared/components/ui/card/card';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pagination/pagination';
 
 @Component({
-  selector: 'app-room-type-management',
+  selector: 'app-vendor-room-type-management',
+  standalone: true,
   imports: [CommonModule, PageBreadcrumb, Card, ReactiveFormsModule, Modal, Pagination],
   templateUrl: './room-type-management.html',
   styleUrl: './room-type-management.css',
 })
-export class RoomTypeManagement {
+export class VendorRoomTypeManagement {
   private readonly formBuilder = inject(FormBuilder);
   private readonly roomTypeService = inject(RoomTypeService);
-  private readonly userService = inject(UserService);
 
   meta!: PaginationMeta;
   readonly roomTypes = signal<RoomType[]>([]);
-  readonly vendors = signal<User[]>([]);
   readonly isLoading = signal(false);
   readonly errorMessage = signal('');
   readonly currentPage = signal(1);
@@ -42,20 +39,23 @@ export class RoomTypeManagement {
   statusErrorMessage = signal<string | null>(null);
   roomTypeToToggleStatus = signal<RoomType | null>(null);
 
+  isDeleteModalOpen = signal(false);
+  isDeleting = signal(false);
+  deleteErrorMessage = signal<string | null>(null);
+  roomTypeToDelete = signal<RoomType | null>(null);
+
   isCreateModalOpen = signal(false);
   isCreating = signal(false);
   createErrorMessage = signal<string | null>(null);
 
   readonly createForm = this.formBuilder.group({
     name: ['', [Validators.required]],
-    capacity: [0, [Validators.required, Validators.min(1)]],
-    vendor_id: [''],
+    capacity: [1, [Validators.required, Validators.min(1)]],
   });
 
   readonly editForm = this.formBuilder.group({
     name: ['', [Validators.required]],
-    capacity: [0, [Validators.required, Validators.min(1)]],
-    vendor_id: [''],
+    capacity: [1, [Validators.required, Validators.min(1)]],
   });
 
   readonly searchForm = this.formBuilder.group({
@@ -64,21 +64,7 @@ export class RoomTypeManagement {
   });
 
   ngOnInit(): void {
-    this.loadVendors();
     this.loadRoomTypes();
-  }
-
-  loadVendors(): void {
-    this.userService.getVendors({ page: 1, size: 100 }).pipe(take(1)).subscribe({
-      next: (response) => this.vendors.set(response.data || []),
-      error: () => this.vendors.set([]),
-    });
-  }
-
-  getVendorName(vendorId?: string | null): string {
-    if (!vendorId) return '';
-    const vendor = this.vendors().find((v) => v.id === vendorId);
-    return vendor ? (vendor.full_name || vendor.email) : 'Vendor';
   }
 
   onSearch(): void {
@@ -114,7 +100,7 @@ export class RoomTypeManagement {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.roomTypeService.admin.getRoomTypes(query)
+    this.roomTypeService.vendor.getRoomTypes(query)
       .pipe(
         finalize(() => this.isLoading.set(false)),
         catchError((error) => {
@@ -135,7 +121,7 @@ export class RoomTypeManagement {
   }
 
   openCreateModal(): void {
-    this.createForm.reset({ name: '', capacity: 0, vendor_id: '' });
+    this.createForm.reset({ name: '', capacity: 1 });
     this.createErrorMessage.set(null);
     this.isCreateModalOpen.set(true);
   }
@@ -149,7 +135,6 @@ export class RoomTypeManagement {
     this.editForm.reset({
       name: roomType.name,
       capacity: roomType.capacity,
-      vendor_id: roomType.vendor_id || '',
     });
     this.editErrorMessage.set(null);
     this.isEditModalOpen.set(true);
@@ -171,6 +156,17 @@ export class RoomTypeManagement {
     this.roomTypeToToggleStatus.set(null);
   }
 
+  openDeleteModal(roomType: RoomType): void {
+    this.roomTypeToDelete.set(roomType);
+    this.deleteErrorMessage.set(null);
+    this.isDeleteModalOpen.set(true);
+  }
+
+  closeDeleteModal(): void {
+    this.isDeleteModalOpen.set(false);
+    this.roomTypeToDelete.set(null);
+  }
+
   onSubmitCreate(): void {
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
@@ -182,10 +178,9 @@ export class RoomTypeManagement {
 
     const payload = this.createForm.getRawValue();
 
-    this.roomTypeService.admin.create({
+    this.roomTypeService.vendor.create({
       name: payload.name || '',
-      capacity: Number(payload.capacity) || 0,
-      vendor_id: payload.vendor_id || null,
+      capacity: Number(payload.capacity) || 1,
     }).subscribe({
       next: () => {
         this.isCreating.set(false);
@@ -215,10 +210,9 @@ export class RoomTypeManagement {
     this.editErrorMessage.set(null);
 
     const payload = this.editForm.getRawValue();
-    this.roomTypeService.admin.update(roomType.id, {
+    this.roomTypeService.vendor.update(roomType.id, {
       name: payload.name || '',
-      capacity: Number(payload.capacity) || 0,
-      vendor_id: payload.vendor_id || null,
+      capacity: Number(payload.capacity) || 1,
     })
       .pipe(
         finalize(() => this.isEditing.set(false)),
@@ -247,7 +241,7 @@ export class RoomTypeManagement {
     this.isUpdatingStatus.set(true);
     this.statusErrorMessage.set(null);
 
-    this.roomTypeService.admin.statusUpdate(roomType.id, nextStatus)
+    this.roomTypeService.vendor.statusUpdate(roomType.id, nextStatus)
       .pipe(
         finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {
@@ -262,6 +256,34 @@ export class RoomTypeManagement {
           return;
         }
         this.closeStatusModal();
+        this.loadRoomTypes();
+      });
+  }
+
+  confirmDelete(): void {
+    const roomType = this.roomTypeToDelete();
+    if (!roomType) {
+      return;
+    }
+
+    this.isDeleting.set(true);
+    this.deleteErrorMessage.set(null);
+
+    this.roomTypeService.vendor.delete(roomType.id)
+      .pipe(
+        finalize(() => this.isDeleting.set(false)),
+        catchError((error) => {
+          this.deleteErrorMessage.set(
+            this.roomTypeService.extractApiErrorMessage(error) || 'Unable to delete room type.'
+          );
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        this.closeDeleteModal();
         this.loadRoomTypes();
       });
   }
@@ -305,7 +327,8 @@ export class RoomTypeManagement {
 
   getSerialNumber(index: number): number {
     const currentPage = this.currentPage() || 1;
-    const itemsPerPage = this.meta?.size || 2;
+    const itemsPerPage = this.meta?.size || 10;
     return (currentPage - 1) * itemsPerPage + index + 1;
   }
 }
+

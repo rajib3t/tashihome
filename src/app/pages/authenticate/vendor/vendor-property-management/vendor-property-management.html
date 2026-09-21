@@ -79,6 +79,7 @@
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Type</th>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Location</th>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Price</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Setup Progress</th>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Actions</th>
             </tr>
@@ -86,13 +87,13 @@
           <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
             @if (isLoading()) {
               <tr>
-                <td colspan="7" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                <td colspan="8" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                   Loading properties...
                 </td>
               </tr>
             } @else if (properties().length === 0) {
               <tr>
-                <td colspan="7" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                <td colspan="8" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                   No properties found.
                 </td>
               </tr>
@@ -114,6 +115,14 @@
                     {{ formatCurrency(property.price_per_night ?? property.sale_per_night ?? 0) }}
                   </td>
                   <td class="px-4 py-3">
+                    <app-property-setup-steps
+                      [propertyId]="property.id"
+                      [compact]="true"
+                      [percentComplete]="property.percent_complete"
+                      [currentStep]="property.current_step"
+                    ></app-property-setup-steps>
+                  </td>
+                  <td class="px-4 py-3">
                     <span [class]="getStatusClass(property.status)" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold">
                       {{ statusLabel(property.status) }}
                     </span>
@@ -121,7 +130,7 @@
                   <td class="px-4 py-3">
                     <button
                       type="button"
-                      class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
+                      class="cursor-pointer rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200"
                       (click)="navigateToEdit(property)"
                     >
                       Edit

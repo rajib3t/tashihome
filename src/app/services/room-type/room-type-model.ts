@@ -3,6 +3,8 @@ export interface RoomType {
   name: string;
   capacity: number;
   status: string;
+  is_global: boolean;
+  vendor_id?: string | null;
 }
 
 export interface RoomTypeSearch {
@@ -16,9 +18,13 @@ export interface RoomTypeQuery {
   search?: RoomTypeSearch;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  scope?: 'global' | 'vendor' | 'vendor_combined' | 'all' | string;
+  vendor_id?: string;
 }
 
 export interface RoomTypeRequest {
   name: string;
   capacity: number;
+  vendor_id?: string | null;
 }
+

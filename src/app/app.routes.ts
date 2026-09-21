@@ -542,6 +542,36 @@ export const routes: Routes = [
                         path: 'agreement',
                         redirectTo: 'agreements',
                         pathMatch: 'full'
+                    },
+                    {
+                        path: 'amenity-management',
+                        loadComponent: () => import('./pages/authenticate/vendor/amenity-management/amenity-management').then((m) => m.VendorAmenityManagement),
+                        title: 'Vendor Amenity Management'
+                    },
+                    {
+                        path: 'amenities',
+                        redirectTo: 'amenity-management',
+                        pathMatch: 'full'
+                    },
+                    {
+                        path: 'facility-management',
+                        loadComponent: () => import('./pages/authenticate/vendor/facility-management/facility-management').then((m) => m.VendorFacilityManagement),
+                        title: 'Vendor Facility Management'
+                    },
+                    {
+                        path: 'facilities',
+                        redirectTo: 'facility-management',
+                        pathMatch: 'full'
+                    },
+                    {
+                        path: 'room-type-management',
+                        loadComponent: () => import('./pages/authenticate/vendor/room-type-management/room-type-management').then((m) => m.VendorRoomTypeManagement),
+                        title: 'Vendor Room Type Management'
+                    },
+                    {
+                        path: 'room-types',
+                        redirectTo: 'room-type-management',
+                        pathMatch: 'full'
                     }
                 ]
             },

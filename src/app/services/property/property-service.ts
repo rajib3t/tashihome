@@ -12,6 +12,7 @@ import {
   PropertyData,
   PropertyPublicSearchParams
 } from './property.model';
+import { PropertySetupSteps } from './property-setup-steps.model';
 
 function buildPropertyQueryParams(query?: PropertyQuery): Record<string, string | number | boolean> {
   const search = query?.search ?? {};
@@ -190,6 +191,13 @@ export class PropertyService {
       return this.apiService.protectedDelete<void>(`/admin/properties/${propertyId}/assets/${assetId}`).pipe(
         catchError(this.apiService.passthroughError)
       );
+    },
+
+    getSetupSteps: (propertyId: string): Observable<ApiResponse<PropertySetupSteps>> => {
+      return this.apiService.protectedGet<ApiResponse<PropertySetupSteps>>(`/admin/properties/${propertyId}/setup-steps`).pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
     }
   };
 
@@ -233,6 +241,13 @@ export class PropertyService {
 
     deleteAsset: (propertyId: string, assetId: string): Observable<ApiResponse<void>> => {
       return this.apiService.protectedDelete<void>(`/vendor/properties/${propertyId}/assets/${assetId}`).pipe(
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    getSetupSteps: (propertyId: string): Observable<ApiResponse<PropertySetupSteps>> => {
+      return this.apiService.protectedGet<ApiResponse<PropertySetupSteps>>(`/vendor/properties/${propertyId}/setup-steps`).pipe(
+        map((res) => res.data),
         catchError(this.apiService.passthroughError)
       );
     }

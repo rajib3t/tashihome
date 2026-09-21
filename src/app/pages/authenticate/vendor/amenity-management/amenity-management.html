@@ -1,7 +1,7 @@
-<app-page-breadcrumb pageTitle="Amenity Management" homelink="/admin"></app-page-breadcrumb>
+<app-page-breadcrumb pageTitle="Amenity Management" homelink="/vendor"></app-page-breadcrumb>
 
 <div class="space-y-6">
-  <app-card title="Amenity List" desc="Manage amenities using search, edit, and status actions.">
+  <app-card title="Amenity List" desc="Manage custom amenities and view global amenities available for your properties.">
     <div class="mb-4 flex justify-end">
       <button
         class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
@@ -35,12 +35,12 @@
       </label>
 
       <div class="flex items-end gap-2">
-        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90">
+        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90 cursor-pointer">
           Search
         </button>
         <button
           type="button"
-          class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200"
+          class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200 cursor-pointer"
           (click)="onReset()"
         >
           Reset
@@ -61,8 +61,8 @@
             <tr>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">SL</th>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Name</th>
-              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Scope</th>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Icon</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Scope</th>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
               <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Actions</th>
             </tr>
@@ -80,20 +80,24 @@
               @for (amenity of amenities(); track amenity.id; let i = $index) {
                 <tr>
                   <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ getSerialNumber(i) }}</td>
-                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ amenity.name }}</td>
+                  <td class="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{{ amenity.name }}</td>
                   <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
-                    @if (amenity.is_global) {
-                      <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
-                        Global
-                      </span>
+                    @if (amenity.icon_url) {
+                      <img [src]="assetUrl + amenity.icon_url" [alt]="amenity.name" class="h-10 w-10 rounded-full object-cover" />
                     } @else {
-                      <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" [title]="amenity.vendor_id || ''">
-                        Vendor: {{ getVendorName(amenity.vendor_id) }}
-                      </span>
+                      <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">N/A</span>
                     }
                   </td>
                   <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
-                    <img [src]="assetUrl + amenity.icon_url" [alt]="amenity.name" class="h-10 w-10 rounded-full object-cover" />
+                    @if (amenity.is_global) {
+                      <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
+                        Global
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                        My Custom
+                      </span>
+                    }
                   </td>
                   <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
                     <span
@@ -111,30 +115,41 @@
                     </span>
                   </td>
                   <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
-                    <div class="flex items-center gap-2">
-                      <button type="button" (click)="openEditModal(amenity)" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200">
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        (click)="openStatusModal(amenity)"
-                        [class.border-red-200]="amenity.status !== 'inactive'"
-                        [class.text-red-600]="amenity.status !== 'inactive'"
-                        [class.hover:bg-red-50]="amenity.status !== 'inactive'"
-                        [class.dark:border-red-900/50]="amenity.status !== 'inactive'"
-                        [class.dark:text-red-400]="amenity.status !== 'inactive'"
-                        [class.dark:hover:bg-red-900/20]="amenity.status !== 'inactive'"
-                        [class.border-emerald-200]="amenity.status === 'inactive'"
-                        [class.text-emerald-600]="amenity.status === 'inactive'"
-                        [class.hover:bg-emerald-50]="amenity.status === 'inactive'"
-                        [class.dark:border-emerald-900/50]="amenity.status === 'inactive'"
-                        [class.dark:text-emerald-400]="amenity.status === 'inactive'"
-                        [class.dark:hover:bg-emerald-900/20]="amenity.status === 'inactive'"
-                        class="rounded-lg border px-3 py-1.5 text-xs font-medium transition"
-                      >
-                        {{ getDisableActionLabel(amenity) }}
-                      </button>
-                    </div>
+                    @if (amenity.is_global) {
+                      <span class="text-xs text-slate-400 dark:text-slate-500 italic">Read-only (Global)</span>
+                    } @else {
+                      <div class="flex items-center gap-2">
+                        <button type="button" (click)="openEditModal(amenity)" class="cursor-pointer rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200">
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          (click)="openStatusModal(amenity)"
+                          [class.border-red-200]="amenity.status !== 'inactive'"
+                          [class.text-red-600]="amenity.status !== 'inactive'"
+                          [class.hover:bg-red-50]="amenity.status !== 'inactive'"
+                          [class.dark:border-red-900/50]="amenity.status !== 'inactive'"
+                          [class.dark:text-red-400]="amenity.status !== 'inactive'"
+                          [class.dark:hover:bg-red-900/20]="amenity.status !== 'inactive'"
+                          [class.border-emerald-200]="amenity.status === 'inactive'"
+                          [class.text-emerald-600]="amenity.status === 'inactive'"
+                          [class.hover:bg-emerald-50]="amenity.status === 'inactive'"
+                          [class.dark:border-emerald-900/50]="amenity.status === 'inactive'"
+                          [class.dark:text-emerald-400]="amenity.status === 'inactive'"
+                          [class.dark:hover:bg-emerald-900/20]="amenity.status === 'inactive'"
+                          class="cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition"
+                        >
+                          {{ getDisableActionLabel(amenity) }}
+                        </button>
+                        <button
+                          type="button"
+                          (click)="openDeleteModal(amenity)"
+                          class="cursor-pointer rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    }
                   </td>
                 </tr>
               }
@@ -154,10 +169,11 @@
     </div>
   </app-card>
 
+  <!-- Create Modal -->
   <app-modal [isOpen]="isCreateModalOpen()" (close)="closeCreateModal()" className="max-w-[700px] m-4">
     <div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
       <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Add Amenity</h2>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Create Custom Amenity</h2>
       </div>
       <div class="px-6 py-4">
         @if (createErrorMessage()) {
@@ -171,31 +187,23 @@
             <input id="name" type="text" formControlName="name" [class.border-red-500]="createNameControl.invalid && createNameControl.touched" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
           </div>
           <div class="mb-4">
-            <label for="createVendor" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Scope / Vendor</label>
-            <select id="createVendor" formControlName="vendor_id" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-              <option value="">Global (All Vendors)</option>
-              @for (vendor of vendors(); track vendor.id) {
-                <option [value]="vendor.id">{{ vendor.full_name || vendor.email }}</option>
-              }
-            </select>
-          </div>
-          <div class="mb-4">
             <label for="icon" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Icon</label>
             <app-upload-image [id]="'icon'" [name]="'icon'" [preview]="iconPreview()" buttonText="Upload Icon" emptyText="No Icon" (previewChange)="iconPreview.set($event)" (valueChange)="createForm.controls.icon.setValue($event)"></app-upload-image>
           </div>
           <div class="flex items-center justify-end gap-3">
-            <button type="button" (click)="closeCreateModal()" class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
-            <button type="submit" [disabled]="isCreating() || createForm.invalid" class="inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">{{ isCreating() ? 'Creating...' : 'Create' }}</button>
+            <button type="button" (click)="closeCreateModal()" class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+            <button type="submit" [disabled]="isCreating() || createForm.invalid" class="cursor-pointer inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">{{ isCreating() ? 'Creating...' : 'Create' }}</button>
           </div>
         </form>
       </div>
     </div>
   </app-modal>
 
+  <!-- Edit Modal -->
   <app-modal [isOpen]="isEditModalOpen()" (close)="closeEditModal()" className="max-w-[700px] m-4">
     <div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
       <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Edit Amenity</h2>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Edit Custom Amenity</h2>
       </div>
       <div class="px-6 py-4">
         @if (editErrorMessage()) {
@@ -207,27 +215,19 @@
             <input id="editName" type="text" formControlName="name" [class.border-red-500]="editNameControl.invalid && editNameControl.touched" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
           </div>
           <div class="mb-4">
-            <label for="editVendor" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Scope / Vendor</label>
-            <select id="editVendor" formControlName="vendor_id" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-              <option value="">Global (All Vendors)</option>
-              @for (vendor of vendors(); track vendor.id) {
-                <option [value]="vendor.id">{{ vendor.full_name || vendor.email }}</option>
-              }
-            </select>
-          </div>
-          <div class="mb-4">
             <label for="editIcon" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Icon</label>
             <app-upload-image [id]="'editIcon'" [name]="'editIcon'" [preview]="iconPreview()" buttonText="Upload Icon" emptyText="No Icon" (previewChange)="iconPreview.set($event)" (valueChange)="editForm.controls.icon.setValue($event)"></app-upload-image>
           </div>
           <div class="flex items-center justify-end gap-3">
-            <button type="button" (click)="closeEditModal()" class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
-            <button type="submit" [disabled]="isEditing() || editForm.invalid" class="inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">{{ isEditing() ? 'Updating...' : 'Update' }}</button>
+            <button type="button" (click)="closeEditModal()" class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+            <button type="submit" [disabled]="isEditing() || editForm.invalid" class="cursor-pointer inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">{{ isEditing() ? 'Updating...' : 'Update' }}</button>
           </div>
         </form>
       </div>
     </div>
   </app-modal>
 
+  <!-- Status Modal -->
   <app-modal [isOpen]="isStatusModalOpen()" (close)="closeStatusModal()" className="max-w-[520px] m-4">
     <div class="relative w-full max-w-[520px] rounded-3xl bg-white p-6 dark:bg-gray-900">
       <h2 class="text-xl font-bold text-gray-900 dark:text-white">Change Status</h2>
@@ -236,15 +236,35 @@
         <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">{{ statusErrorMessage() }}</div>
       }
       <div class="mt-6 flex justify-end gap-3">
-        <button type="button" (click)="closeStatusModal()" class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+        <button type="button" (click)="closeStatusModal()" class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
         <button type="button" (click)="confirmStatusToggle()" [disabled]="isUpdatingStatus()"
-                    (click)="confirmStatusToggle()"
-                    [class.bg-red-600]="!isInactive(amenityToToggleStatus())"
-                    [class.hover:bg-red-700]="!isInactive(amenityToToggleStatus())"
-                    [class.bg-emerald-600]="isInactive(amenityToToggleStatus())"
-                    [class.hover:bg-emerald-700]="isInactive(amenityToToggleStatus())"
-                    class="rounded-lg px-4 py-2 text-white transition-colors disabled:opacity-50">{{ isUpdatingStatus() ? (isInactive(amenityToToggleStatus()) ? 'Enabling...' : 'Disabling...') : (isInactive(amenityToToggleStatus()) ? 'Enable' : 'Disable') }}</button>
+          [class.bg-red-600]="!isInactive(amenityToToggleStatus())"
+          [class.hover:bg-red-700]="!isInactive(amenityToToggleStatus())"
+          [class.bg-emerald-600]="isInactive(amenityToToggleStatus())"
+          [class.hover:bg-emerald-700]="isInactive(amenityToToggleStatus())"
+          class="cursor-pointer rounded-lg px-4 py-2 text-white transition-colors disabled:opacity-50">{{ isUpdatingStatus() ? (isInactive(amenityToToggleStatus()) ? 'Enabling...' : 'Disabling...') : (isInactive(amenityToToggleStatus()) ? 'Enable' : 'Disable') }}</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Delete Modal -->
+  <app-modal [isOpen]="isDeleteModalOpen()" (close)="closeDeleteModal()" className="max-w-[520px] m-4">
+    <div class="relative w-full max-w-[520px] rounded-3xl bg-white p-6 dark:bg-gray-900">
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">Delete Amenity</h2>
+      <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+        Are you sure you want to delete <span class="font-semibold text-slate-800 dark:text-slate-100">{{ amenityToDelete()?.name }}</span>? This action cannot be undone.
+      </p>
+      @if (deleteErrorMessage()) {
+        <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">{{ deleteErrorMessage() }}</div>
+      }
+      <div class="mt-6 flex justify-end gap-3">
+        <button type="button" (click)="closeDeleteModal()" class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+        <button type="button" (click)="confirmDelete()" [disabled]="isDeleting()"
+          class="cursor-pointer rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition-colors disabled:opacity-50">
+          {{ isDeleting() ? 'Deleting...' : 'Delete' }}
+        </button>
       </div>
     </div>
   </app-modal>
 </div>
+

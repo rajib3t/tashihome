@@ -1,0 +1,270 @@
+<app-page-breadcrumb pageTitle="Facility Management" homelink="/vendor"></app-page-breadcrumb>
+
+<div class="space-y-6">
+  <app-card title="Facility List" desc="Manage custom facilities and view global facilities available for your properties.">
+    <div class="mb-4 flex justify-end">
+      <button
+        class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+        (click)="openCreateModal()"
+      >
+        <span>+ Create Facility</span>
+      </button>
+    </div>
+
+    <form [formGroup]="searchForm" class="grid gap-4 lg:grid-cols-3" (ngSubmit)="onSearch()">
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <span class="mb-2 block">Name</span>
+        <input
+          type="text"
+          formControlName="name"
+          placeholder="Search by name"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        />
+      </label>
+
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <span class="mb-2 block">Status</span>
+        <select
+          formControlName="status"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        >
+          <option value="">All status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </label>
+
+      <div class="flex items-end gap-2">
+        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90 cursor-pointer">
+          Search
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200 cursor-pointer"
+          (click)="onReset()"
+        >
+          Reset
+        </button>
+      </div>
+    </form>
+
+    @if (errorMessage()) {
+      <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+          <thead class="bg-slate-50 dark:bg-slate-900/80">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">SL</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Name</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Icon</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Scope</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+            @if (isLoading()) {
+              <tr>
+                <td colspan="6" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">Loading facilities...</td>
+              </tr>
+            } @else if (facilities().length === 0) {
+              <tr>
+                <td colspan="6" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">No facilities found.</td>
+              </tr>
+            } @else {
+              @for (facility of facilities(); track facility.id; let i = $index) {
+                <tr>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">{{ getSerialNumber(i) }}</td>
+                  <td class="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{{ facility.name }}</td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                    @if (facility.icon_url) {
+                      <img [src]="assetUrl + facility.icon_url" [alt]="facility.name" class="h-10 w-10 rounded-full object-cover" />
+                    } @else {
+                      <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">N/A</span>
+                    }
+                  </td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                    @if (facility.is_global) {
+                      <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
+                        Global
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                        My Custom
+                      </span>
+                    }
+                  </td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                    <span
+                      [class.bg-emerald-50]="facility.status !== 'inactive'"
+                      [class.text-emerald-700]="facility.status !== 'inactive'"
+                      [class.dark:bg-emerald-500/15]="facility.status !== 'inactive'"
+                      [class.dark:text-emerald-300]="facility.status !== 'inactive'"
+                      [class.bg-rose-50]="facility.status === 'inactive'"
+                      [class.text-rose-700]="facility.status === 'inactive'"
+                      [class.dark:bg-rose-500/15]="facility.status === 'inactive'"
+                      [class.dark:text-rose-300]="facility.status === 'inactive'"
+                      class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                    >
+                      {{ getStatusLabel(facility.status) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                    @if (facility.is_global) {
+                      <span class="text-xs text-slate-400 dark:text-slate-500 italic">Read-only (Global)</span>
+                    } @else {
+                      <div class="flex items-center gap-2">
+                        <button type="button" (click)="openEditModal(facility)" class="cursor-pointer rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200">
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          (click)="openStatusModal(facility)"
+                          [class.border-red-200]="facility.status !== 'inactive'"
+                          [class.text-red-600]="facility.status !== 'inactive'"
+                          [class.hover:bg-red-50]="facility.status !== 'inactive'"
+                          [class.dark:border-red-900/50]="facility.status !== 'inactive'"
+                          [class.dark:text-red-400]="facility.status !== 'inactive'"
+                          [class.dark:hover:bg-red-900/20]="facility.status !== 'inactive'"
+                          [class.border-emerald-200]="facility.status === 'inactive'"
+                          [class.text-emerald-600]="facility.status === 'inactive'"
+                          [class.hover:bg-emerald-50]="facility.status === 'inactive'"
+                          [class.dark:border-emerald-900/50]="facility.status === 'inactive'"
+                          [class.dark:text-emerald-400]="facility.status === 'inactive'"
+                          [class.dark:hover:bg-emerald-900/20]="facility.status === 'inactive'"
+                          class="cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition"
+                        >
+                          {{ getDisableActionLabel(facility) }}
+                        </button>
+                        <button
+                          type="button"
+                          (click)="openDeleteModal(facility)"
+                          class="cursor-pointer rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <app-pagination
+        [meta]="meta"
+        (pageChange)="onPageChange($event)"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </div>
+  </app-card>
+
+  <!-- Create Modal -->
+  <app-modal [isOpen]="isCreateModalOpen()" (close)="closeCreateModal()" className="max-w-[700px] m-4">
+    <div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+      <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Create Custom Facility</h2>
+      </div>
+      <div class="px-6 py-4">
+        @if (createErrorMessage()) {
+          <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+            {{ createErrorMessage() }}
+          </div>
+        }
+        <form [formGroup]="createForm" (ngSubmit)="onSubmitCreate()" novalidate>
+          <div class="mb-4">
+            <label for="name" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+            <input id="name" type="text" formControlName="name" [class.border-red-500]="createNameControl.invalid && createNameControl.touched" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+          </div>
+          <div class="mb-4">
+            <label for="icon" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Icon</label>
+            <app-upload-image [id]="'icon'" [name]="'icon'" [preview]="iconPreview()" buttonText="Upload Icon" emptyText="No Icon" (previewChange)="iconPreview.set($event)" (valueChange)="createForm.controls.icon.setValue($event)"></app-upload-image>
+          </div>
+          <div class="flex items-center justify-end gap-3">
+            <button type="button" (click)="closeCreateModal()" class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+            <button type="submit" [disabled]="isCreating() || createForm.invalid" class="cursor-pointer inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">{{ isCreating() ? 'Creating...' : 'Create' }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Edit Modal -->
+  <app-modal [isOpen]="isEditModalOpen()" (close)="closeEditModal()" className="max-w-[700px] m-4">
+    <div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+      <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Edit Custom Facility</h2>
+      </div>
+      <div class="px-6 py-4">
+        @if (editErrorMessage()) {
+          <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">{{ editErrorMessage() }}</div>
+        }
+        <form [formGroup]="editForm" (ngSubmit)="submitEditForm()" novalidate>
+          <div class="mb-4">
+            <label for="editName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+            <input id="editName" type="text" formControlName="name" [class.border-red-500]="editNameControl.invalid && editNameControl.touched" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+          </div>
+          <div class="mb-4">
+            <label for="editIcon" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Icon</label>
+            <app-upload-image [id]="'editIcon'" [name]="'editIcon'" [preview]="iconPreview()" buttonText="Upload Icon" emptyText="No Icon" (previewChange)="iconPreview.set($event)" (valueChange)="editForm.controls.icon.setValue($event)"></app-upload-image>
+          </div>
+          <div class="flex items-center justify-end gap-3">
+            <button type="button" (click)="closeEditModal()" class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+            <button type="submit" [disabled]="isEditing() || editForm.invalid" class="cursor-pointer inline-flex items-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">{{ isEditing() ? 'Updating...' : 'Update' }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Status Modal -->
+  <app-modal [isOpen]="isStatusModalOpen()" (close)="closeStatusModal()" className="max-w-[520px] m-4">
+    <div class="relative w-full max-w-[520px] rounded-3xl bg-white p-6 dark:bg-gray-900">
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">Change Status</h2>
+      <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">Are you sure you want to {{ getDisableActionLabel(facilityToToggleStatus()).toLowerCase() }} this facility?</p>
+      @if (statusErrorMessage()) {
+        <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">{{ statusErrorMessage() }}</div>
+      }
+      <div class="mt-6 flex justify-end gap-3">
+        <button type="button" (click)="closeStatusModal()" class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+        <button type="button" (click)="confirmStatusToggle()" [disabled]="isUpdatingStatus()"
+          [class.bg-red-600]="!isInactive(facilityToToggleStatus())"
+          [class.hover:bg-red-700]="!isInactive(facilityToToggleStatus())"
+          [class.bg-emerald-600]="isInactive(facilityToToggleStatus())"
+          [class.hover:bg-emerald-700]="isInactive(facilityToToggleStatus())"
+          class="cursor-pointer rounded-lg px-4 py-2 text-white transition-colors disabled:opacity-50">{{ isUpdatingStatus() ? (isInactive(facilityToToggleStatus()) ? 'Enabling...' : 'Disabling...') : (isInactive(facilityToToggleStatus()) ? 'Enable' : 'Disable') }}</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Delete Modal -->
+  <app-modal [isOpen]="isDeleteModalOpen()" (close)="closeDeleteModal()" className="max-w-[520px] m-4">
+    <div class="relative w-full max-w-[520px] rounded-3xl bg-white p-6 dark:bg-gray-900">
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">Delete Facility</h2>
+      <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+        Are you sure you want to delete <span class="font-semibold text-slate-800 dark:text-slate-100">{{ facilityToDelete()?.name }}</span>? This action cannot be undone.
+      </p>
+      @if (deleteErrorMessage()) {
+        <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">{{ deleteErrorMessage() }}</div>
+      }
+      <div class="mt-6 flex justify-end gap-3">
+        <button type="button" (click)="closeDeleteModal()" class="cursor-pointer inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+        <button type="button" (click)="confirmDelete()" [disabled]="isDeleting()"
+          class="cursor-pointer rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition-colors disabled:opacity-50">
+          {{ isDeleting() ? 'Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </app-modal>
+</div>
+

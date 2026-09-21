@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, finalize, of, take } from 'rxjs';
+import { catchError, finalize, of } from 'rxjs';
 import { Amenity, AmenityQuery, AmenitySearch } from '../../../../services/amenity/amenity-model';
 import { AmenityService } from '../../../../services/amenity/amenity-service';
-import { UserService } from '../../../../services/user/user-service';
-import { User } from '../../../../services/user/user.model';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
 import { UploadImage } from '../../../../shared/components/common/upload-image/upload-image';
 import { Card } from '../../../../shared/components/ui/card/card';
@@ -14,20 +12,19 @@ import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pag
 import { environment } from '../../../../../environments/environment';
 
 @Component({
-  selector: 'app-amenity-management',
+  selector: 'app-vendor-amenity-management',
+  standalone: true,
   imports: [CommonModule, PageBreadcrumb, Card, ReactiveFormsModule, Modal, UploadImage, Pagination],
   templateUrl: './amenity-management.html',
   styleUrl: './amenity-management.css',
 })
-export class AmenityManagement {
+export class VendorAmenityManagement {
   public readonly assetUrl = environment.assetUrl;
   private readonly formBuilder = inject(FormBuilder);
   private readonly amenityService = inject(AmenityService);
-  private readonly userService = inject(UserService);
 
   meta!: PaginationMeta;
   readonly amenities = signal<Amenity[]>([]);
-  readonly vendors = signal<User[]>([]);
   readonly isLoading = signal(false);
   readonly errorMessage = signal('');
   readonly currentPage = signal(1);
@@ -45,6 +42,11 @@ export class AmenityManagement {
   statusErrorMessage = signal<string | null>(null);
   amenityToToggleStatus = signal<Amenity | null>(null);
 
+  isDeleteModalOpen = signal<boolean>(false);
+  isDeleting = signal(false);
+  deleteErrorMessage = signal<string | null>(null);
+  amenityToDelete = signal<Amenity | null>(null);
+
   isCreateModalOpen = signal<boolean>(false);
   isCreating = signal(false);
   createErrorMessage = signal<string | null>(null);
@@ -54,13 +56,11 @@ export class AmenityManagement {
   readonly createForm = this.formBuilder.group({
     name: ['', [Validators.required]],
     icon: [null as File | string | null],
-    vendor_id: [''],
   });
 
   readonly editForm = this.formBuilder.group({
     name: ['', [Validators.required]],
     icon: [null as File | string | null],
-    vendor_id: [''],
   });
 
   readonly searchForm = this.formBuilder.group({
@@ -69,21 +69,7 @@ export class AmenityManagement {
   });
 
   ngOnInit(): void {
-    this.loadVendors();
     this.loadAmenities();
-  }
-
-  loadVendors(): void {
-    this.userService.getVendors({ page: 1, size: 100 }).pipe(take(1)).subscribe({
-      next: (response) => this.vendors.set(response.data || []),
-      error: () => this.vendors.set([]),
-    });
-  }
-
-  getVendorName(vendorId?: string | null): string {
-    if (!vendorId) return '';
-    const vendor = this.vendors().find((v) => v.id === vendorId);
-    return vendor ? (vendor.full_name || vendor.email) : 'Vendor';
   }
 
   onSearch(): void {
@@ -119,7 +105,7 @@ export class AmenityManagement {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.amenityService.admin.getAmenities(query)
+    this.amenityService.vendor.getAmenities(query)
       .pipe(
         finalize(() => this.isLoading.set(false)),
         catchError((error) => {
@@ -141,7 +127,7 @@ export class AmenityManagement {
   }
 
   openCreateModal(): void {
-    this.createForm.reset({ name: '', icon: null, vendor_id: '' });
+    this.createForm.reset({ name: '', icon: null });
     this.createErrorMessage.set(null);
     this.isCreateModalOpen.set(true);
     this.iconPreview.set('');
@@ -156,10 +142,9 @@ export class AmenityManagement {
     this.editForm.reset({
       name: amenity.name,
       icon: amenity.icon_url || null,
-      vendor_id: amenity.vendor_id || '',
     });
     this.editErrorMessage.set(null);
-    this.iconPreview.set(this.assetUrl + (amenity.icon_url || ''));
+    this.iconPreview.set(amenity.icon_url ? this.assetUrl + amenity.icon_url : '');
     this.isEditModalOpen.set(true);
   }
 
@@ -180,6 +165,17 @@ export class AmenityManagement {
     this.amenityToToggleStatus.set(null);
   }
 
+  openDeleteModal(amenity: Amenity): void {
+    this.amenityToDelete.set(amenity);
+    this.deleteErrorMessage.set(null);
+    this.isDeleteModalOpen.set(true);
+  }
+
+  closeDeleteModal(): void {
+    this.isDeleteModalOpen.set(false);
+    this.amenityToDelete.set(null);
+  }
+
   onSubmitCreate(): void {
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
@@ -192,14 +188,11 @@ export class AmenityManagement {
     const formData = this.createForm.value;
     const payload = new FormData();
     payload.append('name', formData.name || '');
-    if (formData.vendor_id) {
-      payload.append('vendor_id', formData.vendor_id);
-    }
     if (formData.icon) {
       payload.append('icon', formData.icon as File);
     }
 
-    this.amenityService.admin.create(payload).subscribe({
+    this.amenityService.vendor.create(payload).subscribe({
       next: () => {
         this.isCreating.set(false);
         this.closeCreateModal();
@@ -230,14 +223,11 @@ export class AmenityManagement {
     const formData = this.editForm.value;
     const payload = new FormData();
     payload.append('name', formData.name || '');
-    if (formData.vendor_id) {
-      payload.append('vendor_id', formData.vendor_id);
-    }
     if (formData.icon instanceof File) {
       payload.append('icon', formData.icon);
     }
 
-    this.amenityService.admin.update(amenity.id, payload)
+    this.amenityService.vendor.update(amenity.id, payload)
       .pipe(
         finalize(() => this.isEditing.set(false)),
         catchError((error) => {
@@ -265,7 +255,7 @@ export class AmenityManagement {
     this.isUpdatingStatus.set(true);
     this.statusErrorMessage.set(null);
 
-    this.amenityService.admin.statusUpdate(amenity.id, nextStatus)
+    this.amenityService.vendor.statusUpdate(amenity.id, nextStatus)
       .pipe(
         finalize(() => this.isUpdatingStatus.set(false)),
         catchError((error) => {
@@ -280,6 +270,34 @@ export class AmenityManagement {
           return;
         }
         this.closeStatusModal();
+        this.loadAmenities();
+      });
+  }
+
+  confirmDelete(): void {
+    const amenity = this.amenityToDelete();
+    if (!amenity) {
+      return;
+    }
+
+    this.isDeleting.set(true);
+    this.deleteErrorMessage.set(null);
+
+    this.amenityService.vendor.delete(amenity.id)
+      .pipe(
+        finalize(() => this.isDeleting.set(false)),
+        catchError((error) => {
+          this.deleteErrorMessage.set(
+            this.amenityService.extractApiErrorMessage(error) || 'Unable to delete amenity.'
+          );
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (!response) {
+          return;
+        }
+        this.closeDeleteModal();
         this.loadAmenities();
       });
   }
@@ -315,7 +333,8 @@ export class AmenityManagement {
 
   getSerialNumber(index: number): number {
     const currentPage = this.currentPage() || 1;
-    const itemsPerPage = this.meta?.size || 2;
+    const itemsPerPage = this.meta?.size || 10;
     return (currentPage - 1) * itemsPerPage + index + 1;
   }
 }
+

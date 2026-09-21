@@ -159,9 +159,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
   ngOnInit(): void {
     this.loadVendors();
     this.loadCities();
-    this.loadAmenities();
-    this.loadFacilities();
-    this.loadRoomTypes();
+    this.loadAttributesForVendor(null);
     this.loadGoogleMapsScript();
 
     this.propertyForm.get('city_id')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((cityId) => {
@@ -289,8 +287,11 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
   onVendorSearchChange(term: string): void {
     this.vendorSearchTerm.set(term);
     this.isVendorDropdownOpen.set(true);
-    this.propertyForm.get('vendor_id')?.setValue('');
-    this.selectedVendorLabel.set('');
+    if (this.propertyForm.get('vendor_id')?.value) {
+      this.propertyForm.get('vendor_id')?.setValue('');
+      this.selectedVendorLabel.set('');
+      this.loadAttributesForVendor(null);
+    }
   }
 
   openVendorDropdown(): void {
@@ -302,6 +303,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     this.vendorSearchTerm.set(vendor.full_name);
     this.selectedVendorLabel.set(`${vendor.full_name} - ${vendor.email}`);
     this.isVendorDropdownOpen.set(false);
+    this.loadAttributesForVendor(vendor.id);
   }
 
   clearVendorSelection(): void {
@@ -309,6 +311,7 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     this.vendorSearchTerm.set('');
     this.selectedVendorLabel.set('');
     this.isVendorDropdownOpen.set(false);
+    this.loadAttributesForVendor(null);
   }
 
   onCitySearchChange(term: string): void {
@@ -901,7 +904,11 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
       next: (response) => {
         const property = response.data;
         this.propertyId = property.id;
-      this.patchPropertyForm(property);
+        const vendorId = property.vendor?.id ?? (property as any).vendor_id;
+        if (vendorId) {
+          this.loadAttributesForVendor(vendorId);
+        }
+        this.patchPropertyForm(property);
       },
       error: () => this.router.navigate(['/admin/property-management']),
     });
@@ -1285,25 +1292,85 @@ export class EditProperty implements AfterViewChecked, OnDestroy {
     });
   }
 
-  private loadAmenities(): void {
-    this.amenityService.admin.getAmenities({ page: 1, size: 100 }).pipe(take(1)).subscribe({
-      next: (response) => this.amenities.set(response.data),
+  private loadAttributesForVendor(vendorId?: string | null): void {
+    this.loadAmenities(vendorId);
+    this.loadFacilities(vendorId);
+    this.loadRoomTypes(vendorId);
+  }
+
+  private loadAmenities(vendorId?: string | null): void {
+    const params = vendorId
+      ? { page: 1, size: 100, scope: 'vendor_combined', vendor_id: vendorId }
+      : { page: 1, size: 100, scope: 'global' };
+
+    this.amenityService.admin.getAmenities(params).pipe(take(1)).subscribe({
+      next: (response) => {
+        const items = response.data ?? [];
+        this.amenities.set(items);
+        this.pruneSelectedAmenities(items);
+      },
       error: () => this.amenities.set([]),
     });
   }
 
-  private loadFacilities(): void {
-    this.facilityService.admin.getFacilities({ page: 1, size: 100 }).pipe(take(1)).subscribe({
-      next: (response) => this.facilities.set(response.data),
+  private loadFacilities(vendorId?: string | null): void {
+    const params = vendorId
+      ? { page: 1, size: 100, scope: 'vendor_combined', vendor_id: vendorId }
+      : { page: 1, size: 100, scope: 'global' };
+
+    this.facilityService.admin.getFacilities(params).pipe(take(1)).subscribe({
+      next: (response) => {
+        const items = response.data ?? [];
+        this.facilities.set(items);
+        this.pruneSelectedFacilities(items);
+      },
       error: () => this.facilities.set([]),
     });
   }
 
-  private loadRoomTypes(): void {
-    this.roomTypeService.admin.getRoomTypes({ page: 1, size: 100 }).pipe(take(1)).subscribe({
-      next: (response) => this.roomTypes.set(response.data),
+  private loadRoomTypes(vendorId?: string | null): void {
+    const params = vendorId
+      ? { page: 1, size: 100, scope: 'vendor_combined', vendor_id: vendorId }
+      : { page: 1, size: 100, scope: 'global' };
+
+    this.roomTypeService.admin.getRoomTypes(params).pipe(take(1)).subscribe({
+      next: (response) => {
+        const items = response.data ?? [];
+        this.roomTypes.set(items);
+        this.pruneSelectedRoomTypes(items);
+      },
       error: () => this.roomTypes.set([]),
     });
+  }
+
+  private pruneSelectedAmenities(available: Amenity[]): void {
+    const control = this.propertyForm.get('amenity_ids');
+    if (!control || !Array.isArray(control.value)) return;
+    const availableIds = new Set(available.map((a) => a.id));
+    const valid = control.value.filter((id: string) => availableIds.has(id));
+    if (valid.length !== control.value.length) {
+      control.setValue(valid);
+    }
+  }
+
+  private pruneSelectedFacilities(available: Facility[]): void {
+    const control = this.propertyForm.get('facility_ids');
+    if (!control || !Array.isArray(control.value)) return;
+    const availableIds = new Set(available.map((f) => f.id));
+    const valid = control.value.filter((id: string) => availableIds.has(id));
+    if (valid.length !== control.value.length) {
+      control.setValue(valid);
+    }
+  }
+
+  private pruneSelectedRoomTypes(available: RoomType[]): void {
+    const control = this.propertyForm.get('room_types');
+    if (!control || !Array.isArray(control.value)) return;
+    const availableIds = new Set(available.map((rt) => rt.id));
+    const valid = control.value.filter((rt: PropertyRoomTypeRequest) => availableIds.has(rt.room_type_id));
+    if (valid.length !== control.value.length) {
+      control.setValue(valid);
+    }
   }
 
   private loadLocations(cityId: string): void {

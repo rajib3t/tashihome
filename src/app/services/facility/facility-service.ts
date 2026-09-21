@@ -26,6 +26,8 @@ export class FacilityService {
     if (status) queryParams['status'] = status;
     if (params.sortBy?.trim()) queryParams['sortBy'] = params.sortBy.trim();
     if (params.sortOrder) queryParams['sortOrder'] = params.sortOrder;
+    if (params.scope?.trim()) queryParams['scope'] = params.scope.trim();
+    if (params.vendor_id?.trim()) queryParams['vendor_id'] = params.vendor_id.trim();
 
     return queryParams;
   }
@@ -73,12 +75,38 @@ export class FacilityService {
   public readonly vendor = {
     getFacilities: (params: FacilityQuery = {}): Observable<PaginatedResponse<Facility>> => {
       const queryParams = this.buildQueryParams(params);
-      return this.apiService.get<PaginatedResponse<Facility>>('/vendor/facilities/', { params: queryParams }).pipe(
+      return this.apiService.protectedGet<PaginatedResponse<Facility>>('/vendor/facilities/', { params: queryParams }).pipe(
         map((response) => response.data),
         catchError(this.apiService.passthroughError)
       );
     },
 
-    
+    create: (data: FormData): Observable<ApiResponse<Facility>> => {
+      return this.apiService.protectedPost<ApiResponse<Facility>>('/vendor/facilities/', data).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    update: (id: string, data: FormData): Observable<ApiResponse<Facility>> => {
+      return this.apiService.protectedPut<ApiResponse<Facility>>(`/vendor/facilities/${id}`, data).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    delete: (id: string): Observable<ApiResponse<void>> => {
+      return this.apiService.protectedDelete<ApiResponse<void>>(`/vendor/facilities/${id}`).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
+
+    statusUpdate: (id: string, status: string): Observable<ApiResponse<Facility>> => {
+      return this.apiService.protectedPatch<ApiResponse<Facility>>(`/vendor/facilities/${id}/${status}`, { status }).pipe(
+        map((response) => response.data),
+        catchError(this.apiService.passthroughError)
+      );
+    },
   };
 }
