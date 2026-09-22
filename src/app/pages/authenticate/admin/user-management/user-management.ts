@@ -13,6 +13,8 @@ import { UserService } from '../../../../services/user/user-service';
 import { AdminCreateUserDTO, User, UserQuery, UserRole, UserSearch } from '../../../../services/user/user.model';
 import { environment } from '../../../../../environments/environment';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-user-management',
   imports: [
@@ -24,6 +26,7 @@ import { environment } from '../../../../../environments/environment';
     Pagination,
     RouterModule,
     Avatar,
+    TableLoaderComponent,
   ],
   templateUrl: './user-management.html',
   styleUrl: './user-management.css',

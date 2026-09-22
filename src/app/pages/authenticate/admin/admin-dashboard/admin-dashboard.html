@@ -90,17 +90,7 @@
 
   <!-- ─── Loading Skeletons ─────────────────────────────────────────────────── -->
   @if (isLoading() && !dashboardData()) {
-    <div class="space-y-6">
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        @for (i of [1, 2, 3, 4]; track i) {
-          <div class="h-32 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/50"></div>
-        }
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 h-72 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/50"></div>
-        <div class="h-72 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/50"></div>
-      </div>
-    </div>
+    <app-dashboard-skeleton></app-dashboard-skeleton>
   }
 
   <!-- ─── Main Content ─────────────────────────────────────────────────────── -->

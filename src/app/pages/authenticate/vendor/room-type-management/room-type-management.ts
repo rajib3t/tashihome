@@ -9,11 +9,12 @@ import { PageBreadcrumb } from '../../../../shared/components/common/page-breadc
 import { Card } from '../../../../shared/components/ui/card/card';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pagination/pagination';
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
 
 @Component({
   selector: 'app-vendor-room-type-management',
   standalone: true,
-  imports: [CommonModule, PageBreadcrumb, Card, ReactiveFormsModule, Modal, Pagination],
+  imports: [CommonModule, PageBreadcrumb, Card, ReactiveFormsModule, Modal, Pagination, TableLoaderComponent],
   templateUrl: './room-type-management.html',
   styleUrl: './room-type-management.css',
 })

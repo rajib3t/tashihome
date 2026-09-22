@@ -18,6 +18,7 @@ import { SettingsService } from '../../../../services/settings/settings-service'
 import { AgreementService } from '../../../../services/agreement/agreement-service';
 import { PageBreadcrumb } from '../../../../shared/components/common/page-breadcrumb/page-breadcrumb';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
+import { DashboardSkeletonComponent } from '../../../../shared/components/ui/dashboard-skeleton/dashboard-skeleton.component';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
@@ -28,6 +29,7 @@ import { environment } from '../../../../../environments/environment';
     RouterModule,
     PageBreadcrumb,
     Modal,
+    DashboardSkeletonComponent,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',

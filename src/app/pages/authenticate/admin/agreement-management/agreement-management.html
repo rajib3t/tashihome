@@ -142,9 +142,8 @@
           <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
             @if (isLoading()) {
               <tr>
-                <td colspan="7" class="px-4 py-8 text-center text-slate-500">
-                  <div class="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  <div class="mt-2 text-xs">Loading agreements...</div>
+                <td colspan="7" class="p-0 border-0">
+                  <app-table-loader message="Loading agreements..."></app-table-loader>
                 </td>
               </tr>
             } @else if (agreements().length === 0) {

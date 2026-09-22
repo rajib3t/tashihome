@@ -14,6 +14,8 @@ import { catchError, finalize, of } from 'rxjs';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 import { environment } from '../../../../../environments/environment';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-city-management',
   imports: [
@@ -22,7 +24,8 @@ import { environment } from '../../../../../environments/environment';
     Modal,
     ReactiveFormsModule,
     UploadImage,
-    Pagination
+    Pagination,
+    TableLoaderComponent,
   ],
   templateUrl: './city-management.html',
   styleUrl: './city-management.css',

@@ -25,6 +25,8 @@ const BOOKING_STATUSES: { value: BookingStatus; label: string }[] = [
   { value: 'no_show', label: 'No Show' },
 ];
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-admin-booking-management',
   standalone: true,
@@ -36,6 +38,7 @@ const BOOKING_STATUSES: { value: BookingStatus; label: string }[] = [
     Modal,
     Pagination,
     DateInput,
+    TableLoaderComponent,
   ],
   templateUrl: './booking-management.html',
   styleUrl: './booking-management.css',

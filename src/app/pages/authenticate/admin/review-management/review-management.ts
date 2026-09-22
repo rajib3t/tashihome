@@ -11,9 +11,11 @@ import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pagination/pagination';
 import { environment } from '../../../../../environments/environment';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-admin-review-management',
-  imports: [CommonModule, RouterModule, PageBreadcrumb, Card, ReactiveFormsModule, Modal, Pagination],
+  imports: [CommonModule, RouterModule, PageBreadcrumb, Card, ReactiveFormsModule, Modal, Pagination, TableLoaderComponent],
   templateUrl: './review-management.html',
   styleUrl: './review-management.css',
 })

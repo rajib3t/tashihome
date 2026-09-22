@@ -22,6 +22,8 @@ import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 import { DateInput } from '../../../../shared/components/ui/date-input/date-input';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-vendor-room-block-management',
   standalone: true,
@@ -34,6 +36,7 @@ import { DateInput } from '../../../../shared/components/ui/date-input/date-inpu
     Modal,
     Pagination,
     DateInput,
+    TableLoaderComponent,
   ],
   templateUrl: './room-block-management.html',
   styleUrl: './room-block-management.css',

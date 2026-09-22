@@ -306,23 +306,11 @@
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800/60 dark:bg-slate-900">
             @if (isLoading()) {
-              <!-- Skeleton Loader Rows -->
-              @for (n of [1,2,3,4,5]; track n) {
-                <tr class="animate-pulse">
-                  <td class="py-3 pl-4 pr-2"><div class="h-3.5 w-5 bg-slate-200 dark:bg-slate-800 rounded"></div></td>
-                  <td class="py-3 px-3">
-                    <div class="h-3.5 w-28 bg-slate-200 dark:bg-slate-800 rounded mb-1"></div>
-                    <div class="h-3 w-40 bg-slate-100 dark:bg-slate-850 rounded"></div>
-                  </td>
-                  <td class="py-3 px-3"><div class="h-3.5 w-24 bg-slate-200 dark:bg-slate-800 rounded"></div></td>
-                  <td class="py-3 px-3 text-right"><div class="h-3.5 w-14 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
-                  <td class="py-3 px-3 text-right"><div class="h-3.5 w-12 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
-                  <td class="py-3 px-3 text-right"><div class="h-3.5 w-16 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
-                  <td class="py-3 px-3 text-center"><div class="h-5 w-16 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto"></div></td>
-                  <td class="py-3 px-3"><div class="h-3.5 w-20 bg-slate-200 dark:bg-slate-800 rounded"></div></td>
-                  <td class="py-3 pl-3 pr-4 text-right"><div class="h-7 w-20 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
-                </tr>
-              }
+              <tr>
+                <td colspan="9" class="p-0 border-0">
+                  <app-table-loader message="Loading payout records..."></app-table-loader>
+                </td>
+              </tr>
             } @else if (!payouts().length) {
               <!-- Empty State -->
               <tr>

@@ -184,13 +184,8 @@
         <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
           @if (isLoading() && taxes().length === 0) {
             <tr>
-              <td colspan="10" class="px-4 py-12 text-center text-gray-500">
-                <div class="flex items-center justify-center gap-2">
-                  <svg class="h-5 w-5 animate-spin text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  <span>Loading tax configurations...</span>
-                </div>
+              <td colspan="10" class="p-0 border-0">
+                <app-table-loader message="Loading tax configurations..."></app-table-loader>
               </td>
             </tr>
           } @else if (taxes().length === 0) {

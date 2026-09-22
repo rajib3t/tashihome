@@ -15,6 +15,8 @@ import { Avatar } from '../../../../shared/components/users/avatar/avatar';
 import { environment } from '../../../../../environments/environment';
 import { AgreementService } from '../../../../services/agreement/agreement-service';
 import { AdminOnboardHostPayload } from '../../../../core/models/agreement.model';
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-vendor-management',
   imports: [
@@ -22,10 +24,11 @@ import { AdminOnboardHostPayload } from '../../../../core/models/agreement.model
     PageBreadcrumb,
     Card,
     Modal,
-    ReactiveFormsModule ,
+    ReactiveFormsModule,
     Pagination,
     RouterModule,
-    Avatar
+    Avatar,
+    TableLoaderComponent,
   ],
   templateUrl: './vendor-management.html',
   styleUrl: './vendor-management.css',

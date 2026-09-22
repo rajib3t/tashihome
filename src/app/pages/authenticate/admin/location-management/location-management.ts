@@ -12,6 +12,8 @@ import { PaginationMeta } from '../../../../services/api/api-response.model';
 import { catchError, finalize, of } from 'rxjs';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-location-management',
   imports: [
@@ -19,7 +21,8 @@ import { Pagination } from '../../../../shared/components/ui/pagination/paginati
     Card,
     ReactiveFormsModule,
     Modal,
-    Pagination
+    Pagination,
+    TableLoaderComponent,
   ],
   templateUrl: './location-management.html',
   styleUrl: './location-management.css',

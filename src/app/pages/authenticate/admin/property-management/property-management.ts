@@ -11,6 +11,8 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { catchError, finalize, of } from 'rxjs';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-property-management',
   standalone: true,
@@ -21,6 +23,7 @@ import { Pagination } from '../../../../shared/components/ui/pagination/paginati
     Card,
     ReactiveFormsModule,
     Pagination,
+    TableLoaderComponent,
   ],
   templateUrl: './property-management.html',
   styleUrl: './property-management.css',

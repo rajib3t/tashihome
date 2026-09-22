@@ -13,6 +13,8 @@ import { UserService } from '../../../../services/user/user-service';
 import { AdminCreateCustomerDTO, Customer, CustomerQuery, CustomerSearch } from '../../../../services/user/user.model';
 import { environment } from '../../../../../environments/environment';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-customer-management',
   imports: [
@@ -24,6 +26,7 @@ import { environment } from '../../../../../environments/environment';
     Pagination,
     RouterModule,
     Avatar,
+    TableLoaderComponent,
   ],
   templateUrl: './customer-management.html',
   styleUrl: './customer-management.css',

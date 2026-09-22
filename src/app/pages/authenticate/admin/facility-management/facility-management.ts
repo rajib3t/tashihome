@@ -14,6 +14,8 @@ import { User } from '../../../../services/user/user.model';
 import { catchError, finalize, of, take } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-facility-management',
   imports: [
@@ -23,7 +25,8 @@ import { environment } from '../../../../../environments/environment';
     ReactiveFormsModule,
     Modal,
     UploadImage,
-    Pagination
+    Pagination,
+    TableLoaderComponent,
   ],
   templateUrl: './facility-management.html',
   styleUrl: './facility-management.css',

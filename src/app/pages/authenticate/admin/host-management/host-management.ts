@@ -19,6 +19,8 @@ import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 import { PROPERTY_TYPES_LABELS } from '../../../../services/property/property.model';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-host-management',
   standalone: true,
@@ -30,6 +32,7 @@ import { PROPERTY_TYPES_LABELS } from '../../../../services/property/property.mo
     Card,
     Modal,
     Pagination,
+    TableLoaderComponent,
   ],
   templateUrl: './host-management.html',
   styleUrl: './host-management.css',

@@ -70,7 +70,9 @@
           <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
             @if (isLoading()) {
               <tr>
-                <td colspan="6" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">Loading room types...</td>
+                <td colspan="6" class="p-0 border-0">
+                  <app-table-loader message="Loading room types..."></app-table-loader>
+                </td>
               </tr>
             } @else if (roomTypes().length === 0) {
               <tr>

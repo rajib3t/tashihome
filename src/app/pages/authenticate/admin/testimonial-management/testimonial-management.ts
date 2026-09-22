@@ -16,9 +16,11 @@ import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pagination/pagination';
 import { environment } from '../../../../../environments/environment';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-admin-testimonial-management',
-  imports: [CommonModule, RouterModule, PageBreadcrumb, Card, ReactiveFormsModule, Modal, Pagination],
+  imports: [CommonModule, RouterModule, PageBreadcrumb, Card, ReactiveFormsModule, Modal, Pagination, TableLoaderComponent],
   templateUrl: './testimonial-management.html',
   styleUrl: './testimonial-management.css',
 })

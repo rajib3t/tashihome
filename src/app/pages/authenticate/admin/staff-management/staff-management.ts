@@ -13,6 +13,8 @@ import { StaffService } from '../../../../services/staff/staff-service';
 import { CreateStaffDTO, StaffQuery, StaffRole, StaffSearch, StaffUser } from '../../../../services/staff/staff.model';
 import { environment } from '../../../../../environments/environment';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-staff-management',
   imports: [
@@ -24,6 +26,7 @@ import { environment } from '../../../../../environments/environment';
     Pagination,
     RouterModule,
     Avatar,
+    TableLoaderComponent,
   ],
   templateUrl: './staff-management.html',
   styleUrl: './staff-management.css',

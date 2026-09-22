@@ -10,6 +10,8 @@ import { Card } from '../../../../shared/components/ui/card/card';
 import { Pagination, PaginationMeta } from '../../../../shared/components/ui/pagination/pagination';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-country-management',
   imports: [
@@ -18,7 +20,8 @@ import { Modal } from '../../../../shared/components/ui/modal/modal';
     PageBreadcrumb,
     Card,
     Pagination,
-    Modal
+    Modal,
+    TableLoaderComponent,
   ],
   templateUrl: './country-management.html',
   styleUrl: './country-management.css',

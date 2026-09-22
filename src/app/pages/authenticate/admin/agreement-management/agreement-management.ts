@@ -22,6 +22,8 @@ import { User } from '../../../../services/user/user.model';
 import { finalize } from 'rxjs';
 
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-agreement-management',
   standalone: true,
@@ -34,6 +36,7 @@ import { finalize } from 'rxjs';
     Modal,
     Pagination,
     AgreementTemplateComponent,
+    TableLoaderComponent,
   ],
   templateUrl: './agreement-management.html',
   styleUrl: './agreement-management.css',

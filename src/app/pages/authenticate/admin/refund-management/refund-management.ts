@@ -13,6 +13,8 @@ import { Pagination } from '../../../../shared/components/ui/pagination/paginati
 
 export type RefundAction = 'approved' | 'rejected' | 'process';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 @Component({
   selector: 'app-refund-management',
   standalone: true,
@@ -23,6 +25,7 @@ export type RefundAction = 'approved' | 'rejected' | 'process';
     Card,
     Modal,
     Pagination,
+    TableLoaderComponent,
   ],
   templateUrl: './refund-management.html',
   styleUrl: './refund-management.css',

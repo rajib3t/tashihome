@@ -24,6 +24,8 @@ import { Card } from '../../../../shared/components/ui/card/card';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 
+import { TableLoaderComponent } from '../../../../shared/components/ui/table-loader/table-loader.component';
+
 export type PayoutActionType = 'process' | 'sync' | 'cancel' | 'retry';
 
 @Component({
@@ -36,6 +38,7 @@ export type PayoutActionType = 'process' | 'sync' | 'cancel' | 'retry';
     Card,
     Modal,
     Pagination,
+    TableLoaderComponent,
   ],
   templateUrl: './payout-management.html',
   styleUrl: './payout-management.css',
