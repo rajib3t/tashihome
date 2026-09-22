@@ -26,6 +26,7 @@ import { PaginationMeta } from '../../../services/api/api-response.model';
 import { environment } from '../../../../environments/environment';
 import { SingleProperty } from '../../../shared/components/properties/single-property/single-property';
 import { LocationAutocomplete } from '../../../shared/components/location-autocomplete/location-autocomplete';
+import { SeoService } from '../../../services/seo/seo-service';
 
 @Component({
   selector: 'app-locations',
@@ -40,6 +41,7 @@ export class Locations implements OnInit, AfterViewInit, OnDestroy {
   private readonly locationService = inject(LocationService);
   private readonly propertyService = inject(PropertyService);
   public readonly settingsService = inject(SettingsService);
+  private readonly seoService = inject(SeoService);
   public readonly router = inject(Router);
   public readonly route = inject(ActivatedRoute);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -123,6 +125,7 @@ export class Locations implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
     this.canvasCleanupFn?.();
     this.revealObserver?.disconnect();
   }
@@ -294,6 +297,16 @@ export class Locations implements OnInit, AfterViewInit, OnDestroy {
       .subscribe((res) => {
         this.loadingLocations.set(false);
         this.locations.set(res?.data || []);
+        this.seoService.updateSeo({
+          title: 'Explore Himalayan Towns & Villages | Tashihomes',
+          description: 'Explore scenic hill stations and offbeat villages: Darjeeling, Kalimpong, Kurseong, Mirik, Takdah, Chatakpur, and Dooars.',
+          canonical: '/locations',
+          type: 'website',
+          structuredData: this.seoService.generateBreadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Locations', url: '/locations' }
+          ])
+        });
         this.cdr.markForCheck();
       });
   }
@@ -313,6 +326,27 @@ export class Locations implements OnInit, AfterViewInit, OnDestroy {
         this.loadingLocations.set(false);
         const loc = Array.isArray(res?.data) ? res.data[0] : res?.data;
         this.currentLocation.set(loc || null);
+        if (loc) {
+          const locName = loc.name;
+          const cityName = loc.city?.name || '';
+          const fullPlace = [locName, cityName].filter(Boolean).join(', ');
+          const title = `Homestays in ${fullPlace} — Verified Mountain Retreats`;
+          const desc = loc.description || `Discover authentic village homestays and retreats in ${fullPlace}. Book verified stays with local hosts on Tashihomes.`;
+          const breadcrumbs = [
+            { name: 'Home', url: '/' },
+            { name: 'Locations', url: '/locations' },
+            { name: locName, url: `/locations/${slug}` }
+          ];
+
+          this.seoService.updateSeo({
+            title,
+            description: desc,
+            image: loc.cover_image,
+            canonical: `/locations/${slug}`,
+            type: 'website',
+            structuredData: this.seoService.generateBreadcrumbSchema(breadcrumbs)
+          });
+        }
         this.cdr.markForCheck();
 
         // 2. Fetch properties for this location

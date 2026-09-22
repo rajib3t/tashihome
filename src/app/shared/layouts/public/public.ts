@@ -44,6 +44,8 @@ export class Public implements OnInit, OnDestroy {
     const url = this.currentUrl();
     if (
       url === '/login' ||
+      url === '/404' ||
+      url.startsWith('/404') ||
       url.startsWith('/stay/') ||
       url === '/our-story' ||
       url === '/story' ||

@@ -11,6 +11,7 @@ import { ReviewService } from '../../../../services/review/review-service';
 import { ReviewData, ReviewSummary, SubmitReviewRequest } from '../../../../services/review/review.model';
 import { AuthService } from '../../../../services/auth/auth-service';
 import { SettingsService } from '../../../../services/settings/settings-service';
+import { SeoService } from '../../../../services/seo/seo-service';
 import { environment } from '../../../../../environments/environment';
 import { DateInput } from '../../../../shared/components/ui/date-input/date-input';
 import { getRoomNightlyRate } from '../../../../utils/pricing.utils';
@@ -40,6 +41,7 @@ export class Property {
   public reviewService = inject(ReviewService);
   public authService = inject(AuthService);
   public settingsService = inject(SettingsService);
+  public seoService = inject(SeoService);
 
   public propertyData = signal<Partial<PropertyData> | null>(null);
   public currencySymbol = computed(() => this.settingsService.currencySymbol() || this.propertyData()?.currency || '₹');
@@ -122,8 +124,29 @@ export class Property {
             this.loadPropertyReviews(res.data.id);
           }
 
-          // Set default room type ID
+          // Set default room type ID and dynamic SEO metadata
           if (res.data) {
+            const prop = res.data;
+            const locName = prop.location?.name || '';
+            const cityName = prop.city?.name || '';
+            const locality = [locName, cityName].filter(Boolean).join(', ');
+            const pageTitle = locality ? `${prop.name} — Homestay in ${locality}` : prop.name;
+            const rawDesc = prop.description || '';
+            const cleanDesc = rawDesc.replace(/<[^>]*>?/gm, '').trim();
+            const desc = cleanDesc
+              ? (cleanDesc.length > 160 ? cleanDesc.slice(0, 157) + '...' : cleanDesc)
+              : `Book your stay at ${prop.name} with Tashihomes. Verified reviews, scenic Himalayan views, and local host hospitality.`;
+            const cover = prop.cover_image?.file_url || prop.feature_image?.file_url || prop.property_assets?.[0]?.file_url;
+
+            this.seoService.updateSeo({
+              title: pageTitle,
+              description: desc,
+              image: cover,
+              canonical: `/stay/${prop.slug}`,
+              type: 'place',
+              structuredData: this.seoService.generateLodgingBusinessSchema(prop as PropertyData)
+            });
+
             const roomTypes = res.data.property_room_types ?? [];
             if (roomTypes.length > 0 && roomTypes[0].room_type?.id) {
               this.selectedRoomTypeId.set(roomTypes[0].room_type.id);
@@ -144,11 +167,11 @@ export class Property {
         },
         error: (error) => {
           console.error('Error fetching property:', error);
-          this.router.navigate(['/']);
+          this.router.navigate(['/404']);
         },
       });
     } else {
-      this.router.navigate(['/']);
+      this.router.navigate(['/404']);
     }
   }
 
@@ -157,6 +180,7 @@ export class Property {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
     if (this.revealInitTimer !== undefined) {
       clearTimeout(this.revealInitTimer);
     }

@@ -179,6 +179,14 @@ export const serverRoutes: ServerRoute[] = [
     path: 'profile/**',
     renderMode: RenderMode.Client
   },
+  {
+    path: '404',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'not-found',
+    renderMode: RenderMode.Client
+  },
 
   // ── Fallback ──────────────────────────────────────────────────────
   {

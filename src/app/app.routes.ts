@@ -9,36 +9,43 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/public/login/login').then((m) => m.Login),
         title: 'Login',
         canActivate: [guestGuard],
+        data: { seo: { robots: 'noindex, nofollow' } }
     },
     {
         path: 'forgot-password',
         loadComponent: () => import('./pages/public/forgot-password/forgot-password').then((m) => m.ForgotPassword),
         title: 'Forgot Password',
+        data: { seo: { robots: 'noindex, nofollow' } }
     },
     {
         path: 'password-reset',
         loadComponent: () => import('./pages/public/password-reset/password-reset').then((m) => m.PasswordReset),
         title: 'Reset Password',
+        data: { seo: { robots: 'noindex, nofollow' } }
     },
     {
         path: 'password-reset/:token',
         loadComponent: () => import('./pages/public/password-reset/password-reset').then((m) => m.PasswordReset),
         title: 'Reset Password',
+        data: { seo: { robots: 'noindex, nofollow' } }
     },
     {
         path: "register",
         loadComponent: () => import('./pages/public/register/register').then((m) => m.Register),
         title: "Register",
+        data: { seo: { robots: 'noindex, nofollow' } }
     },
     {
         path:'activate-account/:token',
         loadComponent: () => import('./pages/public/activate-account/activate-account').then((m) => m.ActivateAccount),
         title: 'Activate Account',
+        data: { seo: { robots: 'noindex, nofollow' } }
     },
     {
         path: 'agreements/:token',
         loadComponent: () => import('./pages/public/agreement-esign/esign-page.component').then((m) => m.ESignPageComponent),
         title: 'Host Partnership Agreement & E-Sign | Tashi Homes',
+        data: { seo: { robots: 'noindex, nofollow' } }
     },
     {
         path: '',
@@ -48,6 +55,13 @@ export const routes: Routes = [
                 path: '',
                 loadComponent: () => import('./pages/public/home/home').then((m) => m.Home),
                 title: 'Home',
+                data: {
+                    seo: {
+                        title: 'Tashihomes | Verified Homestays in Darjeeling, Kalimpong & North Bengal',
+                        description: 'Book verified homestays across Darjeeling, Kalimpong, Kurseong, Mirik & the Dooars. Real photos, trusted hosts, easy booking — North Bengal\'s premier homestay platform.',
+                        keywords: 'homestay, darjeeling homestay, kalimpong homestay, north bengal tourism, verified stays, kurseong resorts, himalayan village stays'
+                    }
+                }
             },
             {
                 path: 'home',
@@ -58,6 +72,13 @@ export const routes: Routes = [
                 path: 'our-story',
                 loadComponent: () => import('./pages/public/story/story').then((m) => m.Story),
                 title: 'Our Story',
+                data: {
+                    seo: {
+                        title: 'Our Story — Authentic Himalayan Hospitality | Tashihomes',
+                        description: 'Discover how Tashihomes empowers local Himalayan host families while curating authentic, verified village homestays across North Bengal & Sikkim.',
+                        keywords: 'about tashihomes, our story, sustainable tourism himalayas, verified homestay network'
+                    }
+                }
             },
             {
                 path: 'story',
@@ -73,6 +94,13 @@ export const routes: Routes = [
                 path: 'become-a-host',
                 loadComponent: () => import('./pages/public/become-host/become-host').then((m) => m.BecomeHost),
                 title: 'Become a Host',
+                data: {
+                    seo: {
+                        title: 'List Your Homestay & Become a Host | Tashihomes',
+                        description: 'Partner with Tashihomes to list your homestay in Darjeeling, Kalimpong, Kurseong or Sikkim. Reach travelers worldwide with zero hassle and verified guest bookings.',
+                        keywords: 'list homestay, partner with tashihomes, become a host darjeeling, homestay business platform'
+                    }
+                }
             },
             {
                 path: 'become-host',
@@ -83,6 +111,13 @@ export const routes: Routes = [
                 path: 'stays',
                 loadComponent: () => import('./pages/public/properties/properties').then((m) => m.Properties),
                 title: 'Stays',
+                data: {
+                    seo: {
+                        title: 'Verified Homestays, Tea Estate Retreats & Cottages | Tashihomes',
+                        description: 'Browse handpicked homestays across Darjeeling, Kalimpong, Kurseong, Mirik & Dooars. Enjoy mountain views, organic meals, and warm local hospitality.',
+                        keywords: 'book homestay, darjeeling stays, kalimpong cottages, kurseong homestays, mirik lakeside stays'
+                    }
+                }
             },
             {
                 path: 'stays/:city_slug',
@@ -98,6 +133,13 @@ export const routes: Routes = [
                 path: 'homestays',
                 loadComponent: () => import('./pages/public/properties/properties').then((m) => m.Properties),
                 title: 'Homestays',
+                data: {
+                    seo: {
+                        title: 'Verified Homestays across North Bengal | Tashihomes',
+                        description: 'Explore certified authentic homestays in North Bengal. Direct host contact, transparent pricing, and instant booking.',
+                        keywords: 'homestays north bengal, certified homestays darjeeling, kalimpong village stays'
+                    }
+                }
             },
             {
                 path: 'homestays/:city_slug',
@@ -113,6 +155,13 @@ export const routes: Routes = [
                 path: 'experiences',
                 loadComponent: () => import('./pages/public/experiences/experiences').then((m) => m.Experiences),
                 title: 'Himalayan Experiences & Guest Stories | Tashi Homes',
+                data: {
+                    seo: {
+                        title: 'Himalayan Experiences & Village Trails | Tashihomes',
+                        description: 'Immerse yourself in authentic Himalayan village life: tea garden plucking, monastery walks, local cooking, and guided forest trails.',
+                        keywords: 'himalayan experiences, village tours, darjeeling tea walk, cultural tourism north bengal'
+                    }
+                }
             },
             {
                 path: 'experience',
@@ -123,6 +172,13 @@ export const routes: Routes = [
                 path: 'locations',
                 loadComponent: () => import('./pages/public/locations/locations').then((m) => m.Locations),
                 title: 'Himalayan Locations & Hill Villages | Tashi Homes',
+                data: {
+                    seo: {
+                        title: 'Explore Himalayan Towns & Villages | Tashihomes',
+                        description: 'Explore scenic hill stations and offbeat villages: Darjeeling, Kalimpong, Kurseong, Mirik, Takdah, Chatakpur, and Dooars.',
+                        keywords: 'darjeeling towns, kalimpong offbeat villages, takdah homestays, chatakpur eco stays'
+                    }
+                }
             },
             {
                 path: 'locations/:slug',
@@ -169,21 +225,25 @@ export const routes: Routes = [
                 path: 'checkout',
                 loadComponent: () => import('./pages/public/checkout/checkout').then((m) => m.Checkout),
                 title: 'Checkout & Reserve',
+                data: { seo: { robots: 'noindex, nofollow' } }
             },
             {
                 path: 'checkout/:slug',
                 loadComponent: () => import('./pages/public/checkout/checkout').then((m) => m.Checkout),
                 title: 'Checkout & Reserve',
+                data: { seo: { robots: 'noindex, nofollow' } }
             },
             {
                 path: 'stay/:slug/checkout',
                 loadComponent: () => import('./pages/public/checkout/checkout').then((m) => m.Checkout),
                 title: 'Checkout & Reserve',
+                data: { seo: { robots: 'noindex, nofollow' } }
             },
             {
                 path: 'homestay/:slug/checkout',
                 loadComponent: () => import('./pages/public/checkout/checkout').then((m) => m.Checkout),
                 title: 'Checkout & Reserve',
+                data: { seo: { robots: 'noindex, nofollow' } }
             },
             {
                 path: 'terms',
@@ -239,6 +299,17 @@ export const routes: Routes = [
                 loadComponent: () => import('./pages/public/legal/legal').then((m) => m.Legal),
                 title: 'Legal Policies & Platform Terms | Tashi Homes',
                 data: { tab: 'all' }
+            },
+            {
+                path: '404',
+                loadComponent: () => import('./pages/public/not-found/not-found').then((m) => m.NotFound),
+                title: 'Page Not Found',
+                data: { seo: { robots: 'noindex, nofollow' } }
+            },
+            {
+                path: 'not-found',
+                redirectTo: '404',
+                pathMatch: 'full'
             }
         ]
     },
@@ -465,6 +536,11 @@ export const routes: Routes = [
                         path: 'payouts',
                         redirectTo: 'finance/payouts',
                         pathMatch: 'full'
+                    },
+                    {
+                        path: '**',
+                        loadComponent: () => import('./pages/authenticate/admin/not-found/admin-not-found').then((m) => m.AdminNotFound),
+                        title: 'Admin View Not Found'
                     }
                 ]
             },
@@ -572,6 +648,11 @@ export const routes: Routes = [
                         path: 'room-types',
                         redirectTo: 'room-type-management',
                         pathMatch: 'full'
+                    },
+                    {
+                        path: '**',
+                        loadComponent: () => import('./pages/authenticate/vendor/not-found/vendor-not-found').then((m) => m.VendorNotFound),
+                        title: 'Host Portal Page Not Found'
                     }
                 ]
             },
@@ -601,16 +682,53 @@ export const routes: Routes = [
                         pathMatch: 'full',
                     },
                     {
-                        path: 'profile/:tab',
-                        redirectTo: ':tab',
-                        pathMatch: 'full',
+                        path: 'account',
+                        loadComponent: () => import('./pages/authenticate/user/profile/profile').then((m) => m.Profile),
+                        title: 'Account Settings',
                     },
                     {
-                        path: ':tab',
+                        path: 'security',
                         loadComponent: () => import('./pages/authenticate/user/profile/profile').then((m) => m.Profile),
-                        title: 'Your Profile',
+                        title: 'Security Settings',
+                    },
+                    {
+                        path: 'trips',
+                        loadComponent: () => import('./pages/authenticate/user/profile/profile').then((m) => m.Profile),
+                        title: 'My Trips & Bookings',
+                    },
+                    {
+                        path: 'saved',
+                        loadComponent: () => import('./pages/authenticate/user/profile/profile').then((m) => m.Profile),
+                        title: 'Saved Homestays',
+                    },
+                    {
+                        path: 'reviews',
+                        loadComponent: () => import('./pages/authenticate/user/profile/profile').then((m) => m.Profile),
+                        title: 'My Reviews',
+                    },
+                    {
+                        path: 'testimonials',
+                        loadComponent: () => import('./pages/authenticate/user/profile/profile').then((m) => m.Profile),
+                        title: 'My Testimonials',
+                    },
+                    {
+                        path: '**',
+                        loadComponent: () => import('./pages/authenticate/user/not-found/user-not-found').then((m) => m.UserNotFound),
+                        title: 'Account Section Not Found'
                     }
                 ]
+            }
+        ]
+    },
+    {
+        path: '**',
+        loadComponent: () => import('./shared/layouts/public/public').then((m) => m.Public),
+        children: [
+            {
+                path: '',
+                loadComponent: () => import('./pages/public/not-found/not-found').then((m) => m.NotFound),
+                title: 'Page Not Found',
+                data: { seo: { robots: 'noindex, nofollow' } }
             }
         ]
     }

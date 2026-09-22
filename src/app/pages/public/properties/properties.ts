@@ -34,6 +34,7 @@ import { City, CityQuery } from '../../../services/city/city-model';
 import { LocationService } from '../../../services/location/location-service';
 import { LocationResponse, LocationQuery } from '../../../services/location/location-model';
 import { SettingsService } from '../../../services/settings/settings-service';
+import { SeoService } from '../../../services/seo/seo-service';
 import { PaginationMeta } from '../../../services/api/api-response.model';
 import { environment } from '../../../../environments/environment';
 
@@ -60,6 +61,7 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
   public readonly cityService = inject(CityService);
   public readonly locationService = inject(LocationService);
   public readonly settingsService = inject(SettingsService);
+  public readonly seoService = inject(SeoService);
   public readonly router = inject(Router);
   public readonly route = inject(ActivatedRoute);
   private readonly el = inject(ElementRef);
@@ -257,8 +259,37 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
         // Load locations for current city
         this.loadLocationsForCity(citySlugParam, cityParam);
 
+        this.updateSeoMetadata();
         this.fetchProperties();
       });
+  }
+
+  private updateSeoMetadata(): void {
+    const cSlug = this.citySlug();
+    const lSlug = this.locationSlug();
+    const cName = this.currentCity()?.name || (cSlug ? this.formatSlugToName(cSlug) : '');
+    const lName = this.currentLocation()?.name || (lSlug ? this.formatSlugToName(lSlug) : '');
+
+    let title = 'Verified Homestays, Tea Estate Retreats & Cottages';
+    let description = 'Browse handpicked homestays across Darjeeling, Kalimpong, Kurseong, Mirik & Dooars. Enjoy mountain views, organic meals, and warm local hospitality.';
+
+    if (lName && cName) {
+      title = `Homestays in ${lName}, ${cName} — Verified Hill Stays`;
+      description = `Discover handpicked homestays in ${lName}, ${cName}. Authentic Himalayan hospitality, local food, and real traveler reviews on Tashihomes.`;
+    } else if (cName) {
+      title = `Homestays in ${cName} — Verified Stays & Mountain Cottages`;
+      description = `Find and book verified homestays in ${cName}. Real host photos, transparent pricing, and instant booking with Tashihomes.`;
+    }
+
+    const breadcrumbs = this.breadcrumbs().map((b) => ({ name: b.label, url: b.url || '/stays' }));
+
+    this.seoService.updateSeo({
+      title,
+      description,
+      type: 'website',
+      canonical: this.router.url.split('?')[0].split('#')[0],
+      structuredData: this.seoService.generateBreadcrumbSchema(breadcrumbs)
+    });
   }
 
   ngAfterViewInit(): void {
@@ -273,6 +304,7 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
     this.canvasCleanupFn?.();
     this.revealObserver?.disconnect();
   }
@@ -409,6 +441,7 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
       )
       .subscribe((res) => {
         this.cities.set(res?.data || []);
+        this.updateSeoMetadata();
         this.cdr.markForCheck();
       });
   }

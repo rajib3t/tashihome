@@ -1,0 +1,41 @@
+# Robots.txt for Tashihomes (https://tashihomes.in)
+User-agent: *
+Allow: /
+Allow: /stays
+Allow: /stays/*
+Allow: /homestays
+Allow: /homestays/*
+Allow: /locations
+Allow: /locations/*
+Allow: /our-story
+Allow: /experiences
+Allow: /become-a-host
+Allow: /terms
+Allow: /privacy-policy
+Allow: /refund-policy
+Allow: /host-agreement
+Allow: /images/*
+Allow: /favicon.ico
+
+# Disallow Private / Authenticated / Transactional Routes
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /vendor
+Disallow: /vendor/*
+Disallow: /user
+Disallow: /user/*
+Disallow: /profile
+Disallow: /profile/*
+Disallow: /checkout
+Disallow: /checkout/*
+Disallow: /activate-account
+Disallow: /activate-account/*
+Disallow: /password-reset
+Disallow: /password-reset/*
+Disallow: /agreements
+Disallow: /agreements/*
+Disallow: /404
+
+# Sitemaps
+Sitemap: https://tashihomes.in/sitemap.xml
+

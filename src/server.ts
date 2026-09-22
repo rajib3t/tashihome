@@ -25,6 +25,19 @@ const angularApp = new AngularNodeAppEngine();
  */
 
 /**
+ * Explicit SEO endpoints for robots.txt and sitemap.xml
+ */
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.sendFile(join(browserDistFolder, 'robots.txt'));
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml');
+  res.sendFile(join(browserDistFolder, 'sitemap.xml'));
+});
+
+/**
  * Serve static files from /browser
  */
 app.use(

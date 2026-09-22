@@ -32,6 +32,7 @@ import { SingleProperty } from '../../../shared/components/properties/single-pro
 import { TestimonialService } from '../../../services/testimonial/testimonial-service';
 import { TestimonialData } from '../../../services/testimonial/testimonial.model';
 import { AuthService } from '../../../services/auth/auth-service';
+import { SeoService } from '../../../services/seo/seo-service';
 
 export interface StatItem {
   key?: string;
@@ -147,6 +148,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   public readonly authService: AuthService = inject(AuthService);
   public readonly settingsService: SettingsService = inject(SettingsService);
   public readonly dashboardService: DashboardService = inject(DashboardService);
+  public readonly seoService: SeoService = inject(SeoService);
   constructor(
     private el: ElementRef,
     private cdr: ChangeDetectorRef,
@@ -154,6 +156,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    this.seoService.setStructuredData(this.seoService.generateWebSiteSchema());
     this.generateCalendar();
     if (isPlatformBrowser(this.platformId)) {
       this.loadAllData();
@@ -1666,6 +1669,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
     this.destroyed = true;
     this.revealObserver?.disconnect();
     this.statsObserver?.disconnect();

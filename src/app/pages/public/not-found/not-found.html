@@ -1,0 +1,105 @@
+<div class="relative min-h-[80vh] flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#F3FAFB] via-[#E8F5F8] to-[#FAFCFC] overflow-hidden">
+  <!-- Subtle decorative Himalayan mountain backdrop SVG -->
+  <div class="absolute inset-0 pointer-events-none opacity-20 flex items-end justify-center">
+    <svg class="w-full h-96 text-[#126A7A]" viewBox="0 0 1440 320" fill="currentColor" preserveAspectRatio="none">
+      <path d="M0,224L60,202.7C120,181,240,139,360,144C480,149,600,203,720,208C840,213,960,171,1080,144C1200,117,1320,107,1380,101.3L1440,96L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path>
+    </svg>
+  </div>
+
+  <!-- Content Container -->
+  <div class="relative z-10 max-w-2xl w-full text-center">
+    <!-- Mountain Badge & Error Code -->
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200/70 text-teal-800 text-xs sm:text-sm font-semibold tracking-wide uppercase shadow-sm mb-6">
+      <svg class="w-4 h-4 text-[#126A7A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+      </svg>
+      <span>Error 404 &bull; Trail Lost in the Mist</span>
+    </div>
+
+    <!-- Big 404 Headline with Lora serif font -->
+    <h1 class="text-7xl sm:text-9xl font-extrabold text-[#126A7A] tracking-tight font-serif drop-shadow-sm select-none">
+      404
+    </h1>
+
+    <h2 class="mt-4 text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight font-serif">
+      Lost in the Himalayan Clouds?
+    </h2>
+
+    <p class="mt-3 text-base sm:text-lg text-gray-600 max-w-lg mx-auto leading-relaxed">
+      The trail you followed seems to have vanished into the pines. The homestay, village page, or path you're looking for might have been moved, renamed, or is taking a quiet rest.
+    </p>
+
+    <!-- Search Form -->
+    <form (ngSubmit)="onSearchSubmit()" class="mt-8 max-w-md mx-auto">
+      <div class="relative flex items-center shadow-lg rounded-2xl overflow-hidden border border-gray-200 bg-white focus-within:ring-2 focus-within:ring-[#126A7A] transition-all">
+        <div class="pl-4 text-gray-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          name="searchQuery"
+          [(ngModel)]="searchQuery"
+          placeholder="Search by village, homestay or city..."
+          class="w-full py-3.5 pl-3 pr-28 text-sm sm:text-base text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
+        />
+        <button
+          type="submit"
+          class="absolute right-1.5 px-4 py-2 rounded-xl bg-[#126A7A] text-white text-sm font-semibold hover:bg-[#0E5461] transition-colors shadow-sm cursor-pointer"
+        >
+          Search
+        </button>
+      </div>
+    </form>
+
+    <!-- Quick Destination Chips -->
+    <div class="mt-8">
+      <p class="text-xs uppercase tracking-wider font-bold text-gray-500 mb-3">
+        Popular Himalayan Destinations
+      </p>
+      <div class="flex flex-wrap justify-center gap-2">
+        <a
+          *ngFor="let dest of popularDestinations"
+          [routerLink]="['/stays', dest.slug]"
+          class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-gray-700 hover:bg-[#126A7A] hover:text-white border border-gray-200 hover:border-transparent transition-all shadow-xs"
+        >
+          {{ dest.name }}
+        </a>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+      <a
+        routerLink="/"
+        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#126A7A] text-white text-sm font-semibold hover:bg-[#0E5461] shadow-md hover:shadow-lg transition-all"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+        Back to Home
+      </a>
+      <a
+        routerLink="/stays"
+        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white text-gray-800 text-sm font-semibold hover:bg-gray-50 border border-gray-300 shadow-xs transition-all"
+      >
+        <svg class="w-4 h-4 text-[#FAA52D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+        Browse All Stays
+      </a>
+      <a
+        routerLink="/locations"
+        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white text-gray-800 text-sm font-semibold hover:bg-gray-50 border border-gray-300 shadow-xs transition-all"
+      >
+        <svg class="w-4 h-4 text-[#126A7A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        Explore Locations
+      </a>
+    </div>
+  </div>
+</div>
+
