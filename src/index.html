@@ -40,6 +40,77 @@
   <meta name="twitter:description" content="Book verified homestays across Darjeeling, Kalimpong, Kurseong, Mirik & the Dooars. Real photos, trusted hosts, easy booking — North Bengal's first dedicated homestay platform.">
   <meta name="twitter:image" content="https://tashihomes.in/images/og-image.jpg">
 
+  <!-- Schema.org Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://tashihomes.in/#website",
+        "url": "https://tashihomes.in/",
+        "name": "Tashihomes",
+        "alternateName": "Tashi Homes",
+        "description": "Book verified homestays across Darjeeling, Kalimpong, Kurseong, Mirik & the Dooars. Authentic Himalayan hospitality with trusted hosts and best rates.",
+        "inLanguage": "en-IN",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://tashihomes.in/search?query={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        },
+        "publisher": {
+          "@id": "https://tashihomes.in/#organization"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://tashihomes.in/#organization",
+        "name": "Tashihomes",
+        "alternateName": "Tashi Homes",
+        "url": "https://tashihomes.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://tashihomes.in/images/hero-himalaya.webp",
+          "caption": "Tashihomes - Himalayan Homestays"
+        },
+        "image": "https://tashihomes.in/images/og-image.jpg",
+        "description": "North Bengal's first dedicated verified homestay platform offering handpicked retreats in Darjeeling, Kalimpong, Kurseong, Mirik & the Dooars.",
+        "email": "info@tashihomes.in",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "West Bengal",
+          "addressCountry": "IN"
+        },
+        "areaServed": [
+          {
+            "@type": "AdministrativeArea",
+            "name": "Darjeeling"
+          },
+          {
+            "@type": "AdministrativeArea",
+            "name": "Kalimpong"
+          },
+          {
+            "@type": "AdministrativeArea",
+            "name": "Kurseong"
+          },
+          {
+            "@type": "AdministrativeArea",
+            "name": "Mirik"
+          },
+          {
+            "@type": "AdministrativeArea",
+            "name": "Dooars"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
   <!-- Preload high-priority hero image for fastest mobile & desktop LCP -->
   <link rel="preload" as="image" href="/images/hero-himalaya-mobile.webp" type="image/webp" media="(max-width: 767px)" fetchpriority="high">
   <link rel="preload" as="image" href="/images/hero-himalaya.webp" type="image/webp" media="(min-width: 768px)" fetchpriority="high">

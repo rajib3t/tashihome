@@ -144,7 +144,11 @@ export class Property {
               image: cover,
               canonical: `/stay/${prop.slug}`,
               type: 'place',
-              structuredData: this.seoService.generateLodgingBusinessSchema(prop as PropertyData)
+              structuredData: this.seoService.generateLodgingBusinessSchema(
+                prop as PropertyData,
+                this.reviews(),
+                this.reviewSummary()
+              )
             });
 
             const roomTypes = res.data.property_room_types ?? [];
@@ -759,6 +763,18 @@ export class Property {
           const pagination = meta?.pagination || meta;
           if (pagination && pagination.pages) {
             this.hasMoreReviews.set(pagination.page < pagination.pages);
+          }
+
+          // Dynamically refresh Schema.org structured data with real reviews and ratings
+          const currentProp = this.propertyData();
+          if (currentProp) {
+            this.seoService.setStructuredData(
+              this.seoService.generateLodgingBusinessSchema(
+                currentProp as PropertyData,
+                this.reviews(),
+                this.reviewSummary()
+              )
+            );
           }
 
           setTimeout(() => this.initRevealObserver(), 50);

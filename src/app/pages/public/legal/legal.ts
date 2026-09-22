@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SeoService } from '../../../services/seo/seo-service';
 
 export type LegalTab = 'all' | 'terms' | 'host-agreement' | 'privacy' | 'refund' | 'grievance';
 
@@ -21,6 +22,7 @@ export type LegalTab = 'all' | 'terms' | 'host-agreement' | 'privacy' | 'refund'
 export class Legal implements OnInit, AfterViewInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly seoService = inject(SeoService);
   private readonly platformId = inject(PLATFORM_ID);
   private revealObserver?: IntersectionObserver;
 
@@ -56,14 +58,18 @@ export class Legal implements OnInit, AfterViewInit, OnDestroy {
     this.route.data.subscribe((data) => {
       if (data && data['tab']) {
         this.activeTab.set(data['tab'] as LegalTab);
+        this.updateLegalSchema();
       }
     });
 
     this.route.queryParams.subscribe((params) => {
       if (params['tab'] && this.isValidTab(params['tab'])) {
         this.activeTab.set(params['tab'] as LegalTab);
+        this.updateLegalSchema();
       }
     });
+
+    this.updateLegalSchema();
 
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -72,12 +78,24 @@ export class Legal implements OnInit, AfterViewInit, OnDestroy {
 
   public setTab(tab: LegalTab, targetPath?: string): void {
     this.activeTab.set(tab);
+    this.updateLegalSchema();
     if (targetPath) {
       this.router.navigate([targetPath], { queryParamsHandling: 'merge' });
     }
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  }
+
+  private updateLegalSchema(): void {
+    const currentTab = this.activeTab();
+    const currentTabObj = this.tabs.find((t) => t.id === currentTab) || this.tabs[0];
+    this.seoService.setStructuredData(
+      this.seoService.generateLegalPageSchema(currentTabObj.label, currentTabObj.path, [
+        { name: 'Home', url: '/' },
+        { name: currentTabObj.label, url: currentTabObj.path }
+      ])
+    );
   }
 
   public scrollToSection(elementId: string): void {
@@ -131,6 +149,7 @@ export class Legal implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
     this.revealObserver?.disconnect();
   }
 

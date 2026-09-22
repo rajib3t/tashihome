@@ -282,13 +282,17 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const breadcrumbs = this.breadcrumbs().map((b) => ({ name: b.label, url: b.url || '/stays' }));
+    const propList = this.properties();
+    const schema = propList.length > 0
+      ? this.seoService.generatePropertiesListingSchema(title, description, propList, breadcrumbs)
+      : this.seoService.generateBreadcrumbSchema(breadcrumbs);
 
     this.seoService.updateSeo({
       title,
       description,
       type: 'website',
       canonical: this.router.url.split('?')[0].split('#')[0],
-      structuredData: this.seoService.generateBreadcrumbSchema(breadcrumbs)
+      structuredData: schema
     });
   }
 
@@ -417,6 +421,7 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
             size: res.meta.size ?? this.meta().size,
           });
         }
+        this.updateSeoMetadata();
         this.cdr.markForCheck();
         this.refreshRevealObserver();
       });

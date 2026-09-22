@@ -22,6 +22,7 @@ import { BecomeHostRequest } from '../../../services/host/host.model';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery } from '../../../services/city/city-model';
 import { PROPERTY_TYPES, PROPERTY_TYPES_LABELS } from '../../../services/property/property.model';
+import { SeoService } from '../../../services/seo/seo-service';
 
 @Component({
   selector: 'app-become-host',
@@ -32,6 +33,7 @@ import { PROPERTY_TYPES, PROPERTY_TYPES_LABELS } from '../../../services/propert
 export class BecomeHost implements OnInit, AfterViewInit, OnDestroy {
   private readonly hostService = inject(HostService);
   private readonly cityService = inject(CityService);
+  private readonly seoService = inject(SeoService);
   private readonly fb = inject(FormBuilder);
   private readonly el = inject(ElementRef);
   private readonly zone = inject(NgZone);
@@ -206,6 +208,16 @@ export class BecomeHost implements OnInit, AfterViewInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
+    this.seoService.updateSeo({
+      title: 'List Your Homestay & Become a Host | Tashihomes',
+      description: 'Partner with Tashihomes to list your homestay in Darjeeling, Kalimpong, Kurseong or Sikkim. Reach travelers worldwide with zero hassle and verified guest bookings.',
+      canonical: '/become-a-host',
+      type: 'website',
+      structuredData: this.seoService.generateFaqSchema(this.faqs, [
+        { name: 'Home', url: '/' },
+        { name: 'Become a Host', url: '/become-a-host' }
+      ])
+    });
     this.loadFeaturedCities();
   }
 
@@ -221,6 +233,7 @@ export class BecomeHost implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
     this.revealObserver?.disconnect();
     this.canvasCleanup?.();
   }

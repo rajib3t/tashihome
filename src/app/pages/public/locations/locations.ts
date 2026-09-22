@@ -302,7 +302,7 @@ export class Locations implements OnInit, AfterViewInit, OnDestroy {
           description: 'Explore scenic hill stations and offbeat villages: Darjeeling, Kalimpong, Kurseong, Mirik, Takdah, Chatakpur, and Dooars.',
           canonical: '/locations',
           type: 'website',
-          structuredData: this.seoService.generateBreadcrumbSchema([
+          structuredData: this.seoService.generateLocationsCatalogSchema(res?.data || [], [
             { name: 'Home', url: '/' },
             { name: 'Locations', url: '/locations' }
           ])
@@ -341,10 +341,10 @@ export class Locations implements OnInit, AfterViewInit, OnDestroy {
           this.seoService.updateSeo({
             title,
             description: desc,
-            image: loc.cover_image,
+            image: loc.image_url || (loc as any).cover_image,
             canonical: `/locations/${slug}`,
             type: 'website',
-            structuredData: this.seoService.generateBreadcrumbSchema(breadcrumbs)
+            structuredData: this.seoService.generateLocationDetailSchema(loc, this.properties(), breadcrumbs)
           });
         }
         this.cdr.markForCheck();
@@ -407,6 +407,17 @@ export class Locations implements OnInit, AfterViewInit, OnDestroy {
             page: res.meta.page,
             size: res.meta.size ?? this.meta().size,
           });
+        }
+        const loc = this.currentLocation();
+        if (loc) {
+          const breadcrumbs = [
+            { name: 'Home', url: '/' },
+            { name: 'Locations', url: '/locations' },
+            { name: loc.name, url: `/locations/${slug}` }
+          ];
+          this.seoService.setStructuredData(
+            this.seoService.generateLocationDetailSchema(loc, this.properties(), breadcrumbs)
+          );
         }
         this.cdr.markForCheck();
       });

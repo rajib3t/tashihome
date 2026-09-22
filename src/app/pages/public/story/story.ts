@@ -17,6 +17,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, of, retry, timeout } from 'rxjs';
 import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery } from '../../../services/city/city-model';
+import { SeoService } from '../../../services/seo/seo-service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -29,6 +30,7 @@ export class Story implements OnInit, AfterViewInit, OnDestroy {
   public readonly assetUrl = environment.assetUrl;
   public readonly router = inject(Router);
   public readonly cityService = inject(CityService);
+  private readonly seoService = inject(SeoService);
   private readonly el = inject(ElementRef);
   private readonly zone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -105,6 +107,17 @@ export class Story implements OnInit, AfterViewInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
+    this.seoService.updateSeo({
+      title: 'Our Story — Authentic Himalayan Hospitality | Tashihomes',
+      description:
+        'Discover how Tashihomes empowers local Himalayan host families while curating authentic, verified village homestays across North Bengal & Sikkim.',
+      canonical: '/our-story',
+      type: 'website',
+      structuredData: this.seoService.generateAboutPageSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Our Story', url: '/our-story' }
+      ])
+    });
     this.loadCities();
   }
 
@@ -120,6 +133,7 @@ export class Story implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
     this.revealObserver?.disconnect();
     this.canvasCleanup?.();
   }

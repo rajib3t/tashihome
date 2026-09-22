@@ -26,6 +26,7 @@ import { CityService } from '../../../services/city/city-service';
 import { City, CityQuery } from '../../../services/city/city-model';
 import { AuthService } from '../../../services/auth/auth-service';
 import { DashboardService } from '../../../services/dashboard/dashboard-service';
+import { SeoService } from '../../../services/seo/seo-service';
 import { environment } from '../../../../environments/environment';
 import { SingleProperty } from '../../../shared/components/properties/single-property/single-property';
 
@@ -56,6 +57,7 @@ export interface CuratedExperience {
 export class Experiences implements OnInit, AfterViewInit, OnDestroy {
   public readonly assetUrl = environment.assetUrl;
   public readonly router = inject(Router);
+  public readonly seoService = inject(SeoService);
   private readonly el = inject(ElementRef);
   private readonly zone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -205,6 +207,18 @@ export class Experiences implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.seoService.updateSeo({
+      title: 'Himalayan Experiences & Village Trails | Tashihomes',
+      description:
+        'Immerse yourself in authentic Himalayan village life: tea garden plucking, monastery walks, local cooking, and guided forest trails.',
+      canonical: '/experiences',
+      type: 'website',
+      structuredData: this.seoService.generateExperiencesPageSchema(this.curatedExperiences, [
+        { name: 'Home', url: '/' },
+        { name: 'Experiences', url: '/experiences' }
+      ])
+    });
+
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'auto' });
       this.loadAllData();
@@ -225,6 +239,7 @@ export class Experiences implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
     this.revealObserver?.disconnect();
     this.canvasCleanupFn?.();
   }

@@ -156,7 +156,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.seoService.setStructuredData(this.seoService.generateWebSiteSchema());
+    this.seoService.setStructuredData(this.seoService.generateHomeSchema());
     this.generateCalendar();
     if (isPlatformBrowser(this.platformId)) {
       this.loadAllData();
@@ -655,6 +655,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       .subscribe((response) => {
         this.loadingProperties.set(false);
         this.properties.set(response?.data || []);
+        this.seoService.setStructuredData(this.seoService.generateHomeSchema(response?.data || []));
         this.cdr.markForCheck();
         this.refreshRevealObserver();
         this.refreshCardTilt();

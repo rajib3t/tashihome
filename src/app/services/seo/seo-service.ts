@@ -5,6 +5,8 @@ import { environment } from '../../../environments/environment';
 import { SettingsService } from '../settings/settings-service';
 import { BreadcrumbItem, SeoConfig } from './seo.model';
 import { PropertyData } from '../property/property.model';
+import { ReviewData, ReviewSummary } from '../review/review.model';
+import { LocationResponse } from '../location/location-model';
 
 @Injectable({
   providedIn: 'root'
@@ -196,38 +198,99 @@ export class SeoService {
 
   /**
    * Generate LodgingBusiness / BedAndBreakfast Schema for a property detail page
+   * Dynamically driven by property model fields & application settings
    */
-  public generateLodgingBusinessSchema(property: PropertyData): Record<string, unknown> {
+  public generateLodgingBusinessSchema(
+    property: PropertyData,
+    reviews?: ReviewData[],
+    reviewSummary?: ReviewSummary | null
+  ): Record<string, unknown> {
     const origin = this.getBaseUrl();
     const propertyUrl = `${origin}/stay/${property.slug}`;
 
-    const photos: string[] = [];
+    // 1. Check-in, check-out, and currency from settings
+    const checkInTime = this.settingsService.checkInTime() || '14:00';
+    const checkOutTime = this.settingsService.checkOutTime() || '11:00';
+    const defaultCurrency = this.settingsService.defaultCurrency() || 'INR';
+    const currencySymbol = this.settingsService.currencySymbol() || '₹';
+    const propertyCurrency = property.currency || defaultCurrency;
+
+    // 2. Dynamic Schema.org type mapping from PropertyType
+    const schemaTypeMap: Record<string, string> = {
+      hotel: 'Hotel',
+      resort: 'Resort',
+      hostel: 'Hostel',
+      guest_house: 'LodgingBusiness',
+      bed_and_breakfast: 'BedAndBreakfast',
+      home_stay: 'BedAndBreakfast',
+      villa: 'VacationRental',
+      cottage: 'VacationRental',
+      cabin: 'VacationRental',
+      chalet: 'VacationRental',
+      apartment: 'Apartment',
+      farm_stay: 'BedAndBreakfast',
+      houseboat: 'LodgingBusiness',
+      lodge: 'LodgingBusiness',
+      pension: 'LodgingBusiness',
+      motel: 'Motel'
+    };
+    const primaryType = schemaTypeMap[property.type] || 'BedAndBreakfast';
+
+    // 3. Collect & deduplicate photos from all property asset fields
+    const photoUrls = new Set<string>();
     if (property.cover_image?.file_url) {
-      photos.push(this.resolveAbsoluteUrl(property.cover_image.file_url));
+      photoUrls.add(this.resolveAbsoluteUrl(property.cover_image.file_url));
     }
     if (property.feature_image?.file_url) {
-      photos.push(this.resolveAbsoluteUrl(property.feature_image.file_url));
+      photoUrls.add(this.resolveAbsoluteUrl(property.feature_image.file_url));
     }
-    if (property.property_assets && Array.isArray(property.property_assets)) {
-      property.property_assets.forEach((a) => {
-        if (a?.file_url) {
-          photos.push(this.resolveAbsoluteUrl(a.file_url));
-        }
+    (property.gallery_images || []).forEach((a) => {
+      if (a?.file_url) photoUrls.add(this.resolveAbsoluteUrl(a.file_url));
+    });
+    (property.property_assets || []).forEach((a) => {
+      if (a?.file_url) photoUrls.add(this.resolveAbsoluteUrl(a.file_url));
+    });
+    const photos = photoUrls.size > 0 ? Array.from(photoUrls) : [this.defaultOgImage];
+
+    // 4. Amenities, facilities, and food options from PropertyData
+    const amenitiesList: string[] = [];
+    (property.property_amenities || []).forEach((item) => {
+      if (item?.amenity?.name) amenitiesList.push(item.amenity.name);
+    });
+    (property.property_facilities || []).forEach((item) => {
+      if (item?.facility?.name) amenitiesList.push(item.facility.name);
+    });
+
+    // Food options & meal plans
+    const includedMeals = (property.property_food_options || [])
+      .filter((opt) => opt && opt.is_included && opt.name)
+      .map((opt) => opt.name);
+    if (includedMeals.length > 0) {
+      includedMeals.forEach((meal) => {
+        amenitiesList.push(`${meal} (Included)`);
       });
     }
 
-    const amenitiesList: string[] = (property.property_amenities || [])
-      .map((item) => item?.amenity?.name)
-      .filter((n): n is string => Boolean(n));
+    const isPetFriendly = amenitiesList.some((a) => a.toLowerCase().includes('pet'));
 
-    const schema: Record<string, unknown> = {
-      '@context': 'https://schema.org',
-      '@type': 'BedAndBreakfast',
-      '@id': propertyUrl,
+    const cleanDescription = (property.description || '')
+      .replace(/<[^>]*>?/gm, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // 5. Build base lodging schema
+    const lodging: Record<string, unknown> = {
+      '@type': primaryType,
+      '@id': `${propertyUrl}#lodging`,
       name: property.name,
-      description: property.description || `${property.name} - verified homestay on Tashihomes.`,
+      description: cleanDescription || `${property.name} - verified homestay on Tashihomes.`,
       url: propertyUrl,
-      image: photos.length > 0 ? photos : [this.defaultOgImage],
+      image: photos,
+      currenciesAccepted: propertyCurrency,
+      paymentAccepted: 'Cash, Credit Card, Debit Card, UPI, Net Banking',
+      checkinTime: checkInTime,
+      checkoutTime: checkOutTime,
+      petsAllowed: isPetFriendly,
       address: {
         '@type': 'PostalAddress',
         streetAddress: property.address || property.location?.name || '',
@@ -237,45 +300,707 @@ export class SeoService {
       }
     };
 
+    // Geo coordinates
     if (property.latitude && property.longitude) {
-      schema['geo'] = {
+      lodging['geo'] = {
         '@type': 'GeoCoordinates',
         latitude: property.latitude,
         longitude: property.longitude
       };
     }
 
-    const price = property.sale_per_night || property.price_per_night || property.property_room_types?.[0]?.price_per_night;
-    if (price) {
-      schema['priceRange'] = `₹${price}`;
-      schema['makesOffer'] = {
-        '@type': 'Offer',
-        price: price,
-        priceCurrency: property.currency || 'INR',
-        availability: 'https://schema.org/InStock',
-        validFrom: new Date().toISOString().split('T')[0]
+    // Host / Vendor info
+    if (property.vendor) {
+      lodging['host'] = {
+        '@type': 'Person',
+        name: property.vendor.full_name,
+        email: property.vendor.email,
+        ...(property.vendor.is_profile_image_url
+          ? { image: this.resolveAbsoluteUrl(property.vendor.is_profile_image_url) }
+          : {})
+      };
+      lodging['provider'] = {
+        '@type': 'Person',
+        name: property.vendor.full_name
       };
     }
 
+    // Telephone & Email from settings/vendor
+    const contactPhone = this.settingsService.contactPhone();
+    if (contactPhone) {
+      lodging['telephone'] = contactPhone;
+    }
+    lodging['email'] = property.vendor?.email || this.settingsService.contactEmail();
+
+    // Meal Plan
+    if (includedMeals.length > 0) {
+      lodging['hasMealPlan'] = includedMeals.join(', ');
+    }
+
+    // Deposit & Booking Terms from settings
+    if (property.deposit && property.deposit > 0) {
+      lodging['deposit'] = {
+        '@type': 'MonetaryAmount',
+        currency: propertyCurrency,
+        value: property.deposit
+      };
+    }
+
+    const minBookingDays = this.settingsService.minBookingDays();
+    const maxBookingDays = this.settingsService.maxBookingDays();
+    const graceHours = this.settingsService.cancellationGraceHours();
+    lodging['termsAndConditions'] =
+      `Minimum stay: ${minBookingDays} night(s). Maximum stay: ${maxBookingDays} nights. Free cancellation grace period: ${graceHours} hours.`;
+
+    // Pricing & Primary Offer
+    const price = property.sale_per_night || property.price_per_night || property.property_room_types?.[0]?.price_per_night;
+    if (price) {
+      lodging['priceRange'] = `${currencySymbol}${price}`;
+      lodging['makesOffer'] = {
+        '@type': 'Offer',
+        price: price,
+        priceCurrency: propertyCurrency,
+        availability: 'https://schema.org/InStock',
+        validFrom: new Date().toISOString().split('T')[0],
+        url: propertyUrl
+      };
+    }
+
+    // Room Types (containsPlace)
+    if (property.property_room_types && property.property_room_types.length > 0) {
+      lodging['containsPlace'] = property.property_room_types.map((prt) => {
+        const roomPrice = prt.sale_per_night || prt.price_per_night || price;
+        const roomData: Record<string, unknown> = {
+          '@type': 'Accommodation',
+          name: prt.room_type?.name || 'Standard Homestay Room',
+          description: `${property.name} — ${prt.room_type?.name || 'Homestay Room'}`,
+          occupancy: {
+            '@type': 'QuantitativeValue',
+            value: prt.room_type?.capacity || 2
+          },
+          numberOfRooms: prt.total_units || 1
+        };
+        if (roomPrice) {
+          roomData['offers'] = {
+            '@type': 'Offer',
+            price: roomPrice,
+            priceCurrency: propertyCurrency,
+            availability: 'https://schema.org/InStock',
+            validFrom: new Date().toISOString().split('T')[0]
+          };
+        }
+        return roomData;
+      });
+    }
+
+    // Amenities
     if (amenitiesList.length > 0) {
-      schema['amenityFeature'] = amenitiesList.map((item: string) => ({
+      lodging['amenityFeature'] = amenitiesList.map((item: string) => ({
         '@type': 'LocationFeatureSpecification',
         name: item,
         value: true
       }));
     }
 
-    if (property.average_rating && property.total_reviews) {
-      schema['aggregateRating'] = {
+    // Aggregate Rating
+    const avgRating = reviewSummary?.average_rating ?? property.rating_summary?.average_rating ?? property.average_rating;
+    const totalRev = reviewSummary?.total_reviews ?? property.rating_summary?.total_reviews ?? property.total_reviews;
+    if (avgRating && totalRev && totalRev > 0) {
+      lodging['aggregateRating'] = {
         '@type': 'AggregateRating',
-        ratingValue: property.average_rating,
-        reviewCount: property.total_reviews,
+        ratingValue: Number(avgRating),
+        reviewCount: Number(totalRev),
         bestRating: 5,
         worstRating: 1
       };
     }
 
-    return schema;
+    // Individual Reviews (up to 5 recent reviews)
+    if (reviews && reviews.length > 0) {
+      lodging['review'] = reviews.slice(0, 5).map((r) => ({
+        '@type': 'Review',
+        author: {
+          '@type': 'Person',
+          name: r.guest?.full_name || 'Verified Traveler'
+        },
+        datePublished: r.created_at ? r.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: r.rating || 5,
+          bestRating: 5,
+          worstRating: 1
+        },
+        reviewBody: r.comment || 'Wonderful stay and hospitable host family.'
+      }));
+    }
+
+    // Breadcrumb schema
+    const breadcrumbItems: BreadcrumbItem[] = [
+      { name: 'Home', url: '/' },
+      { name: 'Stays', url: '/stays' }
+    ];
+    if (property.city?.name) {
+      breadcrumbItems.push({
+        name: property.city.name,
+        url: `/stays/${property.city.slug || property.city.name.toLowerCase().replace(/\s+/g, '-')}`
+      });
+    }
+    breadcrumbItems.push({
+      name: property.name,
+      url: `/stay/${property.slug}`
+    });
+
+    const breadcrumbs = {
+      '@type': 'BreadcrumbList',
+      '@id': `${propertyUrl}#breadcrumb`,
+      itemListElement: breadcrumbItems.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        item: this.resolveAbsoluteUrl(item.url)
+      }))
+    };
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': [lodging, breadcrumbs]
+    };
+  }
+
+  /**
+   * Generate ItemList & Breadcrumbs for Properties Listing Page
+   */
+  public generatePropertiesListingSchema(
+    title: string,
+    description: string,
+    properties: Partial<PropertyData>[],
+    breadcrumbs?: BreadcrumbItem[]
+  ): Record<string, unknown> {
+    const origin = this.getBaseUrl();
+    const currentUrl = this.getCurrentCleanUrl();
+
+    const graph: Array<Record<string, unknown>> = [];
+
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      graph.push({
+        '@type': 'BreadcrumbList',
+        '@id': `${currentUrl}#breadcrumb`,
+        itemListElement: breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: this.resolveAbsoluteUrl(b.url)
+        }))
+      });
+    }
+
+    const itemListElement = properties.slice(0, 20).map((p, index) => {
+      const pUrl = `${origin}/stay/${p.slug}`;
+      const img = p.cover_image?.file_url || p.feature_image?.file_url || p.property_assets?.[0]?.file_url;
+      const price = p.sale_per_night || p.price_per_night;
+
+      const item: Record<string, unknown> = {
+        '@type': 'BedAndBreakfast',
+        '@id': `${pUrl}#lodging`,
+        name: p.name,
+        url: pUrl,
+        image: this.resolveAbsoluteUrl(img),
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: p.city?.name || p.location?.name || 'Darjeeling',
+          addressRegion: 'West Bengal',
+          addressCountry: 'IN'
+        }
+      };
+
+      const currencySymbol = this.settingsService.currencySymbol() || '₹';
+      if (price) {
+        item['priceRange'] = `${currencySymbol}${price}`;
+      }
+
+      if (p.average_rating && p.total_reviews) {
+        item['aggregateRating'] = {
+          '@type': 'AggregateRating',
+          ratingValue: p.average_rating,
+          reviewCount: p.total_reviews,
+          bestRating: 5
+        };
+      }
+
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        item
+      };
+    });
+
+    graph.push({
+      '@type': 'ItemList',
+      '@id': `${currentUrl}#itemlist`,
+      name: title,
+      description: description,
+      numberOfItems: properties.length,
+      itemListElement
+    });
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': graph
+    };
+  }
+
+  /**
+   * Generate Locations Catalog Schema
+   */
+  public generateLocationsCatalogSchema(
+    locations: LocationResponse[],
+    breadcrumbs?: BreadcrumbItem[]
+  ): Record<string, unknown> {
+    const origin = this.getBaseUrl();
+    const currentUrl = `${origin}/locations`;
+
+    const graph: Array<Record<string, unknown>> = [];
+
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      graph.push({
+        '@type': 'BreadcrumbList',
+        '@id': `${currentUrl}#breadcrumb`,
+        itemListElement: breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: this.resolveAbsoluteUrl(b.url)
+        }))
+      });
+    }
+
+    const itemListElement = locations.map((loc, index) => {
+      const locUrl = `${origin}/locations/${loc.slug}`;
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'TouristDestination',
+          '@id': `${locUrl}#destination`,
+          name: loc.name,
+          url: locUrl,
+          description: loc.description || `Scenic hill destination in ${loc.city?.name || 'North Bengal'}`,
+          image: this.resolveAbsoluteUrl(loc.image_url || (loc as any).cover_image),
+          containedInPlace: {
+            '@type': 'AdministrativeArea',
+            name: loc.city?.name || 'North Bengal',
+            containedInPlace: {
+              '@type': 'Country',
+              name: 'India'
+            }
+          }
+        }
+      };
+    });
+
+    graph.push({
+      '@type': 'ItemList',
+      '@id': `${currentUrl}#itemlist`,
+      name: 'Explore Himalayan Towns & Hill Stations',
+      description: 'Directory of scenic towns, tea estate villages, and mountain retreats in Darjeeling, Kalimpong, Kurseong, Mirik & Sikkim.',
+      numberOfItems: locations.length,
+      itemListElement
+    });
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': graph
+    };
+  }
+
+  /**
+   * Generate Location Detail Schema
+   */
+  public generateLocationDetailSchema(
+    location: LocationResponse,
+    properties?: Partial<PropertyData>[],
+    breadcrumbs?: BreadcrumbItem[]
+  ): Record<string, unknown> {
+    const origin = this.getBaseUrl();
+    const locUrl = `${origin}/locations/${location.slug}`;
+
+    const graph: Array<Record<string, unknown>> = [];
+
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      graph.push({
+        '@type': 'BreadcrumbList',
+        '@id': `${locUrl}#breadcrumb`,
+        itemListElement: breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: this.resolveAbsoluteUrl(b.url)
+        }))
+      });
+    }
+
+    const destination: Record<string, unknown> = {
+      '@type': 'TouristDestination',
+      '@id': `${locUrl}#destination`,
+      name: location.name,
+      description: location.description || `Scenic hill village and homestays in ${location.name}.`,
+      url: locUrl,
+      image: this.resolveAbsoluteUrl(location.image_url || (location as any).cover_image),
+      containedInPlace: {
+        '@type': 'AdministrativeArea',
+        name: location.city?.name || 'West Bengal',
+        containedInPlace: {
+          '@type': 'Country',
+          name: 'India'
+        }
+      }
+    };
+    graph.push(destination);
+
+    if (properties && properties.length > 0) {
+      const itemListElement = properties.slice(0, 15).map((p, index) => {
+        const pUrl = `${origin}/stay/${p.slug}`;
+        const img = p.cover_image?.file_url || p.feature_image?.file_url || p.property_assets?.[0]?.file_url;
+        const price = p.sale_per_night || p.price_per_night;
+
+        return {
+          '@type': 'ListItem',
+          position: index + 1,
+          item: {
+            '@type': 'BedAndBreakfast',
+            name: p.name,
+            url: pUrl,
+            image: this.resolveAbsoluteUrl(img),
+            priceRange: price ? `${this.settingsService.currencySymbol() || '₹'}${price}` : undefined,
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: location.name,
+              addressRegion: 'West Bengal',
+              addressCountry: 'IN'
+            }
+          }
+        };
+      });
+
+      graph.push({
+        '@type': 'ItemList',
+        '@id': `${locUrl}#homestays`,
+        name: `Verified Homestays in ${location.name}`,
+        numberOfItems: properties.length,
+        itemListElement
+      });
+    }
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': graph
+    };
+  }
+
+  /**
+   * Generate FAQPage Schema
+   */
+  public generateFaqSchema(
+    faqs: Array<{ question: string; answer: string }>,
+    breadcrumbs?: BreadcrumbItem[]
+  ): Record<string, unknown> {
+    const origin = this.getBaseUrl();
+    const currentUrl = this.getCurrentCleanUrl();
+
+    const graph: Array<Record<string, unknown>> = [];
+
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      graph.push({
+        '@type': 'BreadcrumbList',
+        '@id': `${currentUrl}#breadcrumb`,
+        itemListElement: breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: this.resolveAbsoluteUrl(b.url)
+        }))
+      });
+    }
+
+    graph.push({
+      '@type': 'FAQPage',
+      '@id': `${currentUrl}#faq`,
+      mainEntity: faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: f.answer
+        }
+      }))
+    });
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': graph
+    };
+  }
+
+  /**
+   * Generate AboutPage Schema for Our Story
+   */
+  public generateAboutPageSchema(breadcrumbs?: BreadcrumbItem[]): Record<string, unknown> {
+    const origin = this.getBaseUrl();
+    const currentUrl = `${origin}/our-story`;
+    const appName = this.settingsService.settingsData()?.['app_name']?.trim() || this.defaultSiteName;
+
+    const graph: Array<Record<string, unknown>> = [];
+
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      graph.push({
+        '@type': 'BreadcrumbList',
+        '@id': `${currentUrl}#breadcrumb`,
+        itemListElement: breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: this.resolveAbsoluteUrl(b.url)
+        }))
+      });
+    }
+
+    graph.push({
+      '@type': 'AboutPage',
+      '@id': `${currentUrl}#about`,
+      url: currentUrl,
+      name: `Our Story — ${appName}`,
+      description:
+        'Discover how Tashihomes empowers local Himalayan host families while curating authentic, verified village homestays across North Bengal & Sikkim.',
+      mainEntity: {
+        '@type': 'Organization',
+        name: appName,
+        url: origin,
+        logo: `${origin}/images/hero-himalaya.webp`
+      }
+    });
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': graph
+    };
+  }
+
+  /**
+   * Generate Experiences Page Schema
+   */
+  public generateExperiencesPageSchema(
+    experiences: Array<{ title: string; subtitle: string; description: string; region: string }>,
+    breadcrumbs?: BreadcrumbItem[]
+  ): Record<string, unknown> {
+    const origin = this.getBaseUrl();
+    const currentUrl = `${origin}/experiences`;
+
+    const graph: Array<Record<string, unknown>> = [];
+
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      graph.push({
+        '@type': 'BreadcrumbList',
+        '@id': `${currentUrl}#breadcrumb`,
+        itemListElement: breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: this.resolveAbsoluteUrl(b.url)
+        }))
+      });
+    }
+
+    const itemListElement = experiences.map((exp, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'TouristAttraction',
+        name: exp.title,
+        description: exp.description,
+        touristType: exp.subtitle,
+        location: {
+          '@type': 'Place',
+          name: exp.region
+        }
+      }
+    }));
+
+    graph.push({
+      '@type': 'ItemList',
+      '@id': `${currentUrl}#experiences`,
+      name: 'Curated Himalayan Experiences & Village Trails',
+      description:
+        'Immerse yourself in authentic Himalayan village life: tea garden plucking, monastery walks, local cooking, and guided forest trails.',
+      numberOfItems: experiences.length,
+      itemListElement
+    });
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': graph
+    };
+  }
+
+  /**
+   * Generate Search Results Page Schema
+   */
+  public generateSearchResultsSchema(
+    query: string,
+    properties: Partial<PropertyData>[],
+    breadcrumbs?: BreadcrumbItem[]
+  ): Record<string, unknown> {
+    const origin = this.getBaseUrl();
+    const currentUrl = this.getCurrentCleanUrl();
+
+    const graph: Array<Record<string, unknown>> = [];
+
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      graph.push({
+        '@type': 'BreadcrumbList',
+        '@id': `${currentUrl}#breadcrumb`,
+        itemListElement: breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: this.resolveAbsoluteUrl(b.url)
+        }))
+      });
+    }
+
+    const itemListElement = properties.slice(0, 20).map((p, index) => {
+      const pUrl = `${origin}/stay/${p.slug}`;
+      const img = p.cover_image?.file_url || p.feature_image?.file_url || p.property_assets?.[0]?.file_url;
+      const price = p.sale_per_night || p.price_per_night;
+
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'BedAndBreakfast',
+          name: p.name,
+          url: pUrl,
+          image: this.resolveAbsoluteUrl(img),
+          priceRange: price ? `${this.settingsService.currencySymbol() || '₹'}${price}` : undefined,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: p.city?.name || p.location?.name || 'Darjeeling',
+            addressRegion: 'West Bengal',
+            addressCountry: 'IN'
+          }
+        }
+      };
+    });
+
+    graph.push({
+      '@type': 'SearchResultsPage',
+      '@id': `${currentUrl}#searchresults`,
+      name: query ? `Search Results for "${query}"` : 'Homestay Search Results',
+      url: currentUrl,
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: properties.length,
+        itemListElement
+      }
+    });
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': graph
+    };
+  }
+
+  /**
+   * Generate Legal / Policy Page Schema
+   */
+  public generateLegalPageSchema(
+    pageTitle: string,
+    pagePath: string,
+    breadcrumbs?: BreadcrumbItem[]
+  ): Record<string, unknown> {
+    const origin = this.getBaseUrl();
+    const currentUrl = `${origin}${pagePath.startsWith('/') ? pagePath : `/${pagePath}`}`;
+
+    const graph: Array<Record<string, unknown>> = [];
+
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      graph.push({
+        '@type': 'BreadcrumbList',
+        '@id': `${currentUrl}#breadcrumb`,
+        itemListElement: breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: this.resolveAbsoluteUrl(b.url)
+        }))
+      });
+    }
+
+    graph.push({
+      '@type': 'WebPage',
+      '@id': `${currentUrl}#webpage`,
+      url: currentUrl,
+      name: pageTitle,
+      isPartOf: {
+        '@type': 'WebSite',
+        url: origin
+      }
+    });
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': graph
+    };
+  }
+
+  /**
+   * Generate Home Page Schema combining WebSite, Organization & Featured Homestays
+   */
+  public generateHomeSchema(featuredProperties?: Partial<PropertyData>[]): Record<string, unknown> {
+    const websiteGraph = this.generateWebSiteSchema();
+    const graph = Array.isArray(websiteGraph['@graph'])
+      ? [...(websiteGraph['@graph'] as Array<Record<string, unknown>>)]
+      : [];
+
+    if (featuredProperties && featuredProperties.length > 0) {
+      const origin = this.getBaseUrl();
+      const itemListElement = featuredProperties.slice(0, 10).map((p, index) => {
+        const pUrl = `${origin}/stay/${p.slug}`;
+        const img = p.cover_image?.file_url || p.feature_image?.file_url || p.property_assets?.[0]?.file_url;
+        const price = p.sale_per_night || p.price_per_night;
+
+        return {
+          '@type': 'ListItem',
+          position: index + 1,
+          item: {
+            '@type': 'BedAndBreakfast',
+            name: p.name,
+            url: pUrl,
+            image: this.resolveAbsoluteUrl(img),
+            priceRange: price ? `${this.settingsService.currencySymbol() || '₹'}${price}` : undefined,
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: p.city?.name || p.location?.name || 'Darjeeling',
+              addressRegion: 'West Bengal',
+              addressCountry: 'IN'
+            }
+          }
+        };
+      });
+
+      graph.push({
+        '@type': 'ItemList',
+        '@id': `${origin}/#featured-homestays`,
+        name: 'Featured Himalayan Homestays',
+        description: 'Handpicked verified homestays across Darjeeling, Kalimpong, Kurseong, Mirik & Dooars.',
+        numberOfItems: featuredProperties.length,
+        itemListElement
+      });
+    }
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': graph
+    };
   }
 
   /**

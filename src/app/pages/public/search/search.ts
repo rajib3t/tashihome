@@ -34,6 +34,7 @@ import { LocationService } from '../../../services/location/location-service';
 import { LocationResponse, LocationQuery } from '../../../services/location/location-model';
 import { LocationAutocomplete } from '../../../shared/components/location-autocomplete/location-autocomplete';
 import { SettingsService } from '../../../services/settings/settings-service';
+import { SeoService } from '../../../services/seo/seo-service';
 import { PaginationMeta } from '../../../services/api/api-response.model';
 import { environment } from '../../../../environments/environment';
 
@@ -60,6 +61,7 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
   public readonly cityService = inject(CityService);
   public readonly locationService = inject(LocationService);
   public readonly settingsService = inject(SettingsService);
+  public readonly seoService = inject(SeoService);
   public readonly router = inject(Router);
   public readonly route = inject(ActivatedRoute);
   private readonly el = inject(ElementRef);
@@ -203,6 +205,7 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
     this.canvasCleanupFn?.();
     this.revealObserver?.disconnect();
   }
@@ -299,6 +302,13 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
             size: res.meta.size,
           });
         }
+        const term = this.searchKeyword() || this.selectedLocationName() || '';
+        this.seoService.setStructuredData(
+          this.seoService.generateSearchResultsSchema(term, this.properties(), [
+            { name: 'Home', url: '/' },
+            { name: 'Search', url: '/search' }
+          ])
+        );
         this.cdr.markForCheck();
         this.refreshRevealObserver();
       });
