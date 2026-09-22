@@ -112,6 +112,7 @@ export class Property {
   }
 
   ngOnInit(): void {
+    this.seoService.removeStructuredData();
     const slug = this.route.snapshot.paramMap.get('slug');
     if (slug) {
       this.propertyService.public.getPropertyBySlug(slug, this.checkInDate(), this.checkOutDate()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

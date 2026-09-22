@@ -106,5 +106,33 @@ describe('SeoConfig Model', () => {
     expect((schema['@graph'][0] as any).mainEntity.length).toBe(1);
     expect((schema['@graph'][0] as any).mainEntity[0].name).toContain('fee to join');
   });
+
+  it('should ensure BedAndBreakfast property schema does not contain default WebSite graph', () => {
+    const lodgingSchema = {
+      '@type': 'BedAndBreakfast',
+      name: 'Singalila Homestay',
+      checkinTime: '14:00',
+      checkoutTime: '11:00',
+      currenciesAccepted: 'INR'
+    };
+    const breadcrumbs = {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://tashihomes.in/' },
+        { '@type': 'ListItem', position: 2, name: 'Singalila Homestay', item: 'https://tashihomes.in/stay/singalila' }
+      ]
+    };
+    const payload = {
+      '@context': 'https://schema.org',
+      '@graph': [lodgingSchema, breadcrumbs]
+    };
+
+    // The property page structured data should only contain Lodging and BreadcrumbList, not WebSite or SearchAction
+    const types = payload['@graph'].map((item) => item['@type']);
+    expect(types).toContain('BedAndBreakfast');
+    expect(types).toContain('BreadcrumbList');
+    expect(types).not.toContain('WebSite');
+    expect(types).not.toContain('SearchAction');
+  });
 });
 

@@ -126,6 +126,15 @@ export class SeoService {
       if (!head) return;
 
       const scriptId = 'tashi-structured-data';
+
+      // Clean up any other ld+json scripts (e.g. untagged static scripts or stale tags)
+      const existingLdScripts = head.querySelectorAll('script[type="application/ld+json"]');
+      existingLdScripts.forEach((s) => {
+        if (s.id !== scriptId) {
+          this.renderer.removeChild(head, s);
+        }
+      });
+
       let scriptTag = head.querySelector<HTMLScriptElement>(`#${scriptId}`);
 
       if (!schema) {
@@ -153,7 +162,17 @@ export class SeoService {
    * Remove structured data when leaving page
    */
   public removeStructuredData(): void {
-    this.setStructuredData(null);
+    try {
+      const head = this.document.head;
+      if (!head) return;
+
+      const existingLdScripts = head.querySelectorAll('script[type="application/ld+json"]');
+      existingLdScripts.forEach((s) => {
+        this.renderer.removeChild(head, s);
+      });
+    } catch {
+      // safe fallback
+    }
   }
 
   /**
