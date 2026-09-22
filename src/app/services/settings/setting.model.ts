@@ -59,6 +59,25 @@ export interface SystemSettingsMap {
   coming_soon_message?: string | null;
   coming_background_image?: string | null;
   coming_soon_video?: string | null;
+
+  // Agreement Template & Legal Settings (Backend-Driven)
+  agreement_title?: string | null;
+  agreement_template_terms?: string | null;
+  agreement_company_legal_name?: string | null;
+  agreement_company_address?: string | null;
+  agreement_default_expiry_days?: string | number | null;
+  agreement_logo?: string | null;
+  agreement_signatory_name?: string | null;
+  agreement_signatory_role?: string | null;
+
+  // Frontend Aliases
+  agreement_template_title?: string | null;
+  agreement_default_validity_days?: string | number | null;
+  agreement_operator_legal_name?: string | null;
+  agreement_operator_signatory_name?: string | null;
+  agreement_operator_signatory_role?: string | null;
+  agreement_operator_address?: string | null;
+  agreement_template_clauses?: string | null;
 }
 
 // Convert SettingItem[] array to key-value object map

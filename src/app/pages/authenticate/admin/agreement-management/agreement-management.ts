@@ -9,14 +9,18 @@ import { Card } from '../../../../shared/components/ui/card/card';
 import { Modal } from '../../../../shared/components/ui/modal/modal';
 import { Pagination } from '../../../../shared/components/ui/pagination/pagination';
 import { AgreementService } from '../../../../services/agreement/agreement-service';
+import { SettingsService } from '../../../../services/settings/settings-service';
 import { UserService } from '../../../../services/user/user-service';
 import { PaginationMeta } from '../../../../services/api/api-response.model';
 import {
   AgreementStatus,
   VendorAgreementItem,
 } from '../../../../core/models/agreement.model';
+import { AgreementTemplateItem } from '../../../../core/models/agreement-template.model';
+import { AgreementTemplateComponent } from './agreement-template/agreement-template.component';
 import { User } from '../../../../services/user/user.model';
 import { finalize } from 'rxjs';
+
 
 @Component({
   selector: 'app-agreement-management',
@@ -29,12 +33,14 @@ import { finalize } from 'rxjs';
     Card,
     Modal,
     Pagination,
+    AgreementTemplateComponent,
   ],
   templateUrl: './agreement-management.html',
   styleUrl: './agreement-management.css',
 })
 export class AgreementManagement implements OnInit {
   private readonly agreementService = inject(AgreementService);
+  private readonly settingsService = inject(SettingsService);
   private readonly userService = inject(UserService);
   private readonly fb = inject(FormBuilder);
   private readonly sanitizer = inject(DomSanitizer);
@@ -62,10 +68,25 @@ export class AgreementManagement implements OnInit {
     status: [''],
   });
 
+  // Tabs: 'agreements' | 'templates'
+  public readonly activeTab = signal<'agreements' | 'templates'>('agreements');
+
   // Action modals
   public readonly isSendModalOpen = signal<boolean>(false);
   public readonly isSending = signal<boolean>(false);
   public readonly sendError = signal<string | null>(null);
+
+  // Duplicate Prevention & Version Management
+  public readonly isDuplicateBlocked = signal<boolean>(false);
+  public readonly hasPendingAgreement = signal<boolean>(false);
+  public readonly hasSignedAgreement = signal<boolean>(false);
+  public readonly pendingAgreementForSelectedVendor = signal<any | null>(null);
+  public readonly signedAgreementForSelectedVendor = signal<any | null>(null);
+  public readonly checkingVendorStatus = signal<boolean>(false);
+  public readonly vendorPreviousAgreements = signal<VendorAgreementItem[]>([]);
+  public readonly isAmendmentMode = signal<boolean>(false);
+  public readonly suggestedNextVersion = signal<string>('1.0');
+
 
   public readonly isResendModalOpen = signal<boolean>(false);
   public readonly isResending = signal<boolean>(false);
@@ -92,12 +113,19 @@ export class AgreementManagement implements OnInit {
   public readonly vendorsList = signal<User[]>([]);
   public readonly loadingVendors = signal<boolean>(false);
 
+  // Available templates for Send Agreement modal
+  public readonly availableTemplates = signal<AgreementTemplateItem[]>([]);
+  public readonly loadingTemplates = signal<boolean>(false);
+
   public readonly sendAgreementForm = this.fb.group({
     vendor_id: ['', [Validators.required]],
-    commission_percentage: [10.0, [Validators.required, Validators.min(0), Validators.max(100)]],
+    template_id: [''],
+    commission_percentage: [this.settingsService.commissionPercentage(), [Validators.required, Validators.min(0), Validators.max(100)]],
     valid_days: [7, [Validators.required, Validators.min(1), Validators.max(90)]],
+    version: ['1.0', [Validators.required]],
     custom_notes: [''],
   });
+
 
   ngOnInit(): void {
     this.loadAgreements();
@@ -161,33 +189,273 @@ export class AgreementManagement implements OnInit {
   }
 
   // ── Send Agreement to Existing Vendor Modal ────────────────────────────────
-  public openSendModal(preselectedVendorId?: string): void {
+  public openSendModal(
+    preselectedVendorId?: string,
+    isAmendment: boolean = false,
+    customVersion?: string
+  ): void {
+    const defaultValidity = this.settingsService.agreementDefaultValidityDays() || 7;
+    this.isAmendmentMode.set(isAmendment);
+    this.sendError.set(null);
+    this.isDuplicateBlocked.set(false);
+    this.pendingAgreementForSelectedVendor.set(null);
+
+    const vendorIdStr = preselectedVendorId ? String(preselectedVendorId) : '';
+
     this.sendAgreementForm.reset({
-      vendor_id: preselectedVendorId || '',
-      commission_percentage: 10.0,
-      valid_days: 7,
+      vendor_id: vendorIdStr,
+      template_id: '',
+      commission_percentage: this.settingsService.commissionPercentage(),
+      valid_days: defaultValidity,
+      version: customVersion || '1.0',
       custom_notes: '',
     });
-    this.sendError.set(null);
+
+    if (vendorIdStr) {
+      this.checkVendorAgreements(vendorIdStr, customVersion);
+    }
+
     this.isSendModalOpen.set(true);
+    this.loadTemplatesForModal();
 
     if (this.vendorsList().length === 0) {
-      this.loadVendors();
+      this.loadVendors(vendorIdStr);
     }
+  }
+
+
+  public openAmendmentModal(item: VendorAgreementItem): void {
+    const currentVerNum = parseFloat(String(item.version || '1.0').replace(/[^0-9.]/g, '')) || 1.0;
+    const nextVer = `${(Math.floor(currentVerNum) + 1)}.0`;
+
+    // 1. Resolve vendorId safely from multiple possible fields
+    let vendorId = item.vendor?.id || (item as any).vendor_id;
+    if (!vendorId && item.signer_email) {
+      const matched = this.vendorsList().find(
+        (v) => v.email?.toLowerCase() === item.signer_email?.toLowerCase()
+      );
+      if (matched) {
+        vendorId = matched.id;
+      }
+    }
+
+    // 2. Ensure vendor is present in vendorsList right away so <option> is immediately present
+    if (item.vendor && item.vendor.id) {
+      const exists = this.vendorsList().some(
+        (v) => String(v.id) === String(item.vendor.id)
+      );
+      if (!exists) {
+        this.vendorsList.update((list) => [
+          {
+            id: String(item.vendor.id),
+            full_name: item.vendor.full_name || item.signer_name || 'Host Vendor',
+            email: item.vendor.email || item.signer_email || '',
+            phone: item.vendor.phone || item.signer_phone || '',
+          } as any,
+          ...list,
+        ]);
+      }
+    } else if (vendorId && (item.signer_name || item.signer_email)) {
+      const exists = this.vendorsList().some(
+        (v) => String(v.id) === String(vendorId)
+      );
+      if (!exists) {
+        this.vendorsList.update((list) => [
+          {
+            id: String(vendorId),
+            full_name: item.signer_name || 'Host Vendor',
+            email: item.signer_email || '',
+            phone: item.signer_phone || '',
+          } as any,
+          ...list,
+        ]);
+      }
+    }
+
+    this.openSendModal(vendorId ? String(vendorId) : undefined, true, nextVer);
+    this.sendAgreementForm.patchValue({
+      vendor_id: vendorId ? String(vendorId) : '',
+      commission_percentage: item.commission_percentage || this.settingsService.commissionPercentage(),
+      version: nextVer,
+      custom_notes: `Terms amendment v${nextVer} (Supersedes previous v${item.version || '1.0'})`,
+    });
+  }
+
+  public onVendorSelectChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const vendorId = target.value;
+    this.checkVendorAgreements(vendorId);
+  }
+
+  public checkVendorAgreements(vendorId: string, explicitVersion?: string): void {
+    if (!vendorId) {
+      this.isDuplicateBlocked.set(false);
+      this.hasPendingAgreement.set(false);
+      this.hasSignedAgreement.set(false);
+      this.pendingAgreementForSelectedVendor.set(null);
+      this.signedAgreementForSelectedVendor.set(null);
+      this.vendorPreviousAgreements.set([]);
+      this.isAmendmentMode.set(false);
+      this.suggestedNextVersion.set('1.0');
+      this.sendError.set(null);
+      return;
+    }
+
+    this.checkingVendorStatus.set(true);
+    this.sendError.set(null);
+
+    this.agreementService
+      .getVendorAgreementStatus(vendorId)
+      .pipe(finalize(() => this.checkingVendorStatus.set(false)))
+      .subscribe({
+        next: (status) => {
+          const pending = status?.pending_agreement || null;
+          const signed = status?.signed_agreement || null;
+
+          this.hasPendingAgreement.set(!!status?.has_pending);
+          this.pendingAgreementForSelectedVendor.set(pending);
+
+          this.hasSignedAgreement.set(!!status?.has_signed);
+          this.signedAgreementForSelectedVendor.set(signed);
+
+          // We do not block the admin! The backend auto-voids old pending agreements on submit.
+          this.isDuplicateBlocked.set(false);
+
+          if (explicitVersion) {
+            this.suggestedNextVersion.set(explicitVersion);
+            this.isAmendmentMode.set(true);
+            this.sendAgreementForm.patchValue({ version: explicitVersion });
+          } else if (status?.has_signed) {
+            const nextVer = status?.suggested_next_version || '2.0';
+            this.suggestedNextVersion.set(nextVer);
+            this.isAmendmentMode.set(true);
+            this.sendAgreementForm.patchValue({
+              version: nextVer,
+              custom_notes: `Amendment v${nextVer} (Supersedes v${signed?.version || '1.0'} upon execution)`,
+            });
+          } else if (status?.has_pending) {
+            const curVer = pending?.version || '1.0';
+            this.suggestedNextVersion.set(curVer);
+            this.isAmendmentMode.set(false);
+            this.sendAgreementForm.patchValue({ version: curVer });
+          } else {
+            this.suggestedNextVersion.set('1.0');
+            this.isAmendmentMode.set(false);
+            this.sendAgreementForm.patchValue({ version: '1.0' });
+          }
+        },
+        error: () => {
+          this.hasPendingAgreement.set(false);
+          this.hasSignedAgreement.set(false);
+        },
+      });
+  }
+
+  public resendPendingFromModal(): void {
+    const pending = this.pendingAgreementForSelectedVendor();
+    if (!pending) return;
+
+    this.isSending.set(true);
+    this.agreementService
+      .resendAgreement(pending.id)
+      .pipe(finalize(() => this.isSending.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set(`Pending agreement invitation (v${pending.version || '1.0'}) successfully resent to host.`);
+          this.closeSendModal();
+          this.loadAgreements();
+        },
+        error: (err) => {
+          const msg = this.agreementService.extractApiErrorMessage(err) || 'Failed to resend agreement.';
+          this.sendError.set(msg);
+        },
+      });
+  }
+
+  public cancelPendingFromModal(): void {
+    const pending = this.pendingAgreementForSelectedVendor();
+    if (!pending) return;
+
+    if (!confirm(`Are you sure you want to cancel pending agreement v${pending.version || '1.0'}? This will invalidate the existing signing token.`)) {
+      return;
+    }
+
+    this.isSending.set(true);
+    this.agreementService
+      .cancelAgreement(pending.id)
+      .pipe(finalize(() => this.isSending.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set(`Pending agreement v${pending.version || '1.0'} was cancelled.`);
+          this.loadAgreements();
+          const vendorId = this.sendAgreementForm.get('vendor_id')?.value;
+          if (vendorId) {
+            this.checkVendorAgreements(vendorId);
+          }
+        },
+        error: (err) => {
+          const msg = this.agreementService.extractApiErrorMessage(err) || 'Failed to cancel agreement.';
+          this.sendError.set(msg);
+        },
+      });
   }
 
   public closeSendModal(): void {
     this.isSendModalOpen.set(false);
+    this.isDuplicateBlocked.set(false);
+    this.hasPendingAgreement.set(false);
+    this.hasSignedAgreement.set(false);
+    this.pendingAgreementForSelectedVendor.set(null);
+    this.signedAgreementForSelectedVendor.set(null);
+    this.isAmendmentMode.set(false);
+    this.sendError.set(null);
   }
 
-  private loadVendors(): void {
+
+  private loadVendors(preselectedId?: string): void {
     this.loadingVendors.set(true);
     this.userService
       .getVendors({ page: 1, size: 100 })
       .pipe(finalize(() => this.loadingVendors.set(false)))
       .subscribe({
         next: (res) => {
-          this.vendorsList.set(res.data || []);
+          const fetched = res.data || [];
+          const targetId = preselectedId || this.sendAgreementForm.get('vendor_id')?.value;
+          const currentSelectedVendor = this.vendorsList().find(
+            (v) => String(v.id) === String(targetId)
+          );
+          if (
+            currentSelectedVendor &&
+            !fetched.some((v) => String(v.id) === String(currentSelectedVendor.id))
+          ) {
+            this.vendorsList.set([currentSelectedVendor, ...fetched]);
+          } else {
+            this.vendorsList.set(fetched);
+          }
+
+          if (targetId) {
+            this.sendAgreementForm.patchValue({ vendor_id: String(targetId) });
+          }
+        },
+        error: () => {
+          // Fallback or leave empty
+        },
+      });
+  }
+
+  private loadTemplatesForModal(): void {
+    this.loadingTemplates.set(true);
+    this.agreementService
+      .getAgreementTemplates({ status: 'active', size: 100 })
+      .pipe(finalize(() => this.loadingTemplates.set(false)))
+      .subscribe({
+        next: (res) => {
+          const list = res?.data || [];
+          this.availableTemplates.set(list);
+          const def = list.find((t) => t.is_default);
+          if (def && !this.sendAgreementForm.get('template_id')?.value) {
+            this.sendAgreementForm.patchValue({ template_id: def.id });
+          }
         },
         error: () => {
           // Fallback or leave empty
@@ -201,25 +469,35 @@ export class AgreementManagement implements OnInit {
       return;
     }
 
-    const { vendor_id, commission_percentage, valid_days, custom_notes } =
+    const { vendor_id, template_id, commission_percentage, valid_days, version, custom_notes } =
       this.sendAgreementForm.getRawValue();
 
     if (!vendor_id) return;
 
+    const hadPending = this.hasPendingAgreement();
+
     this.isSending.set(true);
     this.sendError.set(null);
 
+    const fullNotes = version && !custom_notes?.includes(`v${version}`)
+      ? `[Agreement Version: v${version}] ${custom_notes || ''}`.trim()
+      : custom_notes || undefined;
+
     this.agreementService
       .sendAgreementToVendor(vendor_id, {
-        commission_percentage: Number(commission_percentage) || 10.0,
+        commission_percentage: Number(commission_percentage) || this.settingsService.commissionPercentage(),
         valid_days: Number(valid_days) || 7,
-        custom_notes: custom_notes || undefined,
+        version: version || '1.0',
+        custom_notes: fullNotes,
+        template_id: template_id || undefined,
       })
       .pipe(finalize(() => this.isSending.set(false)))
       .subscribe({
         next: (res) => {
           this.successMessage.set(
-            res?.message || 'Host Partnership Agreement sent successfully to vendor!'
+            hadPending
+              ? `New agreement (v${version || '1.0'}) dispatched successfully! Previous pending invitation was superseded.`
+              : (res?.message || `Host Partnership Agreement (v${version || '1.0'}) sent successfully to host!`)
           );
           this.closeSendModal();
           this.loadAgreements();
@@ -233,6 +511,8 @@ export class AgreementManagement implements OnInit {
         },
       });
   }
+
+
 
   // ── Resend Agreement ───────────────────────────────────────────────────────
   public openResendModal(item: VendorAgreementItem): void {

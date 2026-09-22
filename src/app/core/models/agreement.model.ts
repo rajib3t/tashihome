@@ -33,8 +33,10 @@ export const SIGNATURE_FONT_OPTIONS: SignatureFontOption[] = [
 
 export interface VendorAgreementItem {
   id: string; // public_id UUID
+  template_id?: string | number | null;
   title: string;
   version: string;
+
   status: AgreementStatus;
   agreement_type: AgreementType;
   commission_percentage: number;
@@ -152,7 +154,11 @@ export interface SendAgreementToVendorPayload {
   commission_percentage?: number;
   valid_days?: number;
   custom_notes?: string;
+  version?: string;
+  agreement_type?: AgreementType;
+  template_id?: string;
 }
+
 
 export interface AgreementListResponse {
   success: boolean;

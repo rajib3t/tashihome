@@ -170,6 +170,52 @@ export class SettingsService {
   comingSoonBgImage = computed(() => this.#settingsData()['coming_background_image'] || null);
   comingSoonVideo = computed(() => this.#settingsData()['coming_soon_video'] || null);
 
+  // Agreement Template & Legal Settings (Backend-Driven & Aliases)
+  agreementTemplateTitle = computed(
+    () =>
+      this.#settingsData()['agreement_title'] ||
+      this.#settingsData()['agreement_template_title'] ||
+      'HOST PARTNERSHIP & SERVICE AGREEMENT'
+  );
+  agreementDefaultValidityDays = computed(() =>
+    Number(
+      this.#settingsData()['agreement_default_expiry_days'] ??
+      this.#settingsData()['agreement_default_validity_days'] ??
+      7
+    )
+  );
+  agreementOperatorLegalName = computed(
+    () =>
+      this.#settingsData()['agreement_company_legal_name'] ||
+      this.#settingsData()['agreement_operator_legal_name'] ||
+      'TashiHome Technologies Pvt. Ltd.'
+  );
+  agreementOperatorSignatoryName = computed(
+    () =>
+      this.#settingsData()['agreement_signatory_name'] ||
+      this.#settingsData()['agreement_operator_signatory_name'] ||
+      'Authorized Platform Representative'
+  );
+  agreementOperatorSignatoryRole = computed(
+    () =>
+      this.#settingsData()['agreement_signatory_role'] ||
+      this.#settingsData()['agreement_operator_signatory_role'] ||
+      'Platform Authorized Signatory'
+  );
+  agreementOperatorAddress = computed(
+    () =>
+      this.#settingsData()['agreement_company_address'] ||
+      this.#settingsData()['agreement_operator_address'] ||
+      this.#settingsData()['contact_address'] ||
+      'Gangtok, Sikkim - 737101, India'
+  );
+  agreementTemplateClausesJson = computed(
+    () =>
+      this.#settingsData()['agreement_template_terms'] ||
+      this.#settingsData()['agreement_template_clauses'] ||
+      null
+  );
+
   public formatPrice(amount: number): string {
     const symbol = this.currencySymbol();
     return `${symbol} ${Number(amount).toLocaleString('en-IN', {

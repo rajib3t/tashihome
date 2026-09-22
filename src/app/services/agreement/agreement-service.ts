@@ -12,6 +12,15 @@ import {
   SendAgreementToVendorPayload,
   SignAgreementPayload,
 } from '../../core/models/agreement.model';
+import {
+  AgreementTemplateItem,
+  AgreementTemplateListResponse,
+  AgreementTemplatePreviewData,
+  AgreementTemplateResponse,
+  CreateAgreementTemplatePayload,
+  UpdateAgreementTemplatePayload,
+} from '../../core/models/agreement-template.model';
+
 
 @Injectable({
   providedIn: 'root',
@@ -252,12 +261,17 @@ export class AgreementService {
   public getAgreements(params?: {
     page?: number;
     limit?: number;
+    size?: number;
     status?: string;
     search?: string;
   }): Observable<AgreementListResponse> {
     const queryParams: Record<string, string | number> = {};
     if (params?.page) queryParams['page'] = params.page;
-    if (params?.limit) queryParams['limit'] = params.limit;
+    const pageSize = params?.size || params?.limit;
+    if (pageSize) {
+      queryParams['size'] = pageSize;
+      queryParams['limit'] = pageSize;
+    }
     if (params?.status) queryParams['status'] = params.status;
     if (params?.search) queryParams['search'] = params.search;
 
@@ -397,6 +411,136 @@ export class AgreementService {
   public getVendorDownloadUrl(): string {
     return `${this.apiService.apiBaseUrl}/vendor/agreements/download`;
   }
+
+  // ── Agreement Template Management Methods ─────────────────────────────────
+
+  /**
+   * Lists all agreement templates with optional filters and pagination.
+   * GET /api/v1/admin/agreement-templates
+   */
+  public getAgreementTemplates(params?: {
+    page?: number;
+    size?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+  }): Observable<AgreementTemplateListResponse> {
+    const queryParams: Record<string, string | number> = {};
+    if (params?.page) queryParams['page'] = params.page;
+    const pageSize = params?.size || params?.limit;
+    if (pageSize) {
+      queryParams['size'] = pageSize;
+      queryParams['limit'] = pageSize;
+    }
+    if (params?.status) queryParams['status'] = params.status;
+    if (params?.search) queryParams['search'] = params.search;
+
+    return this.apiService
+      .protectedGet<AgreementTemplateListResponse>('/admin/agreement-templates', { params: queryParams })
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Retrieves single agreement template by public_id.
+   * GET /api/v1/admin/agreement-templates/{id}
+   */
+  public getAgreementTemplate(id: string): Observable<AgreementTemplateResponse> {
+    return this.apiService
+      .protectedGet<AgreementTemplateResponse>(`/admin/agreement-templates/${id}`)
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Creates a new agreement template (JSON or FormData for PDF upload).
+   * POST /api/v1/admin/agreement-templates
+   */
+  public createAgreementTemplate(
+    payload: FormData | CreateAgreementTemplatePayload
+  ): Observable<AgreementTemplateResponse> {
+    return this.apiService
+      .protectedPost<AgreementTemplateResponse>('/admin/agreement-templates', payload)
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Updates an existing agreement template (JSON or FormData if replacing PDF).
+   * PUT /api/v1/admin/agreement-templates/{id}
+   */
+  public updateAgreementTemplate(
+    id: string,
+    payload: FormData | UpdateAgreementTemplatePayload
+  ): Observable<AgreementTemplateResponse> {
+    return this.apiService
+      .protectedPut<AgreementTemplateResponse>(`/admin/agreement-templates/${id}`, payload)
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Archives / soft-deletes an agreement template.
+   * DELETE /api/v1/admin/agreement-templates/{id}
+   */
+  public archiveAgreementTemplate(id: string): Observable<AgreementTemplateResponse> {
+    return this.apiService
+      .protectedDelete<AgreementTemplateResponse>(`/admin/agreement-templates/${id}`)
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Sets the specified agreement template as active default.
+   * POST /api/v1/admin/agreement-templates/{id}/set-default
+   */
+  public setDefaultAgreementTemplate(id: string): Observable<AgreementTemplateResponse> {
+    return this.apiService
+      .protectedPost<AgreementTemplateResponse>(`/admin/agreement-templates/${id}/set-default`, {})
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Retrieves preview data for an agreement template.
+   * GET /api/v1/admin/agreement-templates/{id}/preview
+   */
+  public previewAgreementTemplate(id: string): Observable<any> {
+    return this.apiService
+      .protectedGet<any>(`/admin/agreement-templates/${id}/preview`)
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
+
+  /**
+   * Retrieves agreement summary / status for a vendor.
+   * GET /api/v1/admin/vendors/{vendor_id}/agreements/status
+   */
+  public getVendorAgreementStatus(vendorId: string): Observable<any> {
+    return this.apiService
+      .protectedGet<any>(`/admin/vendors/${vendorId}/agreements/status`)
+      .pipe(
+        map((res) => res.data),
+        catchError(this.apiService.passthroughError)
+      );
+  }
 }
+
+
+
 
 
