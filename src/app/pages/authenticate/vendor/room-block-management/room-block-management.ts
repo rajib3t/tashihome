@@ -13,6 +13,7 @@ import {
 } from '../../../../services/room-block/room-block.model';
 import { RoomBlockService } from '../../../../services/room-block/room-block-service';
 import { PropertyService } from '../../../../services/property/property-service';
+import { BookingService } from '../../../../services/booking/booking-service';
 import { PropertyData, PropertyRoomType } from '../../../../services/property/property.model';
 import { SettingsService } from '../../../../services/settings/settings-service';
 import { PaginationMeta } from '../../../../services/api/api-response.model';
@@ -44,6 +45,7 @@ import { TableLoaderComponent } from '../../../../shared/components/ui/table-loa
 export class VendorRoomBlockManagement implements OnInit {
   private readonly roomBlockService = inject(RoomBlockService);
   private readonly propertyService = inject(PropertyService);
+  private readonly bookingService = inject(BookingService);
   private readonly settingsService = inject(SettingsService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
@@ -122,13 +124,21 @@ export class VendorRoomBlockManagement implements OnInit {
 
   // Filtered room types for the property selected in the create form
   readonly createModalRoomTypes = signal<PropertyRoomType[]>([]);
-  readonly selectedRoomTypeMaxUnits = signal<number>(10);
+  readonly selectedRoomTypeMaxUnits = signal<number>(1);
+  readonly isCheckingAvailability = signal(false);
+  readonly liveInventory = signal<{
+    totalUnits: number;
+    bookedUnits: number;
+    blockedUnits: number;
+    availableToBlock: number;
+  } | null>(null);
 
   // ── Edit Modal State ─────────────────────────────────────────────────────
   readonly isEditModalOpen = signal(false);
   readonly isUpdating = signal(false);
   readonly editError = signal<string | null>(null);
   readonly blockToEdit = signal<RoomBlock | null>(null);
+  readonly editModalMaxUnits = signal<number>(1);
 
   readonly editForm = this.fb.group({
     block_start_date: ['', Validators.required],
@@ -155,6 +165,14 @@ export class VendorRoomBlockManagement implements OnInit {
     // Listen for room type change in create form to update max units
     this.createForm.get('room_type_id')?.valueChanges.subscribe((roomTypeId) => {
       this.updateMaxUnitsForSelectedRoomType(roomTypeId);
+    });
+
+    // Listen for date changes in create form to refresh live availability
+    this.createForm.get('block_start_date')?.valueChanges.subscribe(() => {
+      this.refreshLiveAvailability();
+    });
+    this.createForm.get('block_end_date')?.valueChanges.subscribe(() => {
+      this.refreshLiveAvailability();
     });
   }
 
@@ -251,6 +269,7 @@ export class VendorRoomBlockManagement implements OnInit {
   openCreateModal(): void {
     const today = this.getTodayString();
     const tomorrow = this.getTomorrowString();
+    this.liveInventory.set(null);
 
     this.createForm.reset({
       property_id: this.properties().length > 0 ? this.properties()[0].id : '',
@@ -273,40 +292,79 @@ export class VendorRoomBlockManagement implements OnInit {
   closeCreateModal(): void {
     this.isCreateModalOpen.set(false);
     this.createError.set(null);
+    this.liveInventory.set(null);
   }
 
   onPropertySelectedInCreateModal(propId?: string | null): void {
     if (!propId) {
       this.createModalRoomTypes.set([]);
       this.createForm.patchValue({ room_type_id: '' });
+      this.selectedRoomTypeMaxUnits.set(1);
+      this.liveInventory.set(null);
       return;
     }
 
     const prop = this.properties().find((p) => p.id === propId);
     if (prop && prop.property_room_types && prop.property_room_types.length > 0) {
       this.createModalRoomTypes.set(prop.property_room_types);
-      const defaultRoomTypeId = prop.property_room_types[0].room_type?.id || '';
+      const defaultRoomTypeId = prop.property_room_types[0].room_type?.id || prop.property_room_types[0].id || '';
       this.createForm.patchValue({ room_type_id: defaultRoomTypeId });
       this.updateMaxUnitsForSelectedRoomType(defaultRoomTypeId);
     } else {
       this.createModalRoomTypes.set([]);
       this.createForm.patchValue({ room_type_id: '' });
-      this.selectedRoomTypeMaxUnits.set(10);
+      this.selectedRoomTypeMaxUnits.set(1);
     }
+
+    // Also fetch full property details to guarantee accurate property_room_types and total_units
+    this.propertyService.vendor
+      .getPropertyById(propId)
+      .pipe(
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((res) => {
+        if (res?.data && res.data.property_room_types && res.data.property_room_types.length > 0) {
+          this.properties.update((list) => list.map((p) => (p.id === propId ? { ...p, ...res.data } : p)));
+          if (this.createForm.get('property_id')?.value === propId) {
+            this.createModalRoomTypes.set(res.data.property_room_types);
+            const currentRtId = this.createForm.get('room_type_id')?.value;
+            const validRtId = res.data.property_room_types.some(
+              (prt) => prt.room_type?.id === currentRtId || prt.id === currentRtId
+            )
+              ? currentRtId
+              : res.data.property_room_types[0].room_type?.id || res.data.property_room_types[0].id || '';
+            this.createForm.patchValue({ room_type_id: validRtId });
+            this.updateMaxUnitsForSelectedRoomType(validRtId);
+          }
+        }
+      });
   }
 
   updateMaxUnitsForSelectedRoomType(roomTypeId?: string | null): void {
     if (!roomTypeId) {
-      this.selectedRoomTypeMaxUnits.set(10);
+      this.selectedRoomTypeMaxUnits.set(1);
       return;
     }
     const currentList = this.createModalRoomTypes();
-    const matched = currentList.find((prt) => prt.room_type?.id === roomTypeId);
-    if (matched && matched.total_units) {
-      this.selectedRoomTypeMaxUnits.set(matched.total_units);
-    } else {
-      this.selectedRoomTypeMaxUnits.set(10);
+    const matched = currentList.find((prt) => prt.room_type?.id === roomTypeId || prt.id === roomTypeId);
+    const maxUnits = matched && typeof matched.total_units === 'number' && matched.total_units > 0
+      ? matched.total_units
+      : 1;
+    this.selectedRoomTypeMaxUnits.set(maxUnits);
+
+    const unitsControl = this.createForm.get('units_blocked');
+    unitsControl?.setValidators([Validators.required, Validators.min(1), Validators.max(maxUnits)]);
+    unitsControl?.updateValueAndValidity({ emitEvent: false });
+
+    const currentVal = Number(unitsControl?.value || 1);
+    if (currentVal > maxUnits) {
+      this.createForm.patchValue({ units_blocked: maxUnits }, { emitEvent: false });
+    } else if (currentVal < 1) {
+      this.createForm.patchValue({ units_blocked: 1 }, { emitEvent: false });
     }
+
+    this.refreshLiveAvailability();
   }
 
   adjustCreateUnits(delta: number): void {
@@ -316,10 +374,84 @@ export class VendorRoomBlockManagement implements OnInit {
     this.createForm.patchValue({ units_blocked: nextVal });
   }
 
+  onUnitsInputChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let val = parseInt(input.value, 10);
+    const max = this.selectedRoomTypeMaxUnits();
+    if (isNaN(val) || val < 1) {
+      val = 1;
+    } else if (val > max) {
+      val = max;
+    }
+    input.value = String(val);
+    this.createForm.patchValue({ units_blocked: val });
+  }
+
+  blockAllUnits(): void {
+    const max = this.selectedRoomTypeMaxUnits();
+    this.createForm.patchValue({ units_blocked: max });
+  }
+
+  refreshLiveAvailability(): void {
+    const propId = this.createForm.get('property_id')?.value;
+    const roomTypeId = this.createForm.get('room_type_id')?.value;
+    const start = this.normalizeDateString(this.createForm.get('block_start_date')?.value);
+    const end = this.normalizeDateString(this.createForm.get('block_end_date')?.value);
+
+    if (!propId || !roomTypeId || !start || !end || end <= start) {
+      this.liveInventory.set(null);
+      return;
+    }
+
+    this.isCheckingAvailability.set(true);
+    this.bookingService
+      .checkAvailability({
+        property_id: propId,
+        room_type_id: roomTypeId,
+        check_in_date: start,
+        check_out_date: end,
+        num_rooms: 1,
+        num_guests: 1,
+      })
+      .pipe(
+        finalize(() => this.isCheckingAvailability.set(false)),
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((res) => {
+        if (!res?.data) {
+          this.liveInventory.set(null);
+          return;
+        }
+        const data = res.data;
+        const matched = data.room_types_availability?.find(
+          (rt: any) => rt.room_type_id === roomTypeId || rt.property_room_type_id === roomTypeId
+        );
+
+        const total = matched?.total_units ?? data.total_units ?? this.selectedRoomTypeMaxUnits();
+        const booked = matched?.booked_units ?? data.booked_units ?? 0;
+        const blocked = matched?.blocked_units ?? data.blocked_units ?? 0;
+        const avail = Math.max(0, total - (booked + blocked));
+
+        if (total > 0 && total !== this.selectedRoomTypeMaxUnits()) {
+          this.selectedRoomTypeMaxUnits.set(total);
+          this.createForm.get('units_blocked')?.setValidators([Validators.required, Validators.min(1), Validators.max(total)]);
+          this.createForm.get('units_blocked')?.updateValueAndValidity({ emitEvent: false });
+        }
+
+        this.liveInventory.set({
+          totalUnits: total,
+          bookedUnits: booked,
+          blockedUnits: blocked,
+          availableToBlock: avail,
+        });
+      });
+  }
+
   submitCreate(): void {
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
-      this.createError.set('Please fill in all required fields.');
+      this.createError.set('Please fill in all required fields correctly.');
       return;
     }
 
@@ -339,8 +471,14 @@ export class VendorRoomBlockManagement implements OnInit {
     }
 
     const units = Number(raw.units_blocked) || 1;
+    const maxUnits = this.selectedRoomTypeMaxUnits();
     if (units < 1) {
       this.createError.set('Units to block must be at least 1.');
+      return;
+    }
+
+    if (units > maxUnits) {
+      this.createError.set(`Cannot block ${units} unit(s). The selected room type only has ${maxUnits} total unit(s).`);
       return;
     }
 
@@ -386,12 +524,51 @@ export class VendorRoomBlockManagement implements OnInit {
     this.blockToEdit.set(block);
     this.editError.set(null);
 
+    let max = 1;
+    const prop = this.properties().find((p) => p.id === block.property?.id);
+    const matchedPrt = prop?.property_room_types?.find(
+      (prt) => prt.room_type?.id === block.room_type?.id || prt.id === block.room_type?.id
+    );
+    if (matchedPrt && typeof matchedPrt.total_units === 'number' && matchedPrt.total_units > 0) {
+      max = matchedPrt.total_units;
+    } else if (block.room_type?.total_units && block.room_type.total_units > 0) {
+      max = block.room_type.total_units;
+    } else if (block.units_blocked && block.units_blocked > 0) {
+      max = block.units_blocked;
+    }
+    this.editModalMaxUnits.set(max);
+
     this.editForm.reset({
       block_start_date: this.normalizeDateString(block.block_start_date),
       block_end_date: this.normalizeDateString(block.block_end_date),
       units_blocked: block.units_blocked || 1,
       reason: block.reason || '',
     });
+
+    this.editForm.get('units_blocked')?.setValidators([Validators.required, Validators.min(1), Validators.max(max)]);
+    this.editForm.get('units_blocked')?.updateValueAndValidity({ emitEvent: false });
+
+    // Fetch property details to guarantee accurate room type total_units in edit modal
+    if (block.property?.id) {
+      this.propertyService.vendor
+        .getPropertyById(block.property.id)
+        .pipe(
+          catchError(() => of(null)),
+          takeUntilDestroyed(this.destroyRef)
+        )
+        .subscribe((res) => {
+          if (res?.data?.property_room_types) {
+            const prt = res.data.property_room_types.find(
+              (p) => p.room_type?.id === block.room_type?.id || p.id === block.room_type?.id
+            );
+            if (prt && prt.total_units && prt.total_units > 0) {
+              this.editModalMaxUnits.set(prt.total_units);
+              this.editForm.get('units_blocked')?.setValidators([Validators.required, Validators.min(1), Validators.max(prt.total_units)]);
+              this.editForm.get('units_blocked')?.updateValueAndValidity({ emitEvent: false });
+            }
+          }
+        });
+    }
 
     this.isEditModalOpen.set(true);
   }
@@ -404,9 +581,26 @@ export class VendorRoomBlockManagement implements OnInit {
 
   adjustEditUnits(delta: number): void {
     const current = Number(this.editForm.get('units_blocked')?.value || 1);
-    const max = this.blockToEdit()?.room_type?.total_units || 20;
+    const max = this.editModalMaxUnits();
     const nextVal = Math.max(1, Math.min(max, current + delta));
     this.editForm.patchValue({ units_blocked: nextVal });
+  }
+
+  onEditUnitsInputChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let val = parseInt(input.value, 10);
+    const max = this.editModalMaxUnits();
+    if (isNaN(val) || val < 1) {
+      val = 1;
+    } else if (val > max) {
+      val = max;
+    }
+    input.value = String(val);
+    this.editForm.patchValue({ units_blocked: val });
+  }
+
+  setEditAllUnits(): void {
+    this.editForm.patchValue({ units_blocked: this.editModalMaxUnits() });
   }
 
   submitEdit(): void {
@@ -415,7 +609,7 @@ export class VendorRoomBlockManagement implements OnInit {
 
     if (this.editForm.invalid) {
       this.editForm.markAllAsTouched();
-      this.editError.set('Please fill in all required fields.');
+      this.editError.set('Please fill in all required fields correctly.');
       return;
     }
 
@@ -429,8 +623,14 @@ export class VendorRoomBlockManagement implements OnInit {
     }
 
     const units = Number(raw.units_blocked) || 1;
+    const max = this.editModalMaxUnits();
     if (units < 1) {
       this.editError.set('Units to block must be at least 1.');
+      return;
+    }
+
+    if (units > max) {
+      this.editError.set(`Cannot block ${units} unit(s). The selected room type only has ${max} total unit(s).`);
       return;
     }
 

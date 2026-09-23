@@ -424,21 +424,67 @@
         </div>
       }
 
+      <!-- Live Booking & Inventory Status -->
+      @if (liveInventory(); as inv) {
+        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-800/40 text-xs">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-slate-700 dark:text-slate-200">Inventory Status for Selected Dates:</span>
+            @if (isCheckingAvailability()) {
+              <span class="text-primary font-medium flex items-center gap-1">
+                <svg class="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+                Checking...
+              </span>
+            }
+          </div>
+          <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 text-center">
+            <div class="rounded-lg bg-white p-2 border border-slate-200/60 dark:bg-slate-900 dark:border-slate-700/60">
+              <span class="text-slate-400 block text-[10px] uppercase font-semibold">Total Inventory</span>
+              <span class="text-base font-bold text-slate-800 dark:text-slate-100">{{ inv.totalUnits }}</span>
+            </div>
+            <div class="rounded-lg bg-white p-2 border border-slate-200/60 dark:bg-slate-900 dark:border-slate-700/60">
+              <span class="text-slate-400 block text-[10px] uppercase font-semibold">Booked</span>
+              <span class="text-base font-bold text-amber-600">{{ inv.bookedUnits }}</span>
+            </div>
+            <div class="rounded-lg bg-white p-2 border border-slate-200/60 dark:bg-slate-900 dark:border-slate-700/60">
+              <span class="text-slate-400 block text-[10px] uppercase font-semibold">Blocked</span>
+              <span class="text-base font-bold text-red-500">{{ inv.blockedUnits }}</span>
+            </div>
+            <div class="rounded-lg bg-white p-2 border border-slate-200/60 dark:bg-slate-900 dark:border-slate-700/60">
+              <span class="text-slate-400 block text-[10px] uppercase font-semibold">Available</span>
+              <span class="text-base font-bold text-emerald-600">{{ inv.availableToBlock }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
       <!-- Units to Block Stepper -->
       <div>
         <div class="flex items-center justify-between mb-1.5">
           <label class="text-xs font-semibold text-slate-700 dark:text-slate-200">
             Units to Block <span class="text-red-500">*</span>
           </label>
-          <span class="text-xs text-slate-400">
-            Max total inventory: {{ selectedRoomTypeMaxUnits() }} units
-          </span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">
+              Max total inventory: {{ selectedRoomTypeMaxUnits() }} {{ selectedRoomTypeMaxUnits() === 1 ? 'unit' : 'units' }}
+            </span>
+            <button
+              type="button"
+              (click)="blockAllUnits()"
+              class="cursor-pointer rounded-lg border border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary hover:bg-primary hover:text-white transition"
+            >
+              Block All ({{ selectedRoomTypeMaxUnits() }})
+            </button>
+          </div>
         </div>
         <div class="flex items-center gap-3">
           <button
             type="button"
             (click)="adjustCreateUnits(-1)"
-            class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            [disabled]="(createForm.get('units_blocked')?.value || 1) <= 1"
+            class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             -
           </button>
@@ -447,12 +493,15 @@
             min="1"
             [max]="selectedRoomTypeMaxUnits()"
             formControlName="units_blocked"
+            (input)="onUnitsInputChange($event)"
+            (blur)="onUnitsInputChange($event)"
             class="w-24 text-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-base font-bold text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           />
           <button
             type="button"
             (click)="adjustCreateUnits(1)"
-            class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            [disabled]="(createForm.get('units_blocked')?.value || 1) >= selectedRoomTypeMaxUnits()"
+            class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             +
           </button>
@@ -460,6 +509,9 @@
             {{ createForm.get('units_blocked')?.value }} {{ createForm.get('units_blocked')?.value === 1 ? 'room unit' : 'room units' }}
           </span>
         </div>
+        @if ((createForm.get('units_blocked')?.value || 0) > selectedRoomTypeMaxUnits()) {
+          <p class="mt-1 text-xs text-red-500">Units cannot exceed maximum {{ selectedRoomTypeMaxUnits() }} units for this room type.</p>
+        }
       </div>
 
       <!-- Predefined Reason Selection -->
@@ -563,29 +615,54 @@
 
         <!-- Units Stepper -->
         <div>
-          <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200">Units to Block</label>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-semibold text-slate-700 dark:text-slate-200">Units to Block</label>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400">
+                Max inventory: {{ editModalMaxUnits() }} {{ editModalMaxUnits() === 1 ? 'unit' : 'units' }}
+              </span>
+              <button
+                type="button"
+                (click)="setEditAllUnits()"
+                class="cursor-pointer rounded-lg border border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary hover:bg-primary hover:text-white transition"
+              >
+                Set to Max ({{ editModalMaxUnits() }})
+              </button>
+            </div>
+          </div>
           <div class="flex items-center gap-3">
             <button
               type="button"
               (click)="adjustEditUnits(-1)"
-              class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              [disabled]="(editForm.get('units_blocked')?.value || 1) <= 1"
+              class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               -
             </button>
             <input
               type="number"
               min="1"
+              [max]="editModalMaxUnits()"
               formControlName="units_blocked"
+              (input)="onEditUnitsInputChange($event)"
+              (blur)="onEditUnitsInputChange($event)"
               class="w-24 text-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-base font-bold text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             />
             <button
               type="button"
               (click)="adjustEditUnits(1)"
-              class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              [disabled]="(editForm.get('units_blocked')?.value || 1) >= editModalMaxUnits()"
+              class="cursor-pointer flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base font-bold text-slate-700 transition hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               +
             </button>
+            <span class="text-xs text-slate-500">
+              {{ editForm.get('units_blocked')?.value }} {{ editForm.get('units_blocked')?.value === 1 ? 'room unit' : 'room units' }}
+            </span>
           </div>
+          @if ((editForm.get('units_blocked')?.value || 0) > editModalMaxUnits()) {
+            <p class="mt-1 text-xs text-red-500">Units cannot exceed maximum {{ editModalMaxUnits() }} units for this room type.</p>
+          }
         </div>
 
         <!-- Reason -->
