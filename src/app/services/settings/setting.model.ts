@@ -25,6 +25,14 @@ export interface SystemSettingsMap {
   contact_email?: string | null;
   contact_phone?: string | null;
   contact_address?: string | null;
+  contact_street?: string | null;
+  contact_city?: string | null;
+  contact_locality?: string | null;
+  contact_state?: string | null;
+  contact_region?: string | null;
+  contact_country?: string | null;
+  contact_pincode?: string | null;
+  contact_postal_code?: string | null;
   contact_whatsapp?: string | null;
 
   // Homestay & Booking Financials

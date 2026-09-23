@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SeoConfig } from './seo.model';
+import { parsePostalAddress, SeoConfig } from './seo.model';
 
 describe('SeoConfig Model', () => {
   it('should accept valid SEO configuration', () => {
@@ -350,5 +350,61 @@ describe('SeoConfig Model', () => {
     expect(orgInGraph['@id']).toBe('https://tashihomes.in/#organization');
     expect(orgInGraph.sameAs).toContain('https://youtube.com/@tashihomes');
   });
+
+  it('should parse setting-driven address into standard Schema.org PostalAddress without hardcoding Gangtok or Sikkim', () => {
+    // User configured setting: "Station Road, Kanchrapara 743145, West Bengal, India"
+    const rawAddress = 'Station Road, Kanchrapara 743145, West Bengal, India';
+    const parsed = parsePostalAddress(rawAddress, {
+      contact_address: rawAddress
+    });
+
+    expect(parsed).toBeDefined();
+    expect(parsed?.['@type']).toBe('PostalAddress');
+    expect(parsed?.['streetAddress']).toBe('Station Road');
+    expect(parsed?.['addressLocality']).toBe('Kanchrapara');
+    expect(parsed?.['addressRegion']).toBe('West Bengal');
+    expect(parsed?.['postalCode']).toBe('743145');
+    expect(parsed?.['addressCountry']).toBe('IN');
+
+    // Crucial check: make sure locality and region are not hardcoded
+    expect(parsed?.['addressLocality']).not.toBe('Gangtok');
+    expect(parsed?.['addressRegion']).not.toBe('Sikkim');
+  });
+
+  it('should support discrete setting overrides for city, state, country, and pincode', () => {
+    const parsed = parsePostalAddress('12 Park Street', {
+      contact_address: '12 Park Street',
+      contact_city: 'Kolkata',
+      contact_state: 'West Bengal',
+      contact_pincode: '700016',
+      contact_country: 'India'
+    });
+
+    expect(parsed).toEqual({
+      '@type': 'PostalAddress',
+      streetAddress: '12 Park Street',
+      addressLocality: 'Kolkata',
+      addressRegion: 'West Bengal',
+      postalCode: '700016',
+      addressCountry: 'IN'
+    });
+  });
+
+  it('should correctly parse Himalayan address settings like Gangtok, Sikkim', () => {
+    const rawAddress = 'MG Marg, Gangtok, Sikkim - 737101, India';
+    const parsed = parsePostalAddress(rawAddress, {
+      contact_address: rawAddress
+    });
+
+    expect(parsed).toEqual({
+      '@type': 'PostalAddress',
+      streetAddress: 'MG Marg',
+      addressLocality: 'Gangtok',
+      addressRegion: 'Sikkim',
+      postalCode: '737101',
+      addressCountry: 'IN'
+    });
+  });
 });
+
 

@@ -132,6 +132,11 @@ export class SettingsService {
   contactEmail = computed(() => this.#settingsData()['contact_email'] || 'support@tashihomes.in');
   contactPhone = computed(() => this.#settingsData()['contact_phone'] || '+91 9876543210');
   contactAddress = computed(() => this.#settingsData()['contact_address'] || 'MG Marg, Gangtok, Sikkim - 737101, India');
+  contactStreet = computed(() => this.#settingsData()['contact_street'] || this.#settingsData()['street_address'] || null);
+  contactCity = computed(() => this.#settingsData()['contact_city'] || this.#settingsData()['city'] || this.#settingsData()['contact_locality'] || null);
+  contactState = computed(() => this.#settingsData()['contact_state'] || this.#settingsData()['state'] || this.#settingsData()['contact_region'] || null);
+  contactCountry = computed(() => this.#settingsData()['contact_country'] || this.#settingsData()['country'] || 'IN');
+  contactPostalCode = computed(() => this.#settingsData()['contact_pincode'] || this.#settingsData()['contact_postal_code'] || this.#settingsData()['pincode'] || null);
   contactWhatsapp = computed(() => this.#settingsData()['contact_whatsapp'] || this.#settingsData()['contact_phone'] || '+91 9876543210');
 
   // Homestay & Booking Financials

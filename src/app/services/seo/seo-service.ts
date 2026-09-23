@@ -3,7 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { SettingsService } from '../settings/settings-service';
-import { BreadcrumbItem, SeoConfig } from './seo.model';
+import { BreadcrumbItem, parsePostalAddress, SeoConfig } from './seo.model';
 import { PropertyData, RatingSummary } from '../property/property.model';
 import { ReviewData, ReviewSummary } from '../review/review.model';
 import { LocationResponse } from '../location/location-model';
@@ -223,7 +223,18 @@ export class SeoService {
   }
 
   /**
-   * Generate Setting-Driven Organization Schema with dynamic social profiles (sameAs)
+   * Parse a contact address string and settings into a setting-driven Schema.org PostalAddress object
+   */
+  public parsePostalAddress(
+    rawAddress?: string | null,
+    settings?: Record<string, string | null> | null
+  ): Record<string, unknown> | null {
+    return parsePostalAddress(rawAddress, settings);
+  }
+
+
+  /**
+   * Generate Setting-Driven Organization Schema with dynamic social profiles (sameAs) and setting-driven address
    */
   public generateOrganizationSchema(): Record<string, unknown> {
     const origin = this.getBaseUrl();
@@ -234,6 +245,7 @@ export class SeoService {
     const contactPhone = this.settingsService.contactPhone();
     const contactAddress = this.settingsService.contactAddress();
     const socialUrls = this.getSocialProfileUrls();
+    const addressObj = this.parsePostalAddress(contactAddress, settings);
 
     const org: Record<string, unknown> = {
       '@type': 'Organization',
@@ -260,17 +272,11 @@ export class SeoService {
         telephone: contactPhone,
         contactType: 'customer support',
         availableLanguage: ['English', 'Hindi', 'Nepali', 'Bengali'],
-        areaServed: 'IN'
+        areaServed: (addressObj?.['addressCountry'] as string) || 'IN'
       };
     }
-    if (contactAddress) {
-      org['address'] = {
-        '@type': 'PostalAddress',
-        streetAddress: contactAddress,
-        addressLocality: 'Gangtok',
-        addressRegion: 'Sikkim',
-        addressCountry: 'IN'
-      };
+    if (addressObj) {
+      org['address'] = addressObj;
     }
 
     return org;
@@ -402,12 +408,31 @@ export class SeoService {
       rawAddress.toLowerCase() === localityName.toLowerCase() ||
       (cityName ? rawAddress.toLowerCase() === cityName.toLowerCase() : false);
 
+    const addressLower = (rawAddress || '').toLowerCase();
+    const localityLower = localityName.toLowerCase();
+    const cityLower = (cityName || '').toLowerCase();
+
+    let detectedRegion = 'West Bengal';
+    const sikkimLocations = ['gangtok', 'pelling', 'lachung', 'lachen', 'namchi', 'ravangla', 'yuksom', 'geyzing', 'soreng', 'mangan', 'rinchenpong', 'pakyong'];
+    if (
+      addressLower.includes('sikkim') ||
+      localityLower.includes('sikkim') ||
+      cityLower.includes('sikkim') ||
+      sikkimLocations.some(s => localityLower.includes(s) || cityLower.includes(s) || addressLower.includes(s))
+    ) {
+      detectedRegion = 'Sikkim';
+    } else if (addressLower.includes('assam') || cityLower.includes('assam')) {
+      detectedRegion = 'Assam';
+    } else if (addressLower.includes('meghalaya') || cityLower.includes('meghalaya')) {
+      detectedRegion = 'Meghalaya';
+    }
+
     const addressObj: Record<string, unknown> = {
       '@type': 'PostalAddress',
       addressLocality: localityName,
       addressRegion: cityName && cityName.toLowerCase() !== localityName.toLowerCase()
-        ? `${cityName}, West Bengal`
-        : 'West Bengal',
+        ? `${cityName}, ${detectedRegion}`
+        : detectedRegion,
       addressCountry: 'IN'
     };
 
