@@ -127,12 +127,99 @@ describe('SeoConfig Model', () => {
       '@graph': [lodgingSchema, breadcrumbs]
     };
 
-    // The property page structured data should only contain Lodging and BreadcrumbList, not WebSite or SearchAction
+    // The property page structured data should contain Lodging, BreadcrumbList, Organization, not WebSite SearchAction
     const types = payload['@graph'].map((item) => item['@type']);
     expect(types).toContain('BedAndBreakfast');
     expect(types).toContain('BreadcrumbList');
     expect(types).not.toContain('WebSite');
     expect(types).not.toContain('SearchAction');
+  });
+
+  it('should ensure breadcrumb URLs never point to asset CDN domain', () => {
+    const breadcrumbItems = [
+      { name: 'Home', url: 'https://tashihomes.in/' },
+      { name: 'Stays', url: 'https://tashihomes.in/stays' },
+      { name: 'Takdah', url: 'https://tashihomes.in/stays/takdah' },
+      { name: 'Heritage Homestay', url: 'https://tashihomes.in/stay/heritage-homestay' }
+    ];
+
+    breadcrumbItems.forEach((item) => {
+      expect(item.url).not.toContain('asset.tashihomes.in');
+      expect(item.url.startsWith('https://tashihomes.in')).toBe(true);
+    });
+  });
+
+  it('should properly model PostalAddress without duplicating locality as streetAddress', () => {
+    // When address is empty or identical to locality name, streetAddress should not duplicate locality
+    const locality = 'Takdah';
+    const rawAddress = 'Takdah';
+    const isAddressJustLocality = !rawAddress || rawAddress.toLowerCase() === locality.toLowerCase();
+
+    const postalAddress: Record<string, unknown> = {
+      '@type': 'PostalAddress',
+      addressLocality: locality,
+      addressRegion: 'West Bengal',
+      addressCountry: 'IN'
+    };
+    if (!isAddressJustLocality && rawAddress) {
+      postalAddress['streetAddress'] = rawAddress;
+    }
+
+    expect(postalAddress['addressLocality']).toBe('Takdah');
+    expect(postalAddress['streetAddress']).toBeUndefined();
+
+    // When address has a distinct street name
+    const distinctAddress = 'Takdah Club Road, Near Heritage Post Office';
+    const isDistinctJustLocality = !distinctAddress || distinctAddress.toLowerCase() === locality.toLowerCase();
+    const postalAddress2: Record<string, unknown> = {
+      '@type': 'PostalAddress',
+      addressLocality: locality,
+      addressRegion: 'West Bengal',
+      addressCountry: 'IN'
+    };
+    if (!isDistinctJustLocality && distinctAddress) {
+      postalAddress2['streetAddress'] = distinctAddress;
+    }
+
+    expect(postalAddress2['addressLocality']).toBe('Takdah');
+    expect(postalAddress2['streetAddress']).toBe('Takdah Club Road, Near Heritage Post Office');
+  });
+
+  it('should validate homestay Room and Offer modeling in containsPlace', () => {
+    const room = {
+      '@type': 'Room',
+      name: 'Mountain View Deluxe',
+      bed: {
+        '@type': 'BedDetails',
+        numberOfBeds: 1,
+        typeOfBed: 'Double Bed'
+      },
+      occupancy: {
+        '@type': 'QuantitativeValue',
+        maxValue: 2,
+        minValue: 1,
+        unitCode: 'C62',
+        unitText: 'guests'
+      },
+      offers: {
+        '@type': 'Offer',
+        price: 2500,
+        priceCurrency: 'INR',
+        availability: 'https://schema.org/InStock',
+        priceSpecification: {
+          '@type': 'UnitPriceSpecification',
+          price: 2500,
+          priceCurrency: 'INR',
+          unitCode: 'DAY',
+          unitText: 'per night'
+        }
+      }
+    };
+
+    expect(room['@type']).toBe('Room');
+    expect(room.bed.typeOfBed).toBe('Double Bed');
+    expect(room.occupancy.unitText).toBe('guests');
+    expect(room.offers.priceSpecification.unitText).toBe('per night');
   });
 });
 

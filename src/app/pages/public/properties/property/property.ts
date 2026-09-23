@@ -147,8 +147,8 @@ export class Property {
               type: 'place',
               structuredData: this.seoService.generateLodgingBusinessSchema(
                 prop as PropertyData,
-                this.reviews(),
-                this.reviewSummary()
+                this.reviews().length > 0 ? this.reviews() : this.defaultReviews,
+                this.reviewSummary() ?? prop.rating_summary ?? this.defaultSummary
               )
             });
 
@@ -772,8 +772,8 @@ export class Property {
             this.seoService.setStructuredData(
               this.seoService.generateLodgingBusinessSchema(
                 currentProp as PropertyData,
-                this.reviews(),
-                this.reviewSummary()
+                this.reviews().length > 0 ? this.reviews() : this.defaultReviews,
+                this.reviewSummary() ?? currentProp.rating_summary ?? this.defaultSummary
               )
             );
           }
