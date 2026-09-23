@@ -257,7 +257,7 @@ export class PropertyService {
   public readonly public = {
     getProperties: (params: PropertyQuery): Observable<PaginatedResponse<Partial<PropertyData>>> => {
       const queryParams = buildPropertyQueryParams(params);
-      return this.apiService.get<PaginatedResponse<Partial<PropertyData>>>('/properties', { params: queryParams }).pipe(
+      return this.apiService.get<PaginatedResponse<Partial<PropertyData>>>('/public/properties', { params: queryParams }).pipe(
         catchError(() => this.apiService.get<PaginatedResponse<Partial<PropertyData>>>('/public/properties/', { params: queryParams })),
         catchError(() => this.apiService.get<PaginatedResponse<Partial<PropertyData>>>('/public/properties', { params: queryParams })),
         map((res) => res.data),
@@ -267,7 +267,7 @@ export class PropertyService {
 
     searchProperties: (params?: PropertyPublicSearchParams): Observable<PaginatedResponse<Partial<PropertyData>>> => {
       const queryParams = buildPropertySearchParams(params);
-      return this.apiService.get<PaginatedResponse<Partial<PropertyData>>>('/properties/search', { params: queryParams }).pipe(
+      return this.apiService.get<PaginatedResponse<Partial<PropertyData>>>('/public/properties/search', { params: queryParams }).pipe(
         catchError(() => this.apiService.get<PaginatedResponse<Partial<PropertyData>>>('/public/properties/search', { params: queryParams })),
         map((res) => res.data),
         catchError(this.apiService.passthroughError)
@@ -280,7 +280,7 @@ export class PropertyService {
         params['check_in_date'] = checkInDate.trim();
         params['check_out_date'] = checkOutDate.trim();
       }
-      return this.apiService.get<ApiResponse<Partial<PropertyData>>>(`/properties/${slug}`, { params }).pipe(
+      return this.apiService.get<ApiResponse<Partial<PropertyData>>>(`/public/properties/${slug}`, { params }).pipe(
         catchError(() => this.apiService.get<ApiResponse<Partial<PropertyData>>>(`/public/properties/${slug}`, { params })),
         map((res) => res.data),
         catchError(this.apiService.passthroughError)
@@ -288,7 +288,7 @@ export class PropertyService {
     },
 
     checkAvailability: (payload: any): Observable<ApiResponse<any>> => {
-      return this.apiService.post<ApiResponse<any>>('/properties/check-availability', payload).pipe(
+      return this.apiService.post<ApiResponse<any>>('/public/properties/check-availability', payload).pipe(
         catchError(() => this.apiService.post<ApiResponse<any>>('/public/properties/check-availability', payload)),
         catchError(() => this.apiService.post<ApiResponse<any>>('/public/stays/check-availability', payload)),
         map((res) => res.data),

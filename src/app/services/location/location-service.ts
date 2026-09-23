@@ -117,7 +117,7 @@ export class LocationService {
 
       return this.apiService.get<PaginatedResponse<LocationResponse>>('/public/locations/', { params: queryParams }).pipe(
         catchError(() => this.apiService.get<PaginatedResponse<LocationResponse>>('/public/locations', { params: queryParams })),
-        catchError(() => this.apiService.get<PaginatedResponse<LocationResponse>>('/locations', { params: queryParams })),
+        catchError(() => this.apiService.get<PaginatedResponse<LocationResponse>>('/public/locations/', { params: queryParams })),
         map((response) => response.data),
         catchError(this.apiService.passthroughError)
       );
@@ -125,7 +125,7 @@ export class LocationService {
 
     getLocationBySlug: (slug: string): Observable<ApiResponse<LocationResponse>> => {
       return this.apiService.get<ApiResponse<LocationResponse>>(`/public/locations/${slug}`).pipe(
-        catchError(() => this.apiService.get<ApiResponse<LocationResponse>>(`/locations/${slug}`)),
+        catchError(() => this.apiService.get<ApiResponse<LocationResponse>>(`/public/locations/${slug}`)),
         map((response) => response.data),
         catchError(this.apiService.passthroughError)
       );
