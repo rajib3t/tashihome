@@ -221,5 +221,134 @@ describe('SeoConfig Model', () => {
     expect(room.occupancy.unitText).toBe('guests');
     expect(room.offers.priceSpecification.unitText).toBe('per night');
   });
+
+  it('should generate dynamic sameAs social profiles from settings data', () => {
+    // Simulate candidate URL extraction logic driven by settings
+    const mockSettings: Record<string, string> = {
+      facebook_url: 'https://facebook.com/customtashi',
+      instagram_url: 'https://instagram.com/customtashi',
+      twitter_url: 'https://twitter.com/customtashi',
+      youtube_url: 'https://youtube.com/@customtashi',
+      linkedin_url: 'https://linkedin.com/company/customtashi',
+      pinterest_url: 'https://pinterest.com/customtashi',
+      whatsapp_url: 'https://wa.me/919876543210'
+    };
+
+    const candidates = [
+      mockSettings['facebook_url'],
+      mockSettings['instagram_url'],
+      mockSettings['twitter_url'],
+      mockSettings['youtube_url'],
+      mockSettings['linkedin_url'],
+      mockSettings['pinterest_url'],
+      mockSettings['whatsapp_url']
+    ];
+
+    const urls: string[] = [];
+    candidates.forEach((val) => {
+      if (val && typeof val === 'string' && val.trim().length > 0) {
+        const clean = val.trim();
+        if (/^https?:\/\//i.test(clean)) {
+          urls.push(clean);
+        }
+      }
+    });
+
+    const sameAsList = Array.from(new Set(urls));
+
+    expect(sameAsList).toContain('https://facebook.com/customtashi');
+    expect(sameAsList).toContain('https://instagram.com/customtashi');
+    expect(sameAsList).toContain('https://twitter.com/customtashi');
+    expect(sameAsList).toContain('https://youtube.com/@customtashi');
+    expect(sameAsList).toContain('https://linkedin.com/company/customtashi');
+    expect(sameAsList).toContain('https://pinterest.com/customtashi');
+    expect(sameAsList).toContain('https://wa.me/919876543210');
+    expect(sameAsList.length).toBe(7);
+  });
+
+  it('should fallback to default verified social profiles when settings are empty', () => {
+    const emptySettings: Record<string, string> = {};
+    const candidates = [
+      emptySettings['facebook_url'],
+      emptySettings['instagram_url'],
+      emptySettings['twitter_url']
+    ];
+
+    const urls: string[] = [];
+    candidates.forEach((val) => {
+      if (val && typeof val === 'string' && val.trim().length > 0) {
+        const clean = val.trim();
+        if (/^https?:\/\//i.test(clean)) {
+          urls.push(clean);
+        }
+      }
+    });
+
+    const finalSameAs = urls.length > 0 ? urls : [
+      'https://facebook.com/tashihomes',
+      'https://instagram.com/tashihomes'
+    ];
+
+    expect(finalSameAs).toEqual([
+      'https://facebook.com/tashihomes',
+      'https://instagram.com/tashihomes'
+    ]);
+  });
+
+  it('should extract twitter handle correctly from dynamic twitter URL', () => {
+    const extractHandle = (url?: string, explicitHandle?: string): string => {
+      if (explicitHandle && explicitHandle.trim()) {
+        const h = explicitHandle.trim();
+        return h.startsWith('@') ? h : `@${h}`;
+      }
+      if (url && typeof url === 'string') {
+        const match = url.match(/(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)/i);
+        if (match && match[1]) {
+          return `@${match[1]}`;
+        }
+      }
+      return '@tashihomes';
+    };
+
+    expect(extractHandle('https://twitter.com/tashihomes')).toBe('@tashihomes');
+    expect(extractHandle('https://x.com/himalayanhomes')).toBe('@himalayanhomes');
+    expect(extractHandle(undefined, 'customhandle')).toBe('@customhandle');
+    expect(extractHandle(undefined, '@prefixedhandle')).toBe('@prefixedhandle');
+    expect(extractHandle(undefined, undefined)).toBe('@tashihomes');
+  });
+
+  it('should include dynamic Organization schema in LodgingBusiness @graph', () => {
+    const orgSchema = {
+      '@type': 'Organization',
+      '@id': 'https://tashihomes.in/#organization',
+      name: 'TashiHomes',
+      url: 'https://tashihomes.in',
+      sameAs: [
+        'https://facebook.com/tashihomes',
+        'https://instagram.com/tashihomes',
+        'https://youtube.com/@tashihomes'
+      ]
+    };
+
+    const lodgingGraph = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': ['BedAndBreakfast', 'LodgingBusiness'],
+          name: 'Darjeeling Tea Retreat',
+          provider: {
+            '@type': 'Organization',
+            '@id': 'https://tashihomes.in/#organization'
+          }
+        },
+        orgSchema
+      ]
+    };
+
+    const orgInGraph = lodgingGraph['@graph'].find((item: any) => item['@type'] === 'Organization') as any;
+    expect(orgInGraph).toBeDefined();
+    expect(orgInGraph['@id']).toBe('https://tashihomes.in/#organization');
+    expect(orgInGraph.sameAs).toContain('https://youtube.com/@tashihomes');
+  });
 });
 

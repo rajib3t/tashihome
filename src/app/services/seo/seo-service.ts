@@ -62,6 +62,17 @@ export class SeoService {
     this.metaService.updateTag({ property: 'og:type', content: config.type || 'website' });
     this.metaService.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
 
+    const twitterVal = this.settingsService.twitterUrl() || settings?.['twitter_url'] || settings?.['twitter_handle'];
+    if (twitterVal) {
+      const handle = twitterVal.startsWith('@')
+        ? twitterVal
+        : (twitterVal.includes('twitter.com/') || twitterVal.includes('x.com/'))
+          ? `@${twitterVal.split('/').filter(Boolean).pop()}`
+          : twitterVal;
+      this.metaService.updateTag({ name: 'twitter:site', content: handle });
+      this.metaService.updateTag({ name: 'twitter:creator', content: handle });
+    }
+
     // 6. Image
     const rawImage = config.image || settings?.['og_image'] || settings?.['meta_image'] || this.defaultOgImage;
     const absoluteImage = this.resolveAbsoluteUrl(rawImage);
@@ -176,6 +187,96 @@ export class SeoService {
   }
 
   /**
+   * Get dynamic social profile URLs from application settings for Schema.org 'sameAs'
+   */
+  public getSocialProfileUrls(): string[] {
+    const settings = this.settingsService.settingsData();
+    const urls: string[] = [];
+
+    const candidates = [
+      this.settingsService.facebookUrl() || settings?.['facebook_url'] || settings?.['social_facebook'] || settings?.['facebook'],
+      this.settingsService.instagramUrl() || settings?.['instagram_url'] || settings?.['social_instagram'] || settings?.['instagram'],
+      this.settingsService.twitterUrl() || settings?.['twitter_url'] || settings?.['social_twitter'] || settings?.['x_url'] || settings?.['twitter'],
+      this.settingsService.youtubeUrl() || settings?.['youtube_url'] || settings?.['social_youtube'] || settings?.['youtube'],
+      this.settingsService.linkedinUrl() || settings?.['linkedin_url'] || settings?.['social_linkedin'] || settings?.['linkedin'],
+      settings?.['pinterest_url'] || settings?.['social_pinterest'] || settings?.['pinterest'],
+      settings?.['whatsapp_url']
+    ];
+
+    candidates.forEach((val) => {
+      if (val && typeof val === 'string' && val.trim().length > 0) {
+        const clean = val.trim();
+        if (/^https?:\/\//i.test(clean)) {
+          urls.push(clean);
+        }
+      }
+    });
+
+    if (urls.length === 0) {
+      return [
+        'https://facebook.com/tashihomes',
+        'https://instagram.com/tashihomes'
+      ];
+    }
+
+    return Array.from(new Set(urls));
+  }
+
+  /**
+   * Generate Setting-Driven Organization Schema with dynamic social profiles (sameAs)
+   */
+  public generateOrganizationSchema(): Record<string, unknown> {
+    const origin = this.getBaseUrl();
+    const settings = this.settingsService.settingsData();
+    const appName = settings?.['app_name']?.trim() || environment.applicationName || this.defaultSiteName;
+    const logoUrl = this.settingsService.appLogo() || settings?.['app_logo'] || '/images/hero-himalaya.webp';
+    const contactEmail = this.settingsService.contactEmail();
+    const contactPhone = this.settingsService.contactPhone();
+    const contactAddress = this.settingsService.contactAddress();
+    const socialUrls = this.getSocialProfileUrls();
+
+    const org: Record<string, unknown> = {
+      '@type': 'Organization',
+      '@id': `${origin}/#organization`,
+      name: appName,
+      url: origin,
+      logo: {
+        '@type': 'ImageObject',
+        url: this.resolveAssetUrl(logoUrl),
+        caption: `${appName} - Verified Himalayan Homestays`
+      },
+      image: this.resolveAssetUrl(this.settingsService.ogImage() || this.defaultOgImage),
+      description: settings?.['meta_description'] || this.defaultDescription,
+      sameAs: socialUrls
+    };
+
+    if (contactEmail) {
+      org['email'] = contactEmail;
+    }
+    if (contactPhone) {
+      org['telephone'] = contactPhone;
+      org['contactPoint'] = {
+        '@type': 'ContactPoint',
+        telephone: contactPhone,
+        contactType: 'customer support',
+        availableLanguage: ['English', 'Hindi', 'Nepali', 'Bengali'],
+        areaServed: 'IN'
+      };
+    }
+    if (contactAddress) {
+      org['address'] = {
+        '@type': 'PostalAddress',
+        streetAddress: contactAddress,
+        addressLocality: 'Gangtok',
+        addressRegion: 'Sikkim',
+        addressCountry: 'IN'
+      };
+    }
+
+    return org;
+  }
+
+  /**
    * Generate WebSite Schema with SearchAction
    */
   public generateWebSiteSchema(): Record<string, unknown> {
@@ -200,17 +301,7 @@ export class SeoService {
             'query-input': 'required name=search_term_string'
           }
         },
-        {
-          '@type': 'Organization',
-          '@id': `${origin}/#organization`,
-          name: appName,
-          url: origin,
-          logo: `${origin}/images/hero-himalaya.webp`,
-          sameAs: [
-            'https://facebook.com/tashihomes',
-            'https://instagram.com/tashihomes'
-          ]
-        }
+        this.generateOrganizationSchema()
       ]
     };
   }
@@ -581,22 +672,8 @@ export class SeoService {
       }))
     };
 
-    // Organization entity to establish relationship in graph
-    const organization = {
-      '@type': 'Organization',
-      '@id': `${origin}/#organization`,
-      name: appName,
-      url: origin,
-      logo: {
-        '@type': 'ImageObject',
-        url: this.resolveAssetUrl('/images/hero-himalaya.webp'),
-        caption: `${appName} - Himalayan Homestays`
-      },
-      sameAs: [
-        'https://facebook.com/tashihomes',
-        'https://instagram.com/tashihomes'
-      ]
-    };
+    // Organization entity to establish relationship in graph (Setting-driven)
+    const organization = this.generateOrganizationSchema();
 
     return {
       '@context': 'https://schema.org',
@@ -908,12 +985,7 @@ export class SeoService {
       name: `Our Story — ${appName}`,
       description:
         'Discover how Tashihomes empowers local Himalayan host families while curating authentic, verified village homestays across North Bengal & Sikkim.',
-      mainEntity: {
-        '@type': 'Organization',
-        name: appName,
-        url: origin,
-        logo: `${origin}/images/hero-himalaya.webp`
-      }
+      mainEntity: this.generateOrganizationSchema()
     });
 
     return {
