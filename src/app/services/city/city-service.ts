@@ -110,7 +110,7 @@ export class CityService {
       if (params.sortOrder) queryParams['sortOrder'] = params.sortOrder;
 
       return this.apiService.get<PaginatedResponse<City>>('/public/cities', { params: queryParams }).pipe(
-        catchError(() => this.apiService.get<PaginatedResponse<City>>('//cities/', { params: queryParams })),
+        catchError(() => this.apiService.get<PaginatedResponse<City>>('/public/cities/', { params: queryParams })),
         catchError(() => this.apiService.get<PaginatedResponse<City>>('/public/cities', { params: queryParams })),
         map((response) => response.data),
         catchError(this.apiService.passthroughError)
