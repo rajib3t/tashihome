@@ -29,6 +29,19 @@
     </div>
 
     <form [formGroup]="propertyForm" class="space-y-6">
+      @if (serverErrorMessage()) {
+        <div class="flex items-start justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+          <div class="flex items-start gap-2">
+            <svg class="h-5 w-5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ serverErrorMessage() }}</span>
+          </div>
+          <button type="button" (click)="serverErrorMessage.set(null)" class="text-red-500 hover:text-red-700 cursor-pointer text-lg leading-none">
+            &times;
+          </button>
+        </div>
+      }
       <!-- STEP 0: Property Details (amenities/facilities/room types/food removed) -->
       @if (currentStep === 0) {
         <div class="grid gap-5 md:grid-cols-2">
@@ -170,51 +183,164 @@
             </select>
           </label>
 
+          <!-- Physical Address Section -->
+          <div class="md:col-span-2 rounded-2xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/40 space-y-4">
+            <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="text-primary">
+                <path d="M12 21s-7-6.2-7-11.2A7 7 0 0 1 19 9.8C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" />
+                <circle cx="12" cy="9.5" r="2.2" stroke="currentColor" stroke-width="1.8" />
+              </svg>
+              1. Physical Address
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label class="block space-y-1.5 md:col-span-2">
+                <span class="text-xs font-medium text-slate-700 dark:text-slate-200">
+                  Street Address / Building / House No. <span class="text-red-500">*</span>
+                </span>
+                <input
+                  formControlName="address_line1"
+                  type="text"
+                  placeholder="e.g. Upper Sichey, Near Enchey Monastery, House #14"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+                @if (propertyForm.get('address_line1')?.touched && propertyForm.get('address_line1')?.invalid) {
+                  <small class="text-xs text-red-500">Address line 1 is required.</small>
+                }
+              </label>
+
+              <label class="block space-y-1.5">
+                <span class="text-xs font-medium text-slate-700 dark:text-slate-200">
+                  Landmark / Area / Floor <span class="text-slate-400 font-normal">(Optional)</span>
+                </span>
+                <input
+                  formControlName="address_line2"
+                  type="text"
+                  placeholder="e.g. Lane 3, Opposite Star Cinema"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+              </label>
+
+              <label class="block space-y-1.5">
+                <span class="text-xs font-medium text-slate-700 dark:text-slate-200">
+                  Postal / PIN Code <span class="text-red-500">*</span>
+                </span>
+                <input
+                  formControlName="postal_code"
+                  type="text"
+                  maxlength="6"
+                  placeholder="e.g. 737101"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+                @if (propertyForm.get('postal_code')?.touched && propertyForm.get('postal_code')?.invalid) {
+                  <small class="text-xs text-red-500">Enter a valid 6-digit postal code.</small>
+                }
+              </label>
+
+              <label class="block space-y-1.5 md:col-span-2">
+                <span class="text-xs font-medium text-slate-700 dark:text-slate-200">Country</span>
+                <input
+                  formControlName="country"
+                  type="text"
+                  readonly
+                  class="w-full rounded-xl border border-slate-200 bg-slate-100/80 px-4 py-2 text-sm text-slate-600 outline-none dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-300"
+                />
+              </label>
+            </div>
+          </div>
+
+          <!-- Geolocation Coordinates Section (Admin Privileged) -->
+          <div class="md:col-span-2 rounded-2xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/40 space-y-4">
+            <div>
+              <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="text-amber-500">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M12 2a14.5 14.5 0 0 0 0 20M2 12h20" stroke="currentColor" stroke-width="1.8" />
+                </svg>
+                2. Geolocation Coordinates (Admin Privileged)
+              </h4>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Use Google Places search to auto-populate coordinates, or enter exact latitude & longitude manually.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label class="block space-y-1.5 md:col-span-2">
+                <span class="text-xs font-medium text-slate-700 dark:text-slate-200">Google Location Autocomplete</span>
+                <input
+                  #googleLocationInput
+                  formControlName="address"
+                  type="text"
+                  placeholder="Search location to populate GPS coordinates"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+              </label>
+
+              <label class="block space-y-1.5">
+                <span class="text-xs font-medium text-slate-700 dark:text-slate-200">Latitude (-90.0 to 90.0)</span>
+                <input
+                  formControlName="lat"
+                  type="number"
+                  step="any"
+                  min="-90"
+                  max="90"
+                  placeholder="e.g. 27.338900"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+                @if (propertyForm.get('lat')?.invalid && propertyForm.get('lat')?.touched) {
+                  <small class="text-xs text-red-500">Latitude must be between -90.0 and 90.0.</small>
+                }
+              </label>
+
+              <label class="block space-y-1.5">
+                <span class="text-xs font-medium text-slate-700 dark:text-slate-200">Longitude (-180.0 to 180.0)</span>
+                <input
+                  formControlName="lon"
+                  type="number"
+                  step="any"
+                  min="-180"
+                  max="180"
+                  placeholder="e.g. 88.606500"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+                @if (propertyForm.get('lon')?.invalid && propertyForm.get('lon')?.touched) {
+                  <small class="text-xs text-red-500">Longitude must be between -180.0 and 180.0.</small>
+                }
+              </label>
+            </div>
+          </div>
+
           <label class="block space-y-2 md:col-span-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Google Location Autocomplete</span>
-            <input
-              #googleLocationInput
-              formControlName="address"
-              type="text"
-              placeholder="Search and select a location"
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            />
-            @if (propertyForm.get('address')?.touched && propertyForm.get('address')?.invalid) {
-              <small class="text-xs text-red-500">Please choose a location from Google autocomplete.</small>
-            }
-          </label>
-
-          <label class="block space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Latitude</span>
-            <input
-              formControlName="lat"
-              type="number"
-              step="any"
-              placeholder="Latitude will be auto-filled"
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            />
-          </label>
-
-          <label class="block space-y-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Longitude</span>
-            <input
-              formControlName="lon"
-              type="number"
-              step="any"
-              placeholder="Longitude will be auto-filled"
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            />
-          </label>
-
-          <label class="block space-y-2 md:col-span-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Description</span>
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Description</span>
+              <span
+                class="text-xs transition-colors"
+                [class.text-red-500]="getDescriptionWordCount() > maxDescriptionWords"
+                [class.text-slate-500]="getDescriptionWordCount() <= maxDescriptionWords"
+                [class.dark:text-slate-400]="getDescriptionWordCount() <= maxDescriptionWords"
+              >
+                {{ getDescriptionWordCount() }} / {{ maxDescriptionWords }} words
+              </span>
+            </div>
             <textarea
               formControlName="description"
               rows="5"
+              placeholder="Write a description for this property (max 150 words)..."
               class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              [class.!border-red-500]="propertyForm.get('description')?.touched && propertyForm.get('description')?.invalid"
             ></textarea>
             @if (propertyForm.get('description')?.touched && propertyForm.get('description')?.invalid) {
-              <small class="text-xs text-red-500">Description is required and must be at least 20 characters.</small>
+              @if (propertyForm.get('description')?.hasError('required')) {
+                <small class="text-xs text-red-500">Description is required.</small>
+              } @else if (propertyForm.get('description')?.hasError('minlength')) {
+                <small class="text-xs text-red-500">Description must be at least 20 characters.</small>
+              } @else if (propertyForm.get('description')?.hasError('maxWords')) {
+                <small class="text-xs text-red-500">Description must not exceed 150 words.</small>
+              } @else if (propertyForm.get('description')?.hasError('invalidCharacters')) {
+                <small class="text-xs text-red-500">Description contains invalid characters.</small>
+              } @else if (propertyForm.get('description')?.hasError('serverError')) {
+                <small class="text-xs text-red-500">{{ propertyForm.get('description')?.getError('serverError') }}</small>
+              }
             }
           </label>
 

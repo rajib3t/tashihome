@@ -30,6 +30,7 @@ import { AuthService } from '../../../../../services/auth/auth-service';
 import { Card } from '../../../../../shared/components/ui/card/card';
 import { UploadImage } from '../../../../../shared/components/common/upload-image/upload-image';
 import { environment } from '../../../../../../environments/environment';
+import { applyPropertyFormErrors, countWords, descriptionContentValidator, maxWordsValidator } from '../../../../../core/validators/word-validators';
 
 @Component({
   selector: 'app-vendor-edit-property',
@@ -113,8 +114,12 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     type: ['home_stay' as CreatePropertyRequest['type'], Validators.required],
     city_id: ['', Validators.required],
     location_id: ['', Validators.required],
-    address: ['', [Validators.required, Validators.minLength(5)]],
-    description: ['', [Validators.required, Validators.minLength(20)]],
+    address_line1: ['', [Validators.required, Validators.minLength(3)]],
+    address_line2: [''],
+    postal_code: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]],
+    country: ['India', Validators.required],
+    address: [''],
+    description: ['', [Validators.required, Validators.minLength(20), maxWordsValidator(150), descriptionContentValidator()]],
     price_per_night: [0, [Validators.required, Validators.min(1)]],
     sale_price: [0, [Validators.required, Validators.min(0)]],
     is_featured: [false],
@@ -127,9 +132,13 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
     facility_ids: this.formBuilder.control<string[]>([]),
     room_types: this.formBuilder.control<PropertyRoomTypeRequest[]>([]),
     food_option_ids: this.formBuilder.control<string[]>([]),
-    lat: [null as number | null],
-    lon: [null as number | null],
   });
+  readonly maxDescriptionWords = 150;
+  readonly serverErrorMessage = signal<string | null>(null);
+
+  getDescriptionWordCount(): number {
+    return countWords(this.propertyForm.get('description')?.value);
+  }
 
   ngAfterViewChecked(): void {
     this.tryInitGoogleAutocomplete();
@@ -222,6 +231,7 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
 
     if (canSave && this.propertyId) {
       this.pendingStepBeforeSave = previousStep;
+      this.serverErrorMessage.set(null);
       this.isSaving.set(true);
       this.propertyService.vendor.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
         next: (response) => {
@@ -231,9 +241,13 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
           this.isSaving.set(false);
           this.pendingStepBeforeSave = null;
         },
-        error: () => {
+        error: (err) => {
           this.isSaving.set(false);
-          this.pendingStepBeforeSave = null;
+          if (this.pendingStepBeforeSave !== null) {
+            this.currentStep = this.pendingStepBeforeSave;
+            this.pendingStepBeforeSave = null;
+          }
+          applyPropertyFormErrors(this.propertyForm, err, (msg) => this.serverErrorMessage.set(msg));
         },
       });
     }
@@ -247,10 +261,12 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
           this.propertyForm.get('type')?.value &&
           this.propertyForm.get('city_id')?.value &&
           this.propertyForm.get('location_id')?.value &&
-          this.propertyForm.get('address')?.value &&
+          this.propertyForm.get('address_line1')?.value &&
+          this.propertyForm.get('postal_code')?.value &&
           this.propertyForm.get('description')?.value &&
           this.propertyForm.get('name')?.valid &&
-          this.propertyForm.get('address')?.valid &&
+          this.propertyForm.get('address_line1')?.valid &&
+          this.propertyForm.get('postal_code')?.valid &&
           this.propertyForm.get('description')?.valid
         );
       case 1: {
@@ -294,6 +310,7 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
       queryParams: { step: this.currentStep },
       queryParamsHandling: 'merge',
     });
+    this.serverErrorMessage.set(null);
     this.isSaving.set(true);
     this.propertyService.vendor.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
       next: (response) => {
@@ -303,7 +320,7 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
         this.isSaving.set(false);
         this.pendingStepBeforeSave = null;
       },
-      error: () => {
+      error: (err) => {
         this.isSaving.set(false);
         if (this.pendingStepBeforeSave !== null) {
           this.currentStep = this.pendingStepBeforeSave;
@@ -314,6 +331,7 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
             queryParamsHandling: 'merge',
           });
         }
+        applyPropertyFormErrors(this.propertyForm, err, (msg) => this.serverErrorMessage.set(msg));
       },
     });
   }
@@ -338,6 +356,7 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
       return;
     }
 
+    this.serverErrorMessage.set(null);
     this.isSaving.set(true);
     this.propertyService.vendor.updateProperty(this.propertyId, this.buildUpdatePayload()).subscribe({
       next: (response) => {
@@ -346,9 +365,10 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
         }
         this.uploadPropertyMediaAndContinue(true);
       },
-      error: () => {
+      error: (err) => {
         this.isSaving.set(false);
         this.pendingStepBeforeSave = null;
+        applyPropertyFormErrors(this.propertyForm, err, (msg) => this.serverErrorMessage.set(msg));
       },
     });
   }
@@ -452,13 +472,15 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
       };
 
       const place = autocomplete.getPlace() as GooglePlaceResult;
-      if (place.geometry?.location) {
+      if (place.formatted_address || place.geometry?.location) {
+        const fullAddr = place.formatted_address ?? locationInput.value.trim();
+        const currentLine1 = this.propertyForm.get('address_line1')?.value;
         this.propertyForm.patchValue({
-          address: place.formatted_address ?? locationInput.value.trim(),
-          lat: place.geometry.location.lat(),
-          lon: place.geometry.location.lng(),
+          address: fullAddr,
+          address_line1: currentLine1 ? currentLine1 : fullAddr,
         });
         this.propertyForm.get('address')?.markAsTouched();
+        this.propertyForm.get('address_line1')?.markAsTouched();
       }
     });
 
@@ -919,7 +941,8 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
         this.propertyForm.get('type')?.valid &&
         this.propertyForm.get('city_id')?.valid &&
         this.propertyForm.get('location_id')?.valid &&
-        this.propertyForm.get('address')?.valid &&
+        this.propertyForm.get('address_line1')?.valid &&
+        this.propertyForm.get('postal_code')?.valid &&
         this.propertyForm.get('description')?.valid
       );
     }
@@ -1070,12 +1093,34 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
         return raw;
       }) ?? [];
 
+    const manualAddr = property.address_details || property.manual_address;
+    let addrLine1 = manualAddr?.address_line1 ?? '';
+    let addrLine2 = manualAddr?.address_line2 ?? '';
+    let postCode = manualAddr?.postal_code ?? '';
+    let countryVal = manualAddr?.country ?? 'India';
+
+    if (!addrLine1 && property.address) {
+      const parts = property.address.split(',').map((p) => p.trim());
+      if (parts.length >= 1) addrLine1 = parts[0];
+      if (parts.length >= 3) {
+        addrLine2 = parts.slice(1, -2).join(', ');
+        postCode = parts[parts.length - 2];
+        countryVal = parts[parts.length - 1];
+      } else if (parts.length === 2) {
+        postCode = parts[1];
+      }
+    }
+
     this.propertyForm.patchValue(
       {
         name: property.name ?? '',
         type: property.type,
         city_id: property.city?.id ?? '',
         location_id: property.location?.id ?? '',
+        address_line1: addrLine1,
+        address_line2: addrLine2,
+        postal_code: postCode,
+        country: countryVal || 'India',
         address: property.address ?? '',
         description: property.description ?? '',
         price_per_night: Number(property.price_per_night ?? (property as any).price ?? 0),
@@ -1086,8 +1131,6 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
         facility_ids: facilityIds,
         room_types: roomTypes,
         food_option_ids: foodOptionIds,
-        lat: property.latitude ?? null,
-        lon: property.longitude ?? null,
       },
       { emitEvent: false }
     );
@@ -1222,13 +1265,31 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
         };
       });
 
+    const addressLine1 = String(raw.address_line1 ?? '').trim();
+    const addressLine2 = String(raw.address_line2 ?? '').trim();
+    const postalCode = String(raw.postal_code ?? '').trim();
+    const country = String(raw.country ?? 'India').trim();
+
+    const addressParts = [addressLine1, addressLine2, postalCode, country].filter(Boolean);
+    const combinedAddress = addressParts.join(', ');
+
     return {
       vendor_id: String(this.currentVendorId || authUser?.id || ''),
       name: String(raw.name ?? '').trim(),
       type: this.normalizePropertyType(raw.type),
       city_id: String(raw.city_id ?? ''),
       location_id: String(raw.location_id ?? ''),
-      address: String(raw.address ?? '').trim(),
+      address: combinedAddress,
+      address_line1: addressLine1,
+      address_line2: addressLine2 || undefined,
+      postal_code: postalCode,
+      country: country,
+      manual_address: {
+        address_line1: addressLine1,
+        address_line2: addressLine2 || null,
+        postal_code: postalCode,
+        country: country,
+      },
       description: String(raw.description ?? '').trim(),
       price: Number(raw.price_per_night ?? 0),
       price_per_night: Number(raw.price_per_night ?? 0),
@@ -1239,8 +1300,6 @@ export class EditVendorProperty implements AfterViewChecked, OnDestroy {
       facility_ids: [...(raw.facility_ids ?? [])],
       room_types: roomTypes,
       food_option_ids: [...(raw.food_option_ids ?? [])],
-      lat: raw.lat,
-      lon: raw.lon,
     };
   }
 

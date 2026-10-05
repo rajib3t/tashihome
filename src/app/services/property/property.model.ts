@@ -59,6 +59,21 @@ export interface PropertyRoomTypeRequest {
   pricing_tiers?: PropertyRoomTypePrice[];
 }
 
+export interface PropertyAddressData {
+  id?: string | null;
+  address_line1: string;
+  address_line2?: string | null;
+  postal_code?: string | null;
+  country?: string;
+  city?: string | null;
+  state?: string | null;
+}
+
+export interface PropertyGeolocationData {
+  latitude: number;
+  longitude: number;
+}
+
 export interface PropertyRequest {
   vendor_id: string;
   name: string;
@@ -66,6 +81,12 @@ export interface PropertyRequest {
   city_id: string;
   location_id: string;
   address: string;
+  address_line1?: string;
+  address_line2?: string;
+  postal_code?: string;
+  country?: string;
+  manual_address?: PropertyAddressData;
+  geolocation?: PropertyGeolocationData;
   description: string;
   price: number;
   sale_price?: number;
@@ -84,6 +105,8 @@ export interface PropertyRequest {
   food_option_ids: string[];
   lat?: number | null;
   lon?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface CreatePropertyRequest {
@@ -93,12 +116,20 @@ export interface CreatePropertyRequest {
   city: string;
   location: string;
   address: string;
-  latitude: number;
-  longitude: number;
+  address_line1?: string;
+  address_line2?: string;
+  postal_code?: string;
+  country?: string;
+  manual_address?: PropertyAddressData;
+  geolocation?: PropertyGeolocationData;
+  latitude?: number;
+  longitude?: number;
   vendor_id: string;
   location_id: string;
   city_id: string;
   description: string;
+  price_per_night?: number;
+  sale_price?: number;
 }
 
 export type PropertyDTO = PropertyRequest;
@@ -290,6 +321,9 @@ export interface PublicPropertyItem {
   sale_per_night?: number | null;
   currency?: string;
   address?: string;
+  address_details?: PropertyAddressData | null;
+  manual_address?: PropertyAddressData | null;
+  geolocation?: PropertyGeolocationData | null;
   is_featured: boolean;
   feature_image?: PropertyAsset | null;
   city?: CityNested | null;
@@ -327,6 +361,9 @@ export interface PropertyData {
   deposit?: number;
   is_featured?: boolean;
   address?: string;
+  address_details?: PropertyAddressData | null;
+  manual_address?: PropertyAddressData | null;
+  geolocation?: PropertyGeolocationData | null;
   latitude?: number;
   longitude?: number;
   description: string;

@@ -19,6 +19,7 @@ import { Facility } from '../../../../../services/facility/facility-model';
 import { RoomType } from '../../../../../services/room-type/room-type-model';
 import { AuthService } from '../../../../../services/auth/auth-service';
 import { environment } from '../../../../../../environments/environment';
+import { applyPropertyFormErrors, countWords, descriptionContentValidator, maxWordsValidator } from '../../../../../core/validators/word-validators';
 
 @Component({
   selector: 'app-vendor-create-property',
@@ -83,8 +84,12 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
     type: ['home_stay' as CreatePropertyRequest['type'], Validators.required],
     city_id: ['', Validators.required],
     location_id: ['', Validators.required],
-    address: ['', [Validators.required, Validators.minLength(5)]],
-    description: ['', [Validators.required, Validators.minLength(20)]],
+    address_line1: ['', [Validators.required, Validators.minLength(3)]],
+    address_line2: [''],
+    postal_code: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]],
+    country: ['India', Validators.required],
+    address: [''],
+    description: ['', [Validators.required, Validators.minLength(20), maxWordsValidator(150), descriptionContentValidator()]],
     price_per_night: [0, [Validators.required, Validators.min(1)]],
     sale_price: [0, [Validators.required, Validators.min(0)]],
     is_featured: [false],
@@ -97,9 +102,13 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
     facility_ids: this.formBuilder.control<string[]>([]),
     room_types: this.formBuilder.control<PropertyRoomTypeRequest[]>([]),
     food_option_ids: this.formBuilder.control<string[]>([]),
-    lat: [null as number | null],
-    lon: [null as number | null],
   });
+  readonly maxDescriptionWords = 150;
+  readonly serverErrorMessage = signal<string | null>(null);
+
+  getDescriptionWordCount(): number {
+    return countWords(this.propertyForm.get('description')?.value);
+  }
 
   foodOptions = signal([
     { id: 'lunch', name: 'Lunch' },
@@ -178,6 +187,7 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
   }
 
   private createPropertyDraftWithTargetStep(targetStep: number): void {
+    this.serverErrorMessage.set(null);
     this.isSaving.set(true);
     const payload = this.buildCreatePayload();
     this.propertyService.vendor.createProperty(payload).subscribe({
@@ -191,8 +201,9 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
           queryParams: { step: targetStep },
         });
       },
-      error: () => {
+      error: (err) => {
         this.isSaving.set(false);
+        applyPropertyFormErrors(this.propertyForm, err, (msg) => this.serverErrorMessage.set(msg));
       },
     });
   }
@@ -336,16 +347,16 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
       };
 
       const place = autocomplete.getPlace() as GooglePlaceResult;
-      if (place.geometry?.location) {
-        const lat = place.geometry.location.lat();
-        const lon = place.geometry.location.lng();
+      if (place.formatted_address || place.geometry?.location) {
+        const fullAddr = place.formatted_address ?? locationInput.value.trim();
         this.ngZone.run(() => {
+          const currentLine1 = this.propertyForm.get('address_line1')?.value;
           this.propertyForm.patchValue({
-            address: place.formatted_address ?? locationInput.value.trim(),
-            lat,
-            lon,
+            address: fullAddr,
+            address_line1: currentLine1 ? currentLine1 : fullAddr,
           });
           this.propertyForm.get('address')?.markAsTouched();
+          this.propertyForm.get('address_line1')?.markAsTouched();
         });
       } else {
         console.error('No geometry or location in place data', place);
@@ -459,7 +470,8 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
         this.propertyForm.get('type')?.valid &&
         this.propertyForm.get('city_id')?.valid &&
         this.propertyForm.get('location_id')?.valid &&
-        this.propertyForm.get('address')?.valid &&
+        this.propertyForm.get('address_line1')?.valid &&
+        this.propertyForm.get('postal_code')?.valid &&
         this.propertyForm.get('description')?.valid
       );
     }
@@ -486,6 +498,7 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
   }
 
   private createPropertyDraft(continueToEdit: boolean): void {
+    this.serverErrorMessage.set(null);
     this.isSaving.set(true);
 
     const payload = this.buildCreatePayload();
@@ -507,8 +520,9 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
 
         this.router.navigate(['/vendor/property-management']);
       },
-      error: () => {
+      error: (err) => {
         this.isSaving.set(false);
+        applyPropertyFormErrors(this.propertyForm, err, (msg) => this.serverErrorMessage.set(msg));
       },
     });
   }
@@ -519,6 +533,14 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
     const vendorId = authUser?.id ?? '';
     const vendorName = authUser?.full_name ?? '';
 
+    const addressLine1 = String(raw.address_line1 ?? '').trim();
+    const addressLine2 = String(raw.address_line2 ?? '').trim();
+    const postalCode = String(raw.postal_code ?? '').trim();
+    const country = String(raw.country ?? 'India').trim();
+
+    const addressParts = [addressLine1, addressLine2, postalCode, country].filter(Boolean);
+    const combinedAddress = addressParts.join(', ');
+
     return {
       vendor_id: vendorId,
       name: String(raw.name ?? '').trim(),
@@ -526,9 +548,17 @@ export class CreateVendorProperty implements OnInit, AfterViewChecked, OnDestroy
       vendor: vendorName,
       city: this.getCityLabel(String(raw.city_id ?? '')),
       location: this.getLocationLabel(String(raw.location_id ?? '')),
-      address: String(raw.address ?? '').trim(),
-      latitude: Number(raw.lat ?? 0) || 0,
-      longitude: Number(raw.lon ?? 0) || 0,
+      address: combinedAddress,
+      address_line1: addressLine1,
+      address_line2: addressLine2 || undefined,
+      postal_code: postalCode,
+      country: country,
+      manual_address: {
+        address_line1: addressLine1,
+        address_line2: addressLine2 || null,
+        postal_code: postalCode,
+        country: country,
+      },
       city_id: String(raw.city_id ?? ''),
       location_id: String(raw.location_id ?? ''),
       description: String(raw.description ?? '').trim(),

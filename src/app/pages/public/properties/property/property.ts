@@ -1,6 +1,7 @@
 import { Component, DestroyRef, ElementRef, inject, PLATFORM_ID, signal, HostListener, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PropertyService } from '../../../../services/property/property-service';
@@ -42,10 +43,60 @@ export class Property {
   public authService = inject(AuthService);
   public settingsService = inject(SettingsService);
   public seoService = inject(SeoService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   public propertyData = signal<Partial<PropertyData> | null>(null);
   public currencySymbol = computed(() => this.settingsService.currencySymbol() || this.propertyData()?.currency || '₹');
   public galleryImages = signal<PropertyAsset[]>([]);
+
+  // Location & Map Computed Signals
+  public readonly propertyCoordinates = computed(() => {
+    const prop = this.propertyData();
+    const lat = prop?.latitude ?? prop?.geolocation?.latitude;
+    const lng = prop?.longitude ?? prop?.geolocation?.longitude;
+    if (lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
+      return { latitude: Number(lat), longitude: Number(lng) };
+    }
+    return null;
+  });
+
+  public readonly formattedAddress = computed(() => {
+    const prop = this.propertyData();
+    const addr = prop?.manual_address || prop?.address_details;
+    if (addr) {
+      const parts = [
+        addr.address_line1,
+        addr.address_line2,
+        addr.city || prop?.city?.name,
+        addr.state,
+        addr.postal_code,
+        addr.country,
+      ].filter(Boolean);
+      if (parts.length > 0) return parts.join(', ');
+    }
+    if (prop?.address) return prop.address;
+    const fallback = [prop?.location?.name, prop?.city?.name].filter(Boolean);
+    return fallback.join(', ');
+  });
+
+  public readonly googleMapsDirectionsUrl = computed(() => {
+    const coords = this.propertyCoordinates();
+    if (coords) {
+      return `https://www.google.com/maps/dir/?api=1&destination=${coords.latitude},${coords.longitude}`;
+    }
+    const addr = this.formattedAddress();
+    if (addr) {
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addr)}`;
+    }
+    return null;
+  });
+
+  public readonly googleMapsEmbedUrl = computed<SafeResourceUrl | null>(() => {
+    const coords = this.propertyCoordinates();
+    if (!coords) return null;
+    const rawUrl = `https://maps.google.com/maps?q=${coords.latitude},${coords.longitude}&z=15&output=embed`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
+  });
 
   // Reviews State
   public reviews = signal<ReviewData[]>([]);
