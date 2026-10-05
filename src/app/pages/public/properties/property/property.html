@@ -598,34 +598,183 @@
             <span class="w-8 h-[3px] rounded-full bg-ochre"></span>
             <p class="eyebrow text-mossD">Neighborhood &amp; map</p>
           </div>
-          <h2 class="font-display text-3xl text-ink mt-2">Location</h2>
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mt-2">
+            <div>
+              <h2 class="font-display text-3xl sm:text-4xl text-ink">Location &amp; Surroundings</h2>
+              <p class="text-sm text-ink/65 mt-1 max-w-2xl">
+                Nestled in the scenic landscapes of {{ addressBreakdown()?.locality || addressBreakdown()?.city || 'Sikkim' }}. Explore road access, exact GPS positioning, and surrounding orientation.
+              </p>
+            </div>
+            @if (propertyCoordinates()) {
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cloud2/80 border border-ink/10 text-xs font-mono text-ink/70 shrink-0">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>{{ formattedCoordinates() }}</span>
+            </div>
+            }
+          </div>
 
-          <div class="p-6 md:p-8 rounded-3xl glass-property-card border border-white/80 shadow-sm mt-6 space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div class="space-y-1">
-                <p class="eyebrow text-ink/40">Address</p>
-                <p class="text-sm md:text-base font-medium text-ink leading-relaxed">
-                  {{ formattedAddress() }}
-                </p>
+          <div class="p-5 sm:p-7 md:p-8 rounded-3xl glass-property-card border border-white/80 shadow-sm mt-6 space-y-6">
+            <!-- Map Card Header Toolbar: View Modes & Zoom Controls -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-ink/10">
+              <!-- Left: View Mode Switcher -->
+              <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-cloud2/90 border border-ink/5">
+                <button
+                  type="button"
+                  (click)="setMapType('m')"
+                  [class]="mapType() === 'm' ? 'bg-pine text-cloud shadow-sm font-semibold' : 'text-ink/70 hover:text-ink hover:bg-black/5 font-medium'"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer"
+                  title="Roadmap view"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                  <span>Roadmap</span>
+                </button>
+                <button
+                  type="button"
+                  (click)="setMapType('k')"
+                  [class]="mapType() === 'k' ? 'bg-pine text-cloud shadow-sm font-semibold' : 'text-ink/70 hover:text-ink hover:bg-black/5 font-medium'"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer"
+                  title="Satellite imagery"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" stroke-width="2" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 014 9 15.3 15.3 0 01-4 9 15.3 15.3 0 01-4-9 15.3 15.3 0 014-9z" />
+                  </svg>
+                  <span>Satellite</span>
+                </button>
+                <button
+                  type="button"
+                  (click)="setMapType('p')"
+                  [class]="mapType() === 'p' ? 'bg-pine text-cloud shadow-sm font-semibold' : 'text-ink/70 hover:text-ink hover:bg-black/5 font-medium'"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer"
+                  title="Terrain contours"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l6-6 4 4 8-8" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 7h7v7" />
+                  </svg>
+                  <span>Terrain</span>
+                </button>
               </div>
-              @if (googleMapsDirectionsUrl()) {
-              <a
-                [href]="googleMapsDirectionsUrl()"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-pine/10 hover:bg-pine text-pine hover:text-cloud text-xs font-semibold transition-all cursor-pointer border border-pine/20 self-start sm:self-auto shrink-0"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span>Open in Google Maps</span>
-              </a>
-              }
+
+              <!-- Right: Zoom & Expand Controls -->
+              <div class="flex items-center gap-2">
+                <div class="inline-flex items-center rounded-xl bg-cloud2/90 border border-ink/5 p-1 gap-1">
+                  <button
+                    type="button"
+                    (click)="zoomIn()"
+                    class="w-7 h-7 rounded-lg grid place-items-center text-ink/75 hover:text-ink hover:bg-white text-xs font-bold transition-all cursor-pointer"
+                    title="Zoom in"
+                    aria-label="Zoom in"
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    (click)="zoomOut()"
+                    class="w-7 h-7 rounded-lg grid place-items-center text-ink/75 hover:text-ink hover:bg-white text-xs font-bold transition-all cursor-pointer"
+                    title="Zoom out"
+                    aria-label="Zoom out"
+                  >
+                    –
+                  </button>
+                  <button
+                    type="button"
+                    (click)="resetZoom()"
+                    class="px-2 h-7 rounded-lg inline-flex items-center justify-center text-[11px] text-ink/70 hover:text-ink hover:bg-white font-medium transition-all cursor-pointer"
+                    title="Reset default zoom"
+                  >
+                    Reset
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="toggleMapExpand()"
+                  class="inline-flex items-center gap-1.5 px-3 h-9 rounded-xl bg-cloud2/90 hover:bg-white border border-ink/5 text-ink/75 hover:text-ink text-xs font-medium transition-all cursor-pointer"
+                  [title]="isMapExpanded() ? 'Collapse map view' : 'Expand map view'"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    @if (isMapExpanded()) {
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 14h6m0 0v6m0-6L3 21m17-7h-6m0 0v6m0-6l7 7M10 4H4m0 0v6m0-6l7 7m10-7h-6m0 0V4m0 0l-7 7" />
+                    } @else {
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    }
+                  </svg>
+                  <span>{{ isMapExpanded() ? 'Compact' : 'Expand' }}</span>
+                </button>
+              </div>
             </div>
 
+            <!-- Map Viewport with High-Detail Loading State & Overlay -->
             @if (googleMapsEmbedUrl()) {
-            <div class="rounded-2xl overflow-hidden border border-ink/10 shadow-inner h-64 sm:h-80 md:h-96 w-full relative">
+            <div
+              class="relative rounded-2xl overflow-hidden border border-ink/10 shadow-inner w-full transition-all duration-500 bg-[#0c4550]"
+              [class.h-80]="!isMapExpanded()"
+              [class.sm:h-96]="!isMapExpanded()"
+              [class.md:h-[460px]]="!isMapExpanded()"
+              [class.h-[620px]]="isMapExpanded()"
+            >
+              <!-- MAP LOADING SKELETON STATE -->
+              @if (isMapLoading()) {
+              <div class="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-[#0c4550] via-[#133c44] to-[#1c5561] text-cloud transition-opacity duration-300">
+                <!-- Topographic Contour Backdrop -->
+                <svg class="absolute inset-0 w-full h-full opacity-10 pointer-events-none" preserveAspectRatio="none" viewBox="0 0 800 600">
+                  <path d="M-20 480 Q 140 380 280 460 T 560 420 T 840 470" stroke="#FAA52D" stroke-width="1.6" fill="none" />
+                  <path d="M-20 520 Q 160 430 320 500 T 600 470 T 840 510" stroke="#FAA52D" stroke-width="1.3" fill="none" />
+                  <path d="M-20 260 Q 120 140 260 230 T 520 170 T 840 240" stroke="#FAA52D" stroke-width="1.3" fill="none" />
+                  <path d="M-20 300 Q 140 190 300 270 T 560 220 T 840 290" stroke="#FAA52D" stroke-width="1.1" fill="none" />
+                </svg>
+
+                <!-- Animated Radar Pulse & Marker -->
+                <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
+                  <span class="absolute inset-0 rounded-full bg-ochre/20 animate-ping"></span>
+                  <span class="absolute inset-2 rounded-full bg-ochre/25 animate-pulse"></span>
+                  <div class="relative z-10 w-12 h-12 rounded-full bg-ochre text-ink flex items-center justify-center shadow-lg shadow-ochre/30">
+                    <svg class="w-6 h-6 animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Loading Label & Progress -->
+                <p class="font-display text-xl text-cloud tracking-wide m-0">
+                  Loading location map...
+                </p>
+                <p class="text-xs text-cloud/70 max-w-sm mt-1.5 leading-relaxed font-body">
+                  Pinpointing <strong class="text-ochre">{{ propertyData()?.name }}</strong> in {{ addressBreakdown()?.locality || addressBreakdown()?.city || 'Sikkim' }}
+                </p>
+
+                <!-- Shimmer Loading Indicator -->
+                <div class="w-48 h-1.5 bg-white/15 rounded-full overflow-hidden mt-4">
+                  <div class="h-full bg-ochre rounded-full animate-pulse w-3/4"></div>
+                </div>
+              </div>
+              }
+
+              <!-- MAP ERROR FALLBACK -->
+              @if (mapLoadError()) {
+              <div class="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-pine text-cloud space-y-3">
+                <svg class="w-10 h-10 text-ochre" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p class="font-display text-lg text-cloud">Map preview unavailable</p>
+                <p class="text-xs text-cloud/70 max-w-sm">Please launch Google Maps directly for complete interactive navigation.</p>
+                @if (googleMapsDirectionsUrl()) {
+                <a
+                  [href]="googleMapsDirectionsUrl()"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-ochre text-ink text-xs font-bold hover:brightness-110 transition-all shadow-md"
+                >
+                  Open in Google Maps
+                </a>
+                }
+              </div>
+              }
+
+              <!-- THE GOOGLE MAP IFRAME -->
               <iframe
                 [src]="googleMapsEmbedUrl()"
                 width="100%"
@@ -635,10 +784,169 @@
                 loading="lazy"
                 referrerpolicy="no-referrer-when-downgrade"
                 title="Property Location Map"
-                class="w-full h-full"
+                (load)="onMapLoad()"
+                (error)="onMapError()"
+                class="w-full h-full transition-opacity duration-700"
+                [class.opacity-0]="isMapLoading()"
+                [class.opacity-100]="!isMapLoading()"
               ></iframe>
+
+              <!-- FLOATING PROPERTY BADGE ON MAP -->
+              <div class="pointer-events-none absolute bottom-4 left-4 z-10 hidden sm:block max-w-sm">
+                <div class="pointer-events-auto p-3.5 rounded-2xl bg-white/90 backdrop-blur-md border border-white/80 shadow-lg space-y-1.5 text-left">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span class="text-[10px] font-bold tracking-wider uppercase text-pine">Verified Stay Location</span>
+                  </div>
+                  <p class="text-sm font-bold text-ink leading-tight line-clamp-1 m-0">
+                    {{ propertyData()?.name }}
+                  </p>
+                  @if (formattedCoordinates()) {
+                  <p class="text-[11px] font-mono text-ink/60 m-0">
+                    GPS: {{ formattedCoordinates() }}
+                  </p>
+                  }
+                </div>
+              </div>
             </div>
             }
+
+            <!-- ACTION BAR: GET DIRECTIONS & QUICK COPY ACTIONS -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+              <div class="flex flex-wrap items-center gap-2.5">
+                @if (googleMapsDirectionsUrl()) {
+                <a
+                  [href]="googleMapsDirectionsUrl()"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-pine hover:bg-pine2 text-cloud text-xs font-semibold transition-all cursor-pointer shadow-sm hover:shadow-md"
+                >
+                  <svg class="w-4 h-4 text-ochre" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                  <span>Get Driving Directions</span>
+                </a>
+                }
+                @if (googleMapsViewUrl() || googleMapsDirectionsUrl()) {
+                <a
+                  [href]="googleMapsViewUrl() || googleMapsDirectionsUrl()"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-pine/10 hover:bg-pine text-pine hover:text-cloud text-xs font-semibold transition-all cursor-pointer border border-pine/20"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  <span>Open in Google Maps</span>
+                </a>
+                }
+              </div>
+
+              <!-- Copy Address & Coordinates Buttons -->
+              <div class="flex flex-wrap items-center gap-2">
+                @if (formattedAddress()) {
+                <button
+                  type="button"
+                  (click)="copyAddressToClipboard()"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-cloud2/90 hover:bg-white text-ink/80 hover:text-ink text-xs font-medium border border-ink/10 transition-all cursor-pointer"
+                  [title]="formattedAddress()"
+                >
+                  @if (copiedAddress()) {
+                  <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="text-emerald-700 font-semibold">Address copied!</span>
+                  } @else {
+                  <svg class="w-3.5 h-3.5 text-ink/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <span>Copy Address</span>
+                  }
+                </button>
+                }
+
+                @if (propertyCoordinates()) {
+                <button
+                  type="button"
+                  (click)="copyCoordinatesToClipboard()"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-cloud2/90 hover:bg-white text-ink/80 hover:text-ink text-xs font-medium border border-ink/10 transition-all cursor-pointer"
+                  title="Copy GPS coordinates"
+                >
+                  @if (copiedCoordinates()) {
+                  <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="text-emerald-700 font-semibold">Coordinates copied!</span>
+                  } @else {
+                  <svg class="w-3.5 h-3.5 text-ink/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <circle cx="12" cy="11" r="3" stroke-width="2" />
+                  </svg>
+                  <span>Copy Coordinates</span>
+                  }
+                </button>
+                }
+              </div>
+            </div>
+
+            <!-- DETAILED LOCATION & NEIGHBORHOOD BREAKDOWN CARDS -->
+            <div class="grid md:grid-cols-3 gap-4 pt-4 border-t border-ink/10">
+              <!-- Detail Card 1: Precise Address -->
+              <div class="p-4 rounded-2xl bg-cloud2/60 border border-ink/5 space-y-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-xl bg-pine/10 text-pine grid place-items-center">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </span>
+                  <p class="text-xs font-bold uppercase tracking-wider text-mossD m-0">Address Details</p>
+                </div>
+                <p class="text-xs text-ink/80 leading-relaxed m-0 font-medium">
+                  {{ formattedAddress() }}
+                </p>
+                @if (addressBreakdown()?.postalCode) {
+                <p class="text-[11px] text-ink/50 m-0">
+                  Postal Code / PIN: {{ addressBreakdown()?.postalCode }}
+                </p>
+                }
+              </div>
+
+              <!-- Detail Card 2: Getting Here & Transport -->
+              <div class="p-4 rounded-2xl bg-cloud2/60 border border-ink/5 space-y-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-xl bg-ochre/15 text-ochreD grid place-items-center">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8m-8 4h8m-8 4h4m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z" />
+                    </svg>
+                  </span>
+                  <p class="text-xs font-bold uppercase tracking-wider text-mossD m-0">Getting Here</p>
+                </div>
+                <p class="text-xs text-ink/80 leading-relaxed m-0">
+                  @if (hasParking()) {
+                  <span>✓ Free guest parking available on premises.</span>
+                  } @else {
+                  <span>✓ Direct road access with drop-off at entrance.</span>
+                  }
+                  <span class="block mt-1 text-ink/60">Host can coordinate local 4x4 or taxi pickup upon request.</span>
+                </p>
+              </div>
+
+              <!-- Detail Card 3: Surroundings & Advisory -->
+              <div class="p-4 rounded-2xl bg-cloud2/60 border border-ink/5 space-y-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-xl bg-emerald-500/15 text-emerald-700 grid place-items-center">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </span>
+                  <p class="text-xs font-bold uppercase tracking-wider text-mossD m-0">Neighborhood</p>
+                </div>
+                <p class="text-xs text-ink/80 leading-relaxed m-0">
+                  Peaceful Himalayan village atmosphere surrounded by forest greens and scenic valley views.
+                  <span class="block mt-1 text-ink/60">Daylight travel recommended for the best mountain roadway experience.</span>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
         }

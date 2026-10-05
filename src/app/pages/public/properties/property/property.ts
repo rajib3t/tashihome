@@ -50,19 +50,94 @@ export class Property {
   public currencySymbol = computed(() => this.settingsService.currencySymbol() || this.propertyData()?.currency || '₹');
   public galleryImages = signal<PropertyAsset[]>([]);
 
+  // Location & Map State & Controls
+  public isMapLoading = signal<boolean>(true);
+  public mapLoadError = signal<boolean>(false);
+  public mapZoom = signal<number>(15);
+  public mapType = signal<'m' | 'k' | 'p'>('m'); // 'm' = Roadmap, 'k' = Satellite, 'p' = Terrain
+  public isMapExpanded = signal<boolean>(false);
+  public copiedAddress = signal<boolean>(false);
+  public copiedCoordinates = signal<boolean>(false);
+  private copiedAddressTimer?: ReturnType<typeof setTimeout>;
+  private copiedCoordsTimer?: ReturnType<typeof setTimeout>;
+  private mapLoadFallbackTimer?: ReturnType<typeof setTimeout>;
+
   // Location & Map Computed Signals
-  public readonly propertyCoordinates = computed(() => {
+  public readonly propertyCoordinates = computed<{ latitude: number; longitude: number } | null>(() => {
     const prop = this.propertyData();
-    const lat = prop?.latitude ?? prop?.geolocation?.latitude;
-    const lng = prop?.longitude ?? prop?.geolocation?.longitude;
+    if (!prop) return null;
+    const lat = prop.latitude ?? (prop as any).lat ?? prop.geolocation?.latitude;
+    const lng = prop.longitude ?? (prop as any).lng ?? prop.geolocation?.longitude;
     if (lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
       return { latitude: Number(lat), longitude: Number(lng) };
     }
     return null;
   });
 
+  public readonly formattedCoordinates = computed<string | null>(() => {
+    const coords = this.propertyCoordinates();
+    if (!coords) return null;
+    const latDir = coords.latitude >= 0 ? 'N' : 'S';
+    const lngDir = coords.longitude >= 0 ? 'E' : 'W';
+    return `${Math.abs(coords.latitude).toFixed(4)}° ${latDir}, ${Math.abs(coords.longitude).toFixed(4)}° ${lngDir}`;
+  });
+
   public readonly formattedAddress = computed(() => {
     return getPhysicalAddress(this.propertyData());
+  });
+
+  public readonly addressBreakdown = computed(() => {
+    const prop = this.propertyData();
+    if (!prop) return null;
+    const manualAddr = prop.manual_address || prop.address_details || (prop as any)?.manualAddress || (prop as any)?.addressDetails;
+    const street = (manualAddr?.address_line1 || (prop as any)?.address_line1 || prop.address || '')?.trim();
+    const locality = (prop.location?.name || (prop as any)?.location || '')?.trim();
+    const city = (manualAddr?.city || prop.city?.name || (prop as any)?.city || '')?.trim();
+    const state = (manualAddr?.state || (prop as any)?.state || 'Sikkim')?.trim();
+    const postalCode = (manualAddr?.postal_code || (prop as any)?.postal_code || (prop as any)?.pin_code || '')?.trim();
+    const country = (manualAddr?.country || (prop as any)?.country || 'India')?.trim();
+    return {
+      street: street || locality || city,
+      locality,
+      city,
+      state,
+      postalCode,
+      country,
+    };
+  });
+
+  public readonly hasParking = computed<boolean>(() => {
+    const prop = this.propertyData();
+    if (!prop) return false;
+    const amenities = prop.property_amenities ?? [];
+    const facilities = prop.property_facilities ?? [];
+    const terms = ['park', 'parking', 'garage', 'valet'];
+    const inAmenities = amenities.some(a => {
+      const name = (a as any)?.amenity?.name?.toLowerCase() || '';
+      return terms.some(t => name.includes(t));
+    });
+    const inFacilities = facilities.some(f => {
+      const name = (f as any)?.facility?.name?.toLowerCase() || '';
+      return terms.some(t => name.includes(t));
+    });
+    return inAmenities || inFacilities;
+  });
+
+  public readonly hasWifi = computed<boolean>(() => {
+    const prop = this.propertyData();
+    if (!prop) return false;
+    const amenities = prop.property_amenities ?? [];
+    const facilities = prop.property_facilities ?? [];
+    const terms = ['wifi', 'wi-fi', 'internet'];
+    const inAmenities = amenities.some(a => {
+      const name = (a as any)?.amenity?.name?.toLowerCase() || '';
+      return terms.some(t => name.includes(t));
+    });
+    const inFacilities = facilities.some(f => {
+      const name = (f as any)?.facility?.name?.toLowerCase() || '';
+      return terms.some(t => name.includes(t));
+    });
+    return inAmenities || inFacilities;
   });
 
   public readonly googleMapsDirectionsUrl = computed(() => {
@@ -71,16 +146,42 @@ export class Property {
       return `https://www.google.com/maps/dir/?api=1&destination=${coords.latitude},${coords.longitude}`;
     }
     const addr = this.formattedAddress();
-    if (addr) {
+    if (addr && addr !== 'Himalayan stay') {
       return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addr)}`;
+    }
+    return null;
+  });
+
+  public readonly googleMapsViewUrl = computed(() => {
+    const coords = this.propertyCoordinates();
+    if (coords) {
+      return `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`;
+    }
+    const addr = this.formattedAddress();
+    if (addr && addr !== 'Himalayan stay') {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
     }
     return null;
   });
 
   public readonly googleMapsEmbedUrl = computed<SafeResourceUrl | null>(() => {
     const coords = this.propertyCoordinates();
-    if (!coords) return null;
-    const rawUrl = `https://maps.google.com/maps?q=${coords.latitude},${coords.longitude}&z=15&output=embed`;
+    const addr = this.formattedAddress();
+    const zoom = this.mapZoom();
+    const type = this.mapType();
+
+    let query = '';
+    if (coords) {
+      query = `${coords.latitude},${coords.longitude}`;
+    } else if (addr && addr !== 'Himalayan stay') {
+      query = encodeURIComponent(addr);
+    } else if (this.propertyData()?.name) {
+      query = encodeURIComponent(`${this.propertyData()?.name}, Sikkim`);
+    } else {
+      return null;
+    }
+
+    const rawUrl = `https://maps.google.com/maps?q=${query}&z=${zoom}&t=${type}&output=embed`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
   });
 
@@ -156,6 +257,8 @@ export class Property {
         next: (res) => {
           this.propertyData.set(res.data);
           this.galleryImages.set(this.buildGalleryImages(res.data));
+          this.isMapLoading.set(true);
+          this.armMapLoadingFallback();
 
           // Load reviews by property ID
           if (res.data?.id && isPlatformBrowser(this.platformId)) {
@@ -227,6 +330,15 @@ export class Property {
       clearTimeout(this.revealInitTimer);
     }
     this.revealObserver?.disconnect();
+    if (this.copiedAddressTimer) {
+      clearTimeout(this.copiedAddressTimer);
+    }
+    if (this.copiedCoordsTimer) {
+      clearTimeout(this.copiedCoordsTimer);
+    }
+    if (this.mapLoadFallbackTimer) {
+      clearTimeout(this.mapLoadFallbackTimer);
+    }
     if (isPlatformBrowser(this.platformId)) {
       document.body.style.overflow = '';
     }
@@ -964,6 +1076,86 @@ export class Property {
     if (raw === 'dinner') return 'Dinner';
     if (raw === 'breakfast') return 'Breakfast';
     return name;
+  }
+
+  // ============ MAP INTERACTIVE METHODS ============
+  public onMapLoad(): void {
+    if (this.mapLoadFallbackTimer) {
+      clearTimeout(this.mapLoadFallbackTimer);
+      this.mapLoadFallbackTimer = undefined;
+    }
+    this.isMapLoading.set(false);
+    this.mapLoadError.set(false);
+  }
+
+  public onMapError(): void {
+    this.isMapLoading.set(false);
+    this.mapLoadError.set(true);
+  }
+
+  public setMapType(type: 'm' | 'k' | 'p'): void {
+    if (this.mapType() === type) return;
+    this.isMapLoading.set(true);
+    this.mapType.set(type);
+    this.armMapLoadingFallback();
+  }
+
+  public zoomIn(): void {
+    if (this.mapZoom() >= 19) return;
+    this.isMapLoading.set(true);
+    this.mapZoom.update((z) => Math.min(z + 1, 19));
+    this.armMapLoadingFallback();
+  }
+
+  public zoomOut(): void {
+    if (this.mapZoom() <= 10) return;
+    this.isMapLoading.set(true);
+    this.mapZoom.update((z) => Math.max(z - 1, 10));
+    this.armMapLoadingFallback();
+  }
+
+  public resetZoom(): void {
+    this.isMapLoading.set(true);
+    this.mapZoom.set(15);
+    this.armMapLoadingFallback();
+  }
+
+  public toggleMapExpand(): void {
+    this.isMapExpanded.update((v) => !v);
+  }
+
+  public armMapLoadingFallback(): void {
+    if (this.mapLoadFallbackTimer) {
+      clearTimeout(this.mapLoadFallbackTimer);
+    }
+    this.mapLoadFallbackTimer = setTimeout(() => {
+      this.isMapLoading.set(false);
+    }, 2800);
+  }
+
+  public copyAddressToClipboard(): void {
+    const text = this.formattedAddress();
+    if (!text || !isPlatformBrowser(this.platformId)) return;
+    navigator.clipboard?.writeText(text).then(() => {
+      this.copiedAddress.set(true);
+      if (this.copiedAddressTimer) clearTimeout(this.copiedAddressTimer);
+      this.copiedAddressTimer = setTimeout(() => {
+        this.copiedAddress.set(false);
+      }, 2500);
+    }).catch(() => {});
+  }
+
+  public copyCoordinatesToClipboard(): void {
+    const coords = this.propertyCoordinates();
+    if (!coords || !isPlatformBrowser(this.platformId)) return;
+    const text = `${coords.latitude}, ${coords.longitude}`;
+    navigator.clipboard?.writeText(text).then(() => {
+      this.copiedCoordinates.set(true);
+      if (this.copiedCoordsTimer) clearTimeout(this.copiedCoordsTimer);
+      this.copiedCoordsTimer = setTimeout(() => {
+        this.copiedCoordinates.set(false);
+      }, 2500);
+    }).catch(() => {});
   }
 }
 
