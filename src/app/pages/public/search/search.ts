@@ -37,6 +37,7 @@ import { SettingsService } from '../../../services/settings/settings-service';
 import { SeoService } from '../../../services/seo/seo-service';
 import { PaginationMeta } from '../../../services/api/api-response.model';
 import { environment } from '../../../../environments/environment';
+import { getPhysicalAddress } from '../../../utils/address.utils';
 
 export interface CalendarDay {
   dateStr: string;
@@ -1065,6 +1066,10 @@ export class Search implements OnInit, AfterViewInit, OnDestroy {
     if (rating >= 4.5) return 'Top Rated';
     if (rating >= 4.0) return 'Highly Rated';
     return 'Verified Stay';
+  }
+
+  public getPhysicalAddress(item: Partial<PropertyData>): string {
+    return getPhysicalAddress(item);
   }
 
   public onImageError(event: Event): void {

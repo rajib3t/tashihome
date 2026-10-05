@@ -16,6 +16,7 @@ import { SeoService } from '../../../../services/seo/seo-service';
 import { environment } from '../../../../../environments/environment';
 import { DateInput } from '../../../../shared/components/ui/date-input/date-input';
 import { getRoomNightlyRate } from '../../../../utils/pricing.utils';
+import { getPhysicalAddress } from '../../../../utils/address.utils';
 
 function toDateString(d: Date): string {
   const year = d.getFullYear();
@@ -61,22 +62,7 @@ export class Property {
   });
 
   public readonly formattedAddress = computed(() => {
-    const prop = this.propertyData();
-    const addr = prop?.manual_address || prop?.address_details;
-    if (addr) {
-      const parts = [
-        addr.address_line1,
-        addr.address_line2,
-        addr.city || prop?.city?.name,
-        addr.state,
-        addr.postal_code,
-        addr.country,
-      ].filter(Boolean);
-      if (parts.length > 0) return parts.join(', ');
-    }
-    if (prop?.address) return prop.address;
-    const fallback = [prop?.location?.name, prop?.city?.name].filter(Boolean);
-    return fallback.join(', ');
+    return getPhysicalAddress(this.propertyData());
   });
 
   public readonly googleMapsDirectionsUrl = computed(() => {

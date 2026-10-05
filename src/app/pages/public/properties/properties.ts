@@ -37,6 +37,7 @@ import { SettingsService } from '../../../services/settings/settings-service';
 import { SeoService } from '../../../services/seo/seo-service';
 import { PaginationMeta } from '../../../services/api/api-response.model';
 import { environment } from '../../../../environments/environment';
+import { getPhysicalAddress } from '../../../utils/address.utils';
 
 import { LocationAutocomplete } from '../../../shared/components/location-autocomplete/location-autocomplete';
 
@@ -923,6 +924,10 @@ export class Properties implements OnInit, AfterViewInit, OnDestroy {
 
   public getReviewsCount(item: Partial<PropertyData>): number {
     return Number(item?.total_reviews ?? item?.rating_summary?.total_reviews ?? (item as any)?.reviews_count ?? (item as any)?.review_count ?? 0);
+  }
+
+  public getPhysicalAddress(item: Partial<PropertyData>): string {
+    return getPhysicalAddress(item);
   }
 
   public getReviewTag(item: Partial<PropertyData>): string {

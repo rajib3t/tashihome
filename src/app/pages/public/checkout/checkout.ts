@@ -38,6 +38,7 @@ import {
   generatePaymentVerificationKey,
 } from '../../../utils/idempotency';
 import { getRoomNightlyRate } from '../../../utils/pricing.utils';
+import { getPhysicalAddress } from '../../../utils/address.utils';
 
 function toDateString(d: Date): string {
   const year = d.getFullYear();
@@ -84,6 +85,7 @@ export class Checkout implements OnInit {
   // Property & Booking State
   public property = signal<Partial<PropertyData> | null>(null);
   public currencySymbol = computed(() => this.settingsService.currencySymbol() || this.property()?.currency || '₹');
+  public propertyAddress = computed(() => getPhysicalAddress(this.property()));
   public selectedRoomType = signal<RoomType | null>(null);
   public checkInDate = signal<string>('');
   public checkOutDate = signal<string>('');

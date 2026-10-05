@@ -4,6 +4,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { PropertyData } from '../../../../services/property/property.model';
 import { SettingsService } from '../../../../services/settings/settings-service';
 import { environment } from '../../../../../environments/environment';
+import { getPhysicalAddress } from '../../../../utils/address.utils';
 
 @Component({
   selector: 'app-single-property',
@@ -21,6 +22,10 @@ export class SingleProperty {
   public readonly currencySymbol = computed(() => {
     return this.settingsService.currencySymbol() || this.item.currency || '₹';
   });
+
+  getPhysicalAddress(item: Partial<PropertyData>): string {
+    return getPhysicalAddress(item);
+  }
 
   goToPropertyDetail(event?: Event) {
     if (event) {

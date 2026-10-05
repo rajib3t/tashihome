@@ -117,7 +117,7 @@
             }
             <div>
               <h3 class="font-display text-xl text-ink">{{ property()?.name }}</h3>
-              <p class="text-xs text-ink/60 mt-0.5">{{ property()?.city?.name }}{{ property()?.location?.name ? ', ' + property()?.location?.name : '' }}</p>
+              <p class="text-xs text-ink/60 mt-0.5" [title]="propertyAddress()">{{ propertyAddress() }}</p>
               <p class="text-xs text-mossD font-medium mt-1">Room: {{ selectedRoomType()?.name || 'Standard Homestay Room' }}</p>
             </div>
           </div>
@@ -479,7 +479,7 @@
               <div class="min-w-0">
                 <span class="text-[10px] font-semibold uppercase tracking-wider text-mossD">Homestay</span>
                 <h3 class="font-display text-lg text-ink truncate mt-0.5">{{ property()?.name }}</h3>
-                <p class="text-xs text-ink/60 truncate">{{ property()?.city?.name }}{{ property()?.location?.name ? ', ' + property()?.location?.name : '' }}</p>
+                <p class="text-xs text-ink/60 truncate" [title]="propertyAddress()">{{ propertyAddress() }}</p>
                 <p class="text-xs text-ochre font-medium mt-1 flex items-center gap-1">★ 4.9 · Host Verified</p>
               </div>
             </div>

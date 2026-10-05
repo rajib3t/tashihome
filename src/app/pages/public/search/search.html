@@ -818,15 +818,12 @@
                 </div>
 
                 <!-- Location Line -->
-                <p class="text-sm text-ink/65 mt-2 flex items-center gap-1.5">
+                <p class="text-sm text-ink/65 mt-2 flex items-center gap-1.5" [title]="getPhysicalAddress(item)">
                   <svg class="w-4 h-4 text-moss shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span class="font-medium text-ink/80">{{ item.city?.name || 'Himalayan stay' }}</span>
-                  @if (item.location?.name) {
-                    <span>• {{ item.location?.name }}</span>
-                  }
+                  <span class="font-medium text-ink/80 line-clamp-1">{{ getPhysicalAddress(item) }}</span>
                 </p>
 
                 <!-- Food & Amenity Badges -->
@@ -938,18 +935,12 @@
                       }
                     </div>
 
-                    <p class="text-sm text-ink/65 mt-2 flex items-center gap-1.5">
+                    <p class="text-sm text-ink/65 mt-2 flex items-center gap-1.5" [title]="getPhysicalAddress(item)">
                       <svg class="w-4 h-4 text-moss shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      <strong class="text-ink/85">{{ item.city?.name || 'Himalayan stay' }}</strong>
-                      @if (item.location?.name) {
-                        <span>• {{ item.location?.name }}</span>
-                      }
-                      @if (item.address) {
-                        <span class="text-ink/50 text-xs hidden sm:inline">({{ item.address }})</span>
-                      }
+                      <strong class="text-ink/85 font-medium">{{ getPhysicalAddress(item) }}</strong>
                     </p>
                   </div>
                 </div>
